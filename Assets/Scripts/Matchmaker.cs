@@ -151,6 +151,12 @@ public class Matchmaker : NetworkBehaviour
     {
         if (!IsServer) return;
         
+        // Register player with PlayerDataManager
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerDataManager.Instance.RegisterPlayer(clientId, playerName);
+        }
+        
         // Check if player is already in queue
         foreach (var player in queuedPlayers)
         {

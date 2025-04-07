@@ -1,245 +1,204 @@
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using Unity.Netcode;
-using System.Collections;
-using Unity.Collections;
-using System.Collections.Generic;
+using TMPro; // Use TextMeshPro for UI text
+using UnityEngine.SceneManagement; // Needed for LoadSceneMode
+using Unity.Collections; // Required for FixedString
+using UnityEngine.UI; // Required for Button
+using System.Collections.Generic; // Required for List
+using System.Collections; // Required for Coroutine
 
 public class CharacterSelector : NetworkBehaviour
 {
-    [Header("UI References")]
-    [SerializeField] private Button reimuButton;
-    [SerializeField] private Button marisaButton;
-    [SerializeField] private TextMeshProUGUI player1SelectionText;
-    [SerializeField] private TextMeshProUGUI player2SelectionText;
-    
-    [Header("Configuration")]
-    [SerializeField] private float sceneTransitionDelay = 1.5f;
-    [SerializeField] private string gameplaySceneName = "GameplayScene";
-    
-    // Network variables to track player selections
-    private NetworkVariable<FixedString32Bytes> player1Character = new NetworkVariable<FixedString32Bytes>(
-        "", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    
-    private NetworkVariable<FixedString32Bytes> player2Character = new NetworkVariable<FixedString32Bytes>(
-        "", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    
-    // Network variable to track player assignments
-    private NetworkVariable<ulong> player1ClientId = new NetworkVariable<ulong>(
-        0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    
-    private NetworkVariable<ulong> player2ClientId = new NetworkVariable<ulong>(
-        0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    
-    // Keep track of local player assignment
-    private bool isPlayer1;
-    private bool hasSelectedCharacter = false;
-    private string localSelection = "";
-    
-    // Connected clients list (server-side only)
-    private List<ulong> connectedClients = new List<ulong>();
-    
-    public override void OnNetworkSpawn()
+    [System.Serializable]
+    public struct CharacterButtonMapping
     {
-        // If we're the server, assign player roles when clients connect
-        if (IsServer)
-        {
-            // Get currently connected clients
-            foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
-            {
-                if (!connectedClients.Contains(clientId))
-                {
-                    connectedClients.Add(clientId);
-                }
-            }
-            
-            // Assign roles based on connection order
-            AssignPlayerRoles();
-            
-            // Subscribe to client connected event for late joiners
-            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
-        }
-        
-        // Determine local player role
-        DeterminePlayerAssignment();
-        
-        base.OnNetworkSpawn();
-    }
-    
-    public override void OnNetworkDespawn()
-    {
-        if (IsServer)
-        {
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedCallback;
-        }
-        
-        base.OnNetworkDespawn();
-    }
-    
-    private void OnClientConnectedCallback(ulong clientId)
-    {
-        if (!IsServer) return;
-        
-        if (!connectedClients.Contains(clientId))
-        {
-            connectedClients.Add(clientId);
-            AssignPlayerRoles();
-        }
-    }
-    
-    private void AssignPlayerRoles()
-    {
-        if (!IsServer || connectedClients.Count == 0) return;
-        
-        // Assign first client as Player 1
-        if (connectedClients.Count >= 1)
-        {
-            player1ClientId.Value = connectedClients[0];
-            Debug.Log($"Server assigned Player 1 to client ID: {player1ClientId.Value}");
-        }
-        
-        // Assign second client as Player 2
-        if (connectedClients.Count >= 2)
-        {
-            player2ClientId.Value = connectedClients[1];
-            Debug.Log($"Server assigned Player 2 to client ID: {player2ClientId.Value}");
-        }
-    }
-    
-    private void Start()
-    {
-        // Listen for character selection changes
-        player1Character.OnValueChanged += OnPlayer1CharacterChanged;
-        player2Character.OnValueChanged += OnPlayer2CharacterChanged;
-        
-        // Set up button click events
-        if (reimuButton != null)
-            reimuButton.onClick.AddListener(() => SelectCharacter("Hakurei Reimu"));
-            
-        if (marisaButton != null)
-            marisaButton.onClick.AddListener(() => SelectCharacter("Kirisame Marisa"));
-        
-        // Initialize UI
-        UpdateSelectionTexts();
+        public Button button;
+        public string characterName;
     }
 
-    public override void OnDestroy()
+    [Header("UI References")]
+    [SerializeField] private TMP_Text player1SelectionText; // Assign Player 1's text element in Inspector
+    [SerializeField] private TMP_Text player2SelectionText; // Assign Player 2's text element in Inspector
+    [SerializeField] private List<CharacterButtonMapping> characterButtons; // Assign buttons and their character names in Inspector
+
+    [Header("Scene Management")]
+    [SerializeField] private string gameplaySceneName = "GameplayScene"; // Name of the scene to load next
+
+    // --- Private Variables ---
+    private PlayerDataManager playerDataManager;
+
+    public override void OnNetworkSpawn()
     {
-        // Clean up listeners
-        player1Character.OnValueChanged -= OnPlayer1CharacterChanged;
-        player2Character.OnValueChanged -= OnPlayer2CharacterChanged;
-        
-        base.OnDestroy();
-    }
-    
-    private void DeterminePlayerAssignment()
-    {
-        if (!NetworkManager.Singleton.IsClient)
-            return;
-        
-        ulong localClientId = NetworkManager.Singleton.LocalClientId;
-        
-        // Check if we're Player 1 based on assigned client ID
-        isPlayer1 = (localClientId == player1ClientId.Value);
-        
-        Debug.Log($"Client {localClientId} determined to be Player {(isPlayer1 ? "1" : "2")}");
-        Debug.Log($"Player1 ID: {player1ClientId.Value}, Player2 ID: {player2ClientId.Value}");
-    }
-    
-    private void SelectCharacter(string characterName)
-    {
-        if (hasSelectedCharacter)
-            return;
-        
-        localSelection = characterName;
-            
-        // Call server RPC to register selection
-        SelectCharacterServerRpc(characterName, isPlayer1);
-        
-        // Disable character buttons after selection
-        hasSelectedCharacter = true;
-        DisableCharacterButtons();
-        
-        Debug.Log($"Selected character: {characterName} as Player {(isPlayer1 ? "1" : "2")}");
-    }
-    
-    private void DisableCharacterButtons()
-    {
-        if (reimuButton != null)
-            reimuButton.interactable = false;
-            
-        if (marisaButton != null)
-            marisaButton.interactable = false;
-    }
-    
-    [ServerRpc(RequireOwnership = false)]
-    private void SelectCharacterServerRpc(string characterName, bool isFirstPlayer)
-    {
-        if (isFirstPlayer)
+        // Find the PlayerDataManager instance
+        playerDataManager = PlayerDataManager.Instance;
+        if (playerDataManager == null)
         {
-            player1Character.Value = new FixedString32Bytes(characterName);
-            Debug.Log($"Server received Player 1 selection: {characterName}");
+            Debug.LogError("PlayerDataManager instance not found!");
+            this.enabled = false; // Disable script if manager is missing
+            return;
+        }
+
+        // Setup button listeners
+        SetupButtonListeners();
+
+        // Initial UI update is now triggered by the event subscription
+        // UpdateUI();
+
+        // Subscribe to PlayerDataManager updates
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerDataManager.Instance.OnPlayerDataUpdated += HandlePlayerDataUpdated;
+            // Trigger an initial update in case the event fired before we subscribed
+            HandlePlayerDataUpdated();
         }
         else
         {
-            player2Character.Value = new FixedString32Bytes(characterName);
-            Debug.Log($"Server received Player 2 selection: {characterName}");
+            Debug.LogError("Cannot subscribe to PlayerDataManager events: Instance is null.");
         }
-        
-        // Check if both players have selected characters
-        if (!string.IsNullOrEmpty(player1Character.Value.ToString()) && 
-            !string.IsNullOrEmpty(player2Character.Value.ToString()))
+    }
+
+    private void SetupButtonListeners()
+    {
+        foreach (var mapping in characterButtons)
         {
-            // Both players have selected, start countdown to next scene
-            StartCoroutine(LoadGameplaySceneDelayed());
+            if (mapping.button != null && !string.IsNullOrEmpty(mapping.characterName))
+            {
+                // Capture the character name for the listener
+                string name = mapping.characterName;
+                mapping.button.onClick.AddListener(() => OnCharacterButtonClicked(name));
+            }
+            else
+            {
+                Debug.LogWarning("Character button mapping is incomplete in the Inspector.");
+            }
         }
     }
-    
-    private IEnumerator LoadGameplaySceneDelayed()
+
+    private void OnCharacterButtonClicked(string characterName)
     {
-        // Notify all clients that game is about to start
-        NotifyGameStartingClientRpc(player1Character.Value.ToString(), player2Character.Value.ToString());
-        
-        // Wait for the delay
-        yield return new WaitForSeconds(sceneTransitionDelay);
-        
-        // Load the gameplay scene
-        if (IsServer)
+        Debug.Log($"Button clicked via listener: SelectCharacter({characterName})");
+        // Send the selection to the server
+        RequestSetCharacterServerRpc(characterName);
+    }
+
+    // Method called by UI Buttons is removed as listeners are now added programmatically
+    // public void SelectCharacter(string characterName) { ... }
+
+    [ServerRpc(RequireOwnership = false)] // Allow any client to call this RPC
+    private void RequestSetCharacterServerRpc(string characterName, ServerRpcParams rpcParams = default)
+    {
+        ulong clientId = rpcParams.Receive.SenderClientId;
+        Debug.Log($"Server received character selection '{characterName}' from client {clientId}");
+
+        if (playerDataManager != null)
         {
-            NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
+            playerDataManager.SetPlayerCharacter(clientId, characterName);
+
+            // Tell all clients to refresh their UI -- THIS IS NO LONGER NEEDED
+            // UpdateClientUIsClientRpc();
+
+            // Check if both players are ready AFTER updating
+            if (playerDataManager.AreBothPlayersReady())
+            {
+                // Don't load immediately, start the delayed load coroutine
+                // LoadGameplayScene(); 
+                StartCoroutine(DelayedSceneLoad());
+            }
         }
-    }
-    
-    [ClientRpc]
-    private void NotifyGameStartingClientRpc(string player1Selection, string player2Selection)
-    {
-        // Show a message that game is starting
-        Debug.Log($"Match starting: {player1Selection} vs {player2Selection}");
-    }
-    
-    private void OnPlayer1CharacterChanged(FixedString32Bytes previousValue, FixedString32Bytes newValue)
-    {
-        UpdateSelectionTexts();
-    }
-    
-    private void OnPlayer2CharacterChanged(FixedString32Bytes previousValue, FixedString32Bytes newValue)
-    {
-        UpdateSelectionTexts();
-    }
-    
-    private void UpdateSelectionTexts()
-    {
-        if (player1SelectionText != null)
+        else
         {
-            string p1Selection = player1Character.Value.ToString();
-            player1SelectionText.text = string.IsNullOrEmpty(p1Selection) ? "Waiting..." : p1Selection;
+             Debug.LogError("PlayerDataManager is null on server during RPC.");
         }
-        
-        if (player2SelectionText != null)
+    }
+
+    // Renamed UpdateUI to HandlePlayerDataUpdated to clarify it's an event handler
+    private void HandlePlayerDataUpdated()
+    {
+        // We are now certain that PlayerDataManager's data is up-to-date on this client
+        // because this method is called *by* the data change event.
+        Debug.Log("HandlePlayerDataUpdated called.");
+        if (playerDataManager == null) 
         {
-            string p2Selection = player2Character.Value.ToString();
-            player2SelectionText.text = string.IsNullOrEmpty(p2Selection) ? "Waiting..." : p2Selection;
+            Debug.LogWarning("HandlePlayerDataUpdated called but PlayerDataManager is null.");
+            return; // Safety check
         }
+
+        // Get data for Player 1 (usually index 0)
+        PlayerDataManager.PlayerData? p1Data = playerDataManager.GetPlayer1Data();
+        if (p1Data.HasValue)
+        {
+            string p1Character = p1Data.Value.SelectedCharacter.ToString();
+            string p1Name = p1Data.Value.PlayerName.ToString();
+            string p1Text = string.IsNullOrEmpty(p1Character) ? "Choosing..." : p1Character;
+            // Corrected string formatting
+            player1SelectionText.text = $"Player 1 ({p1Name}):\n{p1Text}";
+        }
+        else
+        {
+            player1SelectionText.text = "Player 1: Waiting...";
+        }
+
+        // Get data for Player 2 (usually index 1)
+        PlayerDataManager.PlayerData? p2Data = playerDataManager.GetPlayer2Data();
+         if (p2Data.HasValue)
+        {
+            string p2Character = p2Data.Value.SelectedCharacter.ToString();
+            string p2Name = p2Data.Value.PlayerName.ToString();
+            string p2Text = string.IsNullOrEmpty(p2Character) ? "Choosing..." : p2Character;
+            // Corrected string formatting
+            player2SelectionText.text = $"Player 2 ({p2Name}):\n{p2Text}";
+        }
+        else
+        {
+            player2SelectionText.text = "Player 2: Waiting...";
+        }
+    }
+
+    private IEnumerator DelayedSceneLoad()
+    {
+        // Ensure this only runs on the server
+        if (!IsServer) yield break;
+
+        // Wait a fraction of a second to allow client UI updates
+        yield return new WaitForSeconds(0.1f); 
+
+        Debug.Log("Both players ready. Loading Gameplay Scene after delay...");
+        // Ensure NetworkManager is still valid before loading
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
+        {
+             NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
+        }
+        else
+        {
+            Debug.LogError("NetworkManager or SceneManager became invalid before delayed scene load.");
+        }
+    }
+
+    private void LoadGameplayScene()
+    {
+         if (!IsServer) return; // Only server should trigger scene change
+
+        Debug.Log("Both players ready. Loading Gameplay Scene...");
+        NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        // Clean up listeners
+        foreach (var mapping in characterButtons)
+        {
+            if (mapping.button != null)
+            {
+                mapping.button.onClick.RemoveAllListeners(); // Simple cleanup
+            }
+        }
+
+        // Unsubscribe from PlayerDataManager events
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerDataManager.Instance.OnPlayerDataUpdated -= HandlePlayerDataUpdated;
+        }
+
+        base.OnNetworkDespawn();
     }
 } 

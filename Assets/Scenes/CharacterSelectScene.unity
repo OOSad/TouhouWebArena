@@ -132,7 +132,7 @@ GameObject:
   m_Component:
   - component: {fileID: 43724729}
   - component: {fileID: 43724727}
-  - component: {fileID: 43724728}
+  - component: {fileID: 43724730}
   m_Layer: 0
   m_Name: CharacterSelector
   m_TagString: Untagged
@@ -161,29 +161,6 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &43724728
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 43724726}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d68452319c4487439f509587e719b0c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  reimuButton: {fileID: 2095476780}
-  marisaButton: {fileID: 1597910463}
-  player1SelectionText: {fileID: 2028900596}
-  player2SelectionText: {fileID: 658486764}
-  statusMessageText: {fileID: 0}
-  reimuButtonImage: {fileID: 0}
-  marisaButtonImage: {fileID: 0}
-  selectedColor: {r: 0.5, g: 1, b: 0.5, a: 1}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  sceneTransitionDelay: 1.5
-  gameplaySceneName: GameplayScene
 --- !u!4 &43724729
 Transform:
   m_ObjectHideFlags: 0
@@ -199,6 +176,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &43724730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 43724726}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d68452319c4487439f509587e719b0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player1SelectionText: {fileID: 2028900596}
+  player2SelectionText: {fileID: 658486764}
+  characterButtons:
+  - button: {fileID: 2095476780}
+    characterName: Hakurei Reimu
+  - button: {fileID: 1597910463}
+    characterName: Kirisame Marisa
+  gameplaySceneName: GameplayScene
 --- !u!1 &274836910
 GameObject:
   m_ObjectHideFlags: 0
