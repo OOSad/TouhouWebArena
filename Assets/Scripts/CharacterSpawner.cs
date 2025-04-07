@@ -83,12 +83,22 @@ public class CharacterSpawner : NetworkBehaviour
         string characterName = playerData.SelectedCharacter.ToString();
         if (characterPrefabDict.TryGetValue(characterName, out GameObject prefabToSpawn))
         {
-            GameObject characterInstance = Instantiate(prefabToSpawn, position, rotation);
+            // Instantiate at default position first
+            // GameObject characterInstance = Instantiate(prefabToSpawn, position, rotation);
+            GameObject characterInstance = Instantiate(prefabToSpawn);
             NetworkObject networkObject = characterInstance.GetComponent<NetworkObject>();
             if (networkObject != null)
             {
+                // Spawn the object first
                 networkObject.SpawnAsPlayerObject(playerData.ClientId);
-                Debug.Log($"Spawned {characterName} for Player {playerData.ClientId} ({playerData.PlayerName})");
+
+                // THEN set the position and rotation on the server. NetworkTransform will sync this.
+                characterInstance.transform.position = position;
+                characterInstance.transform.rotation = rotation;
+                // Add log immediately after setting position
+                Debug.Log($"[Server] Set {characterInstance.name} position to {position} on frame {Time.frameCount}");
+
+                Debug.Log($"Spawned {characterName} for Player {playerData.ClientId} ({playerData.PlayerName}) at {position}"); // Updated log
             }
             else
             {
