@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5074110644045779211}
   - component: {fileID: 299436700717268462}
   - component: {fileID: 753982728632180211}
+  - component: {fileID: 8763212259819049688}
   m_Layer: 0
   m_Name: HakureiReimuPrefab
   m_TagString: Untagged
@@ -153,15 +154,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   networkSendInterval: 0.05
-  player1Bounds:
-    serializedVersion: 2
-    x: -8
-    y: -4.5
-    width: 7.5
-    height: 9
-  player2Bounds:
-    serializedVersion: 2
-    x: 0.5
-    y: -4.5
-    width: 7.5
-    height: 9
+--- !u!114 &8763212259819049688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4454703587389584321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e679f4f196141f24291c54f43d2611ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bulletPrefab: {fileID: 5656050771762241772, guid: aee0e98baf9735743b3d66e821ca5936, type: 3}
+  fireKey: 122
+  bulletSpread: 0.7
+  burstCount: 3
+  timeBetweenBurstShots: 0.02
+  burstCooldown: 0.07
