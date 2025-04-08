@@ -157,8 +157,8 @@ MonoBehaviour:
   danmakuSetController: {fileID: 131993008}
   spawnAreaCenter1: {fileID: 1186601276}
   spawnAreaCenter2: {fileID: 633886513}
-  minSpeed: 2
-  maxSpeed: 4
+  minSpeed: 0.5
+  maxSpeed: 1
   angleVariation: 30
   spawnRate: 10
 --- !u!114 &131993005

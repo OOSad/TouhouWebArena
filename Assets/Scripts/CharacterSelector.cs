@@ -166,7 +166,19 @@ public class CharacterSelector : NetworkBehaviour
         // Ensure NetworkManager is still valid before loading
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
         {
+             // Revert: Server DOES need to call this to trigger client scene loads.
+             // // Only trigger scene load if NOT a dedicated server
+             // if (!Application.isDedicatedServer)
+             // {
              NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
+             // }
+             // else
+             // {
+             //    // Dedicated server doesn't load the scene, maybe just log?
+             //    Debug.Log("Dedicated server detected: Skipping Gameplay scene load, clients will load it.");
+             //    // Optional: Add logic here if the server needs to activate components specific to gameplay
+             //    // that might be disabled initially, without loading the whole scene.
+             // }
         }
         else
         {

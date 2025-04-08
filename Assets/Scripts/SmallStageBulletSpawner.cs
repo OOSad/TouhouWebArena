@@ -39,6 +39,11 @@ public class SmallStageBulletSpawner : NetworkBehaviour
     [Min(0.1f)]
     private float spawnRate = 10f; // Bullets per second (total across both areas)
 
+    [Header("Timing")]
+    [SerializeField]
+    [Min(0f)]
+    private float initialSpawnDelay = 2.0f; // Delay before spawning starts
+
     // Fixed dimensions for the spawn rectangles
     private const float SpawnAreaWidth = 7f;
     private const float SpawnAreaHeight = 2f;
@@ -137,6 +142,15 @@ public class SmallStageBulletSpawner : NetworkBehaviour
         }
 
         Debug.Log("DanmakuSetController ready. Starting main spawn loop.");
+
+        // --- Add Initial Delay ---
+        if (initialSpawnDelay > 0f)
+        {
+            Debug.Log($"Waiting for initial spawn delay: {initialSpawnDelay} seconds.");
+            yield return new WaitForSeconds(initialSpawnDelay);
+            Debug.Log("Initial spawn delay finished.");
+        }
+        // -------------------------
 
         float baseAngleRad = -Mathf.PI / 2f;
         float halfAngleVariationRad = (angleVariation * Mathf.Deg2Rad) / 2f;

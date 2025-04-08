@@ -6,7 +6,8 @@ using Unity.Netcode.Components; // Added for NetworkTransform
 public class PlayerMovement : NetworkBehaviour
 {
     [Header("Movement Settings")]
-    [SerializeField] private float moveSpeed = 5.0f; // Speed of the character
+    [SerializeField] private float _moveSpeed = 5f;
+    [SerializeField] private float _focusSpeed = 2.5f; // Speed while focusing
     [SerializeField] private float networkSendInterval = 0.05f; // Send position updates 20 times per second (Adjusted based on user feedback)
 
     // [Header("Boundaries")] // Removed Header
@@ -20,6 +21,17 @@ public class PlayerMovement : NetworkBehaviour
     private NetworkTransform networkTransform;
     private Rect currentBounds; // Which bounds apply to this player instance
     private PlayerDataManager playerDataManager; // To check P1/P2
+
+    [Header("Component References")]
+    [SerializeField] private FocusModeController _focusController; // Assign in inspector
+
+    private Rigidbody2D rb;
+    private Vector2 _playerMovementInput;
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
 
     public override void OnNetworkSpawn()
     {
@@ -72,38 +84,42 @@ public class PlayerMovement : NetworkBehaviour
         // {
         //     Debug.Log($"NetworkTransform remains enabled for non-owner view of {OwnerClientId}");
         // }
+
+        // Check if the FocusController reference is set
+        if (_focusController == null)
+        {
+            Debug.LogError("FocusController reference not set on PlayerMovement!", this);
+            enabled = false; // Disable movement if controller is missing
+        }
     }
 
     void Update()
     {
-        // Only the owner of this object should process input and move
+        // Only allow the owner client to process input
         if (!IsOwner) return;
 
-        // Add log to check position on owner client
-        Debug.Log($"[Client Owner {OwnerClientId}] {gameObject.name} position is {transform.position} on frame {Time.frameCount}");
+        // Read input (adjust if using Input System package)
+        _playerMovementInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
+    }
 
-        // --- Client-Side Movement Logic ---
-        HandleInputAndMove();
+    void FixedUpdate()
+    {
+        // Only move the owner client's object directly
+        if (!IsOwner) return;
+
+        // Call the main movement logic which includes clamping and RPCs
+        HandleInputAndMove(); 
     }
 
     private void HandleInputAndMove()
     {
-        // Get raw input (returns -1, 0, or 1)
-        float horizontalInput = Input.GetAxisRaw("Horizontal");
-        float verticalInput = Input.GetAxisRaw("Vertical");
+        // Determine the current speed based on focus state (use the input read in Update)
+        float currentSpeed = _focusController.IsFocused ? _focusSpeed : _moveSpeed;
 
-        // Create input vector
-        Vector2 currentInput = new Vector2(horizontalInput, verticalInput);
-
-        // Normalize if moving diagonally to prevent faster speed
-        if (currentInput.magnitude > 1.0f)
-        {
-            currentInput.Normalize();
-        }
-
+        // --- Client-Side Movement Logic ---
         // Calculate movement
-        Vector3 moveDirection = new Vector3(currentInput.x, currentInput.y, 0);
-        Vector3 moveAmount = moveDirection * moveSpeed * Time.deltaTime;
+        Vector3 moveDirection = new Vector3(_playerMovementInput.x, _playerMovementInput.y, 0);
+        Vector3 moveAmount = moveDirection * currentSpeed * Time.fixedDeltaTime;
 
         // Calculate potential next position
         Vector3 targetPosition = transform.position + moveAmount;
@@ -116,7 +132,7 @@ public class PlayerMovement : NetworkBehaviour
         transform.position = clampedPosition;
 
         // --- Send Position to Server at Intervals ---
-        timeSinceLastSend += Time.deltaTime;
+        timeSinceLastSend += Time.fixedDeltaTime; // Use fixedDeltaTime
 
         if (moveAmount != Vector3.zero && timeSinceLastSend >= networkSendInterval)
         {
