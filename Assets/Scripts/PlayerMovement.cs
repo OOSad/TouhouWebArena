@@ -114,7 +114,7 @@ public class PlayerMovement : NetworkBehaviour
     private void HandleInputAndMove()
     {
         // Determine the current speed based on focus state (use the input read in Update)
-        float currentSpeed = _focusController.IsFocused ? _focusSpeed : _moveSpeed;
+        float currentSpeed = _focusController.IsFocused.Value ? _focusSpeed : _moveSpeed;
 
         // --- Client-Side Movement Logic ---
         // Calculate movement
