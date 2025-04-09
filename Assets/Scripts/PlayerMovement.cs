@@ -25,6 +25,14 @@ public class PlayerMovement : NetworkBehaviour
     [Header("Component References")]
     [SerializeField] private FocusModeController _focusController; // Assign in inspector
 
+    // --- State --- 
+    // Server controls this, clients read. Determines if input is processed.
+    public NetworkVariable<bool> CanProcessInput = new NetworkVariable<bool>(
+        true, // Default to allowing input
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
     private Rigidbody2D rb;
     private Vector2 _playerMovementInput;
 
@@ -95,8 +103,13 @@ public class PlayerMovement : NetworkBehaviour
 
     void Update()
     {
-        // Only allow the owner client to process input
-        if (!IsOwner) return;
+        // Only allow the owner client to process input AND if input is allowed
+        if (!IsOwner || !CanProcessInput.Value) 
+        {
+            // Clear input if we can't process it to prevent stale movement
+            _playerMovementInput = Vector2.zero; 
+            return;
+        }
 
         // Read input (adjust if using Input System package)
         _playerMovementInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
@@ -105,7 +118,8 @@ public class PlayerMovement : NetworkBehaviour
     void FixedUpdate()
     {
         // Only move the owner client's object directly
-        if (!IsOwner) return;
+        // AND only if input is allowed (server manages position during knockback)
+        if (!IsOwner || !CanProcessInput.Value) return;
 
         // Call the main movement logic which includes clamping and RPCs
         HandleInputAndMove(); 
@@ -162,6 +176,19 @@ public class PlayerMovement : NetworkBehaviour
     [ServerRpc]
     private void SubmitPositionRequestServerRpc(Vector3 clientPosition, ServerRpcParams rpcParams = default)
     {
+        // --- LOGGING --- 
+        Debug.Log($"[Server] Player {rpcParams.Receive.SenderClientId}: Received SubmitPositionRequestServerRpc with position {clientPosition}. Current CanProcessInput: {CanProcessInput.Value}");
+        // ---------------
+
+        // If input is disabled (e.g., during knockback), ignore position requests from the client.
+        if (!CanProcessInput.Value) 
+        {
+            // --- LOGGING --- 
+            Debug.Log($"[Server] Player {rpcParams.Receive.SenderClientId}: Ignoring SubmitPositionRequestServerRpc because CanProcessInput is false.");
+            // ---------------
+            return; 
+        }
+
         // Determine bounds for the sender on the server
         Rect boundsForClient = player2Bounds; // Default assumption
         if (playerDataManager != null)
@@ -181,8 +208,9 @@ public class PlayerMovement : NetworkBehaviour
         // NetworkTransform should handle replication.
         transform.position = serverClampedPosition;
 
-        // Optional: Add server-side validation here if needed (e.g., check bounds)
-        // Debug.Log($"Server received position {clientPosition} from client {rpcParams.Receive.SenderClientId}, clamped to {serverClampedPosition}");
+        // --- LOGGING --- 
+        Debug.Log($"[Server] Player {rpcParams.Receive.SenderClientId}: Processed SubmitPositionRequestServerRpc. Set position to {serverClampedPosition}.");
+        // ---------------
     }
 
     /* // Removed Gizmo code
