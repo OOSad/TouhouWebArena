@@ -11,23 +11,8 @@ public class FocusModeController : NetworkBehaviour // Or MonoBehaviour if state
     [Tooltip("The parent GameObject containing all hitbox visuals (sprite, rotating graphic, etc.)")]
     [SerializeField] private GameObject hitboxVisualsRoot; // Assign the root object in inspector
 
-    // --- Scope Style Components (Optional) ---
-    // These are found automatically on Start, no need to assign in Inspector
-    private CircleScope circleScope;
-    private ConeScope coneScope;
-    // -----------------------------------------
-
     // Public property to let other scripts know if focus is active
     public bool IsFocused { get; private set; }
-    private bool wasFocusedLastFrame = false; // To detect changes
-
-    void Awake()
-    {
-        // Try to find scope components on the same GameObject or children
-        circleScope = GetComponentInChildren<CircleScope>();
-        coneScope = GetComponentInChildren<ConeScope>();
-        // It's expected that only one of these will be found per character prefab
-    }
 
     void Start()
     {
@@ -54,26 +39,8 @@ public class FocusModeController : NetworkBehaviour // Or MonoBehaviour if state
     private void CheckFocusInput()
     {
         // Check if the focus key is being held down
-        bool currentlyFocused = Input.GetKey(focusKey);
-        IsFocused = currentlyFocused; // Update public property
+        IsFocused = Input.GetKey(focusKey);
 
-        // --- Handle State Changes ---
-        if (currentlyFocused && !wasFocusedLastFrame)
-        {
-            // Focus Started
-            ActivateFocusEffects();
-        }
-        else if (!currentlyFocused && wasFocusedLastFrame)
-        {
-            // Focus Ended
-            DeactivateFocusEffects();
-        }
-        // --------------------------
-
-        // Store state for next frame's comparison
-        wasFocusedLastFrame = currentlyFocused;
-
-        // --- Hitbox visual is handled separately from scope styles ---
         // Toggle hitbox visibility based on focus state
         if (hitboxVisualsRoot != null)
         {
@@ -89,19 +56,5 @@ public class FocusModeController : NetworkBehaviour // Or MonoBehaviour if state
         // Example:
         // if (hitboxVisual != null) hitboxVisual.SetActive(IsFocused);
         // if (scopeStyleController != null) scopeStyleController.SetActive(IsFocused);
-    }
-
-    private void ActivateFocusEffects()
-    {
-        // Activate the appropriate scope style, if found
-        circleScope?.Activate(); // Null-conditional operator ?. 
-        coneScope?.Activate();
-    }
-
-    private void DeactivateFocusEffects()
-    {
-        // Deactivate the appropriate scope style, if found
-        circleScope?.Deactivate();
-        coneScope?.Deactivate();
     }
 }
