@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Netcode; // Assuming player might need this later
 
-// Handles the player's Focus Mode state and synchronizes it
+// Handles the player's Focus Mode state
 public class FocusModeController : NetworkBehaviour // Or MonoBehaviour if state is purely local
 {
     [Header("Input")]
@@ -17,12 +17,9 @@ public class FocusModeController : NetworkBehaviour // Or MonoBehaviour if state
     private ConeScope coneScope;
     // -----------------------------------------
 
-    // Synchronized state variable. Owner writes, everyone reads.
-    public NetworkVariable<bool> IsFocused = new NetworkVariable<bool>(
-        false, 
-        NetworkVariableReadPermission.Everyone, 
-        NetworkVariableWritePermission.Owner
-    );
+    // Public property to let other scripts know if focus is active
+    public bool IsFocused { get; private set; }
+    private bool wasFocusedLastFrame = false; // To detect changes
 
     void Awake()
     {
@@ -51,52 +48,60 @@ public class FocusModeController : NetworkBehaviour // Or MonoBehaviour if state
         // Only process input for the owner of this player object
         if (!IsOwner) return;
 
-        // Owner updates the NetworkVariable based on input
+        CheckFocusInput();
+    }
+
+    private void CheckFocusInput()
+    {
+        // Check if the focus key is being held down
         bool currentlyFocused = Input.GetKey(focusKey);
-        if (currentlyFocused != IsFocused.Value) // Only write if changed
+        IsFocused = currentlyFocused; // Update public property
+
+        // --- Handle State Changes ---
+        if (currentlyFocused && !wasFocusedLastFrame)
         {
-            IsFocused.Value = currentlyFocused;
+            // Focus Started
+            ActivateFocusEffects();
         }
-    }
+        else if (!currentlyFocused && wasFocusedLastFrame)
+        {
+            // Focus Ended
+            DeactivateFocusEffects();
+        }
+        // --------------------------
 
-    // --- Network Variable Synchronization ---
+        // Store state for next frame's comparison
+        wasFocusedLastFrame = currentlyFocused;
 
-    public override void OnNetworkSpawn()
-    {
-        // Subscribe to changes for the IsFocused variable
-        IsFocused.OnValueChanged += HandleFocusChanged;
-
-        // Apply initial state immediately in case we missed the first change
-        HandleFocusChanged(false, IsFocused.Value); 
-    }
-
-    public override void OnNetworkDespawn()
-    {
-        // Unsubscribe to prevent errors after object is destroyed
-        IsFocused.OnValueChanged -= HandleFocusChanged;
-    }
-
-    // This method runs on ALL clients when IsFocused changes
-    private void HandleFocusChanged(bool previousValue, bool newValue)
-    {
-        // Toggle Hitbox Visuals
+        // --- Hitbox visual is handled separately from scope styles ---
+        // Toggle hitbox visibility based on focus state
         if (hitboxVisualsRoot != null)
         {
-            hitboxVisualsRoot.SetActive(newValue);
+            // Only activate/deactivate if the state actually changed to avoid unnecessary calls
+            if (hitboxVisualsRoot.activeSelf != IsFocused)
+            {
+                hitboxVisualsRoot.SetActive(IsFocused);
+            }
         }
 
-        // Activate/Deactivate Scope Style
-        if (newValue)
-        {
-            // Activate the appropriate scope style, if found
-            circleScope?.Activate(); 
-            coneScope?.Activate();
-        }
-        else
-        {
-            // Deactivate the appropriate scope style, if found
-            circleScope?.Deactivate();
-            coneScope?.Deactivate();
-        }
+        // Optional: Add logic here later for hitbox display, scope style, etc.
+        // based on the IsFocused state.
+        // Example:
+        // if (hitboxVisual != null) hitboxVisual.SetActive(IsFocused);
+        // if (scopeStyleController != null) scopeStyleController.SetActive(IsFocused);
+    }
+
+    private void ActivateFocusEffects()
+    {
+        // Activate the appropriate scope style, if found
+        circleScope?.Activate(); // Null-conditional operator ?. 
+        coneScope?.Activate();
+    }
+
+    private void DeactivateFocusEffects()
+    {
+        // Deactivate the appropriate scope style, if found
+        circleScope?.Deactivate();
+        coneScope?.Deactivate();
     }
 }
