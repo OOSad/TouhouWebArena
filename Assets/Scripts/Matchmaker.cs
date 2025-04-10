@@ -182,10 +182,11 @@ public class Matchmaker : NetworkBehaviour
             // Start match with first two players in queue
             StartMatchClientRpc(queuedPlayers[0].ClientId, queuedPlayers[1].ClientId);
             
-            // Restore the server-side scene load trigger. This is necessary to initiate
-            // the scene transition for clients via the NetworkSceneManager.
-            // The LoadGameplaySceneDelayed method actually loads the CharacterSelectScene.
-            StartCoroutine(LoadGameplaySceneDelayed());
+            // Start delayed scene load for server as well
+            if (IsServer)
+            {
+                StartCoroutine(LoadGameplaySceneDelayed());
+            }
             
             // Remove matched players from queue
             queuedPlayers.RemoveAt(0);
