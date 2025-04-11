@@ -1,7 +1,9 @@
 using UnityEngine;
 using Unity.Netcode;
+// using Unity.Netcode.Components; // Removed - No longer directly manipulating NT
 using System;
 using System.Collections; // Added for Coroutines
+// using System.Collections.Generic; // Removed - No longer using List
 
 public class PlayerHealth : NetworkBehaviour
 {
@@ -24,25 +26,44 @@ public class PlayerHealth : NetworkBehaviour
     // NetworkVariable to sync invincibility state (server writes, everyone reads)
     public NetworkVariable<bool> IsInvincible = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    private Coroutine flashingCoroutine; // To manage the client-side flashing
+    private Coroutine flashingCoroutine;
+    private PlayerDeathBomb playerDeathBomb; // Reference to the bomb component
+    // Removed PlayerMovement reference as it's not needed for this simplified version
+    // private PlayerMovement playerMovement;
+    // Removed isServerKnockingBack flag and property
+    // private bool isServerKnockingBack = false; 
+    // public bool IsServerKnockingBack => isServerKnockingBack;
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        // Subscribe to value changes to update UI etc.
         CurrentHealth.OnValueChanged += HandleHealthChanged;
-        IsInvincible.OnValueChanged += HandleInvincibilityChanged; // Subscribe to invincibility changes
+        IsInvincible.OnValueChanged += HandleInvincibilityChanged;
+        // Removed ServerHasMovementControl subscription
+        // ServerHasMovementControl.OnValueChanged += HandleMovementControlChanged;
 
-        // Set initial state based on network variables
+        // Get the death bomb component
+        playerDeathBomb = GetComponent<PlayerDeathBomb>();
+        if (playerDeathBomb == null)
+        {
+            Debug.LogWarning("PlayerHealth could not find PlayerDeathBomb component! Bomb effect will not work.", this);
+        }
+
+        // Removed playerMovement Get component
+        // playerMovement = GetComponent<PlayerMovement>(); 
+        // if (playerMovement == null) { Debug.LogError(...); }
+
         HandleHealthChanged(0, CurrentHealth.Value);
-        HandleInvincibilityChanged(false, IsInvincible.Value); // Handle initial invincibility state
+        HandleInvincibilityChanged(false, IsInvincible.Value);
+        // Removed initial HandleMovementControlChanged call
     }
 
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
         CurrentHealth.OnValueChanged -= HandleHealthChanged;
-        IsInvincible.OnValueChanged -= HandleInvincibilityChanged; // Unsubscribe
+        IsInvincible.OnValueChanged -= HandleInvincibilityChanged;
+        // Removed ServerHasMovementControl unsubscription
     }
 
     private void HandleHealthChanged(int previousValue, int newValue)
@@ -112,14 +133,13 @@ public class PlayerHealth : NetworkBehaviour
 
     // Call this method from PlayerHitbox on the server
     public void TakeDamage(int amount)
-    { 
+    {
         if (!IsServer) return; 
-        if (IsInvincible.Value) return; // Check invincibility state HERE
-        if (CurrentHealth.Value <= 0) return; // Already dead
+        if (IsInvincible.Value) return;
+        if (CurrentHealth.Value <= 0) return;
 
         int newHealth = CurrentHealth.Value - amount;
-        CurrentHealth.Value = Mathf.Max(newHealth, 0); 
-
+        CurrentHealth.Value = Mathf.Max(newHealth, 0);
         Debug.Log($"[Server] Player {OwnerClientId} took {amount} damage. Health is now {CurrentHealth.Value}");
 
         if (CurrentHealth.Value <= 0)
@@ -128,29 +148,38 @@ public class PlayerHealth : NetworkBehaviour
         }
         else
         {
-            // Trigger invincibility ONLY if damage was taken and player isn't dead
-            TriggerInvincibilityServer();
+            TriggerInvincibilityServer(); // Only triggers invincibility timer now
         }
     }
 
     // Renamed to indicate it's server-only logic trigger
     private void TriggerInvincibilityServer()
     {
-        // This logic runs on the server
-        // If already invincible (e.g. coroutine running), don't start another one
-        if (IsInvincible.Value) return; 
-        
+        if (!IsServer) return;
+        if (IsInvincible.Value) return;
+
         StartCoroutine(ServerInvincibilityTimerCoroutine());
+        // Removed TriggerDeathBombServer() call from here
+        // TriggerDeathBombServer(); 
     }
 
     private IEnumerator ServerInvincibilityTimerCoroutine()
     {
-        // This runs ONLY on the server
-        IsInvincible.Value = true; // This change propagates to clients via NetworkVariable
-        // Debug.Log($"[Server] Player {OwnerClientId} invincibility START");
+        IsInvincible.Value = true; 
         yield return new WaitForSeconds(invincibilityDuration);
-        IsInvincible.Value = false; // This change also propagates
-        // Debug.Log($"[Server] Player {OwnerClientId} invincibility END");
+        
+        // --- Trigger Bomb Effect via Separate Component --- 
+        if (playerDeathBomb != null)
+        {
+            playerDeathBomb.ExecuteBomb(); // Call the method on the other component
+        }
+        else
+        {
+            Debug.LogError("[Server PlayerHealth] Cannot execute bomb, PlayerDeathBomb component missing!", this);
+        }
+        // -------------------------------------------------------
+
+        IsInvincible.Value = false;
     }
 
     private void HandleDeathServer()

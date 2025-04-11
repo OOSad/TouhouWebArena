@@ -21,11 +21,26 @@ public class PlayerMovement : NetworkBehaviour
     private Rect currentBounds; // Which bounds apply to this player instance
     private PlayerDataManager playerDataManager; // To check P1/P2
 
+    // Public property to access the current bounds (read-only from outside)
+    public Rect CurrentBounds => currentBounds; 
+
+    // Reference to the health component
+    private PlayerHealth playerHealth;
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
         networkTransform = GetComponent<NetworkTransform>();
         playerDataManager = PlayerDataManager.Instance; // Cache instance
+
+        // Get the health component
+        playerHealth = GetComponent<PlayerHealth>();
+        if (playerHealth == null)
+        {
+            Debug.LogError("PlayerMovement could not find PlayerHealth component!", this);
+            // Decide if movement should be disabled entirely
+            // enabled = false; 
+        }
 
         // Determine which bounds to use
         if (playerDataManager != null)
@@ -57,37 +72,46 @@ public class PlayerMovement : NetworkBehaviour
              currentBounds = new Rect(); // Prevent null ref, but player will be stuck at 0,0
         }
 
-        if (IsOwner)
+        // Reset NetworkTransform state based purely on ownership
+        if (networkTransform != null)
         {
-            // Disable NetworkTransform for the owner
-            // The owner will move itself locally in Update() and send RPCs
-            // Non-owners will keep NetworkTransform enabled to sync from server state
-            if (networkTransform != null)
+            if (IsOwner)
             {
                 networkTransform.enabled = false;
-                Debug.Log($"Disabled NetworkTransform for owner {OwnerClientId}");
+                // Debug.Log($"Owner {OwnerClientId} disabled NetworkTransform.");
             }
             else
-            {
-                Debug.LogError("NetworkTransform component not found on player prefab!");
+            { 
+                networkTransform.enabled = true; 
+                // Debug.Log($"Non-owner {OwnerClientId} enabled NetworkTransform.");
             }
         }
-        // Optional: Log if NetworkTransform is enabled for non-owners
-        // else if (networkTransform != null)
-        // {
-        //     Debug.Log($"NetworkTransform remains enabled for non-owner view of {OwnerClientId}");
-        // }
+        else
+        {
+            Debug.LogError("NetworkTransform component not found!");
+        }
     }
 
     void Update()
     {
-        // Only the owner of this object should process input and move
         if (!IsOwner) return;
 
-        // Add log to check position on owner client
-        Debug.Log($"[Client Owner {OwnerClientId}] {gameObject.name} position is {transform.position} on frame {Time.frameCount}");
+        // Check ONLY invincibility to block player input
+        if (playerHealth != null && playerHealth.IsInvincible.Value)
+        {
+            return; 
+        }
+        
+        // If not invincible, client has control
+        // Ensure NetworkTransform is disabled (might have been enabled temporarily before)
+        if (networkTransform != null && networkTransform.enabled)
+        {
+             // This shouldn't strictly happen anymore with this logic, but keep as warning
+             Debug.LogWarning($"[Client Owner {OwnerClientId}] NetworkTransform was enabled, disabling as client takes control.");
+             networkTransform.enabled = false; 
+        }
 
-        // --- Client-Side Movement Logic ---
+        // Proceed with normal client-side input and movement
         HandleInputAndMove();
     }
 
@@ -120,26 +144,22 @@ public class PlayerMovement : NetworkBehaviour
         // transform.position += moveAmount; // Old way
         transform.position = clampedPosition;
 
-        // --- Send Position to Server at Intervals ---
+        // --- Send Position to Server at Intervals (only if client has control) ---
         timeSinceLastSend += Time.deltaTime;
-
         if (moveAmount != Vector3.zero && timeSinceLastSend >= networkSendInterval)
         {
-            // Send the *clamped* position
-            SubmitPositionRequestServerRpc(transform.position); // Send current (clamped) position
-            timeSinceLastSend = 0f; // Reset timer
-        }
-        // Consider sending one final update when stopping
-        else if (moveAmount == Vector3.zero && timeSinceLastSend > 0f) // Check if we were moving and stopped
-        { 
-            // Send the *clamped* position
             SubmitPositionRequestServerRpc(transform.position); 
-            timeSinceLastSend = 0f; // Reset timer (or set to negative to prevent immediate resend)
+            timeSinceLastSend = 0f;
+        }
+        else if (moveAmount == Vector3.zero && timeSinceLastSend > 0f) 
+        {
+            SubmitPositionRequestServerRpc(transform.position);
+            timeSinceLastSend = 0f; 
         }
     }
 
-    // Helper function to clamp position within a Rect
-    private Vector3 ClampPositionToBounds(Vector3 position, Rect bounds)
+    // Helper function to clamp position within a Rect - Make public
+    public Vector3 ClampPositionToBounds(Vector3 position, Rect bounds)
     {
         return new Vector3(
             Mathf.Clamp(position.x, bounds.xMin, bounds.xMax),
@@ -151,8 +171,14 @@ public class PlayerMovement : NetworkBehaviour
     [ServerRpc]
     private void SubmitPositionRequestServerRpc(Vector3 clientPosition, ServerRpcParams rpcParams = default)
     {
+        // Removed check for server knockback state
+        // if (playerHealth != null && playerHealth.IsServerKnockingBack)
+        // {
+        //    return; 
+        // }
+        
         // Determine bounds for the sender on the server
-        Rect boundsForClient = player2Bounds; // Default assumption
+        Rect boundsForClient = player2Bounds; 
         if (playerDataManager != null)
         {
              PlayerDataManager.PlayerData? p1Data = playerDataManager.GetPlayer1Data();
@@ -162,16 +188,9 @@ public class PlayerMovement : NetworkBehaviour
              }
         }
         
-        // Clamp the received position on the server before applying
+        // Clamp and apply position on server
         Vector3 serverClampedPosition = ClampPositionToBounds(clientPosition, boundsForClient);
-
-        // The server receives the position from the owning client
-        // Update the position on the server using the server-clamped value.
-        // NetworkTransform should handle replication.
         transform.position = serverClampedPosition;
-
-        // Optional: Add server-side validation here if needed (e.g., check bounds)
-        // Debug.Log($"Server received position {clientPosition} from client {rpcParams.Receive.SenderClientId}, clamped to {serverClampedPosition}");
     }
 
     /* // Removed Gizmo code

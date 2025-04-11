@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 7786338248282833226}
   - component: {fileID: 5684350390902999561}
   - component: {fileID: 4062325618657096987}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: StageSmallBulletPrefab
   m_TagString: StageBullet
   m_Icon: {fileID: 0}
