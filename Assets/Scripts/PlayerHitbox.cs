@@ -1,0 +1,93 @@
+using UnityEngine;
+using Unity.Netcode;
+
+[RequireComponent(typeof(Collider2D))]
+public class PlayerHitbox : NetworkBehaviour
+{
+    private PlayerHealth playerHealth;
+    private Collider2D hitboxCollider; // Cache the collider
+    private bool canTakeDamage = true; // Add invincibility frames later if needed
+
+    void Start()
+    {
+        // Find the health script on the root parent object
+        playerHealth = GetComponentInParent<PlayerHealth>();
+        if (playerHealth == null)
+        {
+            Debug.LogError("PlayerHitbox could not find PlayerHealth script on parent!", this);
+            enabled = false; // Disable if setup is wrong
+        }
+
+        hitboxCollider = GetComponent<Collider2D>();
+        if (!hitboxCollider.isTrigger)
+        {
+            Debug.LogWarning("Hitbox Collider2D is not set to 'Is Trigger'. Interactions may not work as expected.", this);
+            // Optionally force it: hitboxCollider.isTrigger = true;
+        }
+    }
+
+    // This method is called by Unity's physics engine
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!IsServer) return; 
+        
+        // --- Invincibility Check ---
+        if (playerHealth != null && playerHealth.IsInvincible.Value) 
+        {
+            // Optional: Log that a hit was ignored due to invincibility
+            // if (other.CompareTag("StageBullet")) {
+            //     Debug.Log($"[Server] Player {OwnerClientId} hitbox hit by {other.name}, but player is invincible.");
+            // }
+            return; // Ignore hit if invincible
+        }
+        // --- End Invincibility Check ---
+        
+        if (!canTakeDamage) return; // For potential invincibility
+
+        // Check if the colliding object is a stage bullet (adjust tag if needed)
+        if (other.CompareTag("StageBullet"))
+        {
+            Debug.Log($"[Server] Player {OwnerClientId}'s Hitbox collided with bullet {other.name}");
+
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(1); 
+            }
+            else
+            {
+                // This shouldn't happen if Start() check passed, but log just in case.
+                Debug.LogError($"[Server] Hitbox collided, but PlayerHealth reference is missing on {transform.root.name}!");
+            }
+
+            // Despawn the bullet on the server (will remove it for all clients)
+            NetworkObject bulletNetworkObject = other.GetComponent<NetworkObject>();
+            if (bulletNetworkObject != null)
+            {
+                Debug.Log($"[Server] Despawning bullet {other.name} (NetID: {bulletNetworkObject.NetworkObjectId})");
+                bulletNetworkObject.Despawn();
+            }
+            else
+            {
+                Debug.LogWarning($"[Server] Hitbox collided with {other.name} tagged as StageBullet, but it has no NetworkObject to despawn.", other.gameObject);
+                // Destroy locally on server if no NetworkObject (might be an error)
+                // Destroy(other.gameObject);
+            }
+
+            // Add invincibility timer logic here if needed
+            // StartCoroutine(InvincibilityCooldown());
+        }
+        // Optional: else if (other.CompareTag("OtherEnemyAttack")) { ... }
+    }
+
+    // Example for invincibility frames (uncomment and implement if needed)
+    /*
+    private System.Collections.IEnumerator InvincibilityCooldown()
+    {
+        canTakeDamage = false;
+        // TODO: Add visual feedback like flashing sprite
+        yield return new WaitForSeconds(0.5f); // 0.5 seconds invincibility
+        canTakeDamage = true;
+        // TODO: Restore normal sprite appearance
+    }
+    */
+} 

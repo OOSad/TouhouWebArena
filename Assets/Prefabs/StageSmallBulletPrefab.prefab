@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 4062325618657096987}
   m_Layer: 0
   m_Name: StageSmallBulletPrefab
-  m_TagString: Untagged
+  m_TagString: StageBullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -218,3 +218,4 @@ MonoBehaviour:
   minSpeed: 0.5
   maxSpeed: 2
   maxAngleDeviation: 15
+  maxLifetime: 15
