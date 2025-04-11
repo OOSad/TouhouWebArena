@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 using Unity.Collections;
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 
 public class Matchmaker : NetworkBehaviour
 {
@@ -298,6 +299,19 @@ public class Matchmaker : NetworkBehaviour
         }
         
         queueText.text = queueDisplay;
+    }
+
+    private async Task LoadCharacterSelectSceneAsync()
+    {
+        if (!IsServer) return;
+
+        // Debug.Log("Server preparing to load character select scene...");
+
+        // Ensure all clients are ready before loading
+        await Task.Delay(1000); // Give a moment for clients to connect/sync
+
+        // Debug.Log("Server loading character select scene...");
+        NetworkManager.SceneManager.LoadScene("CharacterSelectScene", LoadSceneMode.Single);
     }
 }
 

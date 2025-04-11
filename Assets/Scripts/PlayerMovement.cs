@@ -33,16 +33,21 @@ public class PlayerMovement : NetworkBehaviour
             PlayerDataManager.PlayerData? p1Data = playerDataManager.GetPlayer1Data();
             // PlayerDataManager.PlayerData? p2Data = playerDataManager.GetPlayer2Data(); // Not strictly needed here
 
-            if (p1Data.HasValue && OwnerClientId == p1Data.Value.ClientId)
+            if (OwnerClientId == 1) // Assuming Player 1 is Owner Client ID 1
             {
                 currentBounds = player1Bounds;
-                Debug.Log($"Owner {OwnerClientId} is Player 1. Applying P1 bounds: {currentBounds}");
+                // Debug.Log($"Owner {OwnerClientId} is Player 1. Applying P1 bounds: {currentBounds}");
+            }
+            else if (OwnerClientId == 2) // Assuming Player 2 is Owner Client ID 2
+            {
+                currentBounds = player2Bounds;
+                // Debug.Log($"Owner {OwnerClientId} is Player 2. Applying P2 bounds: {currentBounds}");
             }
             else
             {
-                // Assume if not P1, must be P2 (or potentially spectator/error if >2 players)
-                currentBounds = player2Bounds;
-                 Debug.Log($"Owner {OwnerClientId} is Player 2. Applying P2 bounds: {currentBounds}");
+                // Assume if not P1 or P2, must be spectator/error if >2 players
+                currentBounds = new Rect(); // Prevent null ref, but player will be stuck at 0,0
+                Debug.LogError($"Owner {OwnerClientId} is not recognized as Player 1 or Player 2. Applying default bounds: {currentBounds}");
             }
         }
         else

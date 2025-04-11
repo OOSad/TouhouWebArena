@@ -50,7 +50,7 @@ public class CharacterSpawner : NetworkBehaviour
         // yield return new WaitForSeconds(0.1f);
         yield return new WaitForSeconds(1.0f); // Increased delay to 1 second
         
-        Debug.Log("Executing SpawnCharacters after delay.");
+        // Debug.Log("Executing SpawnCharacters after delay.");
         SpawnCharacters();
     }
 
@@ -81,34 +81,44 @@ public class CharacterSpawner : NetworkBehaviour
     private void SpawnPlayerCharacter(PlayerDataManager.PlayerData playerData, Vector3 position, Quaternion rotation)
     {
         string characterName = playerData.SelectedCharacter.ToString();
-        if (characterPrefabDict.TryGetValue(characterName, out GameObject prefabToSpawn))
+        GameObject prefab = GetPrefabByName(characterName);
+        if (prefab == null)
         {
-            // Instantiate at default position first
-            // GameObject characterInstance = Instantiate(prefabToSpawn, position, rotation);
-            GameObject characterInstance = Instantiate(prefabToSpawn);
-            NetworkObject networkObject = characterInstance.GetComponent<NetworkObject>();
-            if (networkObject != null)
-            {
-                // Spawn the object first
-                networkObject.SpawnAsPlayerObject(playerData.ClientId);
+            // Debug.LogError($"[Spawner] Prefab not found for character: {characterName}"); // Keep this essential error log
+            return;
+        }
 
-                // THEN set the position and rotation on the server. NetworkTransform will sync this.
-                characterInstance.transform.position = position;
-                characterInstance.transform.rotation = rotation;
-                // Add log immediately after setting position
-                Debug.Log($"[Server] Set {characterInstance.name} position to {position} on frame {Time.frameCount}");
+        // Debug.Log($"[Spawner] Preparing to instantiate {characterName} for Client ID {playerData.ClientId}"); // Remove diagnostic log
+        GameObject characterInstance = Instantiate(prefab, position, rotation);
+        // int instanceID = characterInstance.GetInstanceID(); // Remove diagnostic variable
+        // Debug.Log($"[Spawner] Instantiated {characterInstance.name} (Instance ID: {instanceID}) for Client ID {playerData.ClientId}"); // Remove diagnostic log
 
-                Debug.Log($"Spawned {characterName} for Player {playerData.ClientId} ({playerData.PlayerName}) at {position}"); // Updated log
-            }
-            else
-            {
-                Debug.LogError($"Prefab {characterName} is missing a NetworkObject component.");
-                Destroy(characterInstance); // Clean up the wrongly configured prefab instance
-            }
+        NetworkObject networkObject = characterInstance.GetComponent<NetworkObject>();
+
+        if (networkObject != null)
+        {
+            // Debug.Log($"[Spawner] Attempting to spawn NetworkObject (NetID: {networkObject.NetworkObjectId}, InstanceID: {instanceID}) for Client ID {playerData.ClientId}. IsSpawned: {networkObject.IsSpawned}, IsOwner: {networkObject.IsOwner}"); // Remove diagnostic log
+            // Remove try-catch block
+            networkObject.SpawnWithOwnership(playerData.ClientId); 
+            // Debug.Log($"[Spawner] Successfully spawned NetworkObject (NetID: {networkObject.NetworkObjectId}, InstanceID: {instanceID}) for Client ID {playerData.ClientId}. IsSpawned: {networkObject.IsSpawned}"); // Remove diagnostic log
         }
         else
         {
-            Debug.LogError($"No prefab found for character name: {characterName}. Cannot spawn character for Player {playerData.ClientId}.");
+            Debug.LogError($"[Spawner] Instantiated character {characterInstance.name} is missing NetworkObject component!"); // Keep essential error log
+            Destroy(characterInstance);
+        }
+    }
+
+    private GameObject GetPrefabByName(string characterName)
+    {
+        if (characterPrefabDict.TryGetValue(characterName, out GameObject prefab))
+        {
+            return prefab;
+        }
+        else
+        {
+            Debug.LogError($"No prefab found for character name: {characterName}"); // Keep essential error log
+            return null;
         }
     }
 } 

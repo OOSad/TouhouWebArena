@@ -114,13 +114,11 @@ public class CharacterSelector : NetworkBehaviour
     // Renamed UpdateUI to HandlePlayerDataUpdated to clarify it's an event handler
     private void HandlePlayerDataUpdated()
     {
-        // We are now certain that PlayerDataManager's data is up-to-date on this client
-        // because this method is called *by* the data change event.
-        Debug.Log("HandlePlayerDataUpdated called.");
-        if (playerDataManager == null) 
+        // Debug.Log("HandlePlayerDataUpdated called.");
+        if (PlayerDataManager.Instance == null)
         {
-            Debug.LogWarning("HandlePlayerDataUpdated called but PlayerDataManager is null.");
-            return; // Safety check
+            // Debug.LogWarning("HandlePlayerDataUpdated called but PlayerDataManager is null.");
+            return;
         }
 
         // Get data for Player 1 (usually index 0)

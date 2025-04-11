@@ -59,7 +59,7 @@ public class PlayerDataManager : NetworkBehaviour
     {
         base.OnNetworkSpawn();
         // Subscribe to list changes AFTER the list is initialized and network is ready
-        players.OnListChanged += PlayerListChanged;
+        players.OnListChanged += HandlePlayerDataListChanged;
         // Trigger initial update for late joiners or if list populated before spawn
         OnPlayerDataUpdated?.Invoke();
     }
@@ -68,16 +68,14 @@ public class PlayerDataManager : NetworkBehaviour
     {
         if (players != null)
         {
-            players.OnListChanged -= PlayerListChanged; // Unsubscribe
+            players.OnListChanged -= HandlePlayerDataListChanged; // Unsubscribe
         }
         base.OnNetworkDespawn();
     }
     
-    private void PlayerListChanged(NetworkListEvent<PlayerData> changeEvent)
+    private void HandlePlayerDataListChanged(NetworkListEvent<PlayerData> changeEvent)
     {
-        // This method is called automatically whenever the NetworkList changes on any client.
-        // Invoke our custom event to notify other scripts (like CharacterSelector).
-        Debug.Log($"PlayerDataManager: NetworkList changed (Type: {changeEvent.Type}, Index: {changeEvent.Index})");
+        // Debug.Log($"PlayerDataManager: NetworkList changed (Type: {changeEvent.Type}, Index: {changeEvent.Index})");
         OnPlayerDataUpdated?.Invoke();
     }
     
