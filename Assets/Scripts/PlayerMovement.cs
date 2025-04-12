@@ -7,6 +7,7 @@ public class PlayerMovement : NetworkBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 5.0f; // Speed of the character
+    [SerializeField] private float focusSpeedModifier = 0.5f; // Speed multiplier when focused
     [SerializeField] private float networkSendInterval = 0.05f; // Send position updates 20 times per second (Adjusted based on user feedback)
 
     // [Header("Boundaries")] // Removed Header
@@ -22,7 +23,10 @@ public class PlayerMovement : NetworkBehaviour
     private PlayerDataManager playerDataManager; // To check P1/P2
 
     // Public property to access the current bounds (read-only from outside)
-    public Rect CurrentBounds => currentBounds; 
+    public Rect CurrentBounds => currentBounds;
+
+    // Public property to let other scripts control the focus state
+    public bool IsFocused { get; set; } = false;
 
     // Reference to the health component
     private PlayerHealth playerHealth;
@@ -130,9 +134,16 @@ public class PlayerMovement : NetworkBehaviour
             currentInput.Normalize();
         }
 
+        // Determine current speed based on focus state (set externally)
+        float currentSpeed = moveSpeed;
+        if (IsFocused) // Check the property set by PlayerFocusController
+        {
+            currentSpeed *= focusSpeedModifier;
+        }
+
         // Calculate movement
         Vector3 moveDirection = new Vector3(currentInput.x, currentInput.y, 0);
-        Vector3 moveAmount = moveDirection * moveSpeed * Time.deltaTime;
+        Vector3 moveAmount = moveDirection * currentSpeed * Time.deltaTime;
 
         // Calculate potential next position
         Vector3 targetPosition = transform.position + moveAmount;

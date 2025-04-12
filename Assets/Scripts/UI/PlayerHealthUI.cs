@@ -57,7 +57,7 @@ public class PlayerHealthUI : MonoBehaviour
             if (healthComponent.OwnerClientId == targetClientId)
             {
                 targetPlayerHealth = healthComponent;
-                Debug.Log($"PlayerHealthUI ({ (isPlayer1UI ? "P1" : "P2") }) found target PlayerHealth for Client ID {targetClientId}");
+                // Debug.Log($"PlayerHealthUI ({ (isPlayer1UI ? \"P1\" : \"P2\") }) found target PlayerHealth for Client ID {targetClientId}");
                 break; // Found the target
             }
         }
@@ -71,7 +71,7 @@ public class PlayerHealthUI : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"PlayerHealthUI ({ (isPlayer1UI ? "P1" : "P2") }) could not find PlayerHealth for Client ID {targetClientId}. Retrying soon...");
+            // Debug.LogWarning($"PlayerHealthUI ({ (isPlayer1UI ? \"P1\" : \"P2\") }) could not find PlayerHealth for Client ID {targetClientId}. Retrying soon...");
             // Retry finding the player health component after a delay
             Invoke(nameof(FindAndSubscribePlayerHealth), 1.0f); 
         }
