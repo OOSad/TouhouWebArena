@@ -10,11 +10,7 @@ public class Shockwave : MonoBehaviour
     [SerializeField] private float maxRadius = 2.0f; // The final radius the collider/visual reaches
     [SerializeField] private AnimationCurve expansionCurve = AnimationCurve.EaseInOut(0, 0, 1, 1); // Controls speed of expansion
 
-    [Header("Damage Settings")]
-    [SerializeField] private int fairyDamage = 1; // Damage dealt to fairies
-
     [Header("Target Tags")]
-    [SerializeField] private string fairyTag = "Fairy";
     [SerializeField] private string enemyBulletTag = "EnemyBullet"; // Make sure your enemy bullets have this tag!
 
     private CircleCollider2D circleCollider;
@@ -114,7 +110,7 @@ public class Shockwave : MonoBehaviour
                 Destroy(other.gameObject);
             }
         }
-        // Check for other fairies - REMOVED
+        // Check for other fairies - REMOVED BLOCK
         // else if (!string.IsNullOrEmpty(fairyTag) && other.CompareTag(fairyTag))
         // {
         //     // Try to get the Fairy component (which is now a NetworkBehaviour)
@@ -125,12 +121,12 @@ public class Shockwave : MonoBehaviour
         //         // fairy.RequestDamage(fairyDamage); // Old direct call
 
         //         // NEW: Start a coroutine to apply damage after a delay
-        //         StartCoroutine(ApplyDamageAfterDelay(fairy, 0.15f)); // Reverted delay (must be < duration)
+        //         // StartCoroutine(ApplyDamageAfterDelay(fairy, 0.15f)); // Reverted delay (must be < duration)
         //     }
         // }
     }
 
-    // NEW COROUTINE - REMOVED
+    // NEW COROUTINE - REMOVED BLOCK
     // private IEnumerator ApplyDamageAfterDelay(Fairy targetFairy, float delay)
     // {
     //     // --- Logging Start ---

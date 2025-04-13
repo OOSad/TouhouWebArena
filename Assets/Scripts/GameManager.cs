@@ -190,8 +190,6 @@ public class PlayerDataManager : NetworkBehaviour
     public void IncrementFairyKillCount(PlayerRole killerRole)
     {
         if (!IsServer) return;
-        // *** DEBUG LOG ***
-        Debug.Log($"[PlayerDataManager Server] IncrementFairyKillCount called for role {killerRole}.");
         if (killerRole == PlayerRole.None) return; // Don't count unattributed kills
 
         int playerIndex = -1;
@@ -210,15 +208,9 @@ public class PlayerDataManager : NetworkBehaviour
             updatedData.FairyKillCount++;
             players[playerIndex] = updatedData; // Update the list
 
-            Debug.Log($"Player role {killerRole} kill count is now {updatedData.FairyKillCount}");
-
             // Check if threshold reached
-            // *** DEBUG LOG ***
-            Debug.Log($"[PlayerDataManager Server] Checking threshold: {updatedData.FairyKillCount} >= {extraAttackThreshold} ?");
             if (updatedData.FairyKillCount >= extraAttackThreshold)
             {
-                // *** DEBUG LOG ***
-                Debug.Log($"[PlayerDataManager Server] Threshold MET! Resetting count and triggering Extra Attack.");
                 // Reset kill count
                 updatedData.FairyKillCount = 0;
                 players[playerIndex] = updatedData;
@@ -238,7 +230,7 @@ public class PlayerDataManager : NetworkBehaviour
     // --- NEW: Trigger the appropriate Extra Attack (Server Only) ---
     private void TriggerExtraAttack(string attackerCharacter, PlayerRole targetRole)
     { 
-        Debug.Log($"Triggering Extra Attack from {attackerCharacter} against {targetRole}");
+        // Debug.Log($"Triggering Extra Attack from {attackerCharacter} against {targetRole}"); // Re-commented out
 
         GameObject prefabToSpawn = null;
         switch (attackerCharacter)
@@ -313,7 +305,7 @@ public class PlayerDataManager : NetworkBehaviour
         // --------------------------
 
         attackNetworkObject.Spawn(true);
-        Debug.Log($"Spawned {attackerCharacter}'s Extra Attack targeting {targetRole}.");
+        // Debug.Log($"Spawned {attackerCharacter}'s Extra Attack targeting {targetRole}."); // Re-commented out
     }
     // --------------------------------------------------------------
 

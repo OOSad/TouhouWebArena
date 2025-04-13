@@ -8,7 +8,11 @@ public class ReimuExtraAttackOrb : NetworkBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float initialUpwardForce = 5f;
+    [SerializeField] private float initialHorizontalForce = 3f; // Added for side-to-side movement
+    [SerializeField] private float orbLifetime = 5.0f; // Time in seconds before the orb despawns
     [SerializeField] private int damageAmount = 10; // Or however much damage it should deal
+
+    private const float DAMAGE_RETRY_DELAY = 0.1f; // Seconds to wait before retrying PlayerObject lookup
 
     // NetworkVariable to store which player this orb should damage
     public NetworkVariable<PlayerRole> TargetPlayerRole { get; private set; } =
@@ -28,85 +32,122 @@ public class ReimuExtraAttackOrb : NetworkBehaviour
         // Only the server applies the initial force
         if (IsServer)
         {
-            rb.AddForce(Vector2.up * initialUpwardForce, ForceMode2D.Impulse);
+            // Determine random horizontal direction (-1 or 1)
+            float randomDirection = (Random.value < 0.5f) ? -1f : 1f;
+            
+            // Calculate forces
+            float horizontalForce = randomDirection * initialHorizontalForce;
+            float upwardForce = initialUpwardForce; // Keep existing upward force
+            
+            // Create combined force vector
+            Vector2 initialForce = new Vector2(horizontalForce, upwardForce);
+            
+            // Apply the combined force
+            rb.AddForce(initialForce, ForceMode2D.Impulse);
+            
+            // Schedule despawn based on lifetime
+            Invoke(nameof(DespawnOrb), orbLifetime);
         }
     }
 
-    // Collision detection runs on server and clients
-    void OnCollisionEnter2D(Collision2D collision)
+    // Collision detection runs on server and clients - Changed to Trigger
+    void OnTriggerEnter2D(Collider2D otherCollider)
     {
         // Check if we hit an object tagged "Player"
-        if (collision.gameObject.CompareTag("Player"))
+        if (otherCollider.CompareTag("Player"))
         {
-            // Try to get the player's identity/controller script
-            // Replace 'PlayerController' with the actual name of your player script
-            PlayerMovement playerMovement = collision.gameObject.GetComponent<PlayerMovement>(); // Use PlayerMovement
+            // Try to get the player's identity/controller script from the parent object
+            PlayerMovement playerMovement = otherCollider.GetComponentInParent<PlayerMovement>(); // Use GetComponentInParent
 
             if (playerMovement != null)
             {
                 // Determine the role of the player we hit
-                // This assumes PlayerController has access to its role. Adjust as needed.
                 PlayerRole hitPlayerRole = playerMovement.GetPlayerRole(); // Call method on PlayerMovement
-
-                Debug.Log($"[Orb {NetworkObjectId}] Hit player object. TargetRole={TargetPlayerRole.Value}, HitPlayerRole={hitPlayerRole}");
 
                 // If the hit player's role matches the target role for this orb...
                 if (hitPlayerRole != PlayerRole.None && hitPlayerRole == TargetPlayerRole.Value)
                 {
-                     Debug.Log($"[Orb {NetworkObjectId}] Hit the correct target ({hitPlayerRole}). Requesting damage.");
                     // Request the server to apply damage and destroy the orb
                     RequestDamageServerRpc(playerMovement.OwnerClientId); // Pass the ClientId of the player hit
                 }
             }
              else
             {
-                 Debug.LogWarning($"[Orb {NetworkObjectId}] Collided with Player tagged object, but couldn't get PlayerMovement script.");
+                 // Keep warning for actual failure
+                 Debug.LogWarning($"[Orb {NetworkObjectId} Trigger] Collided with Player tagged object, but could NOT get PlayerMovement script in parent of {otherCollider.gameObject.name}.");
             }
         }
-        // Note: Bouncing off walls tagged "Wall" (or similar) is handled by PhysicsMaterial2D
-        // You might add specific logic here if needed (e.g., play sound on bounce)
     }
 
-    [ServerRpc(RequireOwnership = false)] // Orb isn't owned by a client, so allow requests from anyone (server essentially)
+    [ServerRpc(RequireOwnership = false)]
     private void RequestDamageServerRpc(ulong targetClientId)
     {
-        Debug.Log($"[Orb {NetworkObjectId} ServerRPC] Received damage request for ClientId {targetClientId}.");
+        // Attempt to apply damage immediately
+        if (!TryApplyDamage(targetClientId))
+        {
+            // If immediate attempt failed (likely PlayerObject not ready), start delayed check
+            StartCoroutine(DelayedDamageCheck(targetClientId));
+        }
+    }
 
-        // Find the target player's health component on the server
-        // You'll need a way to get the player's GameObject/NetworkObject from their ClientId
-        // PlayerDataManager might help, or NetworkManager.Singleton.ConnectedClients[targetClientId].PlayerObject
+    // Server-side coroutine to retry damage application after a delay
+    private IEnumerator DelayedDamageCheck(ulong targetClientId)
+    {
+        yield return new WaitForSeconds(DAMAGE_RETRY_DELAY);
+
+        // Retry applying damage
+        if (!TryApplyDamage(targetClientId))
+        {
+            // If it *still* failed after the delay, log final error and despawn
+            Debug.LogError($"[Orb {NetworkObjectId} ServerRPC Delayed] PlayerObject lookup/damage failed even after {DAMAGE_RETRY_DELAY}s delay for ClientId {targetClientId}. Despawning orb.");
+             if (NetworkObject != null) NetworkObject.Despawn(true);
+        }
+    }
+
+    // Refactored damage logic - returns true if damage applied (or object missing health), false if PlayerObject missing
+    private bool TryApplyDamage(ulong targetClientId)
+    {
+        if (!IsServer) return false; 
+
         NetworkObject targetPlayerNetworkObject = NetworkManager.Singleton.ConnectedClients[targetClientId]?.PlayerObject;
 
         if (targetPlayerNetworkObject != null)
         {
-            // Replace 'PlayerHealth' with the actual name of your health script
             PlayerHealth playerHealth = targetPlayerNetworkObject.GetComponent<PlayerHealth>();
             if (playerHealth != null)
             {
-                Debug.Log($"[Orb {NetworkObjectId} ServerRPC] Applying {damageAmount} damage to player {targetClientId}.");
-                playerHealth.TakeDamage(damageAmount); // Apply damage
-
-                // Despawn the orb after dealing damage
-                Debug.Log($"[Orb {NetworkObjectId} ServerRPC] Despawning self.");
-                if (NetworkObject != null && NetworkObject.IsSpawned)
-                {
-                    NetworkObject.Despawn(true);
-                }
+                playerHealth.TakeDamage(damageAmount);
+                if (NetworkObject != null) NetworkObject.Despawn(true);
+                return true; // Damage applied, orb handled
             }
             else
             {
-                 Debug.LogError($"[Orb {NetworkObjectId} ServerRPC] Could not find PlayerHealth component on target player object {targetClientId}.");
-                 // Still despawn the orb even if damage failed
-                 if (NetworkObject != null && NetworkObject.IsSpawned) NetworkObject.Despawn(true);
+                Debug.LogError($"[Orb {NetworkObjectId} TryApplyDamage] Found PlayerObject '{targetPlayerNetworkObject.name}' for ClientId {targetClientId}, but it is missing the PlayerHealth component! Despawning orb.");
+                if (NetworkObject != null) NetworkObject.Despawn(true);
+                return true; // Considered handled (error case, but orb despawned)
             }
         }
-         else
+        else
         {
-             Debug.LogError($"[Orb {NetworkObjectId} ServerRPC] Could not find PlayerObject for target client ID {targetClientId}.");
-             // Still despawn the orb
-             if (NetworkObject != null && NetworkObject.IsSpawned) NetworkObject.Despawn(true);
+            return false; // Indicate failure to find PlayerObject
         }
     }
+
+    // --- Method to handle timed despawn --- 
+    private void DespawnOrb()
+    {
+        // This method is invoked only on the server
+        if (!IsServer) return; 
+
+        // Check if the object still exists and is spawned before trying to despawn
+        if (this != null && NetworkObject != null && NetworkObject.IsSpawned)
+        {
+            Debug.Log($"[Orb {NetworkObjectId} Server] Lifetime expired. Despawning.");
+            NetworkObject.Despawn(true); // true to destroy the object across the network
+        }
+        // No else needed - if it's already gone (e.g., hit player), do nothing
+    }
+    // --- END NEW --- 
 
     // Start is called before the first frame update
     void Start()
@@ -120,3 +161,4 @@ public class ReimuExtraAttackOrb : NetworkBehaviour
         
     }
 }
+

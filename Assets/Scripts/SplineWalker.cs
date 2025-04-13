@@ -37,7 +37,8 @@ public class SplineWalker : NetworkBehaviour
 
         // Log spline initialization
         // Optional: Add NetworkObjectId for clarity
-        Debug.Log($"[{NetworkManager.Singleton.LocalClientId} Walker NetId:{NetworkObjectId}] InitializeSplineInternal called. Path: {spline?.name ?? "NULL"}. Enabling component.");
+        // Commented out verbose log:
+        // Debug.Log($"[{NetworkManager.Singleton.LocalClientId} Walker NetId:{NetworkObjectId}] InitializeSplineInternal called. Path: {spline?.name ?? "NULL"}. Enabling component.");
 
         // Immediately set initial position and rotation
         if (spline != null)
@@ -59,7 +60,8 @@ public class SplineWalker : NetworkBehaviour
     public void InitializePathClientRpc(int targetPlayerIndex, int pathIndex, bool startAtBeginning)
     {
         // Log reception of RPC
-         Debug.Log($"[{NetworkManager.Singleton.LocalClientId} Walker NetId:{NetworkObjectId}] Received InitializePathClientRpc. TargetPlayer:{targetPlayerIndex}, PathIdx:{pathIndex}, StartAtBegin:{startAtBeginning}");
+        // Commented out verbose log:
+        // Debug.Log($"[{NetworkManager.Singleton.LocalClientId} Walker NetId:{NetworkObjectId}] Received InitializePathClientRpc. TargetPlayer:{targetPlayerIndex}, PathIdx:{pathIndex}, StartAtBegin:{startAtBeginning}");
 
         // Client gets the specific path directly from PathManager
         if (PathManager.Instance == null)
@@ -83,7 +85,7 @@ public class SplineWalker : NetworkBehaviour
 
     void Update()
     {
-        // LOG ADDED HERE (conditional to avoid spam)
+        // LOG ADDED HERE (conditional to avoid spam) - REMOVED
         // if (Time.frameCount % 60 == 0) // Log only once per second approx
         //    Debug.Log($"[{NetworkManager.Singleton.LocalClientId} - Walker {this.GetInstanceID()}] Update running. Spline: {spline?.name ?? "NULL"}. Progress: {progress}");
         
@@ -143,8 +145,8 @@ public class SplineWalker : NetworkBehaviour
         // If the end was reached *this frame*...
         if (reachedEnd)
         {
-            // LOG ADDED HERE
-            Debug.Log($"[{NetworkManager.Singleton.LocalClientId} - Walker {this.GetInstanceID()}] Reached end of path. Disabling self and reporting.");
+            // LOG ADDED HERE - REMOVED
+            // Debug.Log($"[{NetworkManager.Singleton.LocalClientId} - Walker {this.GetInstanceID()}] Reached end of path. Disabling self and reporting.");
             // Instead of destroying locally, tell the server via the Fairy script
             if (destroyOnComplete)
             {

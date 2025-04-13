@@ -83,24 +83,8 @@ public class Fairy : NetworkBehaviour
         // Check if health dropped to 0 or below in this call
         if (previousHealth > 0 && currentHealth.Value <= 0)
         {
-            // --- Notify PlayerDataManager about the kill --- 
-            if (killerRole != PlayerRole.None && PlayerDataManager.Instance != null)
-            {
-                // *** DEBUG LOG ***
-                Debug.Log($"[Server Fairy {NetworkObjectId}] Died. Attributing kill to {killerRole}. Notifying PlayerDataManager.");
-                PlayerDataManager.Instance.IncrementFairyKillCount(killerRole);
-            }
-            // *** DEBUG LOG ***
-            else if (killerRole == PlayerRole.None)
-            {
-                 Debug.Log($"[Server Fairy {NetworkObjectId}] Died. Killer role is None. Not incrementing kill count.");
-            }
-            else // PlayerDataManager is null
-            {
-                 Debug.LogError($"[Server Fairy {NetworkObjectId}] Died. Killer role {killerRole} valid, but PlayerDataManager.Instance is null!");
-            }
-            // -----------------------------------------------
-            Die();
+            // Pass the killerRole down to Die()
+            Die(killerRole); 
         }
     }
 
@@ -123,10 +107,21 @@ public class Fairy : NetworkBehaviour
     // -------------------------------------------
 
     // This function now ONLY runs on the server
-    private void Die()
+    private void Die(PlayerRole killerRole = PlayerRole.None)
     {
         // This function now ONLY runs on the server
         if (!IsServer) return; // Extra safety check
+
+        // --- NOTIFY PLAYER DATA MANAGER (MOVED HERE) ---
+        if (killerRole != PlayerRole.None && PlayerDataManager.Instance != null)
+        {
+            PlayerDataManager.Instance.IncrementFairyKillCount(killerRole);
+        }
+        else if (PlayerDataManager.Instance == null && killerRole != PlayerRole.None) // Only log error if manager missing when expected
+        {
+             Debug.LogError($"[Server Fairy {NetworkObjectId}] Died. Killer role {killerRole} valid, but PlayerDataManager.Instance is null!");
+        }
+        // --- END NOTIFY ---
 
         // Log position on server before sending RPC - REMOVED
         // Debug.Log($"[Server Fairy NetId:{NetworkObjectId}] Die() called. Position: {transform.position}");
@@ -137,7 +132,7 @@ public class Fairy : NetworkBehaviour
         if (fairiesToChain.Count > 0)
         {
             isStartingChain = true;
-            StartCoroutine(ProcessChainReaction(fairiesToChain));
+            StartCoroutine(ProcessChainReaction(fairiesToChain, killerRole));
         }
         // -----------------------------------
 
@@ -242,7 +237,7 @@ public class Fairy : NetworkBehaviour
     // -------------------------------------------------------
 
     // --- NEW: Server-side coroutine for delayed chain reaction ---
-    private IEnumerator ProcessChainReaction(List<Fairy> chainedFairies)
+    private IEnumerator ProcessChainReaction(List<Fairy> chainedFairies, PlayerRole killerRole)
     {
         ulong sourceNetId = NetworkObjectId;
         string sourceName = gameObject.name; // Store name in case GO is destroyed prematurely
@@ -268,7 +263,7 @@ public class Fairy : NetworkBehaviour
                 if (targetFairy != null && targetFairy.gameObject != null && targetFairy.currentHealth.Value > 0)
                 {
                     // Debug.Log($"[Server Chain Coroutine {sourceNetId}] >>> Triggering ApplyLethalDamage for Fairy NetId:{targetNetId}"); // REMOVED
-                    targetFairy.ApplyLethalDamage(); 
+                    targetFairy.ApplyLethalDamage(killerRole);
                 }
                  else
                 {
@@ -295,14 +290,14 @@ public class Fairy : NetworkBehaviour
 
     // --- NEW: Server-side direct damage application method ---
     // This bypasses the RPC for server-side calls like chain reactions
-    public void ApplyLethalDamage()
+    public void ApplyLethalDamage(PlayerRole killerRole)
     {
         if (!IsServer) return;
         if (currentHealth.Value <= 0) return;
 
         // Apply enough damage to ensure death
         currentHealth.Value = 0;
-        Die(); // Trigger the death sequence (which includes its own chain check)
+        Die(killerRole);
     }
     // --------------------------------------------------------
 
@@ -312,14 +307,32 @@ public class Fairy : NetworkBehaviour
         if (!IsServer) return; // Safety check
 
         NetworkObject networkObject = GetComponent<NetworkObject>();
-        if (networkObject != null && networkObject.IsSpawned)
+        if (networkObject != null)
         {
-            networkObject.Despawn(true);
+            // Disable the SplineWalker component if it exists
+            if (splineWalker != null) 
+            {
+                splineWalker.enabled = false;
+            }
+
+            // Check if the object is spawned before trying to despawn
+            if (networkObject.IsSpawned)
+            {
+                // Debug.Log($"[Server DestroySelf] Despawning Fairy NetId:{networkObject.NetworkObjectId}"); // REMOVED
+                networkObject.Despawn(true); // true to destroy the object as well
+            }
+             else
+            {
+                 // Debug.LogWarning($"[Server DestroySelf] Tried to despawn Fairy NetId:{networkObject.NetworkObjectId}, but it was already despawned or never spawned. Destroying locally."); // REMOVED
+                 // If not spawned, destroy the GameObject directly on the server
+                 Destroy(gameObject);
+            }
         }
         else
         {
-            // Fallback if somehow NetworkObject is gone but script isn't
-             if(gameObject != null) Destroy(gameObject); 
+             // Debug.LogError("[Server DestroySelf] Cannot find NetworkObject on Fairy. Destroying locally."); // REMOVED
+             // If no NetworkObject, just destroy locally
+             Destroy(gameObject);
         }
     }
 

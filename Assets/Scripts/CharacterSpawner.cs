@@ -48,7 +48,7 @@ public class CharacterSpawner : NetworkBehaviour
     {
         // Wait a very short time for clients to potentially finish loading/syncing
         // yield return new WaitForSeconds(0.1f);
-        yield return new WaitForSeconds(1.0f); // Increased delay to 1 second
+        yield return new WaitForSeconds(1.5f); // Increased delay to 1.5 second
         
         // Debug.Log("Executing SpawnCharacters after delay.");
         SpawnCharacters();
@@ -80,27 +80,44 @@ public class CharacterSpawner : NetworkBehaviour
 
     private void SpawnPlayerCharacter(PlayerDataManager.PlayerData playerData, Vector3 position, Quaternion rotation)
     {
+        // *** DEBUG LOG: Entering SpawnPlayerCharacter *** REMOVED
+        // Debug.Log($"[Spawner] Attempting SpawnPlayerCharacter for Client ID {playerData.ClientId} ({playerData.SelectedCharacter}).");
+
         string characterName = playerData.SelectedCharacter.ToString();
         GameObject prefab = GetPrefabByName(characterName);
         if (prefab == null)
         {
-            // Debug.LogError($"[Spawner] Prefab not found for character: {characterName}"); // Keep this essential error log
+            // *** DEBUG LOG: Prefab is null *** REMOVED
+            // Keep essential error
+            Debug.LogError($"[Spawner] Prefab lookup FAILED for character: {characterName}. Aborting spawn.");
             return;
         }
 
-        // Debug.Log($"[Spawner] Preparing to instantiate {characterName} for Client ID {playerData.ClientId}"); // Remove diagnostic log
+        // *** DEBUG LOG: Prefab found *** REMOVED
+        // Debug.Log($"[Spawner] Found prefab '{prefab.name}' for character {characterName}.");
+
         GameObject characterInstance = Instantiate(prefab, position, rotation);
-        // int instanceID = characterInstance.GetInstanceID(); // Remove diagnostic variable
-        // Debug.Log($"[Spawner] Instantiated {characterInstance.name} (Instance ID: {instanceID}) for Client ID {playerData.ClientId}"); // Remove diagnostic log
+        if (characterInstance == null)
+        {
+            // *** DEBUG LOG: Instantiate failed *** REMOVED
+            // Keep essential error
+            Debug.LogError($"[Spawner] Instantiate FAILED for prefab '{prefab.name}'. Aborting spawn.");
+            return;
+        }
+
+        // *** DEBUG LOG: Instantiate successful *** REMOVED
+        // Debug.Log($"[Spawner] Instantiated '{characterInstance.name}' successfully.");
 
         NetworkObject networkObject = characterInstance.GetComponent<NetworkObject>();
 
         if (networkObject != null)
         {
-            // Debug.Log($"[Spawner] Attempting to spawn NetworkObject (NetID: {networkObject.NetworkObjectId}, InstanceID: {instanceID}) for Client ID {playerData.ClientId}. IsSpawned: {networkObject.IsSpawned}, IsOwner: {networkObject.IsOwner}"); // Remove diagnostic log
-            // Remove try-catch block
-            networkObject.SpawnWithOwnership(playerData.ClientId); 
-            // Debug.Log($"[Spawner] Successfully spawned NetworkObject (NetID: {networkObject.NetworkObjectId}, InstanceID: {instanceID}) for Client ID {playerData.ClientId}. IsSpawned: {networkObject.IsSpawned}"); // Remove diagnostic log
+            // *** DEBUG LOG: NetworkObject found, attempting spawn *** REMOVED
+            // Debug.Log($"[Spawner] Found NetworkObject on '{characterInstance.name}'. Attempting SpawnAsPlayerObject for Client ID {playerData.ClientId}.");
+            networkObject.SpawnAsPlayerObject(playerData.ClientId);
+            // *** DEBUG LOG: Check PlayerObject immediately after spawn *** REMOVED
+            // NetworkObject foundPlayerObject = NetworkManager.Singleton.ConnectedClients[playerData.ClientId]?.PlayerObject;
+            // Debug.Log($"[Spawner] Spawned {characterInstance.name} for Client ID {playerData.ClientId}. Immediately checking PlayerObject: {(foundPlayerObject != null ? foundPlayerObject.name : "NULL")}");
         }
         else
         {

@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2068635599780888344}
   m_Layer: 0
   m_Name: Hitbox
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -325,8 +325,8 @@ GameObject:
   - component: {fileID: -7306010092121350103}
   - component: {fileID: -7353222779348205319}
   - component: {fileID: -4064304885187048511}
-  - component: {fileID: 4508526269854345927}
   - component: {fileID: -9110942406544611170}
+  - component: {fileID: 4508526269854345927}
   - component: {fileID: 770399727444111095}
   m_Layer: 0
   m_Name: HakureiReimuPrefab
@@ -417,7 +417,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 216431824
+  GlobalObjectIdHash: 1271388089
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
@@ -541,27 +541,6 @@ MonoBehaviour:
   playerMovement: {fileID: 753982728632180211}
   hitboxSpriteRenderer: {fileID: 7022895368681669010}
   scopeStyleController: {fileID: 3214874084368118233}
---- !u!95 &4508526269854345927
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4454703587389584321}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 29cdce4d52adf754983c2bdf37fa73cd, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!50 &-9110942406544611170
 Rigidbody2D:
   serializedVersion: 4
@@ -589,6 +568,27 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!95 &4508526269854345927
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4454703587389584321}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 29cdce4d52adf754983c2bdf37fa73cd, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &770399727444111095
 MonoBehaviour:
   m_ObjectHideFlags: 0
