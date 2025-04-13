@@ -1,0 +1,6353 @@
+fileFormatVersion: 2
+guid: b642e68cd3655bd4fa2450692cc33ed5
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_0
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 483
+        width: 30
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 749d387e6dc777a498a9526a05bc5b5d
+      internalID: 1377086896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_1
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 483
+        width: 28
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 298122193a40413428e6db8e9b539b7f
+      internalID: -752567822
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_2
+      rect:
+        serializedVersion: 2
+        x: 66
+        y: 483
+        width: 28
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 45edc786c3d62d442bd28f1dc7805aed
+      internalID: 432819678
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_3
+      rect:
+        serializedVersion: 2
+        x: 97
+        y: 483
+        width: 30
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7347d1e1061512f498c04147e595e124
+      internalID: 1643860400
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_4
+      rect:
+        serializedVersion: 2
+        x: 194
+        y: 458
+        width: 62
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f69780ae84bd75849af5081b6d88e4aa
+      internalID: -1971024808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_5
+      rect:
+        serializedVersion: 2
+        x: 260
+        y: 462
+        width: 56
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 323047862c96a3745837479b54730bf5
+      internalID: 1472859057
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_6
+      rect:
+        serializedVersion: 2
+        x: 323
+        y: 458
+        width: 60
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c2e312d0ca885394c8027f9b106488f4
+      internalID: -831210451
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_7
+      rect:
+        serializedVersion: 2
+        x: 385
+        y: 458
+        width: 63
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b10ae87797e8a6347b36368ef550b3ed
+      internalID: 703973082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_8
+      rect:
+        serializedVersion: 2
+        x: 513
+        y: 483
+        width: 30
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ca3f1a2f0e0d4354cbd13640f316b798
+      internalID: 901961711
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_9
+      rect:
+        serializedVersion: 2
+        x: 546
+        y: 483
+        width: 28
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d720d222996352d458dc942c41f77b6f
+      internalID: -295034475
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_10
+      rect:
+        serializedVersion: 2
+        x: 578
+        y: 483
+        width: 28
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8f1cc28e8eee53a449ae4efcf7412d41
+      internalID: -9459285
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_11
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 483
+        width: 30
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3932b70a93fd0294fb2d235c5c203671
+      internalID: -1437093008
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_12
+      rect:
+        serializedVersion: 2
+        x: 706
+        y: 458
+        width: 62
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 14dc900b427395b4ba1f7000be67d8fe
+      internalID: 497917197
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_13
+      rect:
+        serializedVersion: 2
+        x: 772
+        y: 462
+        width: 56
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 723b8448f6d87754c8af07a0ab419a78
+      internalID: 1063186770
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_14
+      rect:
+        serializedVersion: 2
+        x: 835
+        y: 458
+        width: 60
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bed20b0b0262c8c42a18af014749cdc1
+      internalID: -662210727
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_15
+      rect:
+        serializedVersion: 2
+        x: 897
+        y: 458
+        width: 63
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6b980ccbb82189e4789f641a5552d337
+      internalID: 1526578923
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_16
+      rect:
+        serializedVersion: 2
+        x: 1025
+        y: 483
+        width: 30
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fb9492b2f3c971d4e93418766d18a653
+      internalID: 1412951756
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_17
+      rect:
+        serializedVersion: 2
+        x: 1058
+        y: 483
+        width: 28
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 064b54beb377345498933801039c8837
+      internalID: 1622051886
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_18
+      rect:
+        serializedVersion: 2
+        x: 1090
+        y: 483
+        width: 28
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: db8fe217d1cb196468943c0e679c7ba2
+      internalID: -1533481092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_19
+      rect:
+        serializedVersion: 2
+        x: 1121
+        y: 483
+        width: 30
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 12d9849d049671e4291f5d712eb487ec
+      internalID: -1446263619
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_20
+      rect:
+        serializedVersion: 2
+        x: 1218
+        y: 458
+        width: 62
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1b53f1084bd1811408f5228d09bddca9
+      internalID: 1371559841
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_21
+      rect:
+        serializedVersion: 2
+        x: 1284
+        y: 462
+        width: 56
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5546281db82b29847bad1062ff0df3a3
+      internalID: -1464129634
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_22
+      rect:
+        serializedVersion: 2
+        x: 1347
+        y: 458
+        width: 60
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3343c506e8b4af64c9896bbcb7315c5a
+      internalID: 2108627710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_23
+      rect:
+        serializedVersion: 2
+        x: 1409
+        y: 458
+        width: 63
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 72c74235eb560fe4691bfabe7463464d
+      internalID: -1465645844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_24
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 451
+        width: 30
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5dbfb2095e0139743aa189f2cb678107
+      internalID: 1048127975
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_25
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 451
+        width: 27
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d963a9467e126594c88611d92f3e18a4
+      internalID: 466779376
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_26
+      rect:
+        serializedVersion: 2
+        x: 65
+        y: 451
+        width: 28
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2dcdf43f08d0b4f43813786700bf9d00
+      internalID: -1347125587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_27
+      rect:
+        serializedVersion: 2
+        x: 98
+        y: 451
+        width: 26
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 04d8e675c8c21d44f9fb6e8851733ebe
+      internalID: -765623694
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_28
+      rect:
+        serializedVersion: 2
+        x: 513
+        y: 451
+        width: 30
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 153a843f500fa28489bcc9609795fbec
+      internalID: 620002521
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_29
+      rect:
+        serializedVersion: 2
+        x: 546
+        y: 451
+        width: 27
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7408d5a6b7f0a0640ab1699588c4ed3d
+      internalID: 876181960
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_30
+      rect:
+        serializedVersion: 2
+        x: 577
+        y: 451
+        width: 29
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 654f5303852345a46a7b70bcff5a43a7
+      internalID: 390782775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_31
+      rect:
+        serializedVersion: 2
+        x: 610
+        y: 451
+        width: 26
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ceb19eee36cfc8b429f45cdfd3b3b59b
+      internalID: -585814608
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_32
+      rect:
+        serializedVersion: 2
+        x: 1025
+        y: 451
+        width: 30
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 262591eed7a18c64ea08dac11ece4f75
+      internalID: -824555760
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_33
+      rect:
+        serializedVersion: 2
+        x: 1058
+        y: 451
+        width: 27
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5049fd4aa4424a64f99dd7f29cf7a6c8
+      internalID: 763846681
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_34
+      rect:
+        serializedVersion: 2
+        x: 1089
+        y: 451
+        width: 28
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4d14ff39f32833a46a19b93f427dce79
+      internalID: -226570911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_35
+      rect:
+        serializedVersion: 2
+        x: 1122
+        y: 451
+        width: 26
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c84ec733342f9024aaee9c02f9cc1a39
+      internalID: -568891718
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_36
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 419
+        width: 26
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 161ebead4ed713d459b3fa4798766c6a
+      internalID: -1755115543
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_37
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 419
+        width: 27
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c0f3f49fc6021f640b02609e332cd14d
+      internalID: 686667187
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_38
+      rect:
+        serializedVersion: 2
+        x: 65
+        y: 419
+        width: 28
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d77c52c365ae4b144a54035654b211b7
+      internalID: -1348317442
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_39
+      rect:
+        serializedVersion: 2
+        x: 98
+        y: 419
+        width: 26
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9d3bd6f5dafc3344f8a22f77013b8604
+      internalID: -637993397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_40
+      rect:
+        serializedVersion: 2
+        x: 194
+        y: 394
+        width: 62
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1c5096ba0933ec24fa7381031b901724
+      internalID: -670981713
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_41
+      rect:
+        serializedVersion: 2
+        x: 259
+        y: 395
+        width: 57
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e80184fc4f5faf247831e152e8fe9d91
+      internalID: 1843439031
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_42
+      rect:
+        serializedVersion: 2
+        x: 323
+        y: 398
+        width: 56
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3538d0b6a4823a14cb417733ce865162
+      internalID: -373760307
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_43
+      rect:
+        serializedVersion: 2
+        x: 388
+        y: 397
+        width: 53
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 89a71a50214bc4c45bacae54b738aeb1
+      internalID: -797015344
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_44
+      rect:
+        serializedVersion: 2
+        x: 515
+        y: 419
+        width: 26
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f38834c8d80d2284493cddaa1b23fd4c
+      internalID: -261590853
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_45
+      rect:
+        serializedVersion: 2
+        x: 546
+        y: 419
+        width: 27
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1cccb2cabc60f61438326444bc259399
+      internalID: -1583761246
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_46
+      rect:
+        serializedVersion: 2
+        x: 577
+        y: 419
+        width: 28
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3f6e6d5290a76694badc0b4417d54d7f
+      internalID: -549488136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_47
+      rect:
+        serializedVersion: 2
+        x: 610
+        y: 419
+        width: 26
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 19f3eee140b4b224489349e04c56c246
+      internalID: 428497737
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_48
+      rect:
+        serializedVersion: 2
+        x: 706
+        y: 394
+        width: 62
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dffb9bd489c7ad5438e9af5992866424
+      internalID: 930537311
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_49
+      rect:
+        serializedVersion: 2
+        x: 771
+        y: 395
+        width: 57
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3eb9dde75b7b71342832e64160b8ef61
+      internalID: -1782403346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_50
+      rect:
+        serializedVersion: 2
+        x: 835
+        y: 398
+        width: 56
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d61de121943c42b4b9204deef144daec
+      internalID: 1691551104
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_51
+      rect:
+        serializedVersion: 2
+        x: 899
+        y: 397
+        width: 54
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f0365b89ddc098a46ae892fe942076e1
+      internalID: 430643049
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_52
+      rect:
+        serializedVersion: 2
+        x: 1027
+        y: 419
+        width: 26
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4a3175d1dfe8c7d47a92b160347d6117
+      internalID: -1028503735
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_53
+      rect:
+        serializedVersion: 2
+        x: 1058
+        y: 419
+        width: 27
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 84d60c9d8dfbfba45bb37ec8e091c68d
+      internalID: 762988495
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_54
+      rect:
+        serializedVersion: 2
+        x: 1089
+        y: 419
+        width: 28
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 486c9731686fad441908778fab04de61
+      internalID: 726556261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_55
+      rect:
+        serializedVersion: 2
+        x: 1122
+        y: 419
+        width: 26
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 06573e0798a2a3f4a8ac78baead92810
+      internalID: -129987587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_56
+      rect:
+        serializedVersion: 2
+        x: 1218
+        y: 394
+        width: 62
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f544a365d4a0bd94fb6a2b071b5fb95f
+      internalID: -877338412
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_57
+      rect:
+        serializedVersion: 2
+        x: 1283
+        y: 395
+        width: 57
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e3a7450ad7763fc45b382f543b4d9bee
+      internalID: -158026735
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_58
+      rect:
+        serializedVersion: 2
+        x: 1347
+        y: 398
+        width: 56
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dc0fa4cc7ae61e24b939905e41fd9c10
+      internalID: 2054298141
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_59
+      rect:
+        serializedVersion: 2
+        x: 1411
+        y: 397
+        width: 54
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f2e7e9741077d20449254c71213a5cf3
+      internalID: -360362748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_60
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 387
+        width: 39
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9959b68f774fb144aaa4bbe8f74ab768
+      internalID: -741419297
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_61
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 387
+        width: 36
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c6fd8dd8b027f844a8b907cfb4720b2e
+      internalID: -254793786
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_62
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 387
+        width: 37
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2ee88fb365500144987b95983b488341
+      internalID: 414200322
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_63
+      rect:
+        serializedVersion: 2
+        x: 148
+        y: 387
+        width: 39
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 111425142d35de641a63a103db54b239
+      internalID: -1715624121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_64
+      rect:
+        serializedVersion: 2
+        x: 516
+        y: 387
+        width: 39
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 48fa73cc9fc9c0046bfd683d7c3cd006
+      internalID: 1068348692
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_65
+      rect:
+        serializedVersion: 2
+        x: 566
+        y: 387
+        width: 36
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f30a66f0b55fef24eafb4bb2d99349bd
+      internalID: 1205091251
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_66
+      rect:
+        serializedVersion: 2
+        x: 613
+        y: 387
+        width: 37
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0b4d39ade13fda84da78df6f0c2bac12
+      internalID: -2115198401
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_67
+      rect:
+        serializedVersion: 2
+        x: 660
+        y: 387
+        width: 39
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 50c3f5aad97671d4eb0eb76b57389f88
+      internalID: 442435231
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_68
+      rect:
+        serializedVersion: 2
+        x: 1028
+        y: 387
+        width: 39
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0a3dc5caaba7fd64794dce4bdeeeaabd
+      internalID: -1982614292
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_69
+      rect:
+        serializedVersion: 2
+        x: 1078
+        y: 387
+        width: 36
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7f5cb36b1d2a015458c04f1de9514b75
+      internalID: -468353099
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_70
+      rect:
+        serializedVersion: 2
+        x: 1125
+        y: 387
+        width: 37
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 25e483d0e39321d49aea314e8f690fd1
+      internalID: 838290353
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_71
+      rect:
+        serializedVersion: 2
+        x: 1172
+        y: 387
+        width: 39
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f90aea2d15d627c43a6ac5fa62b88501
+      internalID: -1418416253
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_72
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 355
+        width: 39
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a6c10ba27ed372a41bb01bba5147ed79
+      internalID: 1946752037
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_73
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 355
+        width: 36
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 39d842bd767020a4fbc34145cbae398c
+      internalID: 874673695
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_74
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 355
+        width: 32
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1b86bdc03a952f444931379e61155052
+      internalID: 555159740
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_75
+      rect:
+        serializedVersion: 2
+        x: 150
+        y: 355
+        width: 33
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bd03fef1697da134ab77ecf9050a25a5
+      internalID: 2035615955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_76
+      rect:
+        serializedVersion: 2
+        x: 197
+        y: 333
+        width: 50
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3a5aa4acea2a16f408e0b056076bfcd8
+      internalID: -1719380831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_77
+      rect:
+        serializedVersion: 2
+        x: 262
+        y: 334
+        width: 45
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 64abb6a6cc006d344bd43b4cf7f5455c
+      internalID: -744488599
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_78
+      rect:
+        serializedVersion: 2
+        x: 326
+        y: 335
+        width: 42
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3d755851c014392408407193ce54e9c4
+      internalID: 1095535775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_79
+      rect:
+        serializedVersion: 2
+        x: 388
+        y: 334
+        width: 50
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5f12f8e0ace0c7a40b52580803d23030
+      internalID: -670887885
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_80
+      rect:
+        serializedVersion: 2
+        x: 516
+        y: 355
+        width: 39
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2c573968573f33241a3639048b9bec2c
+      internalID: 337675106
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_81
+      rect:
+        serializedVersion: 2
+        x: 564
+        y: 355
+        width: 36
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 46cbf51bf68186b46abc9a950ecef853
+      internalID: -2134674395
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_82
+      rect:
+        serializedVersion: 2
+        x: 613
+        y: 355
+        width: 33
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7c6d9a0877318b34e96492f551558382
+      internalID: 210073327
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_83
+      rect:
+        serializedVersion: 2
+        x: 662
+        y: 355
+        width: 33
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9e0efd738789986468fcbd7a8b9d51c8
+      internalID: -727475653
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_84
+      rect:
+        serializedVersion: 2
+        x: 709
+        y: 333
+        width: 50
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 29585b46085efd841a7f3f7a32e1e04e
+      internalID: -87280444
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_85
+      rect:
+        serializedVersion: 2
+        x: 774
+        y: 334
+        width: 45
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 19f7666c59619ec40aff4e390e2f70bc
+      internalID: 987086216
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_86
+      rect:
+        serializedVersion: 2
+        x: 838
+        y: 335
+        width: 42
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2eda50170d8036c429766a833207ab8f
+      internalID: -2059599021
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_87
+      rect:
+        serializedVersion: 2
+        x: 900
+        y: 334
+        width: 50
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f3fa64275c1ad404eb57df8db5a4ac48
+      internalID: -468756709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_88
+      rect:
+        serializedVersion: 2
+        x: 1028
+        y: 355
+        width: 39
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 009dcd7f342f78e40a89979553991de1
+      internalID: -955561682
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_89
+      rect:
+        serializedVersion: 2
+        x: 1076
+        y: 355
+        width: 36
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a6eb4b2aee654854da5d9d8ab6b0f37b
+      internalID: 1164011798
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_90
+      rect:
+        serializedVersion: 2
+        x: 1126
+        y: 355
+        width: 32
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aa63da741c981d14990707487e9e27ac
+      internalID: 515049057
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_91
+      rect:
+        serializedVersion: 2
+        x: 1174
+        y: 355
+        width: 34
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2371ae4fe0f32bf4f858f4cd93086b78
+      internalID: -816360122
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_92
+      rect:
+        serializedVersion: 2
+        x: 1221
+        y: 333
+        width: 50
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 320dccb10962af9428b3245e3d8aec3b
+      internalID: -2051362938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_93
+      rect:
+        serializedVersion: 2
+        x: 1286
+        y: 334
+        width: 45
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ed7588e862fede549958c8e08382cd49
+      internalID: -949017443
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_94
+      rect:
+        serializedVersion: 2
+        x: 1350
+        y: 335
+        width: 42
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d41903c94e92da442a8ed16861d2ccee
+      internalID: -1303896807
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_95
+      rect:
+        serializedVersion: 2
+        x: 1412
+        y: 334
+        width: 50
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6944fac33df206c43aa8d25ee898b36f
+      internalID: -1066195764
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_96
+      rect:
+        serializedVersion: 2
+        x: 12
+        y: 322
+        width: 27
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e2785fcda15738a41b314dba465af374
+      internalID: -925883027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_97
+      rect:
+        serializedVersion: 2
+        x: 55
+        y: 323
+        width: 31
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0ee1a10bc0807d2408327c82ce063c60
+      internalID: 2006464800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_98
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 323
+        width: 31
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e0cb8c941bb09f54eb45350bd2219a44
+      internalID: -42850676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_99
+      rect:
+        serializedVersion: 2
+        x: 151
+        y: 323
+        width: 31
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 24c6c4bcdf98bdd4797ce9cdefdf4324
+      internalID: -840918910
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_100
+      rect:
+        serializedVersion: 2
+        x: 524
+        y: 322
+        width: 27
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: afaf82f54e7269345b31904c65abe695
+      internalID: 1264910905
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_101
+      rect:
+        serializedVersion: 2
+        x: 567
+        y: 323
+        width: 31
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a5e1543d4debaca47be589cd35860f04
+      internalID: -1709810378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_102
+      rect:
+        serializedVersion: 2
+        x: 615
+        y: 323
+        width: 31
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2c079a67406b05e4c8460975860ce5da
+      internalID: 2108407594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_103
+      rect:
+        serializedVersion: 2
+        x: 663
+        y: 323
+        width: 31
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 529b40f02476b1048b47666f1925b4a5
+      internalID: 1721416930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_104
+      rect:
+        serializedVersion: 2
+        x: 1036
+        y: 322
+        width: 27
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 36388f3c85c604c4bb6839f1c95d621a
+      internalID: 260197844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_105
+      rect:
+        serializedVersion: 2
+        x: 1079
+        y: 323
+        width: 31
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cde929c76bbde5743839abaf93f85ca6
+      internalID: -659138140
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_106
+      rect:
+        serializedVersion: 2
+        x: 1127
+        y: 323
+        width: 31
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c08238bdb3fb1504384bc0984eb09adf
+      internalID: 1252437756
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_107
+      rect:
+        serializedVersion: 2
+        x: 1175
+        y: 323
+        width: 32
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ca749f0a6b59f1b499df94c2a3a9e9d5
+      internalID: -2055218715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_108
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 275
+        width: 44
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3ba8c7b6a405f9e439698b6f4141ad8c
+      internalID: 345466934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_109
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 278
+        width: 41
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c6843c4c0a1becb43a59699eddbec00b
+      internalID: -2012194786
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_110
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 276
+        width: 41
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c8ff5e6d6b2be4a4385e77490f7bcbec
+      internalID: 1392913629
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_111
+      rect:
+        serializedVersion: 2
+        x: 147
+        y: 275
+        width: 43
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8a72bf65a73edca44af20a9ab5a5c9ff
+      internalID: -1348790451
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_112
+      rect:
+        serializedVersion: 2
+        x: 203
+        y: 280
+        width: 24
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ad216b0d98b47df40bff7a396cb12884
+      internalID: -837141147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_113
+      rect:
+        serializedVersion: 2
+        x: 234
+        y: 241
+        width: 33
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ee16462f1511fd7409ef2a5a634f9965
+      internalID: -1029673287
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_114
+      rect:
+        serializedVersion: 2
+        x: 281
+        y: 278
+        width: 21
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c368a13eb28642547862e85c8620fd8f
+      internalID: 1899906468
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_115
+      rect:
+        serializedVersion: 2
+        x: 318
+        y: 278
+        width: 21
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cfafbddec95f4204b808d66b0f5a958e
+      internalID: 390247599
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_116
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 287
+        width: 21
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 91dd8c28b906bdb4c8c0d5ff4b18781e
+      internalID: 1593645942
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_117
+      rect:
+        serializedVersion: 2
+        x: 385
+        y: 258
+        width: 28
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7d51fcd61e7966f458b2ca83576bdf65
+      internalID: -17840338
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_118
+      rect:
+        serializedVersion: 2
+        x: 417
+        y: 256
+        width: 29
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2f4e2372803cccb4783059d5265d28b1
+      internalID: 1859857115
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_119
+      rect:
+        serializedVersion: 2
+        x: 451
+        y: 286
+        width: 21
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 69ae8301dfe76484db28af2fe1d6767b
+      internalID: 813392364
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_120
+      rect:
+        serializedVersion: 2
+        x: 514
+        y: 275
+        width: 44
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2416ea73d34d72742a718f4b5439fbc8
+      internalID: 2103229568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_121
+      rect:
+        serializedVersion: 2
+        x: 564
+        y: 278
+        width: 41
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9b4fe154947570c4697a762ebc1ec669
+      internalID: -1912476439
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_122
+      rect:
+        serializedVersion: 2
+        x: 612
+        y: 276
+        width: 41
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0a443c29aff31304f96a8144b239fddf
+      internalID: -769806718
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_123
+      rect:
+        serializedVersion: 2
+        x: 659
+        y: 275
+        width: 43
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7801e5690ac2c174aba1d91c37585af5
+      internalID: -919406798
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_124
+      rect:
+        serializedVersion: 2
+        x: 717
+        y: 281
+        width: 20
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 09bc8deaa6cbef44fa88b8df2f567187
+      internalID: 644233931
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_125
+      rect:
+        serializedVersion: 2
+        x: 756
+        y: 280
+        width: 17
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c0cea4bfbe09aa741b8b090225fc9e20
+      internalID: -551720800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_126
+      rect:
+        serializedVersion: 2
+        x: 795
+        y: 281
+        width: 17
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d7c2a19e3d69b1044904485f6a509505
+      internalID: 389139896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_127
+      rect:
+        serializedVersion: 2
+        x: 832
+        y: 280
+        width: 17
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ccd7d73cc662b5a4c95fe178645b2a28
+      internalID: 99108026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_128
+      rect:
+        serializedVersion: 2
+        x: 874
+        y: 288
+        width: 17
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8e0b9fc1f2166d94e838f0f79f910e4f
+      internalID: 1754073672
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_129
+      rect:
+        serializedVersion: 2
+        x: 906
+        y: 288
+        width: 15
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1f58c75d53a623e44a82775b88d84280
+      internalID: -236855724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_130
+      rect:
+        serializedVersion: 2
+        x: 935
+        y: 288
+        width: 17
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e96bacdb13e05834a93978822cd1b757
+      internalID: -90504993
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_131
+      rect:
+        serializedVersion: 2
+        x: 966
+        y: 288
+        width: 16
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: be6c690dc0b9d1c4b8aa1d744edb6746
+      internalID: -759696520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_132
+      rect:
+        serializedVersion: 2
+        x: 1026
+        y: 275
+        width: 44
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5d97b303612cf4e4b9293c78db2713ba
+      internalID: -1268460227
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_133
+      rect:
+        serializedVersion: 2
+        x: 1076
+        y: 278
+        width: 41
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 80a8595adb2336b4db5f7db0c55c10c5
+      internalID: -109121120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_134
+      rect:
+        serializedVersion: 2
+        x: 1124
+        y: 276
+        width: 41
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6e72d96278215bb42827e3707d9657e2
+      internalID: 1516231804
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_135
+      rect:
+        serializedVersion: 2
+        x: 1171
+        y: 276
+        width: 43
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4d3c2fb60210a424d8beaef02b298b88
+      internalID: 1795801207
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_136
+      rect:
+        serializedVersion: 2
+        x: 1229
+        y: 281
+        width: 20
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 35264e5c51476ae4c882f3e3da8e441c
+      internalID: -1423067245
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_137
+      rect:
+        serializedVersion: 2
+        x: 1268
+        y: 280
+        width: 17
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 250628eb1f3666442974abf15499977b
+      internalID: 1992545644
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_138
+      rect:
+        serializedVersion: 2
+        x: 1307
+        y: 281
+        width: 17
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ba09d890326f4334f8a7f488a86290e1
+      internalID: -1361361155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_139
+      rect:
+        serializedVersion: 2
+        x: 1344
+        y: 280
+        width: 17
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a7d0be74daa87584d93a89eef6478c4f
+      internalID: 1096828633
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_140
+      rect:
+        serializedVersion: 2
+        x: 1386
+        y: 288
+        width: 17
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a42efe1d12a67ce4a8358fd56c5f326f
+      internalID: -1440856465
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_141
+      rect:
+        serializedVersion: 2
+        x: 1418
+        y: 288
+        width: 15
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 22ce0138620b8894ab32fe87621c80cc
+      internalID: 1718185592
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_142
+      rect:
+        serializedVersion: 2
+        x: 1447
+        y: 288
+        width: 17
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2399360229d1e224eb657a228dca7aaa
+      internalID: -1343694570
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_143
+      rect:
+        serializedVersion: 2
+        x: 1478
+        y: 288
+        width: 16
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5201161db18d7784083029984c2e4d11
+      internalID: -1986233394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_144
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 227
+        width: 44
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 55b452651471e2a4d8d9b72bf44903ee
+      internalID: 1413168118
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_145
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 228
+        width: 37
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c72f39a601b74dd4c93b78e7b9324e7d
+      internalID: -2052374037
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_146
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 229
+        width: 40
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 65663c3cc871bfd47b54b6f91fd29b29
+      internalID: -1993181944
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_147
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 229
+        width: 38
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 55403258c32a60e46acd982437138d78
+      internalID: 1731544464
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_148
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 240
+        width: 34
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1afa3964632799d4789f28b4a7bfa79e
+      internalID: -1526760830
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_149
+      rect:
+        serializedVersion: 2
+        x: 274
+        y: 239
+        width: 35
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ca5c00fd06aee5f499b7f9b9b7af305c
+      internalID: 54003658
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_150
+      rect:
+        serializedVersion: 2
+        x: 316
+        y: 241
+        width: 37
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ce40716ce61a69946a3476327f6c30df
+      internalID: 1871851435
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_151
+      rect:
+        serializedVersion: 2
+        x: 355
+        y: 257
+        width: 28
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9d2797016c9e98b4292953e4c24d68d2
+      internalID: 1686873437
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_152
+      rect:
+        serializedVersion: 2
+        x: 451
+        y: 257
+        width: 30
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b8dcbc363d4215d418913190d069fd38
+      internalID: -1282714940
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_153
+      rect:
+        serializedVersion: 2
+        x: 514
+        y: 227
+        width: 44
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d9e083ae97f24ea4e99325f7c417d217
+      internalID: -1777700534
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_154
+      rect:
+        serializedVersion: 2
+        x: 562
+        y: 228
+        width: 37
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a5d2a8914d5796e49895e52ce5c3f970
+      internalID: -388958587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_155
+      rect:
+        serializedVersion: 2
+        x: 611
+        y: 229
+        width: 40
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 53d2657d5c47eb6419223febd8312b9a
+      internalID: -1569211012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_156
+      rect:
+        serializedVersion: 2
+        x: 661
+        y: 229
+        width: 38
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ae08e18359b64dc419d98b0b7fe800a1
+      internalID: -667341147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_157
+      rect:
+        serializedVersion: 2
+        x: 710
+        y: 242
+        width: 30
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ee80b46dc9f3117469b6b19c64e4fafc
+      internalID: -999569726
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_158
+      rect:
+        serializedVersion: 2
+        x: 747
+        y: 243
+        width: 30
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4698d6732dd7d0c4c88d619ea7fcfcbf
+      internalID: -2052943136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_159
+      rect:
+        serializedVersion: 2
+        x: 788
+        y: 241
+        width: 31
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6dde8a9dd7e643e4692d49161efd5e78
+      internalID: -40053124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_160
+      rect:
+        serializedVersion: 2
+        x: 830
+        y: 243
+        width: 33
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7638053282a700941bd4673c0ef93797
+      internalID: 1351989614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_161
+      rect:
+        serializedVersion: 2
+        x: 869
+        y: 259
+        width: 24
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1dcfec690f12cc34e84c886559b28876
+      internalID: -2082490034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_162
+      rect:
+        serializedVersion: 2
+        x: 899
+        y: 259
+        width: 24
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 23c42f0f4629ce8408088babb992073f
+      internalID: 1656762629
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_163
+      rect:
+        serializedVersion: 2
+        x: 931
+        y: 258
+        width: 25
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 822334fa91fe75942ab48eb49d0eb09d
+      internalID: -2063388246
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_164
+      rect:
+        serializedVersion: 2
+        x: 965
+        y: 259
+        width: 26
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b1aa04d9e55016b4ba8330679c568a6a
+      internalID: -1485100377
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_165
+      rect:
+        serializedVersion: 2
+        x: 1026
+        y: 227
+        width: 44
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 725d021e1965be842b141101d80edba6
+      internalID: -1191525219
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_166
+      rect:
+        serializedVersion: 2
+        x: 1074
+        y: 229
+        width: 37
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 741c6bb60e74e254e9728969c04fcae3
+      internalID: 1318716321
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_167
+      rect:
+        serializedVersion: 2
+        x: 1123
+        y: 230
+        width: 40
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 961d8e9d8cfbc1b4aade50de70180ba6
+      internalID: 634145968
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_168
+      rect:
+        serializedVersion: 2
+        x: 1174
+        y: 229
+        width: 37
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dffd5cab0fe9e9c44a2bf90684c479d3
+      internalID: -1654845643
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_169
+      rect:
+        serializedVersion: 2
+        x: 1222
+        y: 242
+        width: 30
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5f1a15e9bcda942469d41d290fc2c659
+      internalID: -1909708060
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_170
+      rect:
+        serializedVersion: 2
+        x: 1259
+        y: 243
+        width: 30
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5574f1d8c22d9604982be52a86a37174
+      internalID: -1649599752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_171
+      rect:
+        serializedVersion: 2
+        x: 1300
+        y: 241
+        width: 31
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 27451aa223e32f8468e4190e521df2dc
+      internalID: -1694721117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_172
+      rect:
+        serializedVersion: 2
+        x: 1342
+        y: 243
+        width: 33
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4e2b58d73e12a544caae23fbc3c9f57f
+      internalID: -1205399481
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_173
+      rect:
+        serializedVersion: 2
+        x: 1381
+        y: 259
+        width: 24
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e0d3c56b335b1054ea54769cb49f385f
+      internalID: -156449816
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_174
+      rect:
+        serializedVersion: 2
+        x: 1411
+        y: 259
+        width: 24
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f38818a8768dce14b8dc95282fc2b656
+      internalID: -1199018383
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_175
+      rect:
+        serializedVersion: 2
+        x: 1443
+        y: 258
+        width: 25
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6ec9d098c10b87a46995bc88d46fc47b
+      internalID: 1359563937
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_176
+      rect:
+        serializedVersion: 2
+        x: 1477
+        y: 259
+        width: 26
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7b853e8fc98b0c241b2ddf343daad3ee
+      internalID: -1241420735
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_177
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 204
+        width: 32
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 97442341f9dfe734ba463eb35f958c44
+      internalID: -16311056
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_178
+      rect:
+        serializedVersion: 2
+        x: 238
+        y: 203
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f8e61435a2e9a9a4192ba7ddbd0a85f0
+      internalID: -1326657745
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_179
+      rect:
+        serializedVersion: 2
+        x: 276
+        y: 201
+        width: 34
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 32c59fb019e010945b9d93e9f14b31b3
+      internalID: 1613111280
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_180
+      rect:
+        serializedVersion: 2
+        x: 316
+        y: 201
+        width: 38
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e85c444a92cb04e4b9770353a4805664
+      internalID: 1698774178
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_181
+      rect:
+        serializedVersion: 2
+        x: 355
+        y: 228
+        width: 26
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b7e214ac179eb8c45969ab03a10b702f
+      internalID: -783309283
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_182
+      rect:
+        serializedVersion: 2
+        x: 389
+        y: 227
+        width: 24
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8dce74fe3b344024bafd301451ba2b49
+      internalID: 746861697
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_183
+      rect:
+        serializedVersion: 2
+        x: 419
+        y: 225
+        width: 28
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 237d8d44726bdbf4596a43d157cbebaa
+      internalID: 1943065945
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_184
+      rect:
+        serializedVersion: 2
+        x: 450
+        y: 225
+        width: 32
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 71158ac7c1b0cc0418a617134165547c
+      internalID: -610884394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_185
+      rect:
+        serializedVersion: 2
+        x: 710
+        y: 206
+        width: 28
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a578d6b0978b68d44bc0d96b93ab72d7
+      internalID: -994262106
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_186
+      rect:
+        serializedVersion: 2
+        x: 752
+        y: 205
+        width: 26
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a4885aeefcd57bd48a6a828f224de993
+      internalID: -1255659217
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_187
+      rect:
+        serializedVersion: 2
+        x: 790
+        y: 203
+        width: 31
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d4a0dc55c362cd8438432b5d8a1e0800
+      internalID: -603678590
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_188
+      rect:
+        serializedVersion: 2
+        x: 830
+        y: 203
+        width: 34
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 285e269fc918cd944b84073f88bd310b
+      internalID: 2113906746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_189
+      rect:
+        serializedVersion: 2
+        x: 869
+        y: 229
+        width: 22
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9504c190b0efa234091c25a3f5c9e15d
+      internalID: 304074417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_190
+      rect:
+        serializedVersion: 2
+        x: 902
+        y: 229
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bc27cca8749c4af4786b9e0036617633
+      internalID: 1433322304
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_191
+      rect:
+        serializedVersion: 2
+        x: 933
+        y: 227
+        width: 24
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ec004c987f6454b4ab14db1649b3cd0c
+      internalID: -1417778081
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_192
+      rect:
+        serializedVersion: 2
+        x: 964
+        y: 227
+        width: 28
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2a50bc49291255f4f906ebff141a7715
+      internalID: 871022058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_193
+      rect:
+        serializedVersion: 2
+        x: 1222
+        y: 206
+        width: 28
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fb7c07c6b2496d84c87c4031de168c1f
+      internalID: 1944642505
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_194
+      rect:
+        serializedVersion: 2
+        x: 1264
+        y: 205
+        width: 26
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3f7ceb1579a86194e84280129d0f9ec5
+      internalID: 1270655919
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_195
+      rect:
+        serializedVersion: 2
+        x: 1302
+        y: 203
+        width: 31
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1aeca048c0e5e394da2d356d77f8849c
+      internalID: -338797705
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_196
+      rect:
+        serializedVersion: 2
+        x: 1342
+        y: 203
+        width: 34
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dd3202313dd563241bf0adeeb24f466a
+      internalID: -1292582372
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_197
+      rect:
+        serializedVersion: 2
+        x: 1381
+        y: 229
+        width: 22
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 26cdd043f33ce674bbce0660f0075475
+      internalID: -57580803
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_198
+      rect:
+        serializedVersion: 2
+        x: 1414
+        y: 229
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ff145845ce37e824699dccf721e87cf6
+      internalID: -536617517
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_199
+      rect:
+        serializedVersion: 2
+        x: 1445
+        y: 227
+        width: 24
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dd6a54f12bca76d4dbdb94e53a6206f5
+      internalID: 407801513
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_200
+      rect:
+        serializedVersion: 2
+        x: 1476
+        y: 227
+        width: 28
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cfb8c7154048b184990ccf159eb2fe59
+      internalID: 1145266836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_201
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 182
+        width: 37
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e6761ffbbcc562f44a07b237b9457c83
+      internalID: -618897182
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_202
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 182
+        width: 36
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 68711b5a7a7c15b4497526c4a8fac240
+      internalID: 1737871175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_203
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 182
+        width: 35
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c3dff2eafe3e7b84093665630a9b514d
+      internalID: 1101966731
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_204
+      rect:
+        serializedVersion: 2
+        x: 150
+        y: 181
+        width: 36
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 730112e6c50be6f4ea398e210d19a56a
+      internalID: 931435281
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_205
+      rect:
+        serializedVersion: 2
+        x: 193
+        y: 135
+        width: 60
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8bc22160d5b7b454ba9b37148c7d680a
+      internalID: -1346409558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_206
+      rect:
+        serializedVersion: 2
+        x: 257
+        y: 135
+        width: 60
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9edb4d34f395b7a4aa0f043804a8f8f7
+      internalID: -1529067672
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_207
+      rect:
+        serializedVersion: 2
+        x: 321
+        y: 135
+        width: 60
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6b96eb62f3bfac54296cdf7dffaedf4d
+      internalID: 1808825836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_208
+      rect:
+        serializedVersion: 2
+        x: 385
+        y: 135
+        width: 60
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 46475009a5cee384b88291872e8d2f1d
+      internalID: 190972987
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_209
+      rect:
+        serializedVersion: 2
+        x: 517
+        y: 182
+        width: 37
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 64a37758bc06a6e4089b7fa24b751b25
+      internalID: 582191033
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_210
+      rect:
+        serializedVersion: 2
+        x: 566
+        y: 182
+        width: 36
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f2f19153fae80274393a4f6e4b0a29a7
+      internalID: 2136128311
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_211
+      rect:
+        serializedVersion: 2
+        x: 614
+        y: 182
+        width: 35
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 46fa9e3f780b84e4aa9694225a444b42
+      internalID: 1282000028
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_212
+      rect:
+        serializedVersion: 2
+        x: 662
+        y: 181
+        width: 36
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 406cbb69b01b7cb4186f1cfc1a90059c
+      internalID: 30898219
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_213
+      rect:
+        serializedVersion: 2
+        x: 705
+        y: 135
+        width: 60
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a8c7ce2c83c17fb499e5565bcf4ea7f4
+      internalID: -1640745453
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_214
+      rect:
+        serializedVersion: 2
+        x: 769
+        y: 135
+        width: 60
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 760b375587f854b4f99b474066a55ab1
+      internalID: 406123006
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_215
+      rect:
+        serializedVersion: 2
+        x: 833
+        y: 135
+        width: 60
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fd4ccc4fef8322e4db4c8230757c9e69
+      internalID: -1379353933
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_216
+      rect:
+        serializedVersion: 2
+        x: 897
+        y: 135
+        width: 60
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9e4fe71fc5a02114aa49f65f4ea89afa
+      internalID: 836244919
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_217
+      rect:
+        serializedVersion: 2
+        x: 1029
+        y: 182
+        width: 37
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 47abfc7122f5f084e8ca7904906fa3e9
+      internalID: 114331017
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_218
+      rect:
+        serializedVersion: 2
+        x: 1078
+        y: 182
+        width: 36
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6305d65a51a9e1a4099fd65555c479dc
+      internalID: -1098457242
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_219
+      rect:
+        serializedVersion: 2
+        x: 1126
+        y: 182
+        width: 35
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4b3013506202506408e53106a77f98b2
+      internalID: 191311528
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_220
+      rect:
+        serializedVersion: 2
+        x: 1174
+        y: 181
+        width: 36
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 96afbc7cce81a4d4b8a5f82c5d2b0846
+      internalID: -229591613
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_221
+      rect:
+        serializedVersion: 2
+        x: 1218
+        y: 134
+        width: 60
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b6af1be8915e92541b0731c4b5fd6ce3
+      internalID: -1276079272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_222
+      rect:
+        serializedVersion: 2
+        x: 1282
+        y: 134
+        width: 60
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f96fb06148fafef4692a312570443cfd
+      internalID: 127433374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_223
+      rect:
+        serializedVersion: 2
+        x: 1346
+        y: 134
+        width: 60
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f919f979a3d57b74089dd1c52b653bfe
+      internalID: 1222270627
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_224
+      rect:
+        serializedVersion: 2
+        x: 1410
+        y: 134
+        width: 60
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 53d42f410ff9a5a4f8a8acca17fe031f
+      internalID: -1394642261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_225
+      rect:
+        serializedVersion: 2
+        x: 13
+        y: 129
+        width: 28
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bcbafae13c78a5045997319198a93303
+      internalID: -388812676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_226
+      rect:
+        serializedVersion: 2
+        x: 51
+        y: 83
+        width: 39
+        height: 95
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9ce92173519d67546b96724eada85c22
+      internalID: 1595573060
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_227
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 126
+        width: 24
+        height: 51
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 003c880434cb37c4ca09dd2583f9cb76
+      internalID: 1045269879
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_228
+      rect:
+        serializedVersion: 2
+        x: 152
+        y: 127
+        width: 25
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 549ac6867e0940f4698ed001ea917f77
+      internalID: 964795254
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_229
+      rect:
+        serializedVersion: 2
+        x: 527
+        y: 130
+        width: 24
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4f7dace81b8542349b05361dfd538b70
+      internalID: 576539415
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_230
+      rect:
+        serializedVersion: 2
+        x: 575
+        y: 128
+        width: 19
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cb014113e3c88954a8b5cf32c29231c7
+      internalID: -321037396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_231
+      rect:
+        serializedVersion: 2
+        x: 622
+        y: 128
+        width: 19
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: df62513787976f64ea2b9cc79b1de13e
+      internalID: -1952616802
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_232
+      rect:
+        serializedVersion: 2
+        x: 665
+        y: 129
+        width: 21
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 18d1edd7faf785a489c7ac460a712cb4
+      internalID: 285320090
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_233
+      rect:
+        serializedVersion: 2
+        x: 1039
+        y: 130
+        width: 24
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3336c6b6dd0404e49a432025fc0ecaad
+      internalID: -418016352
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_234
+      rect:
+        serializedVersion: 2
+        x: 1087
+        y: 128
+        width: 19
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a5221df4a6d2245448cf857415ec8782
+      internalID: -1928724163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_235
+      rect:
+        serializedVersion: 2
+        x: 1134
+        y: 128
+        width: 19
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 676366c537442304dbf7fc41bda2c544
+      internalID: -1846904097
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_236
+      rect:
+        serializedVersion: 2
+        x: 1177
+        y: 129
+        width: 21
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d676802bb14f7654c82333a5e5b82738
+      internalID: 1995778160
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_237
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 82
+        width: 40
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 48892b09b2332f74081a619a6fc986b9
+      internalID: 860512641
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_238
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 81
+        width: 41
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f4b4d1178dd076f40a7f29c5214251de
+      internalID: 374145569
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_239
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 83
+        width: 43
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: af066e65e22b2824786afdc291ad2bfc
+      internalID: 747894774
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_240
+      rect:
+        serializedVersion: 2
+        x: 193
+        y: 69
+        width: 61
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 88ae813a48813de4da80b45507f1f8b3
+      internalID: 794307693
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_241
+      rect:
+        serializedVersion: 2
+        x: 257
+        y: 69
+        width: 61
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4fb3d93270e95384ba3053c10fb5cdc0
+      internalID: 1214543052
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_242
+      rect:
+        serializedVersion: 2
+        x: 321
+        y: 69
+        width: 61
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1af8557a6750ac3459257893a2ff08cb
+      internalID: 28479144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_243
+      rect:
+        serializedVersion: 2
+        x: 385
+        y: 69
+        width: 61
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c5b9dd16f3fabc74f84dee4ba6f64138
+      internalID: 1832476786
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_244
+      rect:
+        serializedVersion: 2
+        x: 519
+        y: 84
+        width: 36
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e2cfb5da96013ba4aabbfbdd4b2445ed
+      internalID: 1795096433
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_245
+      rect:
+        serializedVersion: 2
+        x: 564
+        y: 85
+        width: 36
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dc526a462ba678a45ae5ccd11a4ab4e4
+      internalID: 799418323
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_246
+      rect:
+        serializedVersion: 2
+        x: 613
+        y: 82
+        width: 37
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b204b150d77b5ee4eb65dbd1bec81a7a
+      internalID: 967390191
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_247
+      rect:
+        serializedVersion: 2
+        x: 663
+        y: 85
+        width: 40
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 72f5188769cd6d14582c3e998df4e79f
+      internalID: 177662276
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_248
+      rect:
+        serializedVersion: 2
+        x: 705
+        y: 69
+        width: 61
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5ba603f8c400e164d9f8282b96b1c091
+      internalID: -1864729699
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_249
+      rect:
+        serializedVersion: 2
+        x: 769
+        y: 69
+        width: 61
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b96ef7b13f8057c4b90cdbbf120faa4d
+      internalID: 592344154
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_250
+      rect:
+        serializedVersion: 2
+        x: 833
+        y: 69
+        width: 61
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e9e03f1e88608b841bf961060b34b444
+      internalID: 1140981995
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_251
+      rect:
+        serializedVersion: 2
+        x: 897
+        y: 69
+        width: 61
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1a3e99bea3e53514fbe278bf2e4835c0
+      internalID: 1920626534
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_252
+      rect:
+        serializedVersion: 2
+        x: 1031
+        y: 84
+        width: 36
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9e62144d399e1e94ab58dff3a6bc6b0a
+      internalID: 131008590
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_253
+      rect:
+        serializedVersion: 2
+        x: 1076
+        y: 85
+        width: 36
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7bb80df9cf87fb4439c323a58caa1f97
+      internalID: 1027088176
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_254
+      rect:
+        serializedVersion: 2
+        x: 1125
+        y: 82
+        width: 37
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 99e72fda455067840810a832bc90fbb1
+      internalID: -606539150
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_255
+      rect:
+        serializedVersion: 2
+        x: 1175
+        y: 85
+        width: 40
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1a8d7c4ff2d4f014f96ef1d98ef84d3a
+      internalID: 2054361385
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_256
+      rect:
+        serializedVersion: 2
+        x: 1218
+        y: 68
+        width: 61
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1e51763bf2765434caa2d4d163aad3a1
+      internalID: -845266744
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_257
+      rect:
+        serializedVersion: 2
+        x: 1282
+        y: 68
+        width: 61
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 90ea0101faece5a4f8a93ec0192b786e
+      internalID: 99749992
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_258
+      rect:
+        serializedVersion: 2
+        x: 1346
+        y: 68
+        width: 61
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8636fa92762b4f648856b8dbb9e5782c
+      internalID: 527418996
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_259
+      rect:
+        serializedVersion: 2
+        x: 1410
+        y: 68
+        width: 61
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2540627df0d2cd54bbf79fb2764de714
+      internalID: -152680843
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_260
+      rect:
+        serializedVersion: 2
+        x: 6
+        y: 39
+        width: 37
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2daf0b0a46ef9f241975ac8912288369
+      internalID: 224161562
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_261
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 37
+        width: 35
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 40587471022064a48a1afd576815a704
+      internalID: -228833734
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_262
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 34
+        width: 40
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 169c079afd6883b4d8cb4e95e2f82eef
+      internalID: -177925771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_263
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 5
+        width: 106
+        height: 70
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9c0fbc85d1747cb4bbb1413e92cd9bbf
+      internalID: -903324098
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_264
+      rect:
+        serializedVersion: 2
+        x: 257
+        y: 5
+        width: 62
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 59331b73dc900bf4d9babcf92a082f7c
+      internalID: 2011455967
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_265
+      rect:
+        serializedVersion: 2
+        x: 321
+        y: 5
+        width: 62
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6e8fe7d10fa8eba448b9a0da65688193
+      internalID: -884610036
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_266
+      rect:
+        serializedVersion: 2
+        x: 385
+        y: 5
+        width: 62
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 74f819b016e1e534a8e3c19874644095
+      internalID: 1475372319
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_267
+      rect:
+        serializedVersion: 2
+        x: 519
+        y: 40
+        width: 34
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e7895b838f3aec447831ef9da2be79f0
+      internalID: 1807041831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_268
+      rect:
+        serializedVersion: 2
+        x: 570
+        y: 39
+        width: 31
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: af79291136ea5894a92fda6dc50f6ba2
+      internalID: 1636957959
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_269
+      rect:
+        serializedVersion: 2
+        x: 615
+        y: 36
+        width: 37
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7d4e133b893b5684cb96661d4832fd52
+      internalID: -1629464725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_270
+      rect:
+        serializedVersion: 2
+        x: 663
+        y: 36
+        width: 41
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 47f9cbe0b26ab1442afa6a779e07abc4
+      internalID: -2070225084
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_271
+      rect:
+        serializedVersion: 2
+        x: 705
+        y: 5
+        width: 62
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 96b7990fff52bb047881b0b5b34144bc
+      internalID: 1467768026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_272
+      rect:
+        serializedVersion: 2
+        x: 769
+        y: 5
+        width: 62
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 742b109fe22eaf542beff00b3e76094f
+      internalID: 776977092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_273
+      rect:
+        serializedVersion: 2
+        x: 833
+        y: 5
+        width: 62
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dfae09f3c0d01f04ab2289efbb3fa879
+      internalID: -377232812
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_274
+      rect:
+        serializedVersion: 2
+        x: 897
+        y: 5
+        width: 62
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5313198fe8d69e945a1f34e71d3fb6e6
+      internalID: 993504335
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_275
+      rect:
+        serializedVersion: 2
+        x: 1031
+        y: 40
+        width: 34
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 06eafeded08089345a92244c62fc0bc5
+      internalID: 779045658
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_276
+      rect:
+        serializedVersion: 2
+        x: 1082
+        y: 39
+        width: 31
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 140876b666c2bbb4fa7e8d7b5f30a325
+      internalID: 1563666293
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_277
+      rect:
+        serializedVersion: 2
+        x: 1127
+        y: 36
+        width: 37
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 75b2385f3d01e974ab0c4fb0fc9437b7
+      internalID: -688035019
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_278
+      rect:
+        serializedVersion: 2
+        x: 1175
+        y: 36
+        width: 41
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0c42e064bec7fda47b6dcd36dd96f8cf
+      internalID: -46332955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_279
+      rect:
+        serializedVersion: 2
+        x: 1218
+        y: 5
+        width: 61
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: db4887d91c48c14478b995de5ec41298
+      internalID: 1542355990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_280
+      rect:
+        serializedVersion: 2
+        x: 1282
+        y: 5
+        width: 61
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6720570f7bf85fe4ca392953b7e22133
+      internalID: 453244478
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_281
+      rect:
+        serializedVersion: 2
+        x: 1346
+        y: 5
+        width: 61
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 99b80b360980a73438d3ace370b4d588
+      internalID: -690817107
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_282
+      rect:
+        serializedVersion: 2
+        x: 1410
+        y: 5
+        width: 61
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 29e3e04adfa8795428f2aa12439d03eb
+      internalID: 1432022049
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_0: 1377086896
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_1: -752567822
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_10: -9459285
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_100: 1264910905
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_101: -1709810378
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_102: 2108407594
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_103: 1721416930
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_104: 260197844
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_105: -659138140
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_106: 1252437756
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_107: -2055218715
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_108: 345466934
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_109: -2012194786
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_11: -1437093008
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_110: 1392913629
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_111: -1348790451
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_112: -837141147
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_113: -1029673287
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_114: 1899906468
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_115: 390247599
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_116: 1593645942
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_117: -17840338
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_118: 1859857115
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_119: 813392364
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_12: 497917197
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_120: 2103229568
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_121: -1912476439
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_122: -769806718
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_123: -919406798
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_124: 644233931
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_125: -551720800
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_126: 389139896
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_127: 99108026
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_128: 1754073672
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_129: -236855724
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_13: 1063186770
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_130: -90504993
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_131: -759696520
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_132: -1268460227
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_133: -109121120
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_134: 1516231804
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_135: 1795801207
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_136: -1423067245
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_137: 1992545644
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_138: -1361361155
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_139: 1096828633
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_14: -662210727
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_140: -1440856465
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_141: 1718185592
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_142: -1343694570
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_143: -1986233394
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_144: 1413168118
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_145: -2052374037
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_146: -1993181944
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_147: 1731544464
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_148: -1526760830
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_149: 54003658
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_15: 1526578923
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_150: 1871851435
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_151: 1686873437
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_152: -1282714940
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_153: -1777700534
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_154: -388958587
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_155: -1569211012
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_156: -667341147
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_157: -999569726
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_158: -2052943136
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_159: -40053124
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_16: 1412951756
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_160: 1351989614
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_161: -2082490034
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_162: 1656762629
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_163: -2063388246
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_164: -1485100377
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_165: -1191525219
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_166: 1318716321
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_167: 634145968
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_168: -1654845643
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_169: -1909708060
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_17: 1622051886
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_170: -1649599752
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_171: -1694721117
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_172: -1205399481
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_173: -156449816
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_174: -1199018383
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_175: 1359563937
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_176: -1241420735
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_177: -16311056
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_178: -1326657745
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_179: 1613111280
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_18: -1533481092
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_180: 1698774178
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_181: -783309283
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_182: 746861697
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_183: 1943065945
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_184: -610884394
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_185: -994262106
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_186: -1255659217
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_187: -603678590
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_188: 2113906746
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_189: 304074417
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_19: -1446263619
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_190: 1433322304
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_191: -1417778081
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_192: 871022058
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_193: 1944642505
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_194: 1270655919
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_195: -338797705
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_196: -1292582372
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_197: -57580803
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_198: -536617517
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_199: 407801513
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_2: 432819678
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_20: 1371559841
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_200: 1145266836
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_201: -618897182
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_202: 1737871175
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_203: 1101966731
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_204: 931435281
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_205: -1346409558
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_206: -1529067672
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_207: 1808825836
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_208: 190972987
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_209: 582191033
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_21: -1464129634
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_210: 2136128311
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_211: 1282000028
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_212: 30898219
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_213: -1640745453
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_214: 406123006
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_215: -1379353933
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_216: 836244919
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_217: 114331017
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_218: -1098457242
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_219: 191311528
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_22: 2108627710
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_220: -229591613
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_221: -1276079272
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_222: 127433374
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_223: 1222270627
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_224: -1394642261
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_225: -388812676
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_226: 1595573060
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_227: 1045269879
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_228: 964795254
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_229: 576539415
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_23: -1465645844
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_230: -321037396
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_231: -1952616802
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_232: 285320090
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_233: -418016352
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_234: -1928724163
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_235: -1846904097
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_236: 1995778160
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_237: 860512641
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_238: 374145569
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_239: 747894774
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_24: 1048127975
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_240: 794307693
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_241: 1214543052
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_242: 28479144
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_243: 1832476786
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_244: 1795096433
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_245: 799418323
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_246: 967390191
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_247: 177662276
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_248: -1864729699
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_249: 592344154
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_25: 466779376
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_250: 1140981995
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_251: 1920626534
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_252: 131008590
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_253: 1027088176
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_254: -606539150
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_255: 2054361385
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_256: -845266744
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_257: 99749992
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_258: 527418996
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_259: -152680843
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_26: -1347125587
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_260: 224161562
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_261: -228833734
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_262: -177925771
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_263: -903324098
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_264: 2011455967
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_265: -884610036
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_266: 1475372319
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_267: 1807041831
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_268: 1636957959
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_269: -1629464725
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_27: -765623694
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_270: -2070225084
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_271: 1467768026
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_272: 776977092
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_273: -377232812
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_274: 993504335
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_275: 779045658
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_276: 1563666293
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_277: -688035019
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_278: -46332955
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_279: 1542355990
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_28: 620002521
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_280: 453244478
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_281: -690817107
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_282: 1432022049
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_29: 876181960
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_3: 1643860400
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_30: 390782775
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_31: -585814608
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_32: -824555760
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_33: 763846681
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_34: -226570911
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_35: -568891718
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_36: -1755115543
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_37: 686667187
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_38: -1348317442
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_39: -637993397
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_4: -1971024808
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_40: -670981713
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_41: 1843439031
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_42: -373760307
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_43: -797015344
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_44: -261590853
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_45: -1583761246
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_46: -549488136
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_47: 428497737
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_48: 930537311
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_49: -1782403346
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_5: 1472859057
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_50: 1691551104
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_51: 430643049
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_52: -1028503735
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_53: 762988495
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_54: 726556261
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_55: -129987587
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_56: -877338412
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_57: -158026735
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_58: 2054298141
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_59: -360362748
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_6: -831210451
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_60: -741419297
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_61: -254793786
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_62: 414200322
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_63: -1715624121
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_64: 1068348692
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_65: 1205091251
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_66: -2115198401
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_67: 442435231
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_68: -1982614292
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_69: -468353099
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_7: 703973082
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_70: 838290353
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_71: -1418416253
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_72: 1946752037
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_73: 874673695
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_74: 555159740
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_75: 2035615955
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_76: -1719380831
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_77: -744488599
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_78: 1095535775
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_79: -670887885
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_8: 901961711
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_80: 337675106
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_81: -2134674395
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_82: 210073327
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_83: -727475653
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_84: -87280444
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_85: 987086216
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_86: -2059599021
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_87: -468756709
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_88: -955561682
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_89: 1164011798
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_9: -295034475
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_90: 515049057
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_91: -816360122
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_92: -2051362938
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_93: -949017443
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_94: -1303896807
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_95: -1066195764
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_96: -925883027
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_97: 2006464800
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_98: -42850676
+      Touhou Kaeizuka Phantasmagoria of Flower View - Enemies_99: -840918910
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

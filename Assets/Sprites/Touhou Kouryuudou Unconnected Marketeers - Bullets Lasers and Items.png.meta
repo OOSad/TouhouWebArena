@@ -1,0 +1,4792 @@
+fileFormatVersion: 2
+guid: a4986cd607ee3074382a1bc03df24f75
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2001
+        width: 256
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: edaee870b1cefd647a673f5c3764ace3
+      internalID: -154244235
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1952
+        width: 256
+        height: 47
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0fe05067f9a245d48a741bde8c8ed66a
+      internalID: 557910535
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_2
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 1937
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 10ef042e3eda28f4198dc37d16195409
+      internalID: -927416390
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_3
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 1937
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c5f53e30510ecfc48be3d3e917f21f73
+      internalID: 1541508680
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_4
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 1937
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b429acbc584be174bbfaa752d3d7d9e3
+      internalID: -565814504
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_5
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 1937
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aad9ccc965473e54ba1cf2c9f7593780
+      internalID: -1447444100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_6
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 1937
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7983bcbd20028e84588b7383005ddb70
+      internalID: -843747120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_7
+      rect:
+        serializedVersion: 2
+        x: 84
+        y: 1937
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0102855f7f4955e4a853eebd5e3ee08e
+      internalID: -1756349096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_8
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 1937
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6625028ba78abda4c96bb6660f64d50a
+      internalID: 1570329608
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_9
+      rect:
+        serializedVersion: 2
+        x: 116
+        y: 1937
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ed208359156f1194786daa627a89f867
+      internalID: 1285245339
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_10
+      rect:
+        serializedVersion: 2
+        x: 132
+        y: 1937
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f500a3424c9aa344a8967f624d4fdde4
+      internalID: 827809401
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_11
+      rect:
+        serializedVersion: 2
+        x: 148
+        y: 1937
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b1b83d2c525a6bb4aad9aad4d4d3d180
+      internalID: 1887711093
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_12
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 1937
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b05e15ab190bfd349bac776bb5afaa24
+      internalID: 1474614120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_13
+      rect:
+        serializedVersion: 2
+        x: 180
+        y: 1937
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aa5928193134c69419d7ba5cf433686b
+      internalID: -952337741
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_14
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 1937
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2eaa548ad0c8cc64895ae4f3b40de024
+      internalID: 1657440828
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_15
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 1937
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 72a18fd3937fe004584376ed99407291
+      internalID: -99415990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_16
+      rect:
+        serializedVersion: 2
+        x: 228
+        y: 1937
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5604af1264fbdfe4bb6908ce828cf3ad
+      internalID: 1879461288
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_17
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 1937
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4a232ce3ef1e33e4fa761fc86cacbca3
+      internalID: 749918703
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_18
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1808
+        width: 256
+        height: 128
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 19fcfff5c6c8bb14daf1b6cd3a1bf467
+      internalID: 1273943347
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_19
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 1777
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d8e4cdee76cee804aa9bea2c85e07884
+      internalID: 649630068
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_20
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 1777
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fcd4f0ac9645060478c85f6bf0eaa573
+      internalID: 644620078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_21
+      rect:
+        serializedVersion: 2
+        x: 65
+        y: 1777
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f0dea56a1b78dee4b9f9eb338225a6f4
+      internalID: 1097801525
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_22
+      rect:
+        serializedVersion: 2
+        x: 97
+        y: 1777
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 72894643f34cea7498175405c291d89a
+      internalID: -724760203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_23
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 1777
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 371ebaa48b9bc3e43ad05bdda922671c
+      internalID: 714615706
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_24
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 1777
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d10baf6902f1b254d98fe1ea34ba596b
+      internalID: -707017861
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_25
+      rect:
+        serializedVersion: 2
+        x: 193
+        y: 1777
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0c134e656e02ea143be3dd1067fb5223
+      internalID: -644714161
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_26
+      rect:
+        serializedVersion: 2
+        x: 225
+        y: 1777
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a8b0fd10c4ca55d4c8e5c13fe5717352
+      internalID: -1477147796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_27
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1760
+        width: 64
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5d84bc39f6e6b6e47b703e6fde512592
+      internalID: -2037106128
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_28
+      rect:
+        serializedVersion: 2
+        x: 66
+        y: 1762
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9ae93c81dc05aab4c8ad3af8d11afafd
+      internalID: 590934777
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_29
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 1762
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 93d4fb89a1c6f4e4c97e16f36bfed9ba
+      internalID: -1754046059
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_30
+      rect:
+        serializedVersion: 2
+        x: 98
+        y: 1762
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ca883ea8df0176942af45263999a777f
+      internalID: 1887183034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_31
+      rect:
+        serializedVersion: 2
+        x: 114
+        y: 1762
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e3a9c3de817f40040b6a2763d5ac93f4
+      internalID: -411776573
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_32
+      rect:
+        serializedVersion: 2
+        x: 130
+        y: 1762
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6f6aceca6ec1c7246bfe6cefc81de2d6
+      internalID: -1881732294
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_33
+      rect:
+        serializedVersion: 2
+        x: 146
+        y: 1762
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 80d48fcd8a188cc45833556dc20cd620
+      internalID: 1482936621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_34
+      rect:
+        serializedVersion: 2
+        x: 162
+        y: 1762
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 47274af09fc63c54b8876bb70c6cac8e
+      internalID: -1883854070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_35
+      rect:
+        serializedVersion: 2
+        x: 178
+        y: 1762
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fd83818965d26a14d827c7c24271baa6
+      internalID: 178647928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_36
+      rect:
+        serializedVersion: 2
+        x: 194
+        y: 1762
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: df0bf05491ab5b243b7fc321f501bd62
+      internalID: -831739256
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_37
+      rect:
+        serializedVersion: 2
+        x: 210
+        y: 1762
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 532abf834f4a050469890885ddc07c2e
+      internalID: 484564086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_38
+      rect:
+        serializedVersion: 2
+        x: 248
+        y: 1760
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 53199028b35460440b58532bac51fd49
+      internalID: 953721920
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_39
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1730
+        width: 256
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 818c5d5891183de4ea1531cacc1371eb
+      internalID: 474423531
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_40
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1666
+        width: 256
+        height: 62
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: feae4c2ed92669747ac509edc0b7f004
+      internalID: 567171329
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_41
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 1601
+        width: 24
+        height: 63
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ea0b56afb3135714895bca285cf267f0
+      internalID: -2033078376
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_42
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 1632
+        width: 24
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: be84dad2032df364bb9830a463f1f3f5
+      internalID: -1946849026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_43
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 1632
+        width: 24
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 88536ad57fabdf14696d7673b3ee5773
+      internalID: -1367417990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_44
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 1632
+        width: 24
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8b895549c751d3a4296d38a77895b14f
+      internalID: -1806778359
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_45
+      rect:
+        serializedVersion: 2
+        x: 132
+        y: 1632
+        width: 24
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f7c6a83bbf7494049be0280ff6e3ff67
+      internalID: 480159602
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_46
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 1632
+        width: 24
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 92430999483b16448ba11446f9acc502
+      internalID: -697361986
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_47
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 1632
+        width: 24
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7b6e19e0264ae074e8a6f906ecae70b9
+      internalID: 660962193
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_48
+      rect:
+        serializedVersion: 2
+        x: 228
+        y: 1632
+        width: 24
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 14d8d2f7c6b2f3448a4d8e5354cb9938
+      internalID: -25124220
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_49
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 1601
+        width: 15
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6814177c0e579a64a954bb01fae77cd6
+      internalID: -1199587341
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_50
+      rect:
+        serializedVersion: 2
+        x: 73
+        y: 1601
+        width: 14
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1bd5cca01bf89ec42b5fd34ce5bcbfc1
+      internalID: -2041497272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_51
+      rect:
+        serializedVersion: 2
+        x: 105
+        y: 1601
+        width: 15
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0f61d683cbaeb4e4f9fc0a5161ac439a
+      internalID: 562379569
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_52
+      rect:
+        serializedVersion: 2
+        x: 137
+        y: 1601
+        width: 15
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 82d04a2150085d144ab61036bff21d1f
+      internalID: -900759214
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_53
+      rect:
+        serializedVersion: 2
+        x: 169
+        y: 1601
+        width: 14
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5b8766df4c9871d4a972158cc34bda6f
+      internalID: 1120350547
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_54
+      rect:
+        serializedVersion: 2
+        x: 201
+        y: 1601
+        width: 15
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5b47f99c47033e64f8973cd4f0fbf184
+      internalID: 1958463161
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_55
+      rect:
+        serializedVersion: 2
+        x: 233
+        y: 1601
+        width: 15
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a84b787fb3c14f34bb002b3c1b8f3a28
+      internalID: 1320443639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_56
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 1569
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 584d6b70c1a7a29458a9bf0be8136d51
+      internalID: -1237726206
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_57
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 1569
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d3a26d9953c273b42ad4f532816fde58
+      internalID: -983676002
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_58
+      rect:
+        serializedVersion: 2
+        x: 65
+        y: 1569
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 32f3ed3222747b74e9050dd82f186cad
+      internalID: -617768383
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_59
+      rect:
+        serializedVersion: 2
+        x: 97
+        y: 1569
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0c732db9322073f43a09e478c0ea752f
+      internalID: 1509874264
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_60
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 1569
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 68f01a30a32d44c429d3b87ffef80c9b
+      internalID: 644077457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_61
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 1569
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f2156c79bc5bce4439620a776c233f5d
+      internalID: -29488487
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_62
+      rect:
+        serializedVersion: 2
+        x: 193
+        y: 1569
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1d55c28ad9de4d243834f967b970d3bb
+      internalID: -1947665860
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_63
+      rect:
+        serializedVersion: 2
+        x: 225
+        y: 1569
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f487a26e91816954c9f208956fa3089b
+      internalID: -1156419328
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_64
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 1505
+        width: 62
+        height: 62
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7d25563352be10848966839e906b9224
+      internalID: -259231073
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_65
+      rect:
+        serializedVersion: 2
+        x: 65
+        y: 1505
+        width: 62
+        height: 62
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e9e723ce8dcdccb40aaa50746e9735bc
+      internalID: -1179758520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_66
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 1505
+        width: 62
+        height: 62
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c5103ee4656f0344d818aee4b40d51c9
+      internalID: 452123384
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_67
+      rect:
+        serializedVersion: 2
+        x: 193
+        y: 1505
+        width: 62
+        height: 62
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 61484b289e16cc7408158383bb506686
+      internalID: -958287052
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_68
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 1473
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dcadabf5bf331994e8897328b180b72d
+      internalID: -2066217457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_69
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 1473
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1cc55397a1f94b142a9a711c5c1544d6
+      internalID: 318545392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_70
+      rect:
+        serializedVersion: 2
+        x: 65
+        y: 1473
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0319575fdc194c7418ec284fc5600257
+      internalID: 11285220
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_71
+      rect:
+        serializedVersion: 2
+        x: 97
+        y: 1473
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0c4fb6d3fd2fb614697d6f4a09faeef9
+      internalID: 824286673
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_72
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 1473
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 136d8c9312947b247b666b399cf4fca4
+      internalID: -450893674
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_73
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 1473
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 339773f10d9bf3b4ba722495e2581125
+      internalID: 346175838
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_74
+      rect:
+        serializedVersion: 2
+        x: 193
+        y: 1473
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3498ca48fc6bf8841b845b7656adf696
+      internalID: -638763904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_75
+      rect:
+        serializedVersion: 2
+        x: 225
+        y: 1473
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d26c498b01f1fd84e8383cabb1ba9cd9
+      internalID: -1080893676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_76
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 1440
+        width: 10
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 94c7e477a738e3e4a9e077809ffa5835
+      internalID: -2008722628
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_77
+      rect:
+        serializedVersion: 2
+        x: 43
+        y: 1440
+        width: 10
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 172130dd98d282244a2798a8c779f345
+      internalID: 739798268
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_78
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 1440
+        width: 10
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9fadd437b686e234eb6785a8ccb4a49c
+      internalID: -1104629148
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_79
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 1440
+        width: 10
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ab3b85caec0f0ac4cb6a9ed71d07e537
+      internalID: 1635152545
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_80
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 1440
+        width: 10
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d6a1fb9836c604b42af5be61514c9d54
+      internalID: -29114923
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_81
+      rect:
+        serializedVersion: 2
+        x: 171
+        y: 1440
+        width: 10
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 871d7450e6edda649bd03f61f99fcd51
+      internalID: -2064898684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_82
+      rect:
+        serializedVersion: 2
+        x: 203
+        y: 1440
+        width: 10
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b46c1450115a64d49aaebc29017c90b3
+      internalID: -1771266765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_83
+      rect:
+        serializedVersion: 2
+        x: 235
+        y: 1440
+        width: 10
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f546494f19f3cdf458e773f1a0699dad
+      internalID: -438635687
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_84
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 1414
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8e59ac0f2d42b6844b872fd02acd7915
+      internalID: -1598620660
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_85
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 1414
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 522a87fdd331e794880eaf3d585e79d9
+      internalID: 1533511761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_86
+      rect:
+        serializedVersion: 2
+        x: 69
+        y: 1414
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8a45e6f642cb3e54db78652fa7a50883
+      internalID: 1453853943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_87
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 1414
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cbd2f51865c83d44f85132e3e23eeb2e
+      internalID: -1052603049
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_88
+      rect:
+        serializedVersion: 2
+        x: 133
+        y: 1414
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 149d434eae3e9874b970705594837ebb
+      internalID: -232490967
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_89
+      rect:
+        serializedVersion: 2
+        x: 165
+        y: 1414
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 65702429f310eda4ab6e69e6f86567c9
+      internalID: 1326594276
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_90
+      rect:
+        serializedVersion: 2
+        x: 197
+        y: 1414
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 38f209dcf06ee004eb1e3963c3da38cd
+      internalID: 2122536962
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_91
+      rect:
+        serializedVersion: 2
+        x: 229
+        y: 1414
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 516728a1bc03c3940bed4703ee115dae
+      internalID: 283178580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_92
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 1393
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9cef9db18c8342542aae518d4f78780b
+      internalID: -2004721333
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_93
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 1393
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c4f25e6d23b739a4aad11f95e705a676
+      internalID: 1377850610
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_94
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 1391
+        width: 96
+        height: 17
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 067e4f7b4a07e0f49ae886a4f7622312
+      internalID: 288581318
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_95
+      rect:
+        serializedVersion: 2
+        x: 131
+        y: 1395
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 255b762b3f7804b4b812d817ea03e22b
+      internalID: -860342504
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_96
+      rect:
+        serializedVersion: 2
+        x: 147
+        y: 1395
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d2d98d8a96a868b448e57fd995f34ca8
+      internalID: -5052659
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_97
+      rect:
+        serializedVersion: 2
+        x: 162
+        y: 1395
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b9d53fbb86e315740a705246f4fb565d
+      internalID: -122816480
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_98
+      rect:
+        serializedVersion: 2
+        x: 178
+        y: 1395
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 795babe27c404f640858ee964bd80b54
+      internalID: 1914735864
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_99
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 1398
+        width: 14
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f498b40a1ee00c5429373836a526dbe4
+      internalID: -1626878446
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_100
+      rect:
+        serializedVersion: 2
+        x: 194
+        y: 1395
+        width: 28
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f5a990e2080723747b50b01f9186474c
+      internalID: -959506535
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_101
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 1395
+        width: 14
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a63c3ea0c48886f40ae746a7ac703a87
+      internalID: 1487424180
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_102
+      rect:
+        serializedVersion: 2
+        x: 242
+        y: 1395
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7b4cfde72679d1a41b385b324a40e52c
+      internalID: -707947536
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_103
+      rect:
+        serializedVersion: 2
+        x: 145
+        y: 1382
+        width: 15
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 19c96d3521b3ad847a1d7db14ba49841
+      internalID: 516701664
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_104
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 1382
+        width: 30
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e73824d0171223d4eb68acce49bf4627
+      internalID: 888405765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_105
+      rect:
+        serializedVersion: 2
+        x: 194
+        y: 1312
+        width: 30
+        height: 77
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 65cd20255ff748549bd442bcaa82a45c
+      internalID: -946382284
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_106
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 1312
+        width: 29
+        height: 66
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 557fa45210ea3e344aca08f7183d3c2f
+      internalID: -290024155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_107
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 1312
+        width: 29
+        height: 66
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fb49c8b67da334946bb5302bbe060d3c
+      internalID: -947918767
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_108
+      rect:
+        serializedVersion: 2
+        x: 66
+        y: 1312
+        width: 30
+        height: 68
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 03eec062164bd804c8067832e17db1ed
+      internalID: 1269906691
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_109
+      rect:
+        serializedVersion: 2
+        x: 98
+        y: 1312
+        width: 30
+        height: 68
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: be35abef064bca243b9e5daeaad824f5
+      internalID: -1734922598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_110
+      rect:
+        serializedVersion: 2
+        x: 130
+        y: 1312
+        width: 29
+        height: 66
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bb03a6d5cf2007a4bb0bba8cdf4b3194
+      internalID: 1588383377
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_111
+      rect:
+        serializedVersion: 2
+        x: 162
+        y: 1312
+        width: 29
+        height: 66
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e3fb4220fc16811439312a889e0e00cb
+      internalID: -2066762777
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_112
+      rect:
+        serializedVersion: 2
+        x: 226
+        y: 1312
+        width: 30
+        height: 68
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 02d54e264cfc0d74c9dbea9d393c130a
+      internalID: -1050682245
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_113
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a47f798e8e3e53a47aac0e9dea168ef8
+      internalID: -1395976465
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_114
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6f7bf00139c9e2146869bdebf1e4e7ba
+      internalID: 1159771740
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_115
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bed025947ec1b784a829b6224e4861f5
+      internalID: 1695706142
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_116
+      rect:
+        serializedVersion: 2
+        x: 51
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8ab65fc0cb94edb4fa3cf8ed1082a0a5
+      internalID: 119125518
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_117
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 33cdfbbbe9176a342bdf176edea5621d
+      internalID: 1704147318
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_118
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0251a6412cbe2c541bad0f3411eaea8d
+      internalID: -897360802
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_119
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3644f03e16973344b8ab5251293ea5e1
+      internalID: 2116509939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_120
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 65fe615d8d7e7a64fb4d86796a6de0a2
+      internalID: 893004699
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_121
+      rect:
+        serializedVersion: 2
+        x: 131
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cdc5a12fad5508444877e353375c1081
+      internalID: -402455359
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_122
+      rect:
+        serializedVersion: 2
+        x: 147
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0f064cf620d3adf47b9adcd8291455d6
+      internalID: 141077515
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_123
+      rect:
+        serializedVersion: 2
+        x: 163
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9a42e58e15cbee94e811b54d98cadd98
+      internalID: 1709178171
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_124
+      rect:
+        serializedVersion: 2
+        x: 179
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 16a7aec75125f3e4f9763f004e3ef0b7
+      internalID: 1966515135
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_125
+      rect:
+        serializedVersion: 2
+        x: 195
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 512529c95fb91da4da0ea71a7eaa1ec7
+      internalID: -1688847358
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_126
+      rect:
+        serializedVersion: 2
+        x: 211
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dac903014f4713644b472accdcdb935a
+      internalID: -397180796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_127
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6474253b97d0dc140834052dc57ff4f9
+      internalID: 92948179
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_128
+      rect:
+        serializedVersion: 2
+        x: 243
+        y: 1298
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6c963fef8e41f7a42b1f96e550639310
+      internalID: -1039045015
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_129
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1249
+        width: 256
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3cb061dcd2ebfa640a71d8a270a138f2
+      internalID: 630249469
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_130
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1118
+        width: 256
+        height: 130
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a3603ca644c3fc14ea88904bd9beb1d6
+      internalID: -64718899
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_131
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 959
+        width: 17
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c5861d9413abbae4bbdb08385b408982
+      internalID: -340536721
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_132
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 960
+        width: 21
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 728564e549902a241b6879e7f8f9e73d
+      internalID: -692855963
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_133
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 960
+        width: 22
+        height: 31
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1ee2d3b6afd9a4140981b600893eac65
+      internalID: -1469119769
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_134
+      rect:
+        serializedVersion: 2
+        x: 105
+        y: 959
+        width: 17
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6c047c81ba0239241b59ce447119a7df
+      internalID: 48845319
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_135
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 960
+        width: 21
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e51bddad40fe5174abefff0b3e728d83
+      internalID: -284497917
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_136
+      rect:
+        serializedVersion: 2
+        x: 168
+        y: 960
+        width: 22
+        height: 31
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8a4275e498c041249ab91728f135c344
+      internalID: -1439191349
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_137
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 927
+        width: 17
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d93e33ac0fd22db4da7b0bfe0ac0ba7b
+      internalID: 2076981848
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_138
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 928
+        width: 21
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cd4f29bc22ccc364e94f434ff7824ce8
+      internalID: 1839407223
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_139
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 928
+        width: 22
+        height: 31
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ef77dcdd979262a40ab5fae3ab3e5a3e
+      internalID: 2116677805
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_140
+      rect:
+        serializedVersion: 2
+        x: 105
+        y: 927
+        width: 17
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 840f2ea53f58cfd4480e74e46597f663
+      internalID: 73193993
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_141
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 928
+        width: 21
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 08a35e4417e36244bbe87037ce9a2de6
+      internalID: 984898466
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_142
+      rect:
+        serializedVersion: 2
+        x: 168
+        y: 928
+        width: 22
+        height: 31
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8036787e36cd1244eb5f9a342ed00fd4
+      internalID: 1482781343
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_143
+      rect:
+        serializedVersion: 2
+        x: 10
+        y: 897
+        width: 11
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f1bb6f1f76d30ae42b9bfdaa83e8a83d
+      internalID: 504747878
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_144
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 897
+        width: 11
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a9ac3d5235dfa624ea19e1594237b5fa
+      internalID: -394072093
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_145
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 897
+        width: 11
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bf224802a2387f14e8c32d4bb34e5802
+      internalID: 131097640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_146
+      rect:
+        serializedVersion: 2
+        x: 106
+        y: 897
+        width: 11
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 060dbdef10cdd054890c89a7916c627d
+      internalID: -872702104
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_147
+      rect:
+        serializedVersion: 2
+        x: 138
+        y: 897
+        width: 11
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 650c812c23a8eb04591a491b8926dd02
+      internalID: -571860275
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_148
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 897
+        width: 11
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 94cb975559b6a914aafd594a3d8cfab2
+      internalID: -1007696943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_149
+      rect:
+        serializedVersion: 2
+        x: 202
+        y: 897
+        width: 11
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 738fc0a96763ced4a9ae39bb81b06c16
+      internalID: 1245029567
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_150
+      rect:
+        serializedVersion: 2
+        x: 234
+        y: 897
+        width: 11
+        height: 28
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b1a1c468f96731046bfe5c5b47bb2ed3
+      internalID: 170901258
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_151
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 705
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b228e5ef08af3414da108c4bb6c6638e
+      internalID: -862015587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_152
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 705
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1e4d03a948dd94443aea0fc2ae3f89c3
+      internalID: -92310508
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_153
+      rect:
+        serializedVersion: 2
+        x: 65
+        y: 705
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 178e6457f4a4cf74da87da895973739b
+      internalID: 1797237550
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_154
+      rect:
+        serializedVersion: 2
+        x: 97
+        y: 705
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b1cd930dbeaf9c145ab47780397c4726
+      internalID: 1353276958
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_155
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 705
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: abddc799ba113994f9ee726c8edd0ecb
+      internalID: -1819796550
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_156
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 705
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3de5e266ee9b93442bfbd8118ce949e1
+      internalID: -922174845
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_157
+      rect:
+        serializedVersion: 2
+        x: 193
+        y: 705
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9f42ee5962b277340b9b70a2bcdce238
+      internalID: -1466959264
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_158
+      rect:
+        serializedVersion: 2
+        x: 225
+        y: 705
+        width: 30
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 00e4951e1dc92284db848a84c768a1c2
+      internalID: 530090076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_159
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 641
+        width: 63
+        height: 62
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9abe336ccea227a429cf6c30579fa2e1
+      internalID: 1210993086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_160
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 641
+        width: 63
+        height: 62
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e5d297fe4637d1a42a4913b112b1df24
+      internalID: -315161447
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_161
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 641
+        width: 63
+        height: 62
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0251ad2e5cb72104797f80e5ec9532bc
+      internalID: 664864880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_162
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 641
+        width: 63
+        height: 62
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5204ab781a9ee6b44a2249d13b4e4f95
+      internalID: 1848139431
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_163
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 628
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b9ee63fe1ef50534e917455d6ade9875
+      internalID: 2025260414
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_164
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 612
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e7fe986778f15ef47befd560aa472b00
+      internalID: 1899530808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_165
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 596
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fc8725f9d49e3094a96756eb23a7bc92
+      internalID: 1837782862
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_166
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 580
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 439696a8a9391df49a9fd6c3d9f916b0
+      internalID: -1130690722
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_167
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 564
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 753a1d7afcfac9e42beb56c117d47744
+      internalID: -1808028577
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_168
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 548
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 63c7952326569c9429898bb3ef2d2de2
+      internalID: -1024562344
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_169
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 532
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 11a5eb9a669a78946b9fb0f42d7d49ec
+      internalID: -1571188889
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_170
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 516
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a968f44d2cbfaf24a98dcfd3b694ed85
+      internalID: 411150505
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_171
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 500
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8167585ed5a7d454a9de495b715ae3d6
+      internalID: -1461218712
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_172
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 484
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 51607d6c5a7915a45b4b227ea1fb2016
+      internalID: -1116022713
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_173
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 468
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1536ba9bae56318439b10a5cb2c25293
+      internalID: -160405741
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_174
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 452
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8a5374f6151d8b440added23e776f649
+      internalID: 624032031
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_175
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 436
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fb230aef4cea9ea4fa5447544125d31d
+      internalID: -1730640320
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_176
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 420
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e1b0dcff7ad651d4da1da6d3cc4851bc
+      internalID: -1203653556
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_177
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 404
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 50c7309a724f33541a332497fb218513
+      internalID: 1114735100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_178
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 388
+        width: 248
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: efdd8826692a0cc4bb78f986f64d8a1b
+      internalID: -334117024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_179
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 352
+        width: 252
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0f5692a53e4d9ce498cdc79f02fa5128
+      internalID: -222338682
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_180
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 322
+        width: 253
+        height: 31
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 91bbf9e263bc84d49a91474075a1abe3
+      internalID: -324537295
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_181
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 289
+        width: 250
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6d2feaaec14bb334fafda8590a6c21fa
+      internalID: -996063791
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_182
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 258
+        width: 244
+        height: 31
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1bf4f6c958192254b9839c8ba978b8b5
+      internalID: -69163203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_183
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 203
+        width: 159
+        height: 52
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c555b0db07ef9204e9d4275fb4a08c74
+      internalID: 1766235457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_184
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 203
+        width: 31
+        height: 52
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d340c93b096b61f4c8328f2cb2f98b00
+      internalID: 1996229262
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_185
+      rect:
+        serializedVersion: 2
+        x: 194
+        y: 241
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cb75e4683c5c9f744879a1be84394639
+      internalID: -1408187501
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_186
+      rect:
+        serializedVersion: 2
+        x: 210
+        y: 241
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 80bfc94bc98978848853efee151dd83a
+      internalID: -1456738131
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_187
+      rect:
+        serializedVersion: 2
+        x: 228
+        y: 241
+        width: 8
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2fc66ab1d31b9d5438dfc1b03f683fa7
+      internalID: -998037093
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_188
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 241
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5f998d76cbd52a047ab5f0b97d922700
+      internalID: 1830832033
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_189
+      rect:
+        serializedVersion: 2
+        x: 195
+        y: 227
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 28fe850b42e84d145a245647e2d1c02c
+      internalID: -18521207
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_190
+      rect:
+        serializedVersion: 2
+        x: 211
+        y: 227
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 313622ec0174ec74f90b1b23b87b85b7
+      internalID: 3334751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_191
+      rect:
+        serializedVersion: 2
+        x: 228
+        y: 225
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7d1c537805adf4a4b9eb4e0653769fe9
+      internalID: 146187681
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_192
+      rect:
+        serializedVersion: 2
+        x: 242
+        y: 226
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d31814a412d9d754cbe6e3d297c6d46b
+      internalID: 131612397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_193
+      rect:
+        serializedVersion: 2
+        x: 197
+        y: 213
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1f536616d51f1c0498292f6bd6b5498b
+      internalID: 933787192
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_194
+      rect:
+        serializedVersion: 2
+        x: 211
+        y: 210
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b46dadccb844ab54a944b024fe877e7c
+      internalID: 2004739961
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_195
+      rect:
+        serializedVersion: 2
+        x: 226
+        y: 210
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b4eade4ee73fcfb4cb506e0797d71c0a
+      internalID: 1524361396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_196
+      rect:
+        serializedVersion: 2
+        x: 193
+        y: 193
+        width: 14
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b1d0da4f3d9074c4393af1c1be70ff90
+      internalID: 995985064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_197
+      rect:
+        serializedVersion: 2
+        x: 22
+        y: 149
+        width: 31
+        height: 22
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f0851447fcf73b949b1d9fd060370303
+      internalID: 1917945063
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_198
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 148
+        width: 42
+        height: 25
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 019d4d1297137d64fa2f6ab12dd1af5b
+      internalID: 569740704
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_199
+      rect:
+        serializedVersion: 2
+        x: 146
+        y: 141
+        width: 43
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 245c96479748d64459ef4797925e1a2d
+      internalID: -1802188413
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_200
+      rect:
+        serializedVersion: 2
+        x: 210
+        y: 137
+        width: 33
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e3684b0254d611f428b712cce520e049
+      internalID: -989641569
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_201
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 149
+        width: 41
+        height: 39
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4e2064170e316bd49965d1d8ecfe9a5e
+      internalID: -1963137769
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_202
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 91
+        width: 46
+        height: 33
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bbc12b76c80c58945b887919f81b21f0
+      internalID: 1385161973
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_203
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 73
+        width: 36
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: da3e83df1939f3b4190fcc2d5e55a869
+      internalID: 1886362928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_204
+      rect:
+        serializedVersion: 2
+        x: 66
+        y: 75
+        width: 41
+        height: 44
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4afcb2207d65642428c3342b5ca33318
+      internalID: 352795428
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_205
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 73
+        width: 32
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c36c01f1ff42d5e46b573a8f6762fa9d
+      internalID: -1778783717
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_206
+      rect:
+        serializedVersion: 2
+        x: 130
+        y: 67
+        width: 24
+        height: 44
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d8c916454ed2f4f4aba50b22d47419e0
+      internalID: 1758565498
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_207
+      rect:
+        serializedVersion: 2
+        x: 199
+        y: 67
+        width: 6
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b23132c477a550348a02e26f53a7d38a
+      internalID: -1641507035
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_208
+      rect:
+        serializedVersion: 2
+        x: 155
+        y: 73
+        width: 27
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9d0234e35d307424383f5c3a6213ba5d
+      internalID: -1258278191
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_209
+      rect:
+        serializedVersion: 2
+        x: 229
+        y: 74
+        width: 17
+        height: 5
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: edfa04e7cda811b40948e29883b5a1a9
+      internalID: 250466914
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_0: -154244235
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_1: 557910535
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_10: 827809401
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_100: -959506535
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_101: 1487424180
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_102: -707947536
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_103: 516701664
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_104: 888405765
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_105: -946382284
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_106: -290024155
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_107: -947918767
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_108: 1269906691
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_109: -1734922598
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_11: 1887711093
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_110: 1588383377
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_111: -2066762777
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_112: -1050682245
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_113: -1395976465
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_114: 1159771740
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_115: 1695706142
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_116: 119125518
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_117: 1704147318
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_118: -897360802
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_119: 2116509939
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_12: 1474614120
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_120: 893004699
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_121: -402455359
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_122: 141077515
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_123: 1709178171
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_124: 1966515135
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_125: -1688847358
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_126: -397180796
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_127: 92948179
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_128: -1039045015
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_129: 630249469
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_13: -952337741
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_130: -64718899
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_131: -340536721
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_132: -692855963
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_133: -1469119769
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_134: 48845319
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_135: -284497917
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_136: -1439191349
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_137: 2076981848
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_138: 1839407223
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_139: 2116677805
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_14: 1657440828
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_140: 73193993
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_141: 984898466
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_142: 1482781343
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_143: 504747878
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_144: -394072093
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_145: 131097640
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_146: -872702104
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_147: -571860275
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_148: -1007696943
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_149: 1245029567
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_15: -99415990
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_150: 170901258
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_151: -862015587
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_152: -92310508
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_153: 1797237550
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_154: 1353276958
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_155: -1819796550
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_156: -922174845
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_157: -1466959264
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_158: 530090076
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_159: 1210993086
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_16: 1879461288
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_160: -315161447
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_161: 664864880
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_162: 1848139431
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_163: 2025260414
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_164: 1899530808
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_165: 1837782862
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_166: -1130690722
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_167: -1808028577
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_168: -1024562344
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_169: -1571188889
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_17: 749918703
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_170: 411150505
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_171: -1461218712
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_172: -1116022713
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_173: -160405741
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_174: 624032031
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_175: -1730640320
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_176: -1203653556
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_177: 1114735100
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_178: -334117024
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_179: -222338682
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_18: 1273943347
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_180: -324537295
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_181: -996063791
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_182: -69163203
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_183: 1766235457
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_184: 1996229262
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_185: -1408187501
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_186: -1456738131
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_187: -998037093
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_188: 1830832033
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_189: -18521207
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_19: 649630068
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_190: 3334751
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_191: 146187681
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_192: 131612397
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_193: 933787192
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_194: 2004739961
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_195: 1524361396
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_196: 995985064
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_197: 1917945063
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_198: 569740704
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_199: -1802188413
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_2: -927416390
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_20: 644620078
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_200: -989641569
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_201: -1963137769
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_202: 1385161973
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_203: 1886362928
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_204: 352795428
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_205: -1778783717
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_206: 1758565498
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_207: -1641507035
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_208: -1258278191
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_209: 250466914
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_21: 1097801525
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_210: 1668615330
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_211: -461595548
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_212: 808473541
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_213: 852150833
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_214: -1944865116
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_215: -274402177
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_216: -98355139
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_217: 1250268937
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_218: 1692954711
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_219: -139779020
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_22: -724760203
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_220: -2019627861
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_221: 1299367104
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_222: -204966542
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_223: 1175290601
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_224: 417640178
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_225: 776578608
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_226: 1432267007
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_227: 1709201365
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_228: -1711465973
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_229: -271150279
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_23: 714615706
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_230: -1614519622
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_231: 560737208
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_232: 998638472
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_233: -697928129
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_234: -1967734589
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_235: -532941065
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_236: 534342968
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_237: 2133871960
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_238: -503341133
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_239: 2091054743
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_24: -707017861
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_240: 2052498604
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_241: 589365583
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_242: -113516663
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_243: -2005660421
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_244: -2956685
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_245: 298292856
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_246: -342602975
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_247: 1774137144
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_248: -2015393665
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_249: -661400008
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_25: -644714161
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_250: -236054938
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_251: -758018080
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_252: 1817672965
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_253: -816122560
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_254: -1032092556
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_26: -1477147796
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_27: -2037106128
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_28: 590934777
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_29: -1754046059
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_3: 1541508680
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_30: 1887183034
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_31: -411776573
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_32: -1881732294
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_33: 1482936621
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_34: -1883854070
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_35: 178647928
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_36: -831739256
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_37: 484564086
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_38: 953721920
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_39: 474423531
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_4: -565814504
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_40: 567171329
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_41: -2033078376
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_42: -1946849026
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_43: -1367417990
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_44: -1806778359
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_45: 480159602
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_46: -697361986
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_47: 660962193
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_48: -25124220
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_49: -1199587341
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_5: -1447444100
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_50: -2041497272
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_51: 562379569
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_52: -900759214
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_53: 1120350547
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_54: 1958463161
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_55: 1320443639
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_56: -1237726206
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_57: -983676002
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_58: -617768383
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_59: 1509874264
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_6: -843747120
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_60: 644077457
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_61: -29488487
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_62: -1947665860
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_63: -1156419328
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_64: -259231073
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_65: -1179758520
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_66: 452123384
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_67: -958287052
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_68: -2066217457
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_69: 318545392
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_7: -1756349096
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_70: 11285220
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_71: 824286673
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_72: -450893674
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_73: 346175838
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_74: -638763904
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_75: -1080893676
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_76: -2008722628
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_77: 739798268
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_78: -1104629148
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_79: 1635152545
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_8: 1570329608
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_80: -29114923
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_81: -2064898684
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_82: -1771266765
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_83: -438635687
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_84: -1598620660
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_85: 1533511761
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_86: 1453853943
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_87: -1052603049
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_88: -232490967
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_89: 1326594276
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_9: 1285245339
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_90: 2122536962
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_91: 283178580
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_92: -2004721333
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_93: 1377850610
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_94: 288581318
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_95: -860342504
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_96: -5052659
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_97: -122816480
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_98: 1914735864
+      Touhou Kouryuudou Unconnected Marketeers - Bullets Lasers and Items_99: -1626878446
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

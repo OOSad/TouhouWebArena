@@ -116,16 +116,39 @@ public class PlayerShooting : NetworkBehaviour
     {
         GameObject bulletInstance = Instantiate(bulletPrefab, position, rotation);
         NetworkObject bulletNetworkObject = bulletInstance.GetComponent<NetworkObject>();
+        BulletMovement bulletMovement = bulletInstance.GetComponent<BulletMovement>(); // Get the script
 
-        if (bulletNetworkObject == null)
+        if (bulletNetworkObject == null || bulletMovement == null) // Check for both
         {
-            Debug.LogError("Bullet Prefab is missing a NetworkObject component!");
+            Debug.LogError("Bullet Prefab is missing NetworkObject or BulletMovement script!");
             Destroy(bulletInstance);
             return;
         }
 
+        // --- Assign Owner Role (Server Only) ---
+        // Get the PlayerRole from the PlayerData associated with the owner's ClientId
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerDataManager.PlayerData? ownerData = PlayerDataManager.Instance.GetPlayerData(OwnerClientId); 
+            if (ownerData.HasValue)
+            {
+                bulletMovement.OwnerRole.Value = ownerData.Value.Role;
+            }
+            else
+            {
+                Debug.LogError($"Could not find PlayerData for OwnerClientId {OwnerClientId} to assign bullet owner!");
+                bulletMovement.OwnerRole.Value = PlayerRole.None; // Assign default
+            }
+        }
+        else
+        {
+             Debug.LogError("PlayerDataManager instance not found!");
+             bulletMovement.OwnerRole.Value = PlayerRole.None; // Assign default
+        }
+        // ---------------------------------------
+
         // Spawn the bullet so it syncs to clients
         bulletNetworkObject.Spawn(true);
-        Debug.Log($"Server spawned bullet {bulletInstance.name} at {position}");
+        Debug.Log($"Server spawned bullet {bulletInstance.name} at {position} owned by {bulletMovement.OwnerRole.Value}");
     }
 } 

@@ -3,6 +3,8 @@ using Unity.Netcode;
 using Unity.Netcode.Components; // Added for NetworkTransform
 
 [RequireComponent(typeof(NetworkObject))] // Ensure NetworkObject is present
+[RequireComponent(typeof(Rigidbody2D))] // Keep this if other logic relies on it
+[RequireComponent(typeof(CharacterAnimation))] // Add this back
 public class PlayerMovement : NetworkBehaviour
 {
     [Header("Movement Settings")]
@@ -21,6 +23,8 @@ public class PlayerMovement : NetworkBehaviour
     private NetworkTransform networkTransform;
     private Rect currentBounds; // Which bounds apply to this player instance
     private PlayerDataManager playerDataManager; // To check P1/P2
+    private PlayerHealth playerHealth;
+    private CharacterAnimation characterAnimation; // Add this reference back
 
     // Public property to access the current bounds (read-only from outside)
     public Rect CurrentBounds => currentBounds;
@@ -28,71 +32,63 @@ public class PlayerMovement : NetworkBehaviour
     // Public property to let other scripts control the focus state
     public bool IsFocused { get; set; } = false;
 
-    // Reference to the health component
-    private PlayerHealth playerHealth;
+    // Add Awake back to get components reliably before OnNetworkSpawn
+    void Awake()
+    {
+        networkTransform = GetComponent<NetworkTransform>(); // Good practice to get components early
+        playerHealth = GetComponent<PlayerHealth>();
+        characterAnimation = GetComponent<CharacterAnimation>();
+
+        // Error checking
+        if (networkTransform == null) Debug.LogError("PlayerMovement: NetworkTransform not found!", this);
+        if (playerHealth == null) Debug.LogError("PlayerMovement: PlayerHealth not found!", this);
+        if (characterAnimation == null) Debug.LogError("PlayerMovement: CharacterAnimation not found!", this);
+    }
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        networkTransform = GetComponent<NetworkTransform>();
-        playerDataManager = PlayerDataManager.Instance; // Cache instance
+        // Components should already be fetched in Awake
+        playerDataManager = PlayerDataManager.Instance;
 
-        // Get the health component
-        playerHealth = GetComponent<PlayerHealth>();
-        if (playerHealth == null)
+        // We still need the owner-specific logic for NetworkTransform
+        if (networkTransform != null)
         {
-            Debug.LogError("PlayerMovement could not find PlayerHealth component!", this);
-            // Decide if movement should be disabled entirely
-            // enabled = false; 
+            networkTransform.enabled = !IsOwner; // Simplified: enable if not owner, disable if owner
         }
 
-        // Determine which bounds to use
+        // Determine which bounds to use based on PlayerRole
         if (playerDataManager != null)
         {
-            PlayerDataManager.PlayerData? p1Data = playerDataManager.GetPlayer1Data();
-            // PlayerDataManager.PlayerData? p2Data = playerDataManager.GetPlayer2Data(); // Not strictly needed here
-
-            if (OwnerClientId == 1) // Assuming Player 1 is Owner Client ID 1
+            PlayerDataManager.PlayerData? myData = playerDataManager.GetPlayerData(OwnerClientId);
+            if (myData.HasValue)
             {
-                currentBounds = player1Bounds;
-                // Debug.Log($"Owner {OwnerClientId} is Player 1. Applying P1 bounds: {currentBounds}");
-            }
-            else if (OwnerClientId == 2) // Assuming Player 2 is Owner Client ID 2
-            {
-                currentBounds = player2Bounds;
-                // Debug.Log($"Owner {OwnerClientId} is Player 2. Applying P2 bounds: {currentBounds}");
+                if (myData.Value.Role == PlayerRole.Player1)
+                {
+                    currentBounds = player1Bounds;
+                    Debug.Log($"[PlayerMovement OnNetworkSpawn] Owner {OwnerClientId} assigned Player 1 bounds.");
+                }
+                else if (myData.Value.Role == PlayerRole.Player2)
+                {
+                    currentBounds = player2Bounds;
+                    Debug.Log($"[PlayerMovement OnNetworkSpawn] Owner {OwnerClientId} assigned Player 2 bounds.");
+                }
+                else
+                {
+                    currentBounds = new Rect(); // Default empty bounds if role is None or unexpected
+                    Debug.LogError($"Owner {OwnerClientId} has unexpected Role {myData.Value.Role}. Applying default bounds.");
+                }
             }
             else
             {
-                // Assume if not P1 or P2, must be spectator/error if >2 players
-                currentBounds = new Rect(); // Prevent null ref, but player will be stuck at 0,0
-                Debug.LogError($"Owner {OwnerClientId} is not recognized as Player 1 or Player 2. Applying default bounds: {currentBounds}");
+                 currentBounds = new Rect();
+                 Debug.LogError($"Could not retrieve PlayerData for Owner {OwnerClientId}. Applying default bounds.");
             }
         }
         else
         {
              Debug.LogError("PlayerDataManager not found! Cannot determine player bounds.");
-             // Default to some bounds or disable movement?
-             currentBounds = new Rect(); // Prevent null ref, but player will be stuck at 0,0
-        }
-
-        // Reset NetworkTransform state based purely on ownership
-        if (networkTransform != null)
-        {
-            if (IsOwner)
-            {
-                networkTransform.enabled = false;
-                // Debug.Log($"Owner {OwnerClientId} disabled NetworkTransform.");
-            }
-            else
-            { 
-                networkTransform.enabled = true; 
-                // Debug.Log($"Non-owner {OwnerClientId} enabled NetworkTransform.");
-            }
-        }
-        else
-        {
-            Debug.LogError("NetworkTransform component not found!");
+             currentBounds = new Rect();
         }
     }
 
@@ -125,6 +121,13 @@ public class PlayerMovement : NetworkBehaviour
         float horizontalInput = Input.GetAxisRaw("Horizontal");
         float verticalInput = Input.GetAxisRaw("Vertical");
 
+        // --- Tell CharacterAnimation about the input ---
+        if (characterAnimation != null) // Check just in case
+        {
+            characterAnimation.SetHorizontalInput(horizontalInput); // Call the method again
+        }
+        // --- End Animation Input Call ---
+
         // Create input vector
         Vector2 currentInput = new Vector2(horizontalInput, verticalInput);
 
@@ -152,7 +155,6 @@ public class PlayerMovement : NetworkBehaviour
         Vector3 clampedPosition = ClampPositionToBounds(targetPosition, currentBounds);
 
         // Apply movement locally using the clamped position
-        // transform.position += moveAmount; // Old way
         transform.position = clampedPosition;
 
         // --- Send Position to Server at Intervals (only if client has control) ---
@@ -179,6 +181,36 @@ public class PlayerMovement : NetworkBehaviour
         );
     }
 
+    /// <summary>
+    /// Retrieves the PlayerRole for this player instance.
+    /// Relies on PlayerDataManager being available.
+    /// </summary>
+    /// <returns>The PlayerRole (Player1, Player2) or PlayerRole.None if data is not found.</returns>
+    public PlayerRole GetPlayerRole()
+    {
+        if (playerDataManager == null)
+        {
+            // Attempt to get the instance if it wasn't set in OnNetworkSpawn (e.g., called before spawn)
+            playerDataManager = PlayerDataManager.Instance;
+            if (playerDataManager == null)
+            {
+                 Debug.LogError($"[PlayerMovement GetPlayerRole] PlayerDataManager instance is null! Cannot determine role for {OwnerClientId}.");
+                 return PlayerRole.None;
+            }
+        }
+
+        PlayerDataManager.PlayerData? myData = playerDataManager.GetPlayerData(OwnerClientId);
+        if (myData.HasValue)
+        {
+            return myData.Value.Role;
+        }
+        else
+        {
+             Debug.LogWarning($"[PlayerMovement GetPlayerRole] Could not retrieve PlayerData for Owner {OwnerClientId}. Returning None.");
+             return PlayerRole.None;
+        }
+    }
+
     [ServerRpc]
     private void SubmitPositionRequestServerRpc(Vector3 clientPosition, ServerRpcParams rpcParams = default)
     {
@@ -188,15 +220,34 @@ public class PlayerMovement : NetworkBehaviour
         //    return; 
         // }
         
-        // Determine bounds for the sender on the server
-        Rect boundsForClient = player2Bounds; 
+        // Determine bounds for the sender on the server based on Role
+        Rect boundsForClient = new Rect(); // Default to empty
         if (playerDataManager != null)
         {
-             PlayerDataManager.PlayerData? p1Data = playerDataManager.GetPlayer1Data();
-             if (p1Data.HasValue && rpcParams.Receive.SenderClientId == p1Data.Value.ClientId)
+             PlayerDataManager.PlayerData? senderData = playerDataManager.GetPlayerData(rpcParams.Receive.SenderClientId);
+             if (senderData.HasValue)
              {
-                 boundsForClient = player1Bounds;
+                 if (senderData.Value.Role == PlayerRole.Player1)
+                 {
+                     boundsForClient = player1Bounds;
+                 }
+                 else if (senderData.Value.Role == PlayerRole.Player2)
+                 {
+                     boundsForClient = player2Bounds;
+                 }
+                 else
+                 {
+                     Debug.LogWarning($"[ServerRPC] Sender {rpcParams.Receive.SenderClientId} has unexpected Role {senderData.Value.Role}. Using default bounds.");
+                 }
              }
+             else
+             {
+                 Debug.LogError($"[ServerRPC] Could not retrieve PlayerData for Sender {rpcParams.Receive.SenderClientId}. Using default bounds.");
+             }
+        }
+        else
+        {
+            Debug.LogError("[ServerRPC] PlayerDataManager not found! Using default bounds.");
         }
         
         // Clamp and apply position on server

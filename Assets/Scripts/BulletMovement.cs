@@ -8,6 +8,10 @@ public class BulletMovement : NetworkBehaviour
     [SerializeField] private float moveSpeed = 10f; // Speed of the bullet
     [SerializeField] private float bulletLifetime = 3.0f; // Seconds before the bullet despawns automatically
 
+    // NetworkVariable to identify the owner
+    public NetworkVariable<PlayerRole> OwnerRole { get; private set; } = 
+        new NetworkVariable<PlayerRole>(PlayerRole.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
     // Store the initial forward direction (local up)
     // private Vector3 initialForwardDirection;
 

@@ -180,8 +180,24 @@ public class Matchmaker : NetworkBehaviour
         // Check if we have two players ready
         if (queuedPlayers.Count >= 2)
         {
-            // Start match with first two players in queue
-            StartMatchClientRpc(queuedPlayers[0].ClientId, queuedPlayers[1].ClientId);
+            ulong player1ClientId = queuedPlayers[0].ClientId;
+            ulong player2ClientId = queuedPlayers[1].ClientId;
+            
+            // Assign roles before starting the match
+            if (PlayerDataManager.Instance != null)
+            {
+                PlayerDataManager.Instance.AssignPlayerRole(player1ClientId, PlayerRole.Player1);
+                PlayerDataManager.Instance.AssignPlayerRole(player2ClientId, PlayerRole.Player2);
+            }
+            else
+            {
+                Debug.LogError("[Matchmaker] PlayerDataManager Instance is null! Cannot assign roles.");
+                // Handle this error appropriately, perhaps by not starting the match
+                return; 
+            }
+            
+            // Start match with the assigned players
+            StartMatchClientRpc(player1ClientId, player2ClientId);
             
             // Start delayed scene load for server as well
             if (IsServer)

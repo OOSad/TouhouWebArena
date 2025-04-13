@@ -69,20 +69,42 @@ public class StageSmallBulletSpawner : NetworkBehaviour
         // Instantiate the bullet locally on the server first
         GameObject bulletInstance = Instantiate(smallBulletPrefab, spawnPosition, Quaternion.identity);
         
-        // Get the NetworkObject component
+        // Get components needed before spawn
+        StageSmallBulletMoverScript bulletMover = bulletInstance.GetComponent<StageSmallBulletMoverScript>();
         NetworkObject networkObject = bulletInstance.GetComponent<NetworkObject>();
-        
-        // --- NETWORK SPAWN --- Spawn the instance across the network
-        if (networkObject != null)
+
+        // Error checking before spawn
+        if (bulletMover == null)
         {
-            networkObject.Spawn(true); // true = despawn with server
+            Debug.LogError("Instantiated bullet is missing StageSmallBulletMoverScript!", bulletInstance);
+            Destroy(bulletInstance);
+            return;
+        }
+        if (networkObject == null)
+        {
+            Debug.LogError("Instantiated bullet is missing NetworkObject!", bulletInstance);
+            Destroy(bulletInstance);
+            return;
+        }
+        
+        // --- NETWORK SPAWN --- Spawn the instance across the network first
+        networkObject.Spawn(true); // true = despawn with server
+
+        // --- Set Target Player Role AFTER SPAWN --- 
+        if (zoneCenter == spawnZone1)
+        {
+            bulletMover.TargetPlayerRole.Value = PlayerRole.Player1;
+        }
+        else if (zoneCenter == spawnZone2)
+        {
+            bulletMover.TargetPlayerRole.Value = PlayerRole.Player2;
         }
         else
         {
-            // Should not happen if the Start check passes, but good practice
-            Debug.LogError("Instantiated bullet is missing NetworkObject component!", bulletInstance);
-            Destroy(bulletInstance); // Clean up the local instance
+            Debug.LogWarning("Spawn zone not recognized, setting bullet TargetPlayerRole to None.");
+            bulletMover.TargetPlayerRole.Value = PlayerRole.None; 
         }
+        // --- End Set Target Player Role ---
     }
 
     // Draw visual aids in the editor to see the spawn zones

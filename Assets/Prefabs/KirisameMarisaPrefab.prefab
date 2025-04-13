@@ -119,9 +119,12 @@ GameObject:
   - component: {fileID: -6644605225323382049}
   - component: {fileID: 2858197336463287614}
   - component: {fileID: 8745866836830213913}
+  - component: {fileID: 3961734924531103382}
+  - component: {fileID: 3185901584900274323}
+  - component: {fileID: 6848750692035792943}
   m_Layer: 0
   m_Name: KirisameMarisaPrefab
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -208,7 +211,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1167757991
+  GlobalObjectIdHash: 2122085789
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
@@ -277,7 +280,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 5656050771762241772, guid: aee0e98baf9735743b3d66e821ca5936, type: 3}
   fireKey: 122
-  bulletSpread: 0.7
+  bulletSpread: 0.4
   burstCount: 3
   timeBetweenBurstShots: 0.02
   burstCooldown: 0.07
@@ -332,6 +335,66 @@ MonoBehaviour:
   playerMovement: {fileID: -8837382894695149901}
   hitboxSpriteRenderer: {fileID: 552586912042597319}
   scopeStyleController: {fileID: 3661987046509030196}
+--- !u!50 &3961734924531103382
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4454703587389584321}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
+--- !u!95 &3185901584900274323
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4454703587389584321}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: c1ae0608f36db06428687df0c47e7aab, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6848750692035792943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4454703587389584321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 632f084283192d54eab2b8752b8fa333, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6177183962902356688
 GameObject:
   m_ObjectHideFlags: 0

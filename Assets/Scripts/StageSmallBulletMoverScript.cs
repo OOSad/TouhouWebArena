@@ -11,6 +11,8 @@ public class StageSmallBulletMoverScript : NetworkBehaviour
 
     // NetworkVariable to store the calculated velocity, writeable only by the server.
     private NetworkVariable<Vector3> SyncedVelocity = new NetworkVariable<Vector3>(writePerm: NetworkVariableWritePermission.Server);
+    // NetworkVariable to store which player this bullet belongs to
+    public NetworkVariable<PlayerRole> TargetPlayerRole { get; private set; } = new NetworkVariable<PlayerRole>(PlayerRole.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private float currentLifetime;
 
     public override void OnNetworkSpawn()
@@ -33,6 +35,7 @@ public class StageSmallBulletMoverScript : NetworkBehaviour
 
         // Store the calculated velocity in the NetworkVariable
         SyncedVelocity.Value = calculatedVelocity;
+        // TargetPlayerRole should be set by the spawner *before* OnNetworkSpawn
         // --- End Server-side Calculation ---
 
         // Initialize lifetime timer on the server
@@ -48,6 +51,7 @@ public class StageSmallBulletMoverScript : NetworkBehaviour
         // Move using the velocity stored in the NetworkVariable
         transform.Translate(SyncedVelocity.Value * Time.deltaTime, Space.World);
 
+        // --- Re-enabled --- //
         // --- Lifetime Check (Server) ---
         currentLifetime -= Time.deltaTime;
         if (currentLifetime <= 0f)
@@ -61,6 +65,7 @@ public class StageSmallBulletMoverScript : NetworkBehaviour
             // No need to Destroy(gameObject) explicitly, Despawn handles it.
             return; // Exit Update early since the object is being destroyed
         }
+        // --- End Re-enabled Section --- //
 
         // Optional: Add logic here to despawn the bullet if it goes off-screen
         // e.g., if (transform.position.y < -someBoundary) { GetComponent<NetworkObject>().Despawn(); }

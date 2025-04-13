@@ -2323,6 +2323,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e680bf1d1d4402948a08b0768f8977fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  extraAttackThreshold: 10
+  reimuExtraAttackPrefab: {fileID: 916272378052303310, guid: 9323d805ec3d7ab4cb582c51d6f02265, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
