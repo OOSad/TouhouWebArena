@@ -7,6 +7,7 @@ public class PlayerDeathBomb : NetworkBehaviour
     [Header("Settings")]
     [SerializeField] private float deathBombRadius = 5f;
     [SerializeField] private LayerMask bulletLayerMask; // Assign the layer your bullets are on
+    [SerializeField] private LayerMask fairyLayerMask;  // Assign the layer your fairies are on
 
     // Call this method from PlayerHealth on the server
     public void ExecuteBomb()
@@ -47,39 +48,45 @@ public class PlayerDeathBomb : NetworkBehaviour
         }
         // --- End Get Bombing Player's Role ---
 
-        // Find all colliders within the radius on the specified bullet layer
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, deathBombRadius, bulletLayerMask);
-        
+        // --- Clear Bullets --- 
+        Collider2D[] bulletColliders = Physics2D.OverlapCircleAll(transform.position, deathBombRadius, bulletLayerMask);
         List<NetworkObject> bulletsToDespawn = new List<NetworkObject>();
-
-        foreach (Collider2D col in colliders)
+        foreach (Collider2D col in bulletColliders)
         {
-            // Check if it's a stage bullet we want to destroy
             if (col.CompareTag("StageBullet")) 
             {
                 StageSmallBulletMoverScript bulletMover = col.GetComponent<StageSmallBulletMoverScript>();
                 NetworkObject netObj = col.GetComponent<NetworkObject>();
-
-                // --- Role Check --- 
-                if (bulletMover != null && netObj != null && netObj.IsSpawned)
+                if (bulletMover != null && netObj != null && netObj.IsSpawned && bulletMover.TargetPlayerRole.Value == bombingPlayerRole)
                 {
-                    // Only add the bullet if its TargetPlayerRole matches the player triggering the bomb
-                    if (bulletMover.TargetPlayerRole.Value == bombingPlayerRole)
-                    {
-                        bulletsToDespawn.Add(netObj);
-                    }
+                    bulletsToDespawn.Add(netObj);
                 }
-                // --- End Role Check ---
             }
-            // TODO: Add checks for other enemy types later if needed
         }
-
-        // Debug.Log($"[Server DeathBomb] Found {bulletsToDespawn.Count} bullets to despawn.");
-
-        // Despawn collected bullets
         foreach (NetworkObject bulletNetObj in bulletsToDespawn)
         {
-            bulletNetObj.Despawn();
+            if (bulletNetObj != null && bulletNetObj.IsSpawned) // Double-check before despawning
+            {
+                 bulletNetObj.Despawn();
+            }
         }
+        // Debug.Log($"[Server DeathBomb] Despawned {bulletsToDespawn.Count} bullets.");
+        // --- End Clear Bullets ---
+
+        // --- Kill Fairies --- 
+        Collider2D[] fairyColliders = Physics2D.OverlapCircleAll(transform.position, deathBombRadius, fairyLayerMask);
+        int killedFairyCount = 0;
+        foreach (Collider2D fairyCol in fairyColliders)
+        {
+            Fairy fairy = fairyCol.GetComponent<Fairy>();
+            if (fairy != null)
+            {
+                // Call ApplyLethalDamage on the server, passing the role of the player who triggered the bomb
+                fairy.ApplyLethalDamage(bombingPlayerRole); 
+                killedFairyCount++;
+            }
+        }
+        // Debug.Log($"[Server DeathBomb] Killed {killedFairyCount} fairies.");
+        // --- End Kill Fairies ---
     }
 } 

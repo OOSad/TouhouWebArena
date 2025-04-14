@@ -39,6 +39,36 @@ public class BulletMovement : NetworkBehaviour
         // With interpolation enabled, NetworkTransform provides smooth movement on clients.
     }
 
+    // Server-side collision detection
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!IsServer) return; // Only server handles collisions
+
+        // Check if we hit a fairy (using the "Fairy" tag)
+        if (other.CompareTag("Fairy")) // Correct check
+        {
+            Debug.Log($"Bullet owned by {OwnerRole.Value} hit Fairy: {other.name}");
+
+            // Try to get the fairy script
+            Fairy fairy = other.GetComponent<Fairy>();
+            if (fairy != null)
+            {
+                // Call the server-side lethal damage method directly
+                // fairy.TakeDamage(1, OwnerRole.Value); // Incorrect call
+                fairy.ApplyLethalDamage(OwnerRole.Value); // Correct call
+
+                // Despawn bullet immediately after hitting a fairy
+                DespawnBullet();
+            }
+            else
+            {
+                Debug.LogWarning($"Bullet hit object tagged Fairy, but couldn't find Fairy script on {other.name}");
+            }
+        }
+        // Optional: Add checks for other collidable objects here (e.g., environment)
+        // else if (other.CompareTag("Wall")) { DespawnBullet(); }
+    }
+
     // Method called by Invoke on the server to despawn the bullet
     private void DespawnBullet()
     {

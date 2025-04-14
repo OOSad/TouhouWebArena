@@ -417,7 +417,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1271388089
+  GlobalObjectIdHash: 216431824
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
@@ -526,6 +526,9 @@ MonoBehaviour:
   bulletLayerMask:
     serializedVersion: 2
     m_Bits: 64
+  fairyLayerMask:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!114 &-4064304885187048511
 MonoBehaviour:
   m_ObjectHideFlags: 0

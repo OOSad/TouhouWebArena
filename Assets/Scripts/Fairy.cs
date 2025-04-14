@@ -363,105 +363,50 @@ public class Fairy : NetworkBehaviour
     // Collision runs locally on clients, but requests actions from the server
     void OnTriggerEnter2D(Collider2D other)
     {
-        // --- LOGGING START - REMOVED ---
-        // Debug.Log($"[Fairy {NetworkObjectId} OnTriggerEnter2D] Collision detected with {other.gameObject.name} (Tag: {other.tag}, Layer: {LayerMask.LayerToName(other.gameObject.layer)})");
-        // --- LOGGING END ---
+        // Collision logic should only run on the server
+        if (!IsServer) return;
 
-        if (!IsOwner && !IsServer) 
+        // Check if the colliding object belongs to a player (checking tag on hitbox)
+        if (other.CompareTag("Player"))
         {
-             // Basic collision detection can run on clients, but actions requiring
-             // state changes (damage, destruction) must be requested from the server.
-        }
+            PlayerHealth playerHealth = other.GetComponentInParent<PlayerHealth>();
+            NetworkObject playerNetworkObject = other.GetComponentInParent<NetworkObject>();
 
-        // Player Shot collision:
-        if (other.CompareTag("PlayerShot"))
-        {
-            NetworkObject shotNetworkObject = other.GetComponent<NetworkObject>();
-            PlayerRole killer = PlayerRole.None; // Default
-            BulletMovement bulletScript = other.GetComponent<BulletMovement>(); // Assuming script name
-            if(bulletScript != null)
+            if (playerHealth != null && playerNetworkObject != null)
             {
-                killer = bulletScript.OwnerRole.Value;
-            }
-
-            if (shotNetworkObject != null)
-            {
-                RequestDestroyObjectServerRpc(shotNetworkObject.NetworkObjectId);
-            }
-            else
-            {
-                Destroy(other.gameObject); 
-            }
-            
-            // Request server apply damage to this fairy, attributing the kill
-            RequestDamage(1, killer);
-        }
-        // Player collision:
-        else if (other.CompareTag("Player"))
-        {
-            NetworkObject playerNetworkObject = other.GetComponent<NetworkObject>();
-            if(playerNetworkObject != null)
-            {
-                // Call the new ServerRpc to handle damaging the player
-                DamagePlayerServerRpc(playerNetworkObject.NetworkObjectId, 1);
-            }
-
-            // Request server kill this fairy (deal lethal damage)
-            // Attributing kill to player might be complex here, maybe PlayerRole.None is fine?
-            int damageToKill = currentHealth.Value > 0 ? currentHealth.Value : 999; 
-            RequestDamage(damageToKill, PlayerRole.None); // Or figure out player role if needed
-        }
-    }
-
-    // Generic ServerRpc to request destruction of any networked object by ID
-    [ServerRpc(RequireOwnership = false)]
-    void RequestDestroyObjectServerRpc(ulong networkObjectId)
-    {
-        // Debug.Log($"[Server RequestDestroy] Received request for NetId:{networkObjectId}"); // REMOVED
-        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject networkObject))
-        {
-            if (networkObject != null && networkObject.IsSpawned)
-            {
-                // Debug.Log($"[Server RequestDestroy] Found NetId:{networkObjectId}. Calling Despawn(true)."); // REMOVED
-                networkObject.Despawn(true); // Server despawns/destroys the object
-                // Debug.Log($"[Server RequestDestroy] Despawn(true) called for NetId:{networkObjectId}."); // REMOVED
-            }
-            else
-            {
-                 // Keep this warning as it indicates a potential issue
-                 Debug.LogWarning($"[Server RequestDestroy] Tried to destroy NetId:{networkObjectId} but it was null or not spawned.");
-            }
-        }
-        else
-        {
-             // Keep this warning as it indicates a potential issue
-             Debug.LogWarning($"[Server RequestDestroy] Could not find NetId:{networkObjectId} in SpawnedObjects.");
-        }
-    }
-
-    // --- New ServerRpc to handle damaging the player ---
-    [ServerRpc(RequireOwnership = false)]
-    void DamagePlayerServerRpc(ulong playerNetworkObjectId, int damageAmount)
-    {
-        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(playerNetworkObjectId, out NetworkObject playerNetworkObject))
-        {
-            if (playerNetworkObject != null)
-            {
-                PlayerHealth playerHealth = playerNetworkObject.GetComponent<PlayerHealth>();
-                if (playerHealth != null)
-                {
-                    // Now call the correct server-authoritative method on PlayerHealth
-                    playerHealth.TakeDamage(damageAmount);
+                // Debug.Log($"[Server Fairy {NetworkObjectId}] Player components found..."); 
+                if (playerHealth.IsInvincible.Value)
+                { // Invincible
+                    // Debug.Log($"[Server Fairy {NetworkObjectId}] Player {playerNetworkObject.OwnerClientId} IS INVINCIBLE. No action taken (Fairy survives, Player undamaged).");
+                    // Do nothing to either object
                 }
                 else
-                {
-                     Debug.LogWarning($"Fairy tried to damage object {playerNetworkObjectId}, but it has no PlayerHealth component.");
+                { // Vulnerable
+                    // Debug.Log($"[Server Fairy {NetworkObjectId}] Player {playerNetworkObject.OwnerClientId} IS VULNERABLE. Processing collision...");
+                    
+                    // ONLY Damage the Player 
+                    // Debug.Log($"[Server Fairy {NetworkObjectId}] Calling TakeDamage(1) directly on PlayerHealth {playerHealth.OwnerClientId}..."); 
+                    playerHealth.TakeDamage(1); // Direct call
+
+                    // DO NOT Kill the Fairy - Collision doesn't kill fairies
+                    // Determine killer role only when vulnerable
+                    // PlayerRole killerRole = PlayerRole.None; 
+                    // ... killer role determination logic removed ...
+                    // Debug.Log($"[Server Fairy {NetworkObjectId}] Applying lethal damage to self (Killer: {killerRole})...");
+                    // ApplyLethalDamage(killerRole); 
                 }
             }
+            else 
+            { 
+                // Error logs remain
+                if (playerHealth == null) Debug.LogError($"[Server Fairy {NetworkObjectId}] Collided with Player ({other.name}) but PlayerHealth is NULL in parent!");
+                if (playerNetworkObject == null) Debug.LogError($"[Server Fairy {NetworkObjectId}] Collided with Player ({other.name}) but NetworkObject is NULL in parent!");
+            }
         }
-        else
+        // --- Collision with Fairy Shockwave ---
+        else if (other.CompareTag("FairyShockwave"))
         {
-            Debug.LogWarning($"Server could not find Player NetworkObject with ID {playerNetworkObjectId} to damage.");
+            ApplyLethalDamage(PlayerRole.None); 
         }
     }
 

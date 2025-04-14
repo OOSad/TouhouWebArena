@@ -3662,12 +3662,12 @@ TextureImporter:
       name: Touhou Seirensen Undefined Fantastic Object - Bullets and Items_172
       rect:
         serializedVersion: 2
-        x: 258
+        x: 307
         y: 129
-        width: 67
+        width: 15
         height: 128
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.05}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []

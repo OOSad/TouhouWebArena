@@ -53,10 +53,14 @@ public class PlayerDataManager : NetworkBehaviour
     
     // --- Extra Attack Settings ---
     [Header("Extra Attack Settings")]
-    [SerializeField] private int extraAttackThreshold = 7; // Fairies needed for Extra Attack
+    [SerializeField] private int extraAttackThreshold = 10; // Fairies needed for Extra Attack
     [SerializeField] private GameObject reimuExtraAttackPrefab; // Assign Reimu's Yin-Yang Orb prefab
-    // Add prefabs for other characters here
-    // [SerializeField] private GameObject marisaExtraAttackPrefab; 
+    [SerializeField] private GameObject marisaExtraAttackPrefab; // Assign Marisa's Earthlight Ray prefab
+
+    // Removed cached spawner references
+    // private ReimuExtraAttackOrbSpawner _reimuSpawner;
+    // private MarisaExtraAttackSpawner _marisaSpawner;
+
     // ---------------------------
     
     private void Awake()
@@ -73,6 +77,8 @@ public class PlayerDataManager : NetworkBehaviour
         
         // Initialize network list
         players = new NetworkList<PlayerData>();
+
+        // Removed GetComponent calls for spawners from Awake
     }
     
     public override void OnNetworkSpawn()
@@ -208,16 +214,20 @@ public class PlayerDataManager : NetworkBehaviour
             updatedData.FairyKillCount++;
             players[playerIndex] = updatedData; // Update the list
 
+            Debug.Log($"Player {killerRole} kill count: {updatedData.FairyKillCount}/{extraAttackThreshold}"); // Debug Log
+
             // Check if threshold reached
             if (updatedData.FairyKillCount >= extraAttackThreshold)
             {
+                Debug.Log($"Player {killerRole} reached Extra Attack threshold!"); // Debug Log
                 // Reset kill count
                 updatedData.FairyKillCount = 0;
                 players[playerIndex] = updatedData;
 
                 // Trigger Extra Attack against the *opponent*
                 PlayerRole opponentRole = (killerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
-                TriggerExtraAttack(updatedData.SelectedCharacter.ToString(), opponentRole); 
+                // Pass the attacker's data to TriggerExtraAttack
+                TriggerExtraAttack(updatedData, opponentRole);
             }
         }
         else
@@ -227,87 +237,121 @@ public class PlayerDataManager : NetworkBehaviour
     }
     // -------------------------------------------------------------------------
 
-    // --- NEW: Trigger the appropriate Extra Attack (Server Only) ---
-    private void TriggerExtraAttack(string attackerCharacter, PlayerRole targetRole)
-    { 
-        // Debug.Log($"Triggering Extra Attack from {attackerCharacter} against {targetRole}"); // Re-commented out
+    // --- MODIFIED: Trigger the appropriate Extra Attack (Server Only) ---
+    private void TriggerExtraAttack(PlayerData attackerData, PlayerRole targetRole)
+    {
+        string attackerCharacter = attackerData.SelectedCharacter.ToString();
+        Debug.Log($"[TriggerExtraAttack] Triggering for {attackerCharacter} (Role: {attackerData.Role}) against {targetRole}");
 
         GameObject prefabToSpawn = null;
+        Action<GameObject, Transform> spawnLogic = null;
+        Transform targetSpawnArea = null;
+
         switch (attackerCharacter)
         {
-            case "Hakurei Reimu": // Match the character name string used during selection
+            case "Hakurei Reimu":
                 prefabToSpawn = reimuExtraAttackPrefab;
+                // Find the spawner component in the scene NOW
+                ReimuExtraAttackOrbSpawner reimuSpawner = FindObjectOfType<ReimuExtraAttackOrbSpawner>();
+                if (reimuSpawner == null)
+                {
+                    Debug.LogError("Cannot trigger Reimu Extra Attack: ReimuExtraAttackOrbSpawner component not found in the active scene.", this);
+                    return;
+                }
+                targetSpawnArea = (targetRole == PlayerRole.Player1) ? reimuSpawner.GetSpawnZone1() : reimuSpawner.GetSpawnZone2();
+
+                spawnLogic = (prefab, spawnArea) => {
+                    if(spawnArea != null)
+                    {
+                         GameObject instance = Instantiate(prefab, spawnArea.position, Quaternion.identity);
+                         NetworkObject nob = instance.GetComponent<NetworkObject>();
+                         if (nob != null) nob.Spawn(true);
+
+                         ReimuExtraAttackOrb orbScript = instance.GetComponent<ReimuExtraAttackOrb>();
+                         if(orbScript != null)
+                         {
+                             orbScript.TargetPlayerRole.Value = targetRole;
+                         }
+                         else
+                         {
+                            Debug.LogError("Failed to get ReimuExtraAttackOrb script from instantiated prefab!");
+                         }
+                    } else {
+                         Debug.LogError($"Spawn Area Transform for Role {targetRole} was null when attempting Reimu's attack.");
+                    }
+                };
                 break;
-            // case "Kirisame Marisa":
-            //     prefabToSpawn = marisaExtraAttackPrefab;
-            //     break;
+
+            case "Kirisame Marisa":
+                prefabToSpawn = marisaExtraAttackPrefab;
+                // Find the spawner component in the scene NOW
+                MarisaExtraAttackSpawner marisaSpawner = FindObjectOfType<MarisaExtraAttackSpawner>();
+                 if (marisaSpawner == null)
+                {
+                    Debug.LogError("Cannot trigger Marisa Extra Attack: MarisaExtraAttackSpawner component not found in the active scene.", this);
+                    return;
+                }
+                targetSpawnArea = (targetRole == PlayerRole.Player1) ? marisaSpawner.GetPlayer1TargetArea() : marisaSpawner.GetPlayer2TargetArea();
+                float spawnWidth = marisaSpawner.GetSpawnWidth();
+
+                spawnLogic = (prefab, spawnArea) => {
+                    if (spawnArea != null)
+                    {
+                        float randomOffsetX = UnityEngine.Random.Range(-spawnWidth / 2f, spawnWidth / 2f);
+                        Vector3 spawnPosition = spawnArea.position + new Vector3(randomOffsetX, 0, 0);
+
+                        GameObject instance = Instantiate(prefab, spawnPosition, Quaternion.identity);
+                        NetworkObject nob = instance.GetComponent<NetworkObject>();
+                        if (nob != null) nob.Spawn(true);
+
+                        EarthlightRay rayScript = instance.GetComponent<EarthlightRay>();
+                        if (rayScript != null)
+                        {
+                            rayScript.AttackerRole.Value = attackerData.Role;
+                            Debug.Log($"Set Earthlight Ray AttackerRole to {attackerData.Role}");
+                        }
+                        else
+                        {
+                            Debug.LogError("Failed to get EarthlightRay script from instantiated prefab!");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError($"Spawn Area Transform for Role {targetRole} was null when attempting Marisa's attack.");
+                    }
+                };
+                break;
+
             default:
-                 Debug.LogError($"No Extra Attack prefab defined for character: {attackerCharacter}");
+                 Debug.LogError($"No Extra Attack defined for character: {attackerCharacter}");
                  return;
         }
 
+        // --- Common Checks and Execution ---
         if (prefabToSpawn == null)
         {
-            Debug.LogError($"Extra Attack prefab for {attackerCharacter} is not assigned in PlayerDataManager!");
+            Debug.LogError($"Extra Attack Prefab is null for character: {attackerCharacter}. Make sure it's assigned in the PlayerDataManager component.");
             return;
         }
 
-        // --- Get Spawn Position from ReimuExtraAttackOrbSpawner ---
-        ReimuExtraAttackOrbSpawner orbSpawner = FindObjectOfType<ReimuExtraAttackOrbSpawner>();
-        if (orbSpawner == null)
+        if (targetSpawnArea == null)
         {
-            Debug.LogError("Cannot find ReimuExtraAttackOrbSpawner in the scene to determine spawn position!");
-            return; // Cannot spawn without position
-        }
-
-        Transform targetZone = (targetRole == PlayerRole.Player1) ? orbSpawner.GetSpawnZone1() : orbSpawner.GetSpawnZone2();
-        if (targetZone == null)
-        {
-             Debug.LogError($"Target spawn zone {(targetRole == PlayerRole.Player1 ? 1: 2)} is not assigned in the ReimuExtraAttackOrbSpawner!");
+             Debug.LogError($"Target Extra Attack Spawn Area for Role {targetRole} (Character: {attackerCharacter}) is not assigned in the corresponding Spawner component (Reimu or Marisa).");
              return;
         }
 
-        Vector2 zoneSize = orbSpawner.GetSpawnZoneSize();
-        Vector3 zoneCenter = targetZone.position;
-
-        // Calculate random position within the target zone
-        float randomX = UnityEngine.Random.Range(-zoneSize.x / 2f, zoneSize.x / 2f);
-        float randomY = UnityEngine.Random.Range(-zoneSize.y / 2f, zoneSize.y / 2f);
-        Vector3 spawnPos = new Vector3(zoneCenter.x + randomX, zoneCenter.y + randomY, zoneCenter.z);
-        // --- End Get Spawn Position ---
-
-        // Instantiate and spawn the Extra Attack object
-        GameObject attackInstance = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
-        NetworkObject attackNetworkObject = attackInstance.GetComponent<NetworkObject>();
-
-        if (attackNetworkObject == null)
+        // Execute the specific spawn logic
+        if (spawnLogic != null)
         {
-            Debug.LogError($"Extra Attack Prefab for {attackerCharacter} is missing NetworkObject!");
-            Destroy(attackInstance);
-            return;
-        }
-        
-        // --- Assign Target Role --- 
-        // Assuming the extra attack prefab has a script like ReimuExtraAttackOrb.cs
-        // with a NetworkVariable<PlayerRole> TargetPlayerRole
-        var attackScript = attackInstance.GetComponent<ReimuExtraAttackOrb>(); // Get specific script
-        if(attackScript != null)
-        {
-            attackScript.TargetPlayerRole.Value = targetRole;
+            spawnLogic(prefabToSpawn, targetSpawnArea);
         }
         else
         {
-             Debug.LogError($"Spawned Extra Attack for {attackerCharacter} is missing expected script (e.g., ReimuExtraAttackOrb)!");
-             // Consider destroying if script is missing?
-             // Destroy(attackInstance);
-             // return;
+             // Should not happen if switch statement is correct
+             Debug.LogError($"Internal Error: Spawn logic not defined for {attackerCharacter}.");
         }
-        // --------------------------
-
-        attackNetworkObject.Spawn(true);
-        // Debug.Log($"Spawned {attackerCharacter}'s Extra Attack targeting {targetRole}."); // Re-commented out
     }
-    // --------------------------------------------------------------
+    // -------------------------------------------------------------
 
     // Remove a player from the player data manager
     public void UnregisterPlayer(ulong clientId)

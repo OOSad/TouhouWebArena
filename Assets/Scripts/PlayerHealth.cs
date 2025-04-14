@@ -131,23 +131,40 @@ public class PlayerHealth : NetworkBehaviour
         }
     }
 
-    // Call this method from PlayerHitbox on the server
+    // Call this method from PlayerHitbox on the server OR via RequestDamageServerRpc
     public void TakeDamage(int amount)
     {
-        if (!IsServer) return; 
-        if (IsInvincible.Value) return;
-        if (CurrentHealth.Value <= 0) return;
+        Debug.Log($"[Server PlayerHealth {OwnerClientId}] TakeDamage({amount}) called."); // LOG
+        if (!IsServer) 
+        {
+            Debug.Log($"[Server PlayerHealth {OwnerClientId}] TakeDamage ignored: Not server."); // LOG
+            return; 
+        }
+        if (IsInvincible.Value) 
+        {
+            Debug.Log($"[Server PlayerHealth {OwnerClientId}] TakeDamage ignored: Invincible."); // LOG
+            return; 
+        }
+        if (CurrentHealth.Value <= 0) 
+        {
+            Debug.Log($"[Server PlayerHealth {OwnerClientId}] TakeDamage ignored: Already dead (Health: {CurrentHealth.Value})."); // LOG
+            return; 
+        }
 
+        Debug.Log($"[Server PlayerHealth {OwnerClientId}] Applying {amount} damage. Current Health: {CurrentHealth.Value}"); // LOG
+        int previousHealth = CurrentHealth.Value; // Store previous health for comparison
         int newHealth = CurrentHealth.Value - amount;
         CurrentHealth.Value = Mathf.Max(newHealth, 0);
-        Debug.Log($"[Server] Player {OwnerClientId} took {amount} damage. Health is now {CurrentHealth.Value}");
+        Debug.Log($"[Server PlayerHealth {OwnerClientId}] Damage applied. Previous Health: {previousHealth}, New Health: {CurrentHealth.Value}"); // LOG
 
         if (CurrentHealth.Value <= 0)
         {
+            Debug.Log($"[Server PlayerHealth {OwnerClientId}] Health reached zero. Handling death..."); // LOG
             HandleDeathServer();
         }
         else
         {
+            Debug.Log($"[Server PlayerHealth {OwnerClientId}] Triggering invincibility..."); // LOG
             TriggerInvincibilityServer(); // Only triggers invincibility timer now
         }
     }
@@ -201,4 +218,11 @@ public class PlayerHealth : NetworkBehaviour
         Debug.Log($"[Server] Resetting health for Player {OwnerClientId}");
         CurrentHealth.Value = MaxHealth;
     }
+
+    // ServerRpc called by other objects (like Fairy) to request damage to this player
+    // [ServerRpc(RequireOwnership = false)] // REMOVED - No longer used
+    // public void RequestDamageServerRpc(int amount, ServerRpcParams rpcParams = default)
+    // {
+    //    ...
+    // }
 } 
