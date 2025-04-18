@@ -14,7 +14,11 @@ GameObject:
   - component: {fileID: 4590436765378767479}
   - component: {fileID: 7287490373349859149}
   - component: {fileID: 8728772790930421793}
+  - component: {fileID: 4542182296280416629}
   - component: {fileID: 6099391969504295475}
+  - component: {fileID: 1168816684677053429}
+  - component: {fileID: 2684784241713571634}
+  - component: {fileID: 1824150346279509385}
   m_Layer: 7
   m_Name: NormalFairy
   m_TagString: Fairy
@@ -186,8 +190,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spline: {fileID: 0}
   moveSpeed: 2
-  lookForward: 0
   destroyOnComplete: 1
+--- !u!114 &4542182296280416629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2265545678602581384}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48460f3d4a73e8a41a0e0ca05028175a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lookForwardEnabled: 0
 --- !u!114 &6099391969504295475
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -202,9 +218,43 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   initialMaxHealth: 1
   isGreatFairy: 0
+  deathEffectDelay: 0.15
+  deathEffectsHandler: {fileID: 2684784241713571634}
+  pathInitializer: {fileID: 1824150346279509385}
+--- !u!114 &1168816684677053429
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2265545678602581384}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59c397f496d267d49bb8e32f5022a6af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2684784241713571634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2265545678602581384}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69fd85b46e2bc69438649a08357443f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   shockwavePrefab: {fileID: 825958184812720138, guid: 76cfe1a5018d7d74fbbbd03cf0b269ff, type: 3}
-  chainRadius: 1
-  chainDelay: 0.1
-  fairyLayer:
-    serializedVersion: 2
-    m_Bits: 128
+--- !u!114 &1824150346279509385
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2265545678602581384}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e15e15ea4b959d4d9d160701f5ce427, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

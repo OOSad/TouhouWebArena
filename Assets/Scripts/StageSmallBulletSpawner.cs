@@ -1,18 +1,45 @@
 using UnityEngine;
-using System.Collections;
+using System.Collections; // Keep for potential future use, but not needed for current logic
 using Unity.Netcode; // Added Netcode namespace
 
 // Inherit from NetworkBehaviour
 public class StageSmallBulletSpawner : NetworkBehaviour
 {
-    [SerializeField] private Transform spawnZone1;
-    [SerializeField] private Transform spawnZone2;
-    [SerializeField] private Vector2 spawnZoneSize = new Vector2(2f, 1f); // Default size, adjust in editor
-    [SerializeField] private GameObject smallBulletPrefab;
-    [SerializeField] private float spawnInterval = 0.5f; // Time between spawns
+    // --- Singleton Pattern --- 
+    public static StageSmallBulletSpawner Instance { get; private set; }
+    // -----------------------
 
-    private void Start()
+    [Header("Spawn Zone Setup")]
+    [SerializeField] private Transform spawnZone1; // Target zone for Player 1
+    [SerializeField] private Transform spawnZone2; // Target zone for Player 2
+    [SerializeField] private Vector2 spawnZoneSize = new Vector2(7f, 1f); // Size of the area around the zone transform
+
+    [Header("Bullet Prefabs")]
+    [SerializeField] private GameObject smallBulletPrefab;
+    [SerializeField] private GameObject stageLargeBulletPrefab; // Assign the large bullet prefab here
+
+    [Header("Spawn Logic")]
+    [SerializeField] [Range(0f, 1f)] private float largeBulletSpawnChance = 0.1f; // 10% chance default
+
+    private void Awake()
     {
+        // --- Singleton Setup ---
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("Duplicate StageSmallBulletSpawner instance found, destroying self.");
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        // ---------------------
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        // Validate setup only on the server
+        if (!IsServer) return;
+
         if (spawnZone1 == null || spawnZone2 == null)
         {
             Debug.LogError("Spawn zones not assigned in StageSmallBulletSpawner.", this);
@@ -20,55 +47,97 @@ public class StageSmallBulletSpawner : NetworkBehaviour
             return;
         }
 
-        if (smallBulletPrefab == null)
+        if (smallBulletPrefab == null || stageLargeBulletPrefab == null)
         {
-            Debug.LogError("Small bullet prefab not assigned in StageSmallBulletSpawner.", this);
-            enabled = false; // Disable the script if setup is incorrect
+            Debug.LogError("Bullet prefabs not assigned in StageSmallBulletSpawner.", this);
+            enabled = false;
             return;
         }
 
-        // Ensure the prefab has a NetworkObject component
-        if (smallBulletPrefab.GetComponent<NetworkObject>() == null)
+        if (smallBulletPrefab.GetComponent<NetworkObject>() == null || stageLargeBulletPrefab.GetComponent<NetworkObject>() == null)
         {
-            Debug.LogError("Small bullet prefab is missing a NetworkObject component.", this);
-            enabled = false; // Disable the script if setup is incorrect
+            Debug.LogError("One or both bullet prefabs are missing a NetworkObject component.", this);
+            enabled = false;
             return;
         }
-
-        StartCoroutine(SpawnBullets());
-    }
-
-    private IEnumerator SpawnBullets()
-    {
-        // --- SERVER CHECK --- Only the server should spawn bullets
-        if (!IsServer) yield break;
-
-        // Wait a small initial delay before starting the loop
-        yield return new WaitForSeconds(Random.Range(0f, spawnInterval)); 
         
-        while (true)
+        if (smallBulletPrefab.GetComponent<StageSmallBulletMoverScript>() == null || stageLargeBulletPrefab.GetComponent<StageSmallBulletMoverScript>() == null)
         {
-            yield return new WaitForSeconds(spawnInterval);
-
-            // Spawn one bullet in each zone (on the server)
-            SpawnBulletInZone(spawnZone1);
-            SpawnBulletInZone(spawnZone2);
+            Debug.LogError("One or both bullet prefabs are missing a StageSmallBulletMoverScript component.", this);
+            enabled = false;
+            return;
         }
     }
 
-    // This method now only runs on the server because SpawnBullets checks IsServer
-    private void SpawnBulletInZone(Transform zoneCenter)
+    // Use override and call base method
+    public override void OnDestroy() // Changed signature to public override
     {
-        // Calculate random position within the specified zone
-        Vector3 center = zoneCenter.position;
+        // Custom Singleton Cleanup first
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+
+        // Call the base NetworkBehaviour cleanup
+        base.OnDestroy(); 
+    }
+
+    /// <summary>
+    /// Called by a Fairy when it's destroyed by a specific player (killerRole).
+    /// Spawns a bullet (small or large) in the opponent's spawn zone.
+    /// This method MUST only be called on the server.
+    /// </summary>
+    /// <param name="killerRole">The role of the player who defeated the fairy.</param>
+    public void SpawnBulletForOpponent(PlayerRole killerRole)
+    {
+        // --- SERVER CHECK & Killer Validation --- 
+        if (!IsServer)
+        {
+            Debug.LogError("SpawnBulletForOpponent called on non-server instance!", this);
+            return;
+        }
+        if (killerRole == PlayerRole.None)
+        {
+            // Don't spawn bullets if the killer is unknown (e.g., cleared by bomb)
+            return; 
+        }
+        // ----------------------------------------
+
+        // --- Determine Target --- 
+        PlayerRole targetRole = (killerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
+        Transform targetZone = (targetRole == PlayerRole.Player1) ? spawnZone1 : spawnZone2;
+
+        if (targetZone == null) // Safety check
+        {
+            Debug.LogError($"Target spawn zone for role {targetRole} is null!", this);
+            return;
+        }
+        // ----------------------
+
+        // --- Choose Bullet Prefab --- 
+        GameObject prefabToSpawn;
+        if (Random.value < largeBulletSpawnChance)
+        {
+            prefabToSpawn = stageLargeBulletPrefab;
+        }
+        else
+        {
+            prefabToSpawn = smallBulletPrefab;
+        }
+        // --------------------------
+
+        // --- Calculate Spawn Position --- 
+        Vector3 center = targetZone.position;
         float randomX = Random.Range(-spawnZoneSize.x / 2f, spawnZoneSize.x / 2f);
         float randomY = Random.Range(-spawnZoneSize.y / 2f, spawnZoneSize.y / 2f);
         // Use the zone's z position for the bullet's z position
-        Vector3 spawnPosition = new Vector3(center.x + randomX, center.y + randomY, center.z); 
+        Vector3 spawnPosition = new Vector3(center.x + randomX, center.y + randomY, center.z);
+        // ------------------------------
 
+        // --- Instantiate and Spawn --- 
         // Instantiate the bullet locally on the server first
-        GameObject bulletInstance = Instantiate(smallBulletPrefab, spawnPosition, Quaternion.identity);
-        
+        GameObject bulletInstance = Instantiate(prefabToSpawn, spawnPosition, Quaternion.identity);
+
         // Get components needed before spawn
         StageSmallBulletMoverScript bulletMover = bulletInstance.GetComponent<StageSmallBulletMoverScript>();
         NetworkObject networkObject = bulletInstance.GetComponent<NetworkObject>();
@@ -76,41 +145,29 @@ public class StageSmallBulletSpawner : NetworkBehaviour
         // Error checking before spawn
         if (bulletMover == null)
         {
-            Debug.LogError("Instantiated bullet is missing StageSmallBulletMoverScript!", bulletInstance);
+            Debug.LogError($"Instantiated bullet {prefabToSpawn.name} is missing StageSmallBulletMoverScript! Destroying.", bulletInstance);
             Destroy(bulletInstance);
             return;
         }
         if (networkObject == null)
         {
-            Debug.LogError("Instantiated bullet is missing NetworkObject!", bulletInstance);
+            Debug.LogError($"Instantiated bullet {prefabToSpawn.name} is missing NetworkObject! Destroying.", bulletInstance);
             Destroy(bulletInstance);
             return;
         }
-        
-        // --- NETWORK SPAWN --- Spawn the instance across the network first
+
+        // Spawn the instance across the network first
         networkObject.Spawn(true); // true = despawn with server
 
-        // --- Set Target Player Role AFTER SPAWN --- 
-        if (zoneCenter == spawnZone1)
-        {
-            bulletMover.TargetPlayerRole.Value = PlayerRole.Player1;
-        }
-        else if (zoneCenter == spawnZone2)
-        {
-            bulletMover.TargetPlayerRole.Value = PlayerRole.Player2;
-        }
-        else
-        {
-            Debug.LogWarning("Spawn zone not recognized, setting bullet TargetPlayerRole to None.");
-            bulletMover.TargetPlayerRole.Value = PlayerRole.None; 
-        }
-        // --- End Set Target Player Role ---
+        // Set Target Player Role AFTER SPAWN 
+        bulletMover.TargetPlayerRole.Value = targetRole;
+        // ------------------------------
     }
 
     // Draw visual aids in the editor to see the spawn zones
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.white;
+        Gizmos.color = Color.cyan; // Changed color for clarity
         if (spawnZone1 != null)
         {
             Gizmos.DrawWireCube(spawnZone1.position, new Vector3(spawnZoneSize.x, spawnZoneSize.y, 0f));

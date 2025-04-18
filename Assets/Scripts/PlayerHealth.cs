@@ -1,228 +1,128 @@
 using UnityEngine;
 using Unity.Netcode;
-// using Unity.Netcode.Components; // Removed - No longer directly manipulating NT
 using System;
 using System.Collections; // Added for Coroutines
-// using System.Collections.Generic; // Removed - No longer using List
 
+// NEW: Require the visuals component
+[RequireComponent(typeof(PlayerInvincibilityVisuals))]
+[RequireComponent(typeof(CharacterStats))]
 public class PlayerHealth : NetworkBehaviour
 {
-    public const int MaxHealth = 5;
-
-    // Synchronize health from server to clients. Only server can write.
-    public NetworkVariable<int> CurrentHealth = new NetworkVariable<int>(MaxHealth, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    // NetworkVariable constructor needs a default value, cannot use CharacterStats here yet.
+    // We will set the correct value authoritatively on the server in OnNetworkSpawn.
+    public NetworkVariable<int> CurrentHealth = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server); // Default to 1, server will fix
 
     // Event to notify UI or other systems about health changes
     public event Action<int> OnHealthChanged;
     // Event to notify game state manager about death (server-side)
     public static event Action<ulong> OnPlayerDeathServer; 
 
-    [Header("Invincibility Settings")]
-    [SerializeField] private SpriteRenderer playerSpriteRenderer; // Assign in inspector
-    [SerializeField] private float invincibilityDuration = 2f;
-    [SerializeField] private float flashInterval = 0.1f;
-    [SerializeField] private float flashAlpha = 0.5f; // Transparency during flash
-
     // NetworkVariable to sync invincibility state (server writes, everyone reads)
     public NetworkVariable<bool> IsInvincible = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    private Coroutine flashingCoroutine;
     private PlayerDeathBomb playerDeathBomb; // Reference to the bomb component
-    // Removed PlayerMovement reference as it's not needed for this simplified version
-    // private PlayerMovement playerMovement;
-    // Removed isServerKnockingBack flag and property
-    // private bool isServerKnockingBack = false; 
-    // public bool IsServerKnockingBack => isServerKnockingBack;
+    private CharacterStats characterStats; // Added reference
+
+    // Added Awake to get components
+    private void Awake()
+    {
+        characterStats = GetComponent<CharacterStats>();
+        playerDeathBomb = GetComponent<PlayerDeathBomb>();
+
+        if (characterStats == null) Debug.LogError("PlayerHealth: CharacterStats not found!", this);
+        if (playerDeathBomb == null) Debug.LogWarning("PlayerHealth could not find PlayerDeathBomb component! Bomb effect will not work.", this);
+    }
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
         CurrentHealth.OnValueChanged += HandleHealthChanged;
-        IsInvincible.OnValueChanged += HandleInvincibilityChanged;
-        // Removed ServerHasMovementControl subscription
-        // ServerHasMovementControl.OnValueChanged += HandleMovementControlChanged;
 
-        // Get the death bomb component
-        playerDeathBomb = GetComponent<PlayerDeathBomb>();
-        if (playerDeathBomb == null)
+        // If this is the server, initialize health based on CharacterStats
+        if (IsServer && characterStats != null)
         {
-            Debug.LogWarning("PlayerHealth could not find PlayerDeathBomb component! Bomb effect will not work.", this);
+            CurrentHealth.Value = characterStats.GetStartingHealth();
         }
 
-        // Removed playerMovement Get component
-        // playerMovement = GetComponent<PlayerMovement>(); 
-        // if (playerMovement == null) { Debug.LogError(...); }
-
+        // Trigger initial health UI update (even if server hasn't set value yet, client will get update soon)
         HandleHealthChanged(0, CurrentHealth.Value);
-        HandleInvincibilityChanged(false, IsInvincible.Value);
-        // Removed initial HandleMovementControlChanged call
     }
 
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
         CurrentHealth.OnValueChanged -= HandleHealthChanged;
-        IsInvincible.OnValueChanged -= HandleInvincibilityChanged;
-        // Removed ServerHasMovementControl unsubscription
     }
 
     private void HandleHealthChanged(int previousValue, int newValue)
     {
         // Invoke the event whenever health changes (clients will react here for UI)
         OnHealthChanged?.Invoke(newValue);
-
-        // Optional: Client-side effects like flashing sprite could be triggered here
-        // Debug.Log($"Client {OwnerClientId} health changed to {newValue}");
-    }
-
-    // Called on all clients when IsInvincible changes
-    private void HandleInvincibilityChanged(bool previousValue, bool newValue)
-    {
-        // Debug.Log($"Client {OwnerClientId} invincibility changed to: {newValue}");
-        if (playerSpriteRenderer == null) return;
-
-        if (newValue == true)
-        {
-            // Start flashing if not already doing so
-            if (flashingCoroutine == null)
-            {
-                flashingCoroutine = StartCoroutine(FlashSpriteCoroutine());
-            }
-        }
-        else
-        {            
-            // Stop flashing and reset alpha
-            if (flashingCoroutine != null)
-            {
-                StopCoroutine(flashingCoroutine);
-                flashingCoroutine = null;
-            }
-            ResetSpriteAlpha();
-        }
-    }
-
-    private IEnumerator FlashSpriteCoroutine()
-    {
-        // This runs locally on each client while IsInvincible is true
-        bool showFull = true;
-        while (IsInvincible.Value) // Loop based on the NetworkVariable state
-        {
-            if (playerSpriteRenderer != null)
-            {
-                Color color = playerSpriteRenderer.color;
-                color.a = showFull ? 1.0f : flashAlpha;
-                playerSpriteRenderer.color = color;
-            }
-            showFull = !showFull;
-            yield return new WaitForSeconds(flashInterval);
-        }
-        // Ensure alpha is reset when loop finishes (e.g., if IsInvincible becomes false)
-        ResetSpriteAlpha(); 
-        flashingCoroutine = null; // Mark as stopped
-    }
-
-    private void ResetSpriteAlpha()
-    {
-        if (playerSpriteRenderer != null)
-        {
-            Color color = playerSpriteRenderer.color;
-            color.a = 1.0f;
-            playerSpriteRenderer.color = color;
-        }
     }
 
     // Call this method from PlayerHitbox on the server OR via RequestDamageServerRpc
     public void TakeDamage(int amount)
     {
-        Debug.Log($"[Server PlayerHealth {OwnerClientId}] TakeDamage({amount}) called."); // LOG
-        if (!IsServer) 
-        {
-            Debug.Log($"[Server PlayerHealth {OwnerClientId}] TakeDamage ignored: Not server."); // LOG
-            return; 
-        }
-        if (IsInvincible.Value) 
-        {
-            Debug.Log($"[Server PlayerHealth {OwnerClientId}] TakeDamage ignored: Invincible."); // LOG
-            return; 
-        }
-        if (CurrentHealth.Value <= 0) 
-        {
-            Debug.Log($"[Server PlayerHealth {OwnerClientId}] TakeDamage ignored: Already dead (Health: {CurrentHealth.Value})."); // LOG
-            return; 
-        }
+        if (!IsServer) return;
+        if (IsInvincible.Value) return;
+        if (CurrentHealth.Value <= 0) return;
 
-        Debug.Log($"[Server PlayerHealth {OwnerClientId}] Applying {amount} damage. Current Health: {CurrentHealth.Value}"); // LOG
-        int previousHealth = CurrentHealth.Value; // Store previous health for comparison
+        int previousHealth = CurrentHealth.Value; 
         int newHealth = CurrentHealth.Value - amount;
         CurrentHealth.Value = Mathf.Max(newHealth, 0);
-        Debug.Log($"[Server PlayerHealth {OwnerClientId}] Damage applied. Previous Health: {previousHealth}, New Health: {CurrentHealth.Value}"); // LOG
 
         if (CurrentHealth.Value <= 0)
         {
-            Debug.Log($"[Server PlayerHealth {OwnerClientId}] Health reached zero. Handling death..."); // LOG
             HandleDeathServer();
         }
         else
         {
-            Debug.Log($"[Server PlayerHealth {OwnerClientId}] Triggering invincibility..."); // LOG
-            TriggerInvincibilityServer(); // Only triggers invincibility timer now
+            TriggerInvincibilityServer(); 
         }
     }
 
     // Renamed to indicate it's server-only logic trigger
     private void TriggerInvincibilityServer()
     {
-        if (!IsServer) return;
-        if (IsInvincible.Value) return;
-
+        if (!IsServer || IsInvincible.Value) return;
         StartCoroutine(ServerInvincibilityTimerCoroutine());
-        // Removed TriggerDeathBombServer() call from here
-        // TriggerDeathBombServer(); 
     }
 
     private IEnumerator ServerInvincibilityTimerCoroutine()
     {
         IsInvincible.Value = true; 
-        yield return new WaitForSeconds(invincibilityDuration);
+        // Use duration from CharacterStats
+        yield return new WaitForSeconds(characterStats.GetInvincibilityDuration()); 
         
-        // --- Trigger Bomb Effect via Separate Component --- 
         if (playerDeathBomb != null)
         {
-            playerDeathBomb.ExecuteBomb(); // Call the method on the other component
+            playerDeathBomb.ExecuteBomb(); 
         }
-        else
-        {
-            Debug.LogError("[Server PlayerHealth] Cannot execute bomb, PlayerDeathBomb component missing!", this);
-        }
-        // -------------------------------------------------------
-
+        else Debug.LogError("[Server PlayerHealth] Cannot execute bomb, PlayerDeathBomb component missing!", this);
+        
         IsInvincible.Value = false;
     }
 
     private void HandleDeathServer()
     {
         // This runs ONLY on the server when health reaches 0
-        Debug.Log($"[Server] Player {OwnerClientId} has died.");
-        
-        // Invoke server-side event for game manager to handle round end/scoring
         OnPlayerDeathServer?.Invoke(OwnerClientId);
-
-        // Optional: Could trigger a death animation/effect via ClientRpc here
-        // DieClientRpc(); 
     }
 
     // Example: Reset health (e.g., called by a game manager at round start)
     [ServerRpc(RequireOwnership = false)] // Allow server to call this on player objects
     public void ResetHealthServerRpc()
     {
-        Debug.Log($"[Server] Resetting health for Player {OwnerClientId}");
-        CurrentHealth.Value = MaxHealth;
+        // Reset to value from CharacterStats
+        if (characterStats != null) 
+        {
+             CurrentHealth.Value = characterStats.GetStartingHealth();
+        }
+        else
+        {
+            Debug.LogError($"Cannot reset health for {OwnerClientId}, CharacterStats component missing on server!", this);
+            // Optionally set to a default value here if needed
+            // CurrentHealth.Value = 5; 
+        }
     }
-
-    // ServerRpc called by other objects (like Fairy) to request damage to this player
-    // [ServerRpc(RequireOwnership = false)] // REMOVED - No longer used
-    // public void RequestDamageServerRpc(int amount, ServerRpcParams rpcParams = default)
-    // {
-    //    ...
-    // }
 } 

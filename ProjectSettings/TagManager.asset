@@ -8,6 +8,8 @@ TagManager:
   - PlayerShot
   - Fairy
   - FairyShockwave
+  - ScopeStyleZone
+  - Spirit
   layers:
   - Default
   - TransparentFX

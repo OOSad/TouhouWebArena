@@ -142,23 +142,10 @@ public class ReimuExtraAttackOrb : NetworkBehaviour
         // Check if the object still exists and is spawned before trying to despawn
         if (this != null && NetworkObject != null && NetworkObject.IsSpawned)
         {
-            Debug.Log($"[Orb {NetworkObjectId} Server] Lifetime expired. Despawning.");
             NetworkObject.Despawn(true); // true to destroy the object across the network
         }
         // No else needed - if it's already gone (e.g., hit player), do nothing
     }
     // --- END NEW --- 
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
 

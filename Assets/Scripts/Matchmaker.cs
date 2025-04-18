@@ -1,338 +1,13 @@
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using Unity.Netcode;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using Unity.Collections;
 using System;
 using System.Collections;
-using System.Threading.Tasks;
 
-public class Matchmaker : NetworkBehaviour
-{
-    [SerializeField] private TMP_InputField usernameInput;
-    [SerializeField] private Button queueButton;
-    [SerializeField] private Button cancelButton;
-    [SerializeField] private TextMeshProUGUI queueText;
-    [SerializeField] private float sceneTransitionDelay = 1.0f;
-    
-    // Networked list to store queued players
-    private NetworkList<PlayerInfo> queuedPlayers;
-    
-    // Currently connected client info
-    private string localPlayerName = "";
-    private ulong localClientId;
-    private bool isInQueue = false;
-    
-    private void Awake()
-    {
-        // Initialize the networked list
-        queuedPlayers = new NetworkList<PlayerInfo>();
-    }
-    
-    private void OnEnable()
-    {
-        // Listen for queue changes
-        queuedPlayers.OnListChanged += HandleQueueChanged;
-    }
-    
-    private void OnDisable()
-    {
-        // Remove listener
-        queuedPlayers.OnListChanged -= HandleQueueChanged;
-    }
-    
-    private void Start()
-    {
-        // Set up button listeners
-        if (queueButton != null)
-            queueButton.onClick.AddListener(OnQueueButtonClicked);
-            
-        if (cancelButton != null)
-            cancelButton.onClick.AddListener(OnCancelButtonClicked);
-            
-        // Disable queue functionality until connected
-        SetQueueButtonsInteractable(false);
-        
-        // Set up network connection callbacks
-        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-    }
-    
-    public override void OnDestroy()
-    {
-        // Clean up callbacks
-        if (NetworkManager.Singleton != null)
-        {
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
-        }
-        
-        // Dispose the NetworkList to prevent memory leaks
-        if (queuedPlayers != null)
-        {
-            queuedPlayers.Dispose();
-        }
-    }
-    
-    private void OnClientConnected(ulong clientId)
-    {
-        // Store local client info
-        if (clientId == NetworkManager.Singleton.LocalClientId)
-        {
-            localClientId = clientId;
-            SetQueueButtonsInteractable(true);
-            
-            // Clear the queue text for newly connected clients
-            UpdateQueueText();
-        }
-    }
-    
-    private void OnClientDisconnected(ulong clientId)
-    {
-        if (IsServer && queuedPlayers != null)
-        {
-            // Remove disconnected players from queue
-            for (int i = 0; i < queuedPlayers.Count; i++)
-            {
-                if (queuedPlayers[i].ClientId == clientId)
-                {
-                    queuedPlayers.RemoveAt(i);
-                    break;
-                }
-            }
-        }
-        
-        // If we're disconnecting, disable queue buttons
-        if (clientId == localClientId)
-        {
-            SetQueueButtonsInteractable(false);
-            isInQueue = false;
-        }
-    }
-    
-    private void SetQueueButtonsInteractable(bool interactable)
-    {
-        if (queueButton != null)
-            queueButton.interactable = interactable;
-            
-        if (cancelButton != null)
-            cancelButton.interactable = false; // Initially disabled until in queue
-    }
-    
-    private void OnQueueButtonClicked()
-    {
-        // Get username from input field, use "Anonymous" if empty
-        string username = "Anonymous";
-        
-        if (usernameInput != null && !string.IsNullOrWhiteSpace(usernameInput.text))
-        {
-            username = usernameInput.text;
-        }
-        
-        // Add a random identifier between 1000-9999
-        int uniqueId = UnityEngine.Random.Range(1000, 10000);
-        username = $"{username}#{uniqueId}";
-        
-        localPlayerName = username;
-        JoinQueueServerRpc(localPlayerName, NetworkManager.Singleton.LocalClientId);
-    }
-    
-    private void OnCancelButtonClicked()
-    {
-        if (isInQueue)
-        {
-            LeaveQueueServerRpc(NetworkManager.Singleton.LocalClientId);
-        }
-    }
-    
-    [ServerRpc(RequireOwnership = false)]
-    private void JoinQueueServerRpc(string playerName, ulong clientId)
-    {
-        if (!IsServer) return;
-        
-        // Register player with PlayerDataManager
-        if (PlayerDataManager.Instance != null)
-        {
-            PlayerDataManager.Instance.RegisterPlayer(clientId, playerName);
-        }
-        
-        // Check if player is already in queue
-        foreach (var player in queuedPlayers)
-        {
-            if (player.ClientId == clientId)
-            {
-                // Already in queue
-                return;
-            }
-        }
-        
-        // Add player to queue
-        queuedPlayers.Add(new PlayerInfo { 
-            PlayerName = new FixedString32Bytes(playerName), 
-            ClientId = clientId 
-        });
-        
-        // Update clients about this player's queue status
-        SetPlayerQueueStatusClientRpc(clientId, true);
-        
-        // Check if we have two players ready
-        if (queuedPlayers.Count >= 2)
-        {
-            ulong player1ClientId = queuedPlayers[0].ClientId;
-            ulong player2ClientId = queuedPlayers[1].ClientId;
-            
-            // Assign roles before starting the match
-            if (PlayerDataManager.Instance != null)
-            {
-                PlayerDataManager.Instance.AssignPlayerRole(player1ClientId, PlayerRole.Player1);
-                PlayerDataManager.Instance.AssignPlayerRole(player2ClientId, PlayerRole.Player2);
-            }
-            else
-            {
-                Debug.LogError("[Matchmaker] PlayerDataManager Instance is null! Cannot assign roles.");
-                // Handle this error appropriately, perhaps by not starting the match
-                return; 
-            }
-            
-            // Start match with the assigned players
-            StartMatchClientRpc(player1ClientId, player2ClientId);
-            
-            // Start delayed scene load for server as well
-            if (IsServer)
-            {
-                StartCoroutine(LoadGameplaySceneDelayed());
-            }
-            
-            // Remove matched players from queue
-            queuedPlayers.RemoveAt(0);
-            queuedPlayers.RemoveAt(0);
-        }
-    }
-    
-    [ServerRpc(RequireOwnership = false)]
-    private void LeaveQueueServerRpc(ulong clientId)
-    {
-        if (!IsServer) return;
-        
-        // Remove player from queue
-        for (int i = 0; i < queuedPlayers.Count; i++)
-        {
-            if (queuedPlayers[i].ClientId == clientId)
-            {
-                queuedPlayers.RemoveAt(i);
-                break;
-            }
-        }
-        
-        // Update client about their queue status
-        SetPlayerQueueStatusClientRpc(clientId, false);
-    }
-    
-    [ClientRpc]
-    private void SetPlayerQueueStatusClientRpc(ulong clientId, bool inQueue)
-    {
-        // Update local queue status if this is for us
-        if (clientId == NetworkManager.Singleton.LocalClientId)
-        {
-            isInQueue = inQueue;
-            
-            // Enable/disable buttons based on queue status
-            if (queueButton != null)
-                queueButton.interactable = !inQueue;
-                
-            if (cancelButton != null)
-                cancelButton.interactable = inQueue;
-        }
-    }
-    
-    [ClientRpc]
-    private void StartMatchClientRpc(ulong player1Id, ulong player2Id)
-    {
-        // Check if this client is one of the players in the match
-        if (NetworkManager.Singleton.LocalClientId == player1Id || 
-            NetworkManager.Singleton.LocalClientId == player2Id)
-        {
-            Debug.Log("Match is starting for client: " + NetworkManager.Singleton.LocalClientId);
-            
-            // Start coroutine for delayed scene loading
-            StartCoroutine(DelayedSceneLoad(1.0f));
-            
-            // Update queue text to show match is starting
-            if (queueText != null)
-            {
-                queueText.text = "Match found! Loading game...";
-            }
-        }
-    }
-    
-    private IEnumerator DelayedSceneLoad(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        
-        // Note: We don't need to load the scene on clients now, as the server will handle it
-        // and network scene manager will automatically sync to clients
-        if (!IsServer)
-        {
-            Debug.Log("Client waiting for server to change scene...");
-        }
-    }
-    
-    private IEnumerator LoadGameplaySceneDelayed()
-    {
-        Debug.Log("Server preparing to load character select scene...");
-        
-        // Wait for the delay
-        yield return new WaitForSeconds(sceneTransitionDelay);
-        
-        // Load the character select scene (this will sync to all connected clients)
-        Debug.Log("Server loading character select scene...");
-        NetworkManager.Singleton.SceneManager.LoadScene("CharacterSelectScene", LoadSceneMode.Single);
-    }
-    
-    private void HandleQueueChanged(NetworkListEvent<PlayerInfo> changeEvent)
-    {
-        // Update UI when queue changes
-        UpdateQueueText();
-    }
-    
-    private void UpdateQueueText()
-    {
-        if (queueText == null) return;
-        
-        if (queuedPlayers.Count == 0)
-        {
-            queueText.text = "No players in queue";
-            return;
-        }
-        
-        // Build queue display text
-        string queueDisplay = "Queued players:\n";
-        foreach (var player in queuedPlayers)
-        {
-            queueDisplay += player.PlayerName.ToString() + "\n";
-        }
-        
-        queueText.text = queueDisplay;
-    }
-
-    private async Task LoadCharacterSelectSceneAsync()
-    {
-        if (!IsServer) return;
-
-        // Debug.Log("Server preparing to load character select scene...");
-
-        // Ensure all clients are ready before loading
-        await Task.Delay(1000); // Give a moment for clients to connect/sync
-
-        // Debug.Log("Server loading character select scene...");
-        NetworkManager.SceneManager.LoadScene("CharacterSelectScene", LoadSceneMode.Single);
-    }
-}
-
-// Custom struct to hold player info in the networked list
-struct PlayerInfo : INetworkSerializable, IEquatable<PlayerInfo>
+// PlayerInfo struct definition (now outside)
+public struct PlayerInfo : INetworkSerializable, IEquatable<PlayerInfo>
 {
     public ulong ClientId;
     public FixedString32Bytes PlayerName;
@@ -356,5 +31,209 @@ struct PlayerInfo : INetworkSerializable, IEquatable<PlayerInfo>
     public override int GetHashCode()
     {
         return HashCode.Combine(ClientId, PlayerName);
+    }
+}
+
+public class Matchmaker : NetworkBehaviour
+{
+    [Header("UI Handler Reference")]
+    [SerializeField] private MatchmakerUI matchmakerUI;
+
+    private NetworkList<PlayerInfo> queuedPlayers;
+    private ulong localClientId = ulong.MaxValue;
+
+    public static Matchmaker Instance { get; private set; }
+
+    // --- NEW: Server-Side Events ---
+    public event Action<ulong, string> OnPlayerQueuedServer;       // Fired when a player is added to the queue
+    public event Action<ulong, ulong> OnMatchFoundServer;  // Fired when two players are matched
+    // --------------------------------
+
+    private void Awake()
+    {
+        // Singleton setup
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+        queuedPlayers = new NetworkList<PlayerInfo>();
+        if (matchmakerUI == null) matchmakerUI = FindObjectOfType<MatchmakerUI>();
+        if (matchmakerUI == null) Debug.LogWarning("Matchmaker could not find MatchmakerUI instance.", this);
+    }
+
+    private void OnEnable()
+    {
+        queuedPlayers.OnListChanged += HandleQueueChanged;
+    }
+
+    private void OnDisable()
+    {
+        queuedPlayers.OnListChanged -= HandleQueueChanged;
+    }
+
+    private void Start()
+    {
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        HandleQueueChanged(default);
+    }
+
+    public override void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+        }
+        if (queuedPlayers != null) queuedPlayers.Dispose();
+        base.OnDestroy();
+    }
+
+    private void OnClientConnected(ulong clientId)
+    {
+        if (clientId == NetworkManager.Singleton.LocalClientId)
+        {
+            localClientId = clientId;
+            HandleQueueChanged(default);
+        }
+    }
+
+    private void OnClientDisconnected(ulong clientId)
+    {
+        if (IsServer && queuedPlayers != null)
+        {
+            for (int i = queuedPlayers.Count - 1; i >= 0; i--)
+            {
+                if (queuedPlayers[i].ClientId == clientId)
+                {
+                    Debug.Log($"[Server] Player {clientId} disconnected, removing from queue.");
+                    queuedPlayers.RemoveAt(i);
+                }
+            }
+        }
+         if (clientId == localClientId) localClientId = ulong.MaxValue;
+    }
+
+    public void RequestJoinQueue(string playerName)
+    {
+         if (NetworkManager.Singleton.IsConnectedClient)
+         {
+            int uniqueId = UnityEngine.Random.Range(1000, 10000);
+            string uniquePlayerName = $"{playerName}#{uniqueId}";
+            JoinQueueServerRpc(uniquePlayerName, NetworkManager.Singleton.LocalClientId);
+         }
+         else Debug.LogWarning("RequestJoinQueue called but client is not connected.");
+    }
+     public void RequestLeaveQueue()
+     {
+         if (NetworkManager.Singleton.IsConnectedClient)
+         {
+             LeaveQueueServerRpc(NetworkManager.Singleton.LocalClientId);
+         }
+         else Debug.LogWarning("RequestLeaveQueue called but client is not connected.");
+     }
+
+
+    [ServerRpc(RequireOwnership = false)]
+    private void JoinQueueServerRpc(string playerName, ulong clientId)
+    {
+        if (!IsServer) return;
+
+        // Check if player already in queue
+        for (int i = 0; i < queuedPlayers.Count; i++) if (queuedPlayers[i].ClientId == clientId) return;
+
+        queuedPlayers.Add(new PlayerInfo { PlayerName = new FixedString32Bytes(playerName), ClientId = clientId });
+        Debug.Log($"[Server] Added {playerName} ({clientId}) to queue.");
+
+        // --- NEW: Invoke Queued Event --- Pass name
+        OnPlayerQueuedServer?.Invoke(clientId, playerName); // Pass name
+        // -----------------------------
+
+        // Update specific client about their queue status
+        ClientRpcParams clientRpcParams = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new ulong[]{ clientId } } };
+        SetPlayerQueueStatusClientRpc(true, clientRpcParams);
+
+        CheckForMatch();
+    }
+
+
+    [ServerRpc(RequireOwnership = false)]
+    private void LeaveQueueServerRpc(ulong clientId)
+    {
+        if (!IsServer) return;
+
+        bool removed = false;
+        for (int i = 0; i < queuedPlayers.Count; i++)
+        {
+            if (queuedPlayers[i].ClientId == clientId)
+            {
+                queuedPlayers.RemoveAt(i);
+                removed = true;
+                Debug.Log($"[Server] Removed Client {clientId} from queue.");
+                break;
+            }
+        }
+
+        if(removed)
+        {
+            ClientRpcParams clientRpcParams = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new ulong[]{ clientId } } };
+            SetPlayerQueueStatusClientRpc(false, clientRpcParams);
+        }
+    }
+
+    private void CheckForMatch()
+    {
+        if (!IsServer || queuedPlayers.Count < 2) return;
+
+        Debug.Log("[Server] Checking for match...");
+        ulong player1ClientId = queuedPlayers[0].ClientId;
+        ulong player2ClientId = queuedPlayers[1].ClientId;
+
+        // --- NEW: Invoke Match Found Event ---
+        OnMatchFoundServer?.Invoke(player1ClientId, player2ClientId);
+        // -----------------------------------
+
+        // Notify clients match is starting (UI update)
+        StartMatchClientRpc(player1ClientId, player2ClientId);
+
+        // Remove matched players AFTER invoking event and notifying clients
+        queuedPlayers.RemoveAt(1); // P2
+        queuedPlayers.RemoveAt(0); // P1
+        Debug.Log("[Server] Removed matched players from queue.");
+    }
+
+    [ClientRpc] private void SetPlayerQueueStatusClientRpc(bool inQueue, ClientRpcParams clientRpcParams = default)
+    {
+        if (matchmakerUI != null) matchmakerUI.UpdateQueueStatus(inQueue);
+        else Debug.LogWarning("SetPlayerQueueStatusClientRpc: MatchmakerUI reference is null.");
+    }
+
+    [ClientRpc] private void StartMatchClientRpc(ulong player1Id, ulong player2Id)
+    {
+        if (NetworkManager.Singleton.LocalClientId == player1Id || NetworkManager.Singleton.LocalClientId == player2Id)
+        {
+            Debug.Log("Match is starting for client: " + NetworkManager.Singleton.LocalClientId);
+            if(matchmakerUI != null)
+            {
+                matchmakerUI.UpdateQueueDisplayText("Match found! Loading game...");
+                matchmakerUI.UpdateQueueStatus(false);
+            }
+        }
+    }
+
+    private void HandleQueueChanged(NetworkListEvent<PlayerInfo> changeEvent)
+    {
+        if (matchmakerUI != null)
+        {
+            if (queuedPlayers.Count == 0)
+            {
+                 matchmakerUI.UpdateQueueDisplayText("No players in queue");
+            }
+            else
+            {
+                string queueDisplay = "Queued players:\n";
+                foreach (var player in queuedPlayers) queueDisplay += player.PlayerName.ToString() + "\n";
+                 matchmakerUI.UpdateQueueDisplayText(queueDisplay);
+            }
+        }
     }
 } 

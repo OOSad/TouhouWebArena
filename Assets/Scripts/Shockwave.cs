@@ -2,43 +2,47 @@ using UnityEngine;
 using System.Collections;
 using Unity.Netcode;
 
-[RequireComponent(typeof(CircleCollider2D), typeof(SpriteRenderer))]
-public class Shockwave : MonoBehaviour
+// Now requires ShockwaveVisuals instead of SpriteRenderer
+[RequireComponent(typeof(CircleCollider2D))]
+[RequireComponent(typeof(ShockwaveVisuals))] 
+public class Shockwave : NetworkBehaviour
 {
     [Header("Expansion Settings")]
-    [SerializeField] private float duration = 0.3f; // How long the shockwave lasts (Reverted)
-    [SerializeField] private float maxRadius = 2.0f; // The final radius the collider/visual reaches
-    [SerializeField] private AnimationCurve expansionCurve = AnimationCurve.EaseInOut(0, 0, 1, 1); // Controls speed of expansion
+    [SerializeField] private float maxRadius = 5f; // The maximum radius the shockwave will reach
+    [SerializeField] private float expansionDuration = 0.5f; // Time in seconds to reach max radius
+    [SerializeField] private AnimationCurve expansionCurve = AnimationCurve.EaseInOut(0, 0, 1, 1); // Curve controlling expansion speed
 
-    [Header("Target Tags")]
-    [SerializeField] private string enemyBulletTag = "EnemyBullet"; // Make sure your enemy bullets have this tag!
-
+    // Components
     private CircleCollider2D circleCollider;
-    private SpriteRenderer spriteRenderer;
     private float initialRadius;
-    private Vector3 initialScale;
-    private float startTime;
-    private Color initialColor;
-    private Color endColor;
-
+    
     private Collider2D sourceCollider = null; // Optional: To prevent hitting the fairy that spawned it
+    
+    // --- NEW: Reference to visuals handler ---
+    private ShockwaveVisuals shockwaveVisuals;
+
+    // State
+    private float currentExpansionTime = 0f;
+    private bool isExpanding = false;
 
     void Awake()
     {
         circleCollider = GetComponent<CircleCollider2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        initialRadius = circleCollider.radius; // Store the initial radius set in the prefab FIRST
+        shockwaveVisuals = GetComponent<ShockwaveVisuals>(); // Get the visuals component
+        circleCollider.isTrigger = true; // Ensure the collider is a trigger
+        circleCollider.radius = 0; // Start with zero radius
 
-        initialRadius = circleCollider.radius; // Store the initial radius set in the prefab
-        initialScale = transform.localScale;
-        initialColor = spriteRenderer.color;
-        endColor = new Color(initialColor.r, initialColor.g, initialColor.b, 0f); // Fade out alpha
+        if (shockwaveVisuals == null) 
+        {
+            Debug.LogError("Shockwave is missing required ShockwaveVisuals component!", this);
+            enabled = false; // Disable if visuals are missing
+        }
     }
 
-    void Start()
-    {
-        startTime = Time.time;
-        StartCoroutine(ExpandAndFade());
-    }
+    // --- NEW: Public getter for initial radius used by ShockwaveVisuals ---
+    public float GetInitialRadius() => initialRadius;
+    // ------------------------------------------------------------------
 
     // Optional: Call this immediately after instantiating if you want to prevent self-collision
     public void SetSourceCollider(Collider2D source)
@@ -46,117 +50,65 @@ public class Shockwave : MonoBehaviour
         sourceCollider = source;
     }
 
-    private IEnumerator ExpandAndFade()
+    void Update()
     {
-        float elapsed = 0f;
+        // Expansion logic only runs on the server
+        if (!IsServer || !isExpanding) return;
 
-        while (elapsed < duration)
+        currentExpansionTime += Time.deltaTime;
+        float progress = Mathf.Clamp01(currentExpansionTime / expansionDuration);
+        float curveValue = expansionCurve.Evaluate(progress); 
+        circleCollider.radius = Mathf.Lerp(0, maxRadius, curveValue); 
+
+        // Update visuals via the dedicated component
+        UpdateVisualsClientRpc(progress, circleCollider.radius);
+
+        // Check if expansion is complete
+        if (currentExpansionTime >= expansionDuration)
         {
-            elapsed = Time.time - startTime;
-            float progress = Mathf.Clamp01(elapsed / duration);
-            float curveProgress = expansionCurve.Evaluate(progress); // Use curve for non-linear expansion
-
-            // Scale collider radius
-            circleCollider.radius = Mathf.Lerp(initialRadius, maxRadius, curveProgress);
-
-            // Scale visual (assuming uniform scaling)
-            // Calculate scale factor needed to match collider radius if sprite is unit size
-            // If sprite base size isn't 1 unit diameter, adjust calculation
-            float scaleFactor = circleCollider.radius / (initialRadius / initialScale.x); // Assumes uniform initial scale
-            transform.localScale = new Vector3(scaleFactor, scaleFactor, initialScale.z);
-
-            // Fade out sprite
-            spriteRenderer.color = Color.Lerp(initialColor, endColor, progress); 
-
-            yield return null; // Wait for next frame
+            isExpanding = false;
+            DespawnShockwave();
         }
-
-        // Ensure final state and destroy
-        circleCollider.radius = maxRadius;
-        float finalScaleFactor = maxRadius / (initialRadius / initialScale.x);
-        transform.localScale = new Vector3(finalScaleFactor, finalScaleFactor, initialScale.z);
-        spriteRenderer.color = endColor;
-
-        Destroy(gameObject);
     }
 
-    // Shockwave collision logic runs locally on all clients where it exists
-    void OnTriggerEnter2D(Collider2D other)
+    // Server-side collision detection
+    private void OnTriggerEnter2D(Collider2D other)
     {
-        // Optional: Prevent hitting the source fairy
-        if (sourceCollider != null && other == sourceCollider)
-        {
-            return;
-        }
+        if (!IsServer) return; // Only server handles collision logic
 
-        // Check for enemy bullets
-        if (!string.IsNullOrEmpty(enemyBulletTag) && other.CompareTag(enemyBulletTag))
-        {
-            NetworkObject bulletNetworkObject = other.GetComponent<NetworkObject>();
-            if (bulletNetworkObject != null)
-            {
-                // Request the server destroy this bullet
-                // We need a way to send this request. A dedicated NetworkManager script
-                // or making the shockwave temporarily network-aware might be needed.
-                // Simpler temporary solution: Assume bullets hit by shockwaves aren't networked
-                // or handle their destruction via another mechanism (e.g., lifetime).
-                // For now, just destroy locally if NOT networked.
-                if (!bulletNetworkObject.IsSpawned) Destroy(other.gameObject);
-                else Debug.LogWarning("Shockwave hit networked bullet - destruction needs server request.");
-            }
-            else
-            {
-                // Destroy non-networked bullets locally
-                Destroy(other.gameObject);
-            }
-        }
-        // Check for other fairies - REMOVED BLOCK
-        // else if (!string.IsNullOrEmpty(fairyTag) && other.CompareTag(fairyTag))
-        // {
-        //     // Try to get the Fairy component (which is now a NetworkBehaviour)
-        //     Fairy fairy = other.GetComponent<Fairy>();
-        //     if (fairy != null)
-        //     {
-        //         // Request the fairy takes damage via its ServerRpc
-        //         // fairy.RequestDamage(fairyDamage); // Old direct call
-
-        //         // NEW: Start a coroutine to apply damage after a delay
-        //         // StartCoroutine(ApplyDamageAfterDelay(fairy, 0.15f)); // Reverted delay (must be < duration)
-        //     }
-        // }
+        // Add other collision logic here if needed (e.g., interacting with players, other enemies)
     }
 
-    // NEW COROUTINE - REMOVED BLOCK
-    // private IEnumerator ApplyDamageAfterDelay(Fairy targetFairy, float delay)
-    // {
-    //     // --- Logging Start ---
-    //     GameObject targetGo = targetFairy != null ? targetFairy.gameObject : null; // Store initial GO ref
-    //     ulong targetNetId = targetFairy != null ? targetFairy.NetworkObjectId : 0; // Store initial NetId
-    //     int shockwaveInstanceId = gameObject.GetInstanceID(); // ID of this shockwave
-    //     Debug.Log($"[Shockwave {shockwaveInstanceId}] Starting ApplyDamageAfterDelay for Fairy NetId:{targetNetId}. Delay: {delay}s");
-    //     // --- Logging End ---
+    [ClientRpc]
+    private void UpdateVisualsClientRpc(float progress, float currentRadius)
+    {
+        if (shockwaveVisuals != null)
+        {
+            shockwaveVisuals.UpdateVisuals(progress, currentRadius);
+        }
+    }
 
-    //     yield return new WaitForSeconds(delay);
+    private void DespawnShockwave()
+    {
+        if (NetworkObject != null && NetworkObject.IsSpawned)
+        {
+            NetworkObject.Despawn(true); // Destroy the object after despawning
+        }
+        else if (gameObject != null)
+        {            
+            Destroy(gameObject); // Fallback for non-networked or already despawned cases
+        }
+    }
 
-    //     // --- Logging Start ---
-    //     Debug.Log($"[Shockwave {shockwaveInstanceId}] Finished waiting {delay}s for Fairy NetId:{targetNetId}. Checking target validity...");
-    //     // --- Logging End ---
-
-    //     // Check if the target fairy still exists before applying damage
-    //     // Check both the component reference AND the original GameObject reference
-    //     bool targetIsValid = targetFairy != null && targetGo != null; 
-
-    //     if (targetIsValid)
-    //     {
-    //         Debug.Log($"[Shockwave {shockwaveInstanceId}] Target Fairy NetId:{targetNetId} is valid. Requesting damage."); // Existing log
-    //         // ---- ADD THIS LOG ----
-    //         Debug.Log($"[Shockwave {shockwaveInstanceId}] >>> Calling RequestDamage on Fairy NetId:{targetNetId}");
-    //         // ----------------------
-    //         targetFairy.RequestDamage(fairyDamage);
-    //     }
-    //     else 
-    //     {
-    //         Debug.LogWarning($"[Shockwave {shockwaveInstanceId}] Target Fairy NetId:{targetNetId} is NO LONGER VALID after {delay}s delay. Damage not applied.");
-    //     }
-    // }
+    public override void OnNetworkSpawn()
+    {        
+        if (IsServer)
+        {
+            // Initialize expansion state on the server
+            currentExpansionTime = 0f;
+            circleCollider.radius = 0f;
+            isExpanding = true;
+        }
+        // Client-side visuals are handled by ShockwaveVisuals OnNetworkSpawn/OnNetworkDespawn
+    }
 } 

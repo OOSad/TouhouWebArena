@@ -91,7 +91,6 @@ public class PlayerFocusController : NetworkBehaviour
         // Inform the controller *before* changing its visual state
         InformScopeStyleController(isFocused); 
         // Now tell the controller to toggle its visuals
-        // ToggleScopeStyleActiveState(isFocused); // Old way: activating/deactivating GameObject
         SetScopeStyleVisualActive(isFocused); // New way: activating/deactivating visuals via controller method
     }
 
@@ -138,7 +137,6 @@ public class PlayerFocusController : NetworkBehaviour
             ToggleHitboxVisual(false);
             // Ensure scope controller is informed and its visuals are turned off
             InformScopeStyleController(false);
-            // ToggleScopeStyleActiveState(false);
             SetScopeStyleVisualActive(false); 
         }
     }

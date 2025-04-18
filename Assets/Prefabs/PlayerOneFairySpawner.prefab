@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2695166828506231416}
-  - component: {fileID: 1109739802452719931}
   - component: {fileID: 7064619211524209653}
   m_Layer: 0
   m_Name: PlayerOneFairySpawner
@@ -33,27 +32,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1109739802452719931
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8918086416351721240}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 4138111355
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
 --- !u!114 &7064619211524209653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -67,13 +45,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerIndex: 0
-  player1PathsParentName: PlayerOneFairyPaths
-  player2PathsParentName: PlayerTwoFairyPaths
   normalFairyPrefab: {fileID: 2265545678602581384, guid: 1088179f6c3b7204dbf8e29e4bdfe8bc, type: 3}
   greatFairyPrefab: {fileID: 2599006119773474308, guid: b9163c1d350c8c6489969e8df68532d9, type: 3}
-  spawnInterval: 5
+  spawnInterval: 1
   minFairiesPerLine: 6
   maxFairiesPerLine: 10
   greatFairyChance: 0.2
   delayBetweenFairies: 0.3
   allowReverseSpawning: 1
+  extraAttackTriggerWaveInterval: 2
+  enableExtraAttackTrigger: 1

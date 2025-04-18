@@ -13,7 +13,6 @@ public class EarthlightRay : NetworkBehaviour
         new NetworkVariable<PlayerRole>(PlayerRole.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     private Collider2D _collider;
-    // Removed: private PlayerIdentifier ownerPlayer;
 
     void Start()
     {
@@ -27,20 +26,12 @@ public class EarthlightRay : NetworkBehaviour
             Debug.LogError("EarthlightRay needs a Collider2D component!");
         }
 
-        // Apply random tilt (only on server? Needs testing, might be okay on clients too if deterministic)
-        // For now, keep it simple and apply on all instances.
-        // if (IsServer) { // Optional: Only server sets initial rotation if needed
-        float tilt = Random.Range(-maxTiltAngle, maxTiltAngle);
-        transform.rotation = Quaternion.Euler(0, 0, tilt);
-        // }
+        // The spawner is now responsible for setting the initial rotation before spawning.
 
         StartCoroutine(ActivateAndFade());
         // Use Invoke for timed destruction, more robust if coroutine stops early
-        // Destroy(gameObject, lifetime); // Replaced with Invoke
         Invoke(nameof(SelfDestruct), lifetime);
     }
-
-    // Removed: public void SetOwner(PlayerIdentifier player)
 
     private IEnumerator ActivateAndFade()
     {
@@ -78,9 +69,6 @@ public class EarthlightRay : NetworkBehaviour
                 // Deal damage to the opponent player
                 Debug.Log($"Player Role {hitPlayerRole} hit by Earthlight Ray from Role {AttackerRole.Value}!", this);
                 playerHealth.TakeDamage(1); // Assuming 1 damage for now
-
-                // Should the laser be destroyed on hit? Or persist? Persisting seems better.
-                // If destroyed on hit, add: SelfDestruct();
             }
         }
         else

@@ -39,7 +39,6 @@ public class PathManager : MonoBehaviour
         if (player1PathsParent != null)
         {
             player1Paths = player1PathsParent.GetComponentsInChildren<BezierSpline>(true).ToList();
-            Debug.Log($"PathManager found {player1Paths.Count} paths for Player 1.");
         }
         else
         {
@@ -50,7 +49,6 @@ public class PathManager : MonoBehaviour
         if (player2PathsParent != null)
         {
             player2Paths = player2PathsParent.GetComponentsInChildren<BezierSpline>(true).ToList();
-            Debug.Log($"PathManager found {player2Paths.Count} paths for Player 2.");
         }
         else
         {
@@ -89,17 +87,5 @@ public class PathManager : MonoBehaviour
             Debug.LogError($"PathManager: Invalid path index {pathIndex} requested for Player {playerIndex}. List count: {pathList.Count}");
             return null;
         }
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

@@ -76,7 +76,6 @@ public class CharacterSelector : NetworkBehaviour
 
     private void OnCharacterButtonClicked(string characterName)
     {
-        Debug.Log($"Button clicked via listener: SelectCharacter({characterName})");
         // Send the selection to the server
         RequestSetCharacterServerRpc(characterName);
     }
@@ -101,7 +100,6 @@ public class CharacterSelector : NetworkBehaviour
             if (playerDataManager.AreBothPlayersReady())
             {
                 // Don't load immediately, start the delayed load coroutine
-                // LoadGameplayScene(); 
                 StartCoroutine(DelayedSceneLoad());
             }
         }
@@ -114,15 +112,14 @@ public class CharacterSelector : NetworkBehaviour
     // Renamed UpdateUI to HandlePlayerDataUpdated to clarify it's an event handler
     private void HandlePlayerDataUpdated()
     {
-        // Debug.Log("HandlePlayerDataUpdated called.");
         if (PlayerDataManager.Instance == null)
         {
-            // Debug.LogWarning("HandlePlayerDataUpdated called but PlayerDataManager is null.");
             return;
         }
 
         // Get data for Player 1 (usually index 0)
-        PlayerDataManager.PlayerData? p1Data = playerDataManager.GetPlayer1Data();
+        // Use top-level PlayerData
+        PlayerData? p1Data = playerDataManager.GetPlayer1Data();
         if (p1Data.HasValue)
         {
             string p1Character = p1Data.Value.SelectedCharacter.ToString();
@@ -137,7 +134,8 @@ public class CharacterSelector : NetworkBehaviour
         }
 
         // Get data for Player 2 (usually index 1)
-        PlayerDataManager.PlayerData? p2Data = playerDataManager.GetPlayer2Data();
+        // Use top-level PlayerData
+        PlayerData? p2Data = playerDataManager.GetPlayer2Data();
          if (p2Data.HasValue)
         {
             string p2Character = p2Data.Value.SelectedCharacter.ToString();
@@ -170,14 +168,6 @@ public class CharacterSelector : NetworkBehaviour
         {
             Debug.LogError("NetworkManager or SceneManager became invalid before delayed scene load.");
         }
-    }
-
-    private void LoadGameplayScene()
-    {
-         if (!IsServer) return; // Only server should trigger scene change
-
-        Debug.Log("Both players ready. Loading Gameplay Scene...");
-        NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
     }
 
     public override void OnNetworkDespawn()

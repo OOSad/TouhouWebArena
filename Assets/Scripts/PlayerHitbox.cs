@@ -34,10 +34,6 @@ public class PlayerHitbox : NetworkBehaviour
         // --- Invincibility Check ---
         if (playerHealth != null && playerHealth.IsInvincible.Value) 
         {
-            // Optional: Log that a hit was ignored due to invincibility
-            // if (other.CompareTag("StageBullet")) {
-            //     Debug.Log($"[Server] Player {OwnerClientId} hitbox hit by {other.name}, but player is invincible.");
-            // }
             return; // Ignore hit if invincible
         }
         // --- End Invincibility Check ---
@@ -66,28 +62,7 @@ public class PlayerHitbox : NetworkBehaviour
                 Debug.Log($"[Server] Despawning bullet {other.name} (NetID: {bulletNetworkObject.NetworkObjectId})");
                 bulletNetworkObject.Despawn();
             }
-            else
-            {
-                Debug.LogWarning($"[Server] Hitbox collided with {other.name} tagged as StageBullet, but it has no NetworkObject to despawn.", other.gameObject);
-                // Destroy locally on server if no NetworkObject (might be an error)
-                // Destroy(other.gameObject);
-            }
-
-            // Add invincibility timer logic here if needed
-            // StartCoroutine(InvincibilityCooldown());
         }
         // Optional: else if (other.CompareTag("OtherEnemyAttack")) { ... }
     }
-
-    // Example for invincibility frames (uncomment and implement if needed)
-    /*
-    private System.Collections.IEnumerator InvincibilityCooldown()
-    {
-        canTakeDamage = false;
-        // TODO: Add visual feedback like flashing sprite
-        yield return new WaitForSeconds(0.5f); // 0.5 seconds invincibility
-        canTakeDamage = true;
-        // TODO: Restore normal sprite appearance
-    }
-    */
 } 

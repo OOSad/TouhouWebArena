@@ -1,13 +1,12 @@
 using UnityEngine;
-using Unity.Netcode; // Import Netcode namespace
+using Unity.Netcode; // Re-added for NetworkObject interaction
 using System.Collections;
 using System.Collections.Generic; // Required for List
 using System.Linq; // Required for LINQ
 
-// Inherit from NetworkBehaviour
-public class FairySpawner : NetworkBehaviour
+// Changed from NetworkBehaviour to MonoBehaviour
+public class FairySpawner : MonoBehaviour
 {
-    [Header("Network Config")]
     [SerializeField] private int playerIndex; // 0 for P1, 1 for P2
 
     [Header("Prefabs")]
@@ -22,17 +21,16 @@ public class FairySpawner : NetworkBehaviour
     [SerializeField] private float delayBetweenFairies = 0.3f; // Delay spawning fairies in a line for spacing
     [SerializeField] private bool allowReverseSpawning = true; // Allow fairies to spawn from the end of the path
 
+    [Header("Extra Attack Trigger (Server Only)")]
+    [SerializeField] private int extraAttackTriggerWaveInterval = 4; // Every N waves, one fairy becomes a trigger
+    [SerializeField] private bool enableExtraAttackTrigger = true; // Toggle for this feature
+
     private Coroutine spawnCoroutine;
+    private int waveCounter = 0; // Counter for waves spawned
 
-    // Called when the NetworkObject is spawned (on server and clients)
-    public override void OnNetworkSpawn()
+    // Changed from OnNetworkSpawn, called by GameInitializer on the server
+    public void InitializeAndStartSpawning()
     {
-        base.OnNetworkSpawn();
-
-        // No longer need to find paths here, PathManager handles it
-        // Debug.Log($"[{NetworkManager.Singleton.LocalClientId}] Spawner {playerIndex} OnNetworkSpawn.");
-        // FindAndAssignPaths(); 
-
         // Basic validation
         if (normalFairyPrefab == null || greatFairyPrefab == null)
         {
@@ -40,41 +38,59 @@ public class FairySpawner : NetworkBehaviour
             this.enabled = false;
             return;
         }
-        // Path validation might happen in the loop now, checking PathManager
 
-        if (!IsServer) return;
-        spawnCoroutine = StartCoroutine(ServerSpawnLoop());
+        // Since this is only called on the server now, no need for IsServer check
+        if (spawnCoroutine == null) // Prevent starting multiple times
+        {
+            spawnCoroutine = StartCoroutine(ServerSpawnLoop());
+        }
     }
 
+    // This method MUST only be called on the server
     private IEnumerator ServerSpawnLoop()
     {
-        // Get path list from PathManager ONCE (assuming paths don't change)
+        // Get path list from PathManager ONCE
+        // Ensure PathManager.Instance is ready before calling this
         List<BezierSpline> paths = PathManager.Instance?.GetPathsForPlayer(playerIndex);
         if (paths == null || paths.Count == 0)
         {
             Debug.LogError($"Server Spawner {playerIndex} could not get paths from PathManager, stopping loop.");
             yield break;
         }
-        Debug.Log($"Server Spawner {playerIndex} found {paths.Count} paths via PathManager.");
 
         while (true)
         {
             yield return new WaitForSeconds(spawnInterval);
-            if (paths.Count == 0) continue; // Should have been caught above, but safety
+            if (paths.Count == 0) continue;
+
+            // Increment wave counter
+            waveCounter++;
+
+            // Determine if this is a trigger wave and select trigger index
+            bool isTriggerWave = enableExtraAttackTrigger && (waveCounter % extraAttackTriggerWaveInterval == 0);
+            int triggerFairyIndex = -1; // -1 means no trigger fairy this wave
 
             int pathIndex = Random.Range(0, paths.Count);
             int fairyCount = Random.Range(minFairiesPerLine, maxFairiesPerLine + 1);
+
+            if (isTriggerWave && fairyCount > 0)
+            {
+                triggerFairyIndex = Random.Range(0, fairyCount);
+            }
+
             bool spawnAtBeginning = allowReverseSpawning ? (Random.value < 0.5f) : true;
             bool firstIsGreat = (fairyCount > 0) && (Random.value < greatFairyChance);
             bool lastIsGreat = (fairyCount > 1) && (Random.value < greatFairyChance);
 
-            // Get the specific path from the list retrieved earlier
-            BezierSpline chosenPath = paths[pathIndex]; 
+            BezierSpline chosenPath = paths[pathIndex];
             if (chosenPath == null)
             {
                  Debug.LogError($"Server Spawner {playerIndex} selected null path at index {pathIndex}!");
-                 continue; // Skip this iteration
+                 continue;
             }
+
+            // Generate a unique ID for this line of fairies
+            System.Guid currentLineId = System.Guid.NewGuid();
 
             for (int i = 0; i < fairyCount; i++)
             {
@@ -89,66 +105,62 @@ public class FairySpawner : NetworkBehaviour
 
                 if (fairyNetworkObject != null)
                 {
+                    // Spawn the fairy NetworkObject FIRST
                     fairyNetworkObject.Spawn(true);
 
-                    // --- Wait 1 second before sending RPC --- NO LONGER NEEDED
-                    // yield return new WaitForSeconds(1.0f); 
-                    // -----------------------------------------
-
-                    // Get the SplineWalker component on the server instance
-                    SplineWalker walker = fairyInstance.GetComponent<SplineWalker>();
-                    if (walker != null)
+                    Fairy fairyScript = fairyInstance.GetComponent<Fairy>();
+                    if (fairyScript != null)
                     {
-                        // --- SERVER-SIDE INITIALIZATION ---
-                        // Server needs the actual path object to initialize its own walker
-                        BezierSpline chosenPathForServer = paths[pathIndex]; 
-                        if(chosenPathForServer != null)
-                        {
-                           walker.InitializeOnServer(chosenPathForServer, spawnAtBeginning);
-                        }
-                        else
-                        {
-                            Debug.LogError($"[Server Spawner {playerIndex}] Failed to find path index {pathIndex} for server-side initialization!", this);
-                            // Handle error - maybe destroy fairy?
-                        }
-                        // ---------------------------------
+                        // Set NetworkVariables on the Fairy script immediately after spawning
+                        fairyScript.SetPathInfo(this.playerIndex, pathIndex, spawnAtBeginning);
+                        // --- NEW: Assign Line ID and Index ---
+                        fairyScript.AssignLineInfo(currentLineId, i);
+                        // -------------------------------------
 
-                        // Call the ClientRpc directly on the fairy's SplineWalker to initialize clients
-                        walker.InitializePathClientRpc(this.playerIndex, pathIndex, spawnAtBeginning);
+                        // --- NEW: Mark trigger fairy ---
+                        if (i == triggerFairyIndex) // Check if this is the designated trigger fairy
+                        {
+                            fairyScript.MarkAsExtraAttackTrigger(); 
+                            // Optional: Add visual indication here if needed
+                        }
+                        // ------------------------------
+
+                        // --- Assign Owner Role --- 
+                        PlayerRole ownerRole = (this.playerIndex == 0) ? PlayerRole.Player1 : PlayerRole.Player2;
+                        fairyScript.AssignOwnerRole(ownerRole);
+                        // --------------------------
                     }
                     else
                     {
-                        Debug.LogError($"Spawned Fairy Prefab missing SplineWalker component!", fairyInstance);
-                        // Optionally destroy the fairy if the walker is missing
-                        // Destroy(fairyInstance); 
-                        // continue;
+                         Debug.LogError("Spawned fairy is missing Fairy script! Cannot set path info. Destroying.", fairyInstance);
+                         Destroy(fairyInstance);
+                         continue; // Skip to next fairy
                     }
                 }
                 else
                 {
-                    Debug.LogError("Spawned Fairy Prefab missing NetworkObject!", fairyInstance);
+                    Debug.LogError("Spawned fairy is missing NetworkObject! Destroying.", fairyInstance);
                     Destroy(fairyInstance);
-                    continue;
                 }
 
+                // Only delay if there are more fairies to spawn in this line
                 if (i < fairyCount - 1)
                 {
-                    yield return new WaitForSeconds(delayBetweenFairies);
+                     yield return new WaitForSeconds(delayBetweenFairies);
                 }
             }
         }
     }
 
-    // OnDestroy might be useful if the server needs to clean up anything when the spawner is destroyed
-    // but the coroutine stopping logic might not be needed if relying on object destruction.
-    // public override void OnNetworkDespawn()
-    // {
-    //     if (IsServer && spawnCoroutine != null)
-    //     {
-    //         StopCoroutine(spawnCoroutine);
-    //     }
-    //     base.OnNetworkDespawn();
-    // }
+    // Optional: Add OnDestroy to stop coroutine if the spawner GO is destroyed
+    void OnDestroy()
+    {
+        if (spawnCoroutine != null)
+        {
+            StopCoroutine(spawnCoroutine);
+            spawnCoroutine = null;
+        }
+    }
 
     // TODO: Add logic to associate spawner/fairies with a specific player area if needed (using layers, tags, or parent transforms)
 } 

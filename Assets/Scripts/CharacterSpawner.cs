@@ -39,25 +39,22 @@ public class CharacterSpawner : NetworkBehaviour
     {
         if (!IsServer) return; // Only the server should spawn characters
 
-        // SpawnCharacters();
         // Instead of spawning immediately, start a short delay coroutine
         StartCoroutine(DelayedSpawnCharacters());
     }
 
     private IEnumerator DelayedSpawnCharacters()
     {
-        // Wait a very short time for clients to potentially finish loading/syncing
-        // yield return new WaitForSeconds(0.1f);
         yield return new WaitForSeconds(1.5f); // Increased delay to 1.5 second
         
-        // Debug.Log("Executing SpawnCharacters after delay.");
         SpawnCharacters();
     }
 
     private void SpawnCharacters()
     {
-        PlayerDataManager.PlayerData? player1Data = PlayerDataManager.Instance.GetPlayer1Data();
-        PlayerDataManager.PlayerData? player2Data = PlayerDataManager.Instance.GetPlayer2Data();
+        // Use top-level PlayerData struct
+        PlayerData? player1Data = PlayerDataManager.Instance.GetPlayer1Data();
+        PlayerData? player2Data = PlayerDataManager.Instance.GetPlayer2Data();
 
         if (player1Data.HasValue)
         {
@@ -78,50 +75,33 @@ public class CharacterSpawner : NetworkBehaviour
         }
     }
 
-    private void SpawnPlayerCharacter(PlayerDataManager.PlayerData playerData, Vector3 position, Quaternion rotation)
+    // Use top-level PlayerData struct
+    private void SpawnPlayerCharacter(PlayerData playerData, Vector3 position, Quaternion rotation)
     {
-        // *** DEBUG LOG: Entering SpawnPlayerCharacter *** REMOVED
-        // Debug.Log($"[Spawner] Attempting SpawnPlayerCharacter for Client ID {playerData.ClientId} ({playerData.SelectedCharacter}).");
-
         string characterName = playerData.SelectedCharacter.ToString();
         GameObject prefab = GetPrefabByName(characterName);
         if (prefab == null)
         {
-            // *** DEBUG LOG: Prefab is null *** REMOVED
-            // Keep essential error
             Debug.LogError($"[Spawner] Prefab lookup FAILED for character: {characterName}. Aborting spawn.");
             return;
         }
 
-        // *** DEBUG LOG: Prefab found *** REMOVED
-        // Debug.Log($"[Spawner] Found prefab '{prefab.name}' for character {characterName}.");
-
         GameObject characterInstance = Instantiate(prefab, position, rotation);
         if (characterInstance == null)
         {
-            // *** DEBUG LOG: Instantiate failed *** REMOVED
-            // Keep essential error
             Debug.LogError($"[Spawner] Instantiate FAILED for prefab '{prefab.name}'. Aborting spawn.");
             return;
         }
-
-        // *** DEBUG LOG: Instantiate successful *** REMOVED
-        // Debug.Log($"[Spawner] Instantiated '{characterInstance.name}' successfully.");
 
         NetworkObject networkObject = characterInstance.GetComponent<NetworkObject>();
 
         if (networkObject != null)
         {
-            // *** DEBUG LOG: NetworkObject found, attempting spawn *** REMOVED
-            // Debug.Log($"[Spawner] Found NetworkObject on '{characterInstance.name}'. Attempting SpawnAsPlayerObject for Client ID {playerData.ClientId}.");
             networkObject.SpawnAsPlayerObject(playerData.ClientId);
-            // *** DEBUG LOG: Check PlayerObject immediately after spawn *** REMOVED
-            // NetworkObject foundPlayerObject = NetworkManager.Singleton.ConnectedClients[playerData.ClientId]?.PlayerObject;
-            // Debug.Log($"[Spawner] Spawned {characterInstance.name} for Client ID {playerData.ClientId}. Immediately checking PlayerObject: {(foundPlayerObject != null ? foundPlayerObject.name : "NULL")}");
         }
         else
         {
-            Debug.LogError($"[Spawner] Instantiated character {characterInstance.name} is missing NetworkObject component!"); // Keep essential error log
+            Debug.LogError($"[Spawner] Instantiated character {characterInstance.name} is missing NetworkObject component!");
             Destroy(characterInstance);
         }
     }
@@ -134,7 +114,7 @@ public class CharacterSpawner : NetworkBehaviour
         }
         else
         {
-            Debug.LogError($"No prefab found for character name: {characterName}"); // Keep essential error log
+            Debug.LogError($"No prefab found for character name: {characterName}");
             return null;
         }
     }

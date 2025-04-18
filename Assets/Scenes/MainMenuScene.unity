@@ -188,7 +188,7 @@ MonoBehaviour:
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 7054400116e777346b11e3840cefceed, type: 2}
-    TickRate: 30
+    TickRate: 60
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
     ConnectionData: 
@@ -1559,6 +1559,8 @@ GameObject:
   - component: {fileID: 1384569080}
   - component: {fileID: 1384569078}
   - component: {fileID: 1384569079}
+  - component: {fileID: 1384569081}
+  - component: {fileID: 1384569082}
   m_Layer: 0
   m_Name: Matchmaker
   m_TagString: Untagged
@@ -1599,11 +1601,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d9bef7dcb6677740a4830a4f193cf11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  usernameInput: {fileID: 470336929}
-  queueButton: {fileID: 1201598865}
-  cancelButton: {fileID: 344855461}
-  queueText: {fileID: 989926585}
-  sceneTransitionDelay: 1
+  matchmakerUI: {fileID: 1384569081}
 --- !u!4 &1384569080
 Transform:
   m_ObjectHideFlags: 0
@@ -1619,6 +1617,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1384569081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384569077}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4bd1e816111c9a49b6444474e908ed5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  usernameInput: {fileID: 470336929}
+  queueButton: {fileID: 1201598865}
+  cancelButton: {fileID: 344855461}
+  queueText: {fileID: 989926585}
+  matchmaker: {fileID: 1384569079}
+--- !u!114 &1384569082
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384569077}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c93a08ecf35074d46aefbaa2aafaf621, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneTransitionDelay: 1
+  characterSelectSceneName: CharacterSelectScene
 --- !u!1 &1501918133
 GameObject:
   m_ObjectHideFlags: 0
@@ -2303,7 +2332,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2644750631086829113}
   - component: {fileID: 6664978848049239393}
-  - component: {fileID: 9048377436749958873}
+  - component: {fileID: 8546133059630479552}
   m_Layer: 0
   m_Name: PlayerDataManager
   m_TagString: Untagged
@@ -2311,7 +2340,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &9048377436749958873
+--- !u!114 &8546133059630479552
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2320,12 +2349,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 8546133059630479551}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e680bf1d1d4402948a08b0768f8977fd, type: 3}
+  m_Script: {fileID: 11500000, guid: 0f70c73cb59f1fc448134f4e3656b1a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  extraAttackThreshold: 10
-  reimuExtraAttackPrefab: {fileID: 916272378052303310, guid: 9323d805ec3d7ab4cb582c51d6f02265, type: 3}
-  marisaExtraAttackPrefab: {fileID: 2089556739134321075, guid: a7448fa3f730c494c917eae3278c48a1, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

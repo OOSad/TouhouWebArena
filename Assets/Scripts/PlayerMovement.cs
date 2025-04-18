@@ -5,26 +5,21 @@ using Unity.Netcode.Components; // Added for NetworkTransform
 [RequireComponent(typeof(NetworkObject))] // Ensure NetworkObject is present
 [RequireComponent(typeof(Rigidbody2D))] // Keep this if other logic relies on it
 [RequireComponent(typeof(CharacterAnimation))] // Add this back
+[RequireComponent(typeof(PlayerPositionSynchronizer))]
+[RequireComponent(typeof(CharacterStats))] // Added
 public class PlayerMovement : NetworkBehaviour
 {
-    [Header("Movement Settings")]
-    [SerializeField] private float moveSpeed = 5.0f; // Speed of the character
-    [SerializeField] private float focusSpeedModifier = 0.5f; // Speed multiplier when focused
-    [SerializeField] private float networkSendInterval = 0.05f; // Send position updates 20 times per second (Adjusted based on user feedback)
-
-    // [Header("Boundaries")] // Removed Header
-    // [SerializeField] private Rect player1Bounds = new Rect(-8f, -4.5f, 7.5f, 9f); // Example Left Bounds (X, Y, Width, Height)
-    // [SerializeField] private Rect player2Bounds = new Rect(0.5f, -4.5f, 7.5f, 9f); // Example Right Bounds
-    private static readonly Rect player1Bounds = new Rect(-8f, -4f, 7f, 8f); // Hardcoded Left Bounds
-    private static readonly Rect player2Bounds = new Rect(1f, -4f, 7f, 8f); // Hardcoded Right Bounds
+    // Make bounds public static so other scripts (like PlayerDeathBomb) can access them
+    public static readonly Rect player1Bounds = new Rect(-8f, -4f, 7f, 8f); // Public Hardcoded Left Bounds
+    public static readonly Rect player2Bounds = new Rect(1f, -4f, 7f, 8f); // Public Hardcoded Right Bounds
 
     // Private variables
-    private float timeSinceLastSend = 0f;
     private NetworkTransform networkTransform;
     private Rect currentBounds; // Which bounds apply to this player instance
     private PlayerDataManager playerDataManager; // To check P1/P2
     private PlayerHealth playerHealth;
     private CharacterAnimation characterAnimation; // Add this reference back
+    private CharacterStats characterStats; // Added reference
 
     // Public property to access the current bounds (read-only from outside)
     public Rect CurrentBounds => currentBounds;
@@ -38,11 +33,13 @@ public class PlayerMovement : NetworkBehaviour
         networkTransform = GetComponent<NetworkTransform>(); // Good practice to get components early
         playerHealth = GetComponent<PlayerHealth>();
         characterAnimation = GetComponent<CharacterAnimation>();
+        characterStats = GetComponent<CharacterStats>(); // Get stats component
 
         // Error checking
         if (networkTransform == null) Debug.LogError("PlayerMovement: NetworkTransform not found!", this);
         if (playerHealth == null) Debug.LogError("PlayerMovement: PlayerHealth not found!", this);
         if (characterAnimation == null) Debug.LogError("PlayerMovement: CharacterAnimation not found!", this);
+        if (characterStats == null) Debug.LogError("PlayerMovement: CharacterStats not found!", this); // Check stats
     }
 
     public override void OnNetworkSpawn()
@@ -60,18 +57,17 @@ public class PlayerMovement : NetworkBehaviour
         // Determine which bounds to use based on PlayerRole
         if (playerDataManager != null)
         {
-            PlayerDataManager.PlayerData? myData = playerDataManager.GetPlayerData(OwnerClientId);
+            // Use top-level PlayerData
+            PlayerData? myData = playerDataManager.GetPlayerData(OwnerClientId);
             if (myData.HasValue)
             {
                 if (myData.Value.Role == PlayerRole.Player1)
                 {
                     currentBounds = player1Bounds;
-                    Debug.Log($"[PlayerMovement OnNetworkSpawn] Owner {OwnerClientId} assigned Player 1 bounds.");
                 }
                 else if (myData.Value.Role == PlayerRole.Player2)
                 {
                     currentBounds = player2Bounds;
-                    Debug.Log($"[PlayerMovement OnNetworkSpawn] Owner {OwnerClientId} assigned Player 2 bounds.");
                 }
                 else
                 {
@@ -138,10 +134,12 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         // Determine current speed based on focus state (set externally)
-        float currentSpeed = moveSpeed;
+        // Read base speed from CharacterStats
+        float currentSpeed = characterStats.GetMoveSpeed(); 
         if (IsFocused) // Check the property set by PlayerFocusController
         {
-            currentSpeed *= focusSpeedModifier;
+            // Read modifier from CharacterStats
+            currentSpeed *= characterStats.GetFocusSpeedModifier(); 
         }
 
         // Calculate movement
@@ -156,19 +154,6 @@ public class PlayerMovement : NetworkBehaviour
 
         // Apply movement locally using the clamped position
         transform.position = clampedPosition;
-
-        // --- Send Position to Server at Intervals (only if client has control) ---
-        timeSinceLastSend += Time.deltaTime;
-        if (moveAmount != Vector3.zero && timeSinceLastSend >= networkSendInterval)
-        {
-            SubmitPositionRequestServerRpc(transform.position); 
-            timeSinceLastSend = 0f;
-        }
-        else if (moveAmount == Vector3.zero && timeSinceLastSend > 0f) 
-        {
-            SubmitPositionRequestServerRpc(transform.position);
-            timeSinceLastSend = 0f; 
-        }
     }
 
     // Helper function to clamp position within a Rect - Make public
@@ -199,7 +184,8 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
 
-        PlayerDataManager.PlayerData? myData = playerDataManager.GetPlayerData(OwnerClientId);
+        // Use top-level PlayerData
+        PlayerData? myData = playerDataManager.GetPlayerData(OwnerClientId);
         if (myData.HasValue)
         {
             return myData.Value.Role;
@@ -210,66 +196,4 @@ public class PlayerMovement : NetworkBehaviour
              return PlayerRole.None;
         }
     }
-
-    [ServerRpc]
-    private void SubmitPositionRequestServerRpc(Vector3 clientPosition, ServerRpcParams rpcParams = default)
-    {
-        // Removed check for server knockback state
-        // if (playerHealth != null && playerHealth.IsServerKnockingBack)
-        // {
-        //    return; 
-        // }
-        
-        // Determine bounds for the sender on the server based on Role
-        Rect boundsForClient = new Rect(); // Default to empty
-        if (playerDataManager != null)
-        {
-             PlayerDataManager.PlayerData? senderData = playerDataManager.GetPlayerData(rpcParams.Receive.SenderClientId);
-             if (senderData.HasValue)
-             {
-                 if (senderData.Value.Role == PlayerRole.Player1)
-                 {
-                     boundsForClient = player1Bounds;
-                 }
-                 else if (senderData.Value.Role == PlayerRole.Player2)
-                 {
-                     boundsForClient = player2Bounds;
-                 }
-                 else
-                 {
-                     Debug.LogWarning($"[ServerRPC] Sender {rpcParams.Receive.SenderClientId} has unexpected Role {senderData.Value.Role}. Using default bounds.");
-                 }
-             }
-             else
-             {
-                 Debug.LogError($"[ServerRPC] Could not retrieve PlayerData for Sender {rpcParams.Receive.SenderClientId}. Using default bounds.");
-             }
-        }
-        else
-        {
-            Debug.LogError("[ServerRPC] PlayerDataManager not found! Using default bounds.");
-        }
-        
-        // Clamp and apply position on server
-        Vector3 serverClampedPosition = ClampPositionToBounds(clientPosition, boundsForClient);
-        transform.position = serverClampedPosition;
-    }
-
-    /* // Removed Gizmo code
-    // Draw boundary gizmos in the Scene view when the object is selected
-    private void OnDrawGizmosSelected()
-    {
-        // Draw Player 1 Bounds (e.g., Red)
-        Gizmos.color = Color.red;
-        Vector3 p1Center = new Vector3(player1Bounds.center.x, player1Bounds.center.y, transform.position.z);
-        Vector3 p1Size = new Vector3(player1Bounds.size.x, player1Bounds.size.y, 0.1f); // Add small depth for visibility
-        Gizmos.DrawWireCube(p1Center, p1Size);
-
-        // Draw Player 2 Bounds (e.g., Blue)
-        Gizmos.color = Color.blue;
-        Vector3 p2Center = new Vector3(player2Bounds.center.x, player2Bounds.center.y, transform.position.z);
-        Vector3 p2Size = new Vector3(player2Bounds.size.x, player2Bounds.size.y, 0.1f); // Add small depth for visibility
-        Gizmos.DrawWireCube(p2Center, p2Size);
-    }
-    */
 } 

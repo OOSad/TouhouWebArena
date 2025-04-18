@@ -41,13 +41,5 @@ public class CharacterAnimation : MonoBehaviour
         animator.SetBool(IsMovingRightHash, movingRight);
 
         // --- Sprite flipping removed as animations handle direction ---
-        // if (movingLeft)
-        // {
-        //     transform.localScale = new Vector3(-1f, 1f, 1f);
-        // }
-        // else if (movingRight)
-        // {
-        //     transform.localScale = new Vector3(1f, 1f, 1f);
-        // }
     }
 } 

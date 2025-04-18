@@ -12,7 +12,9 @@ GameObject:
   - component: {fileID: 4728340930332987359}
   - component: {fileID: 2133390128418311980}
   - component: {fileID: 8148841441181923095}
+  - component: {fileID: 6507095976544093294}
   - component: {fileID: 1145355167466220299}
+  - component: {fileID: 1738711722406665677}
   m_Layer: 0
   m_Name: FairyShockwave
   m_TagString: FairyShockwave
@@ -149,6 +151,27 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
+--- !u!114 &6507095976544093294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 825958184812720138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2793401163
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!114 &1145355167466220299
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -161,8 +184,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c00f6e4d8f842248825bd6b0cc34b79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  duration: 0.3
   maxRadius: 2
+  expansionDuration: 0.5
   expansionCurve:
     serializedVersion: 2
     m_Curve:
@@ -187,4 +210,15 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  enemyBulletTag: StageBullet
+--- !u!114 &1738711722406665677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 825958184812720138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25315265ae9457c42977411094ebeb65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

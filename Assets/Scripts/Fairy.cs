@@ -3,9 +3,14 @@ using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic; // Needed for List
 
-// Now inherits from NetworkBehaviour
-[RequireComponent(typeof(SplineWalker), typeof(Collider2D), typeof(NetworkObject))] // Restored
-public class Fairy : NetworkBehaviour
+// Final set of required components
+[RequireComponent(typeof(SplineWalker))]
+[RequireComponent(typeof(Collider2D))]
+[RequireComponent(typeof(NetworkObject))]
+[RequireComponent(typeof(FairyCollisionHandler))]
+[RequireComponent(typeof(FairyDeathEffects))]
+[RequireComponent(typeof(FairyPathInitializer))] // Added path initializer
+public class Fairy : NetworkBehaviour, IClearableByBomb
 {
     [Header("Stats")]
     // Use NetworkVariable for synchronized health
@@ -15,19 +20,31 @@ public class Fairy : NetworkBehaviour
     [SerializeField] private int initialMaxHealth = 1; // Used for initialization
     [SerializeField] private bool isGreatFairy = false; // Determines health and potentially score later
 
-    [Header("Effects")]
-    [SerializeField] private GameObject shockwavePrefab; // Assign the FairyShockwave prefab here
+    // --- NEW: Flag for Extra Attack Trigger ---
+    private bool isExtraAttackTrigger = false;
+    // ------------------------------------------
 
-    // --- NEW: Chain Reaction Settings (Server Only) ---
-    [Header("Chain Reaction (Server)")]
-    [SerializeField] private float chainRadius = 2.0f; // Radius to check for nearby fairies
-    [SerializeField] private float chainDelay = 0.1f;  // Delay between chained explosions
-    [SerializeField] private LayerMask fairyLayer;     // Layer mask to specifically hit fairies
-    // --- NEW: Bullet Clearing Settings (Server Only) ---
-    // [Header("Bullet Clearing (Server)")]
-    // [SerializeField] private float bulletClearRadius = 2.0f; // Radius to check for nearby bullets
-    // [SerializeField] private LayerMask bulletLayer;      // Layer mask to specifically hit bullets
-    // ---------------------------------------------------
+    // --- RE-ADD: Flag to prevent Die() running multiple times ---
+    private bool isDying = false;
+    // ----------------------------------------------------------
+
+    // --- NEW: Delay for visual effects/chaining ---
+    [SerializeField] private float deathEffectDelay = 0.1f; // Delay before showing effects/triggering next chain
+    // --------------------------------------------
+
+    // --- NEW: Line Info ---
+    private System.Guid lineId = System.Guid.Empty;
+    private int indexInLine = -1;
+    // ---------------------
+
+    // --- NEW: Owner Role --- 
+    private PlayerRole ownerRole = PlayerRole.None;
+    // -----------------------
+
+    // --- Reference Cleanup ---
+    [SerializeField] private FairyDeathEffects deathEffectsHandler;
+    [SerializeField] private FairyPathInitializer pathInitializer; // Added reference
+    // ---------------------------------------------
 
     // References (no longer need playerToDamage here)
     private SplineWalker splineWalker;
@@ -37,6 +54,11 @@ public class Fairy : NetworkBehaviour
     {
         splineWalker = GetComponent<SplineWalker>();
         fairyCollider = GetComponent<Collider2D>(); // Get reference to own collider
+        if (deathEffectsHandler == null)
+        {
+             deathEffectsHandler = GetComponent<FairyDeathEffects>();
+        }
+        if (pathInitializer == null) pathInitializer = GetComponent<FairyPathInitializer>();
     }
 
     // Initialize health on the server when spawned
@@ -49,7 +71,102 @@ public class Fairy : NetworkBehaviour
             currentHealth.Value = maxHealth;
         }
         // Optionally, disable collider briefly on clients to prevent spawn collisions?
+
+        // --- NEW: Register with Registry ---
+        if (FairyRegistry.Instance != null)
+        {
+            FairyRegistry.Instance.Register(this);
+        }
+        else if (IsServer) // Only log error on server to avoid client spam
+        {
+             Debug.LogError("FairyRegistry instance not found during OnNetworkSpawn!");
+        }
+        // ---------------------------------
     }
+
+    public override void OnNetworkDespawn()
+    {
+        // --- NEW: Deregister from Registry ---
+        if (FairyRegistry.Instance != null)
+        {
+            FairyRegistry.Instance.Deregister(this);
+        }
+        // -----------------------------------
+
+        base.OnNetworkDespawn();
+    }
+
+    // Public method to set path info (delegates to initializer)
+    public void SetPathInfo(int ownerIndex, int pIndex, bool startAtBegin)
+    {
+        // This method should only be called on the server by the spawner
+        if (!IsServer)
+        {
+             Debug.LogWarning("[Fairy] SetPathInfo called on a non-server instance.");
+             return;
+        }
+        if (pathInitializer != null)
+        {
+            pathInitializer.SetPathInfoOnServer(ownerIndex, pIndex, startAtBegin);
+        }
+        else
+        {
+            Debug.LogError($"[Fairy NetId:{NetworkObjectId}] PathInitializer component is missing! Cannot set path info.");
+        }
+    }
+
+    // --- NEW: Method to assign line info (called by spawner) ---
+    public void AssignLineInfo(System.Guid lineGuid, int index)
+    {
+        if (!IsServer) 
+        {
+            Debug.LogWarning("AssignLineInfo called on non-server instance.", this);
+            return;
+        }
+        lineId = lineGuid;
+        indexInLine = index;
+        // Can't register here, might happen before OnNetworkSpawn
+    }
+    // -----------------------------------------------------------
+
+    // --- NEW: Getters for line info ---
+    public System.Guid GetLineId() { return lineId; }
+    public int GetIndexInLine() { return indexInLine; }
+    // ---------------------------------
+
+    // --- NEW: Getter for Owner Role --- 
+    public PlayerRole GetOwnerRole() 
+    {
+        return ownerRole;
+    }
+    // ----------------------------------
+
+    // --- NEW: Method to mark this fairy as the trigger ---
+    // Called directly by the FairySpawner on the server after instantiation
+    public void MarkAsExtraAttackTrigger()
+    {
+        // Basic check - should only be callable on server by spawner
+        if (!IsServer) 
+        {
+            Debug.LogWarning("MarkAsExtraAttackTrigger called on non-server instance.", this);
+            return;
+        }
+        isExtraAttackTrigger = true;
+        // TODO: Add visual indicator change here if desired (e.g., change sprite color, add particle effect)
+    }
+    // ------------------------------------------------------
+
+    // --- NEW: Method to assign owner role (called by spawner) --- 
+    public void AssignOwnerRole(PlayerRole role)
+    {
+        if (!IsServer) 
+        {   
+            Debug.LogWarning("AssignOwnerRole called on non-server instance.", this);
+            return;
+        }
+        ownerRole = role;
+    }
+    // ----------------------------------------------------------
 
     void Update()
     {
@@ -75,18 +192,57 @@ public class Fairy : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)] // Allow any client to request damage
     private void TakeDamageServerRpc(int amount, PlayerRole killerRole, ServerRpcParams rpcParams = default) 
     {
-        if (currentHealth.Value <= 0) return;
+        // This RPC now simply calls the internal logic method
+        ApplyDamageInternal(amount, killerRole);
+    }
+
+    // --- NEW: Internal method containing the actual damage logic --- 
+    // Can be called by ServerRpc (from client) or ApplyDamageServer (from server)
+    private void ApplyDamageInternal(int amount, PlayerRole killerRole)
+    {
+         // --- DIAGNOSTIC LOG: Internal Logic Entry --- 
+        Debug.Log($"[Server Fairy {NetworkObjectId}] ApplyDamageInternal executing. Amount: {amount}, Killer: {killerRole}, Current HP: {currentHealth.Value}, isDying: {isDying}");
+
+        // Check isDying flag FIRST
+        if (isDying) 
+        {   
+             Debug.Log($"[Server Fairy {NetworkObjectId}] Ignoring damage because isDying is true.");
+             return; 
+        }
+        
+        // Ensure health is positive before applying damage
+        if (currentHealth.Value <= 0) 
+        {
+            Debug.Log($"[Server Fairy {NetworkObjectId}] Ignoring damage because currentHealth is already {currentHealth.Value}.");
+            return;
+        }
 
         int previousHealth = currentHealth.Value;
         currentHealth.Value -= amount;
+        Debug.Log($"[Server Fairy {NetworkObjectId}] Applied damage. New HP: {currentHealth.Value} (was {previousHealth})");
 
-        // Check if health dropped to 0 or below in this call
-        if (previousHealth > 0 && currentHealth.Value <= 0)
-        {
-            // Pass the killerRole down to Die()
+        // Check if health dropped to 0 or below
+        if (currentHealth.Value <= 0)
+        { 
+            Debug.Log($"[Server Fairy {NetworkObjectId}] Health dropped to {currentHealth.Value}. Calling Die().");
             Die(killerRole); 
         }
     }
+    // --------------------------------------------------------------
+
+    // --- NEW: Public method for SERVER-SIDE damage application --- 
+    public void ApplyDamageServer(int amount, PlayerRole killerRole)
+    {
+        // Ensure this is only called on the server
+        if (!IsServer) 
+        {   
+            Debug.LogWarning($"ApplyDamageServer called on non-server instance for Fairy {NetworkObjectId}. Ignoring.");
+            return;
+        }
+        // Directly call the internal logic
+        ApplyDamageInternal(amount, killerRole);
+    }
+    // -----------------------------------------------------------
 
     // --- New method called by SplineWalker --- 
     public void ReportEndOfPath()
@@ -106,16 +262,61 @@ public class Fairy : NetworkBehaviour
     }
     // -------------------------------------------
 
+    // --- NEW: Helper to check if alive (used by Chain Reaction) ---
+    public bool IsAlive()
+    {
+        // Consider network readiness if necessary, but health is a good indicator server-side
+        return currentHealth.Value > 0;
+    }
+    // -------------------------------------------------------------
+
     // This function now ONLY runs on the server
     private void Die(PlayerRole killerRole = PlayerRole.None)
     {
         // This function now ONLY runs on the server
         if (!IsServer) return; // Extra safety check
 
-        // --- NOTIFY PLAYER DATA MANAGER (MOVED HERE) ---
+        // --- DIAGNOSTIC LOG: Die() Entry --- 
+        Debug.Log($"[Server Fairy {NetworkObjectId}] Die() method entered. Killer: {killerRole}, isDying: {isDying}");
+
+        // --- RE-ADD: Prevent re-entry if already dying --- 
+        if (isDying) 
+        {   
+            Debug.Log($"[Server Fairy {NetworkObjectId}] Die() aborted: isDying flag already true.");
+            return;
+        }
+        isDying = true; // Set flag immediately
+        Debug.Log($"[Server Fairy {NetworkObjectId}] Set isDying = true."); // Log flag change
+        // --------------------------------------------------
+
+        // --- NOTIFY PLAYER DATA MANAGER OR GRANT ATTACK ---
         if (killerRole != PlayerRole.None && PlayerDataManager.Instance != null)
         {
-            PlayerDataManager.Instance.IncrementFairyKillCount(killerRole);
+            // Get killer's data for potential Extra Attack trigger
+            PlayerData? killerData = PlayerDataManager.Instance.GetPlayerDataByRole(killerRole);
+
+            if (isExtraAttackTrigger && killerData.HasValue)
+            {
+                // Trigger Extra Attack directly via ExtraAttackManager
+                if (ExtraAttackManager.Instance != null)
+                {
+                    PlayerRole opponentRole = (killerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
+                    ExtraAttackManager.Instance.TriggerExtraAttackInternal(killerData.Value, opponentRole);
+                }
+                else
+                {
+                    Debug.LogError("ExtraAttackManager.Instance is null! Cannot trigger Extra Attack.");
+                }
+                // NOTE: We are NOT calling IncrementFairyKillCount here - trigger replaces kill count point.
+            }
+            else
+            {
+                // Increment regular kill count (now directly notifies ExtraAttackManager)
+                // This call remains necessary for non-trigger fairies.
+                // PlayerDataManager.Instance.IncrementFairyKillCount(killerRole); // This now calls ExtraAttackManager.NotifyFairyKilled
+                // Let's keep the original call structure via PlayerDataManager for consistency
+                PlayerDataManager.Instance.IncrementFairyKillCount(killerRole); 
+            }
         }
         else if (PlayerDataManager.Instance == null && killerRole != PlayerRole.None) // Only log error if manager missing when expected
         {
@@ -123,186 +324,55 @@ public class Fairy : NetworkBehaviour
         }
         // --- END NOTIFY ---
 
-        // Log position on server before sending RPC - REMOVED
-        // Debug.Log($"[Server Fairy NetId:{NetworkObjectId}] Die() called. Position: {transform.position}");
-
-        // --- SERVER-SIDE CHAIN REACTION --- 
-        List<Fairy> fairiesToChain = FindFairiesInChainRadius();
-        bool isStartingChain = false; // Flag to check if we need to delay destruction
-        if (fairiesToChain.Count > 0)
+        // --- NEW: Trigger Stage Bullet Spawn on Opponent ---
+        if (StageSmallBulletSpawner.Instance != null)
         {
-            isStartingChain = true;
-            StartCoroutine(ProcessChainReaction(fairiesToChain, killerRole));
+            StageSmallBulletSpawner.Instance.SpawnBulletForOpponent(killerRole);
         }
-        // -----------------------------------
-
-        // --- SERVER-SIDE BULLET CLEARING - REMOVED ---
-        // ClearBulletsInRadius();
-        // -----------------------------------
-
-        // 1. Trigger the shockwave effect visually on all clients
-        if (shockwavePrefab != null)
+        else if (killerRole != PlayerRole.None) // Only warn if spawner missing when we expected to use it
         {
-            // Tell clients to spawn the non-networked effect
-            SpawnShockwaveClientRpc(transform.position); 
+            Debug.LogWarning($"[Server Fairy {NetworkObjectId}] Died. StageSmallBulletSpawner instance is null, cannot spawn bullet for opponent.");
         }
+        // -------------------------------------------------
 
-        // TODO: Add server-side logic for score/sending attacks later?
+        // --- Store data needed for delayed actions --- 
+        Vector3 positionAtDeath = transform.position;
+        System.Guid currentLineId = this.lineId; 
+        int currentIndex = this.indexInLine;
+        GameObject shockwavePrefab = (deathEffectsHandler != null) ? deathEffectsHandler.GetShockwavePrefab() : null;
+        // ---------------------------------------------
 
-        // 2. Despawn and destroy the networked Fairy object 
-        //    ONLY if it's NOT starting a chain reaction (the coroutine will handle destruction later)
-        if (!isStartingChain)
-        {
-            DestroySelf(); 
-        }
+        // --- Start Delayed Action Processor BEFORE destroying self ---
+        GameObject processorObject = new GameObject($"DelayedActionProcessor_Fairy_{NetworkObjectId}");
+        DelayedActionProcessor processor = processorObject.AddComponent<DelayedActionProcessor>();
+        processor.InitializeAndRun(positionAtDeath, killerRole, deathEffectDelay, 
+                                 shockwavePrefab, currentLineId, currentIndex);
+        // ---------------------------------------------------------
+
+        // --- Destroy Self AFTER processor is initialized ---
+        DestroySelf(); 
+        // -------------------------------------------------
     }
-
-    // --- NEW: Server-side method to find nearby fairies ---
-    private List<Fairy> FindFairiesInChainRadius()
-    {
-        List<Fairy> foundFairies = new List<Fairy>();
-        // --- Logging Start - REMOVED ---
-        // Vector3 checkPosition = transform.position;
-        // Debug.Log($"[Server FindFairies] Checking radius {chainRadius} at position {checkPosition} on layer {LayerMask.LayerToName(gameObject.layer)} (Mask: {fairyLayer.value})");
-        // --- Logging End ---
-
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, chainRadius, fairyLayer);
-
-        // --- Logging Start - REMOVED ---
-        // Debug.Log($"[Server FindFairies] OverlapCircleAll hit {hits.Length} colliders.");
-        // --- Logging End ---
-
-        foreach (Collider2D hit in hits)
-        {
-            // Ignore self
-            if (hit.gameObject == gameObject) continue;
-
-            Fairy otherFairy = hit.GetComponent<Fairy>();
-            // --- Logging Start - REMOVED ---
-            // string hitInfo = $"  - Hit: {hit.gameObject.name} (Layer: {LayerMask.LayerToName(hit.gameObject.layer)}, Tag: {hit.tag}, HasFairy: {otherFairy != null})";
-            // --- Logging End ---
-            
-            if (otherFairy != null && otherFairy.currentHealth.Value > 0)
-            {
-                 // --- Logging Start - REMOVED ---
-                 // hitInfo += " -> Adding to list.";
-                 // --- Logging End ---
-                foundFairies.Add(otherFairy);
-            }
-            // else
-            // {
-            //     // --- Logging Start - REMOVED ---
-            //     // hitInfo += " -> Skipping (Self, No Fairy, or Dead).";
-            //     // --- Logging End ---
-            // }
-            // Debug.Log(hitInfo); // REMOVED
-        }
-        // Debug.Log($"[Server FindFairies] Found {foundFairies.Count} valid fairies to chain."); // REMOVED
-        return foundFairies;
-    }
-    // ------------------------------------------------------
-
-    // --- NEW: Server-side method to clear nearby bullets - REMOVED ---
-    // private void ClearBulletsInRadius()
-    // {
-    //     // Use OverlapCircleAll with LayerMask for bullets
-    //     Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, bulletClearRadius, bulletLayer);
-    //     Debug.Log($"[Server ClearBullets] Checking radius {bulletClearRadius}. Found {hits.Length} colliders on bullet layer.");
-    //
-    //     foreach (Collider2D hit in hits)
-    //     {
-    //         NetworkObject bulletNetworkObject = hit.GetComponent<NetworkObject>();
-    //         // Check if it's a networked object and actually spawned
-    //         if (bulletNetworkObject != null) // Check for component first
-    //         {
-    //              // Log IsSpawned status
-    //              Debug.Log($"[Server ClearBullets] Found bullet {hit.gameObject.name} with NetId:{bulletNetworkObject.NetworkObjectId}. IsSpawned = {bulletNetworkObject.IsSpawned}");
-    //              if (bulletNetworkObject.IsSpawned) // Then check if spawned
-    //              {
-    //                 Debug.Log($"[Server ClearBullets] Requesting destruction for spawned bullet NetId:{bulletNetworkObject.NetworkObjectId}.");
-    //                 // Call the existing RPC to destroy the object
-    //                 RequestDestroyObjectServerRpc(bulletNetworkObject.NetworkObjectId);
-    //              }
-    //              else
-    //              {
-    //                  Debug.LogWarning($"[Server ClearBullets] Found bullet {hit.gameObject.name} with NetId:{bulletNetworkObject.NetworkObjectId} but it was NOT spawned. Skipping destruction request.");
-    //              }
-    //         }
-    //         else
-    //         {
-    //              Debug.LogWarning($"[Server ClearBullets] Found collider {hit.gameObject.name} on bullet layer, but it has no NetworkObject component.");
-    //         }
-    //     }
-    // }
-    // -------------------------------------------------------
-
-    // --- NEW: Server-side coroutine for delayed chain reaction ---
-    private IEnumerator ProcessChainReaction(List<Fairy> chainedFairies, PlayerRole killerRole)
-    {
-        ulong sourceNetId = NetworkObjectId;
-        string sourceName = gameObject.name; // Store name in case GO is destroyed prematurely
-        // Debug.Log($"[Server Chain Coroutine {sourceNetId}] Starting with {chainedFairies.Count} fairies."); // REMOVED
-        // Wait one frame to allow the current fairy to be fully destroyed/marked by other systems if needed
-        yield return null; 
-
-        int chainIndex = 0;
-        foreach (Fairy targetFairy in chainedFairies)
-        {
-            chainIndex++;
-            ulong targetNetId = targetFairy?.NetworkObjectId ?? 0; 
-            // Debug.Log($"[Server Chain Coroutine {sourceNetId}] Processing fairy {chainIndex}/{chainedFairies.Count} (NetId: {targetNetId})"); // REMOVED
-
-            // Check if the target is still valid before waiting
-            if (targetFairy != null && targetFairy.gameObject != null && targetFairy.currentHealth.Value > 0)
-            {
-                // Debug.Log($"[Server Chain Coroutine {sourceNetId}] Target {targetNetId} is valid, waiting for delay {chainDelay}s..."); // REMOVED
-                yield return new WaitForSeconds(chainDelay);
-                // Debug.Log($"[Server Chain Coroutine {sourceNetId}] Finished wait for target {targetNetId}"); // REMOVED
-
-                // Check again after the delay, in case it died from another source
-                if (targetFairy != null && targetFairy.gameObject != null && targetFairy.currentHealth.Value > 0)
-                {
-                    // Debug.Log($"[Server Chain Coroutine {sourceNetId}] >>> Triggering ApplyLethalDamage for Fairy NetId:{targetNetId}"); // REMOVED
-                    targetFairy.ApplyLethalDamage(killerRole);
-                }
-                 else
-                {
-                    // Debug.LogWarning($"[Server Chain Coroutine {sourceNetId}] Target Fairy NetId:{targetNetId} became invalid AFTER delay."); // REMOVED
-                }
-            }
-            else
-            {
-                // Debug.LogWarning($"[Server Chain Coroutine {sourceNetId}] Target Fairy NetId:{targetNetId} was invalid BEFORE delay."); // REMOVED
-            }
-        }
-        // Debug.Log($"[Server Chain Coroutine {sourceNetId}] Finished processing chain."); // REMOVED
-
-        // --- NOW destroy the original fairy that started this chain ---
-        // Debug.Log($"[Server Chain Coroutine {sourceNetId}] Chain complete. Destroying original fairy ({sourceName})."); // REMOVED
-        // Make sure the original fairy hasn't been destroyed by something else already
-        if (this != null && this.gameObject != null)
-        {
-           DestroySelf();
-        }
-        // ----------------------------------------------------------------
-    }
-    // -----------------------------------------------------------
 
     // --- NEW: Server-side direct damage application method ---
     // This bypasses the RPC for server-side calls like chain reactions
+    // Needs to remain public for the Chain Reaction handler to call it on other fairies
     public void ApplyLethalDamage(PlayerRole killerRole)
     {
         if (!IsServer) return;
-        if (currentHealth.Value <= 0) return;
+        // --- Check isDying flag to prevent re-entry ---
+        if (isDying) return; 
+        // ---------------------------------------------
 
-        // Apply enough damage to ensure death
-        currentHealth.Value = 0;
+        // Apply enough damage to ensure death (health value itself might be redundant now)
+        currentHealth.Value = 0; 
         Die(killerRole);
     }
     // --------------------------------------------------------
 
     // Common method for destruction logic, run ONLY on server
-    private void DestroySelf()
+    // Made public so Chain Reaction handler can call it
+    public void DestroySelf()
     {
         if (!IsServer) return; // Safety check
 
@@ -318,98 +388,66 @@ public class Fairy : NetworkBehaviour
             // Check if the object is spawned before trying to despawn
             if (networkObject.IsSpawned)
             {
-                // Debug.Log($"[Server DestroySelf] Despawning Fairy NetId:{networkObject.NetworkObjectId}"); // REMOVED
                 networkObject.Despawn(true); // true to destroy the object as well
             }
              else
             {
-                 // Debug.LogWarning($"[Server DestroySelf] Tried to despawn Fairy NetId:{networkObject.NetworkObjectId}, but it was already despawned or never spawned. Destroying locally."); // REMOVED
                  // If not spawned, destroy the GameObject directly on the server
                  Destroy(gameObject);
             }
         }
         else
         {
-             // Debug.LogError("[Server DestroySelf] Cannot find NetworkObject on Fairy. Destroying locally."); // REMOVED
              // If no NetworkObject, just destroy locally
              Destroy(gameObject);
         }
     }
 
-    // ClientRpc is called by the server, executed on all clients
-    [ClientRpc]
-    private void SpawnShockwaveClientRpc(Vector3 spawnPosition)
-    {
-        // Log position received on client
-        Debug.Log($"[Client Fairy NetId:{NetworkObjectId}] SpawnShockwaveClientRpc received. Position: {spawnPosition}");
-
-        // Clients instantiate the purely visual shockwave effect
-        if (shockwavePrefab != null)
-        {
-           GameObject shockwaveInstance = Instantiate(shockwavePrefab, spawnPosition, Quaternion.identity);
-           
-           // Prevent shockwave hitting the (already destroyed on server, soon to be destroyed locally) source
-           // Getting the collider might be unreliable here as the object is being destroyed.
-           // Consider adding a brief delay before enabling the shockwave collider, 
-           // or make the shockwave ignore the Fairy layer for a fraction of a second.
-           // Shockwave shockwaveScript = shockwaveInstance.GetComponent<Shockwave>();
-           // if (shockwaveScript != null && fairyCollider != null && fairyCollider.enabled)
-           // {
-           //     shockwaveScript.SetSourceCollider(fairyCollider);
-           // }
-        }
-    }
-
-    // Collision runs locally on clients, but requests actions from the server
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        // Collision logic should only run on the server
-        if (!IsServer) return;
-
-        // Check if the colliding object belongs to a player (checking tag on hitbox)
-        if (other.CompareTag("Player"))
-        {
-            PlayerHealth playerHealth = other.GetComponentInParent<PlayerHealth>();
-            NetworkObject playerNetworkObject = other.GetComponentInParent<NetworkObject>();
-
-            if (playerHealth != null && playerNetworkObject != null)
-            {
-                // Debug.Log($"[Server Fairy {NetworkObjectId}] Player components found..."); 
-                if (playerHealth.IsInvincible.Value)
-                { // Invincible
-                    // Debug.Log($"[Server Fairy {NetworkObjectId}] Player {playerNetworkObject.OwnerClientId} IS INVINCIBLE. No action taken (Fairy survives, Player undamaged).");
-                    // Do nothing to either object
-                }
-                else
-                { // Vulnerable
-                    // Debug.Log($"[Server Fairy {NetworkObjectId}] Player {playerNetworkObject.OwnerClientId} IS VULNERABLE. Processing collision...");
-                    
-                    // ONLY Damage the Player 
-                    // Debug.Log($"[Server Fairy {NetworkObjectId}] Calling TakeDamage(1) directly on PlayerHealth {playerHealth.OwnerClientId}..."); 
-                    playerHealth.TakeDamage(1); // Direct call
-
-                    // DO NOT Kill the Fairy - Collision doesn't kill fairies
-                    // Determine killer role only when vulnerable
-                    // PlayerRole killerRole = PlayerRole.None; 
-                    // ... killer role determination logic removed ...
-                    // Debug.Log($"[Server Fairy {NetworkObjectId}] Applying lethal damage to self (Killer: {killerRole})...");
-                    // ApplyLethalDamage(killerRole); 
-                }
-            }
-            else 
-            { 
-                // Error logs remain
-                if (playerHealth == null) Debug.LogError($"[Server Fairy {NetworkObjectId}] Collided with Player ({other.name}) but PlayerHealth is NULL in parent!");
-                if (playerNetworkObject == null) Debug.LogError($"[Server Fairy {NetworkObjectId}] Collided with Player ({other.name}) but NetworkObject is NULL in parent!");
-            }
-        }
-        // --- Collision with Fairy Shockwave ---
-        else if (other.CompareTag("FairyShockwave"))
-        {
-            ApplyLethalDamage(PlayerRole.None); 
-        }
-    }
-
     // We might need a method to assign a path later
     // public void SetPath(Path pathToFollow) { ... }
+
+    #region IClearableByBomb Implementation
+
+    /// <summary>
+    /// Called when the player's death bomb effect should clear this fairy.
+    /// Sends an RPC to the server to handle the destruction.
+    /// </summary>
+    /// <param name="bombingPlayer">The role of the player who activated the bomb.</param>
+    public void ClearByBomb(PlayerRole bombingPlayer)
+    {
+        // Since PlayerDeathBomb runs on server, this is called on the server instance.
+        // We can directly perform the server-side checks and destroy.
+        if (!IsServer || !IsAlive() || isDying)
+        {
+            // Keep this warning
+            Debug.LogWarning($"[Server Fairy {NetworkObjectId}] ClearByBomb called, but ignoring. IsServer={IsServer}, IsAlive={IsAlive()}, isDying={isDying}");
+            return;
+        }
+        
+        // Debug.Log($"[Server Fairy {NetworkObjectId}] Clearing self via Die() due to bomb."); // <-- REMOVE LOG
+        Die(bombingPlayer); // <-- Pass the bombingPlayer role to Die()
+        // DestroySelf(); // Call the existing server-side destroy method
+    }
+
+    // ServerRpc called by ClearByBomb() - NO LONGER NEEDED
+    /*
+    [ServerRpc(RequireOwnership = false)] // Allow any client (or server) to trigger this
+    private void RequestClearByBombServerRpc(ServerRpcParams rpcParams = default)
+    {
+        // Debug.Log($"[Server Fairy {NetworkObjectId}] RPC RequestClearByBombServerRpc received from client {rpcParams.Receive.SenderClientId}."); // <-- REMOVE LOG
+        // Only destroy if still alive (hasn't been killed by something else)
+        // Use the IsAlive check for consistency
+        if (IsAlive() && !isDying) // Added !isDying check
+        {
+             // Debug.Log($"[Server Fairy {NetworkObjectId}] Attempting to DestroySelf due to bomb request."); // <-- REMOVE LOG
+             DestroySelf();
+        }
+        else
+        {
+            // Debug.LogWarning($"[Server Fairy {NetworkObjectId}] Ignoring ClearByBomb RPC. IsAlive={IsAlive()}, isDying={isDying}"); // <-- REMOVE LOG
+            // Debug.Log($"[Server Fairy {NetworkObjectId}] Received ClearByBomb request, but fairy is already dead/dying or not alive. Ignoring."); // Original log
+        }
+    }
+    */
+    #endregion
 } 
