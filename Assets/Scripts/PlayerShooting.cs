@@ -450,7 +450,41 @@ public class PlayerShooting : NetworkBehaviour
         if (characterStats == null)
         {
             Debug.LogError("PlayerShooting could not find CharacterStats component on the same GameObject!", this);
+        } else {
+             // Initialize nextFireTime based on stats to prevent immediate AI firing if cooldown is high
+             nextFireTime = Time.time; // Or potentially slightly delayed if needed
         }
     }
     // --- End Added Awake ---
+
+    // --- Added: Method for AI to trigger shooting ---
+    /// <summary>
+    /// Initiates a standard burst fire sequence if the cooldown allows.
+    /// Should only be called by the owner client's AI Controller.
+    /// </summary>
+    public void StartAIShot()
+    {
+        // Only Owner's AI should trigger this
+        if (!IsOwner) return;
+
+        // Check cooldown and if a burst is already running
+        if (Time.time >= nextFireTime && burstCoroutine == null)
+        {
+            // Ensure CharacterStats is valid before starting
+            if (characterStats == null)
+            {
+                Debug.LogError("PlayerShooting (StartAIShot): CharacterStats reference is null!");
+                return;
+            }
+
+            // Start the burst coroutine
+            burstCoroutine = StartCoroutine(BurstFireSequence());
+
+            // Calculate and set the next allowed fire time (same logic as in Update)
+            float burstDuration = characterStats.GetBurstCount() > 1 ? (characterStats.GetBurstCount() - 1) * characterStats.GetTimeBetweenBurstShots() : 0f;
+            nextFireTime = Time.time + burstDuration + characterStats.GetBurstCooldown();
+        }
+        // else: Cooldown not met or burst already active, do nothing
+    }
+    // --- End Added Method ---
 } 

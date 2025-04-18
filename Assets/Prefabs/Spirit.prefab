@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 6174320784361019030}
   - component: {fileID: 4521425342996325113}
   - component: {fileID: 9076496188357396682}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Spirit
   m_TagString: Spirit
   m_Icon: {fileID: 0}
@@ -244,7 +244,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5097268004544456451}
   - component: {fileID: 4433052144854670455}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: NormalSpiritVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -328,7 +328,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4854193155142680258}
   - component: {fileID: 8169367587977020632}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: ActivatedSpiritVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}

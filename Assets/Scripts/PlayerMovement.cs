@@ -20,6 +20,11 @@ public class PlayerMovement : NetworkBehaviour
     private PlayerHealth playerHealth;
     private CharacterAnimation characterAnimation; // Add this reference back
     private CharacterStats characterStats; // Added reference
+    private PlayerAIController playerAIController; // Added: Reference to AI controller
+
+    // --- Added: AI Control State ---
+    private float aiHorizontalInput = 0f;
+    // ----------------------------
 
     // Public property to access the current bounds (read-only from outside)
     public Rect CurrentBounds => currentBounds;
@@ -34,12 +39,14 @@ public class PlayerMovement : NetworkBehaviour
         playerHealth = GetComponent<PlayerHealth>();
         characterAnimation = GetComponent<CharacterAnimation>();
         characterStats = GetComponent<CharacterStats>(); // Get stats component
+        playerAIController = GetComponent<PlayerAIController>(); // Get AI controller
 
         // Error checking
         if (networkTransform == null) Debug.LogError("PlayerMovement: NetworkTransform not found!", this);
         if (playerHealth == null) Debug.LogError("PlayerMovement: PlayerHealth not found!", this);
         if (characterAnimation == null) Debug.LogError("PlayerMovement: CharacterAnimation not found!", this);
         if (characterStats == null) Debug.LogError("PlayerMovement: CharacterStats not found!", this); // Check stats
+        // AI Controller is optional, so no error check here
     }
 
     public override void OnNetworkSpawn()
@@ -114,8 +121,25 @@ public class PlayerMovement : NetworkBehaviour
     private void HandleInputAndMove()
     {
         // Get raw input (returns -1, 0, or 1)
-        float horizontalInput = Input.GetAxisRaw("Horizontal");
-        float verticalInput = Input.GetAxisRaw("Vertical");
+        // --- Modified: Check for AI control ---
+        float horizontalInput = 0f;
+        float verticalInput = 0f; // AI doesn't control vertical yet
+
+        // Check if AI component exists and is active
+        bool isAIControlled = playerAIController != null && playerAIController.IsAIActive();
+
+        if (isAIControlled)
+        {
+            horizontalInput = aiHorizontalInput; // Use AI input
+            // verticalInput remains 0
+        }
+        else
+        {
+            // Read from player input only if AI is not active/present
+            horizontalInput = Input.GetAxisRaw("Horizontal");
+            verticalInput = Input.GetAxisRaw("Vertical");
+        }
+        // --- End Modification ---
 
         // --- Tell CharacterAnimation about the input ---
         if (characterAnimation != null) // Check just in case
@@ -196,4 +220,15 @@ public class PlayerMovement : NetworkBehaviour
              return PlayerRole.None;
         }
     }
+
+    // --- Added: Method for AI to set horizontal input ---
+    /// <summary>
+    /// Allows the PlayerAIController to set the horizontal movement input.
+    /// </summary>
+    /// <param name="input">Horizontal input value (-1 to 1).</param>
+    public void SetAIHorizontalInput(float input)
+    {
+        aiHorizontalInput = Mathf.Clamp(input, -1f, 1f);
+    }
+    // --------------------------------------------------
 } 

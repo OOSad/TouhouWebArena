@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4522782164783792274}
   - component: {fileID: -4561261371151631101}
   - component: {fileID: 5503206047562194815}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: MarisaExtraAttackEarthlightRay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -145,7 +145,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2956502927
+  GlobalObjectIdHash: 2753570582
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1

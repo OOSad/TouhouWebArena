@@ -15,7 +15,8 @@ GameObject:
   - component: {fileID: 7694786779587817467}
   - component: {fileID: 5107838845117759627}
   - component: {fileID: 6717268170974535780}
-  m_Layer: 0
+  - component: {fileID: 3242933334704133690}
+  m_Layer: 10
   m_Name: ReimuExtraAttackOrb
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -163,7 +164,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1554229038
+  GlobalObjectIdHash: 2462765714
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -219,3 +220,16 @@ MonoBehaviour:
   initialHorizontalForce: 3
   orbLifetime: 5
   damageAmount: 1
+--- !u!114 &3242933334704133690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 916272378052303310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71ba3f3d11f183543b75def7d06a9283, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rotationSpeed: 90
