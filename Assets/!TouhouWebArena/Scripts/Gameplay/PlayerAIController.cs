@@ -30,8 +30,6 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
     [SerializeField] private LayerMask hazardLayers;
     [Tooltip("The size of the box used to detect hazards around the hitbox.")]
     [SerializeField] private Vector2 detectionBoxSize = new Vector2(1f, 2f);
-    [Tooltip("How far ahead the detection box extends relative to the hitbox position.")]
-    [SerializeField] private float detectionDistance = 1.0f;
     [Tooltip("The distance for raycasts checking for clear dodge paths.")]
     [SerializeField] private float dodgeCheckDistance = 1.5f;
     [Tooltip("Layer mask for checking clear dodge paths (e.g., Stage boundaries, other hazards)")]
