@@ -99,6 +99,7 @@ GameObject:
   - component: {fileID: -4985983621015928801}
   - component: {fileID: 1377145691793543984}
   - component: {fileID: 4486281844793037486}
+  - component: {fileID: 5685026753245322969}
   m_Layer: 0
   m_Name: MarisaBulletPrefab
   m_TagString: PlayerShot
@@ -196,7 +197,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 192022485
+  GlobalObjectIdHash: 2208238644
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
@@ -263,3 +264,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
+--- !u!114 &5685026753245322969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5656050771762241772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d9f797e066b44644ac93b2d3c1dde91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PrefabID: MarisaBullet
+  OriginalPrefab: {fileID: 5656050771762241772}

@@ -367,23 +367,57 @@ public class PlayerShooting : NetworkBehaviour
     // Helper method to spawn one bullet
     private void SpawnSingleBullet(GameObject prefab, Vector3 position, Quaternion rotation, ulong ownerId) // Added prefab & ownerId parameters
     {
-        GameObject bulletInstance = Instantiate(prefab, position, rotation); // Use passed prefab
-        NetworkObject bulletNetworkObject = bulletInstance.GetComponent<NetworkObject>();
-        BulletMovement bulletMovement = bulletInstance.GetComponent<BulletMovement>(); // Get the script
-
-        if (bulletNetworkObject == null || bulletMovement == null) // Check for both
+        // --- Get Prefab ID --- 
+        PoolableObjectIdentity identity = prefab.GetComponent<PoolableObjectIdentity>();
+        if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
         {
-            Destroy(bulletInstance);
+             Debug.LogError($"Prefab '{prefab.name}' is missing PoolableObjectIdentity or PrefabID. Cannot get from pool.", prefab);
+             return;
+        }
+        string prefabID = identity.PrefabID;
+
+        // --- Get object from pool using PrefabID --- 
+        NetworkObject bulletNetworkObject = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
+
+        if (bulletNetworkObject == null)
+        {
+            Debug.LogError($"Failed to get object with ID '{prefabID}' from NetworkObjectPool.", this);
             return;
         }
 
-        // Spawn the bullet FIRST so NetworkVariables can be set
-        bulletNetworkObject.Spawn(true);
+        // --- Position, Activate, and Get Components --- 
+        bulletNetworkObject.transform.position = position;
+        bulletNetworkObject.transform.rotation = rotation;
+        bulletNetworkObject.gameObject.SetActive(true); // Activate the object from pool
 
-        // --- Assign Owner Role (Server Only) AFTER Spawning ---
+        // We already have the NetworkObject, get the other required component
+        BulletMovement bulletMovement = bulletNetworkObject.GetComponent<BulletMovement>(); 
+
+        // Check if BulletMovement component exists (should always be there if prefab is correct)
+        if (bulletMovement == null) 
+        {
+            Debug.LogError($"Pooled object '{prefab.name}' is missing the BulletMovement component! Returning to pool.", bulletNetworkObject.gameObject);
+            // Return the invalid object to the pool immediately without spawning
+            NetworkObjectPool.Instance.ReturnNetworkObject(bulletNetworkObject);
+            return;
+        }
+        
+        // --- Spawn and Assign Owner --- 
+        bulletNetworkObject.Spawn(true); // Spawn first...
+
+        // ...then set parent AFTER spawning.
+        if (NetworkObjectPool.Instance != null)
+        {
+             bulletNetworkObject.transform.SetParent(NetworkObjectPool.Instance.transform, worldPositionStays: false); // Use worldPositionStays = false AFTER setting position/rotation
+        }
+        // else // Log removed for brevity, was logged before activation
+        // {
+        //      Debug.LogError("NetworkObjectPool instance is null, cannot set parent for pooled object!", this);
+        // }
+
+        // Assign Owner Role (Server Only) AFTER Spawning 
         if (PlayerDataManager.Instance != null)
         {
-            // Use top-level PlayerData
             PlayerData? ownerData = PlayerDataManager.Instance.GetPlayerData(ownerId); 
             if (ownerData.HasValue)
             {
@@ -391,11 +425,13 @@ public class PlayerShooting : NetworkBehaviour
             }
             else
             {
+                Debug.LogWarning($"Could not find PlayerData for ownerId {ownerId} when spawning bullet.", this);
                 bulletMovement.OwnerRole.Value = PlayerRole.None; // Assign default
             }
         }
         else
         {
+             Debug.LogError("PlayerDataManager instance not found! Cannot assign OwnerRole to bullet.", this);
              bulletMovement.OwnerRole.Value = PlayerRole.None; // Assign default
         }
     }

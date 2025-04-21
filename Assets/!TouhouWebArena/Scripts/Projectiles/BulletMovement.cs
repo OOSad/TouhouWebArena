@@ -3,6 +3,7 @@ using Unity.Netcode;
 
 // Require NetworkObject as this script assumes the bullet is networked
 [RequireComponent(typeof(NetworkObject))]
+[RequireComponent(typeof(PoolableObjectIdentity))] // Ensure it has the identity component
 public class BulletMovement : NetworkBehaviour
 {
     [SerializeField] private float moveSpeed = 10f; // Speed of the bullet
@@ -12,13 +13,39 @@ public class BulletMovement : NetworkBehaviour
     public NetworkVariable<PlayerRole> OwnerRole { get; private set; } = 
         new NetworkVariable<PlayerRole>(PlayerRole.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+    private bool isDespawning = false; // Flag to prevent double despawn/return
+
     public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn();
+        isDespawning = false; // Reset flag on spawn
+
         // Only the server should manage the lifetime and despawning
         if (IsServer)
         {
-            Invoke(nameof(DespawnBullet), bulletLifetime);
+            // Cancel any potentially lingering invokes from previous pooling
+            CancelInvoke(nameof(ReturnToPool)); 
+            // Start the timer to return to pool
+            Invoke(nameof(ReturnToPool), bulletLifetime);
         }
+    }
+
+    // Called when the object is despawned (e.g., by server or host)
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+        // Always cancel invokes when despawned, regardless of reason
+        CancelInvoke(nameof(ReturnToPool));
+        // Note: We don't return to pool here, because Despawn(true) might have been called.
+        // ReturnToPool is called explicitly by logic that wants to reuse the object.
+    }
+
+    // Called when the GameObject is disabled (e.g., when returned to pool)
+    void OnDisable()
+    {
+        // Cancel invokes if the object is disabled externally
+        CancelInvoke(nameof(ReturnToPool));
+        isDespawning = false; // Reset flag
     }
 
     void Update()
@@ -39,12 +66,14 @@ public class BulletMovement : NetworkBehaviour
     // Server-side collision detection
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (!IsServer) return; // Only server handles collisions
+        if (!IsServer || isDespawning) return; // Only server handles collisions, ignore if already despawning
+
+        bool shouldDespawn = false;
 
         // --- NEW: Check for Shockwave collision --- 
         if (other.CompareTag("FairyShockwave")) // Ensure Shockwave prefab has this tag
         {
-            DespawnBullet();
+            shouldDespawn = true;
             return; // Bullet is destroyed, no need for further checks
         }
         // ----------------------------------------
@@ -58,9 +87,7 @@ public class BulletMovement : NetworkBehaviour
             {
                 // Call the server-side lethal damage method directly
                 fairy.ApplyLethalDamage(OwnerRole.Value); // Correct call
-
-                // Despawn bullet immediately after hitting a fairy
-                DespawnBullet();
+                shouldDespawn = true;
             }
         }
         // --- NEW: Check if we hit a Spirit --- 
@@ -74,25 +101,58 @@ public class BulletMovement : NetworkBehaviour
                 int damageAmount = 1; 
                 // Call TakeDamage on the spirit, passing damage and the bullet's owner
                 spirit.TakeDamage(damageAmount, OwnerRole.Value); 
+                shouldDespawn = true;
             }
-            
-            // Despawn the bullet after hitting the spirit
-            DespawnBullet();
         }
         // ------------------------------------
 
-        // Optional: Add checks for other collidable objects here (e.g., environment)
-        // else if (other.CompareTag("Wall")) { DespawnBullet(); }
+        // If any collision triggered despawn logic:
+        if (shouldDespawn)
+        {
+            ReturnToPool();
+        }
     }
 
-    // Method called by Invoke on the server to despawn the bullet
-    // Made public so ClearByBomb can call it
+    /// <summary>
+    /// Handles despawning the object and returning it to the pool.
+    /// Should only be called on the server.
+    /// </summary>
+    private void ReturnToPool()
+    {
+        if (!IsServer || isDespawning) return; // Prevent double calls
+        
+        // Check if the object still exists and is spawned before proceeding
+        if (gameObject == null || NetworkObject == null || !NetworkObject.IsSpawned)
+        {
+            return; // Object already gone or not networked correctly
+        }
+
+        isDespawning = true; // Set flag
+        CancelInvoke(nameof(ReturnToPool)); // Cancel timer invoke just in case
+
+        // Despawn the object without destroying it
+        NetworkObject.Despawn(false); 
+
+        // Return the object to the pool
+        if (NetworkObjectPool.Instance != null)
+        {
+            NetworkObjectPool.Instance.ReturnNetworkObject(NetworkObject);
+        }
+        else
+        {
+            // Fallback: If pool doesn't exist (shouldn't happen normally), just destroy
+            Debug.LogWarning("NetworkObjectPool instance not found when trying to return bullet. Destroying instead.", this);
+            Destroy(gameObject); 
+        }
+    }
+
+    // Keep the public method for external calls like ClearByBomb, but have it call ReturnToPool
     public void DespawnBullet()
     {
-        // Check if the object hasn't already been destroyed and is still spawned
-        if (gameObject != null && NetworkObject != null && NetworkObject.IsSpawned)
-        {
-            NetworkObject.Despawn(true); // True to destroy the object after despawning
-        }
+         if (IsServer)
+         {
+            ReturnToPool();
+         }
+         // If called on client, do nothing - server handles despawn
     }
 } 

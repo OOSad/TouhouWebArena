@@ -100,6 +100,16 @@ public class CharacterStats : NetworkBehaviour // Inherit from NetworkBehaviour 
     public GameObject GetChargeAttackPrefab() => chargeAttackPrefab;
     // -------------------------------------------------
 
+    // OnNetworkSpawn is no longer needed here for pool registration
+    // The pool manager now initializes from its Inspector list.
+    // public override void OnNetworkSpawn()
+    // {
+    //     base.OnNetworkSpawn();
+    //     if (!IsServer) return; 
+    //     if (NetworkObjectPool.Instance == null) return;
+    //     // ... removed registration logic ... 
+    // }
+
     // Add other character-specific stats here later if needed
     // (e.g., unique ability cooldowns)
 } 
