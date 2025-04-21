@@ -81,10 +81,6 @@ public class PlayerDataManager : NetworkBehaviour
             {
                 NetworkManager.Singleton.OnClientDisconnectCallback += HandleClientDisconnect;
             }
-            else
-            {
-                 Debug.LogError("[PlayerDataManager] NetworkManager.Singleton is null on Server during OnNetworkSpawn!");
-            }
 
             // Subscribe to Matchmaker event (existing logic)
             StartCoroutine(SubscribeToMatchmakerEventsDelayed()); 
@@ -231,10 +227,6 @@ public class PlayerDataManager : NetworkBehaviour
         {
             // TODO: Add score increment or other logic here if needed for regular kills
         }
-        else
-        {
-            Debug.LogWarning($"IncrementFairyKillCount called for role {killerRole}, but no player data found with that role.");
-        }
     }
     // ------------------------------------------------------------------------
 
@@ -328,27 +320,18 @@ public class PlayerDataManager : NetworkBehaviour
     // --- NEW: Coroutine to delay subscription slightly ---
     private IEnumerator SubscribeToMatchmakerEventsDelayed()
     {
-        // Wait one frame to increase chance Matchmaker.Instance is set
-        yield return null; 
-        
+        yield return new WaitForSeconds(0.1f); // Short delay
+
         if (Matchmaker.Instance != null)
         {
             Matchmaker.Instance.OnPlayerQueuedServer += HandlePlayerQueued;
         }
-        else
-        {
-            Debug.LogError("SubscribeToMatchmakerEventsDelayed: Matchmaker.Instance is still null after delay. Skipping subscription.");
-            yield break;
-        }
     }
     // ----------------------------------------------------
 
-    // --- NEW: Server-side handler for client disconnects ---
+    // Server-side handler for client disconnection
     private void HandleClientDisconnect(ulong clientId)
     {
-        Debug.Log($"[Server PlayerDataManager] Client disconnected: {clientId}. Unregistering...");
         UnregisterPlayer(clientId);
-        // Optionally, add logic here if game is in progress to handle forfeits, etc.
     }
-    // ------------------------------------------------------
-} 
+}

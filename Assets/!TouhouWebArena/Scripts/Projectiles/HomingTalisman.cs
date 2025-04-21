@@ -70,13 +70,11 @@ public class HomingTalisman : NetworkBehaviour
         // If the talisman hasn't hit anything by now, despawn it directly.
         if (IsSpawned && IsServer) // Check IsServer as only server should despawn
         {
-           Debug.Log($"[Server Talisman {NetworkObjectId}] Lifetime expired. Despawning directly.");
            NetworkObject netObj = GetComponent<NetworkObject>();
            if (netObj != null) // Safety check
            {
                netObj.Despawn(true);
            }
-           else { Debug.LogError($"[Server Talisman {NetworkObjectId}] NetworkObject missing during lifetime despawn!"); }
         }
     }
 
@@ -85,7 +83,6 @@ public class HomingTalisman : NetworkBehaviour
     {
         if (targetTags == null || targetTags.Count == 0)
         {
-            Debug.LogWarning($"[Server Talisman {NetworkObjectId}] has no target tags assigned.");
             return;
         }
 
@@ -101,7 +98,6 @@ public class HomingTalisman : NetworkBehaviour
         }
         if (talismanOwnerRole == PlayerRole.None)
         {
-            Debug.LogWarning($"[Server Talisman {NetworkObjectId}] Could not determine valid owner role (OwnerClientId: {OwnerClientId}). Aborting target search.");
             return; // Cannot target if owner role is unknown
         }
         // ------------------------------
@@ -135,7 +131,7 @@ public class HomingTalisman : NetworkBehaviour
                 }
                 else
                 {
-                     Debug.LogWarning($"[Server Talisman {NetworkObjectId}] Found object {obj.name} with tag {tag} but no recognized Enemy script (SpiritController/Fairy).");
+                    
                 }
 
                 // --- Add if Ownership Matches AND Within Boundaries --- 
@@ -159,7 +155,7 @@ public class HomingTalisman : NetworkBehaviour
         if (potentialTargets.Count == 0)
         {
             // Log adjusted to reflect ownership check
-            Debug.Log($"[Server Talisman {NetworkObjectId}] Could not find any valid targets for owner {talismanOwnerRole} with tags: {string.Join(", ", targetTags)}");
+            
             target = null;
             return;
         }
@@ -171,18 +167,18 @@ public class HomingTalisman : NetworkBehaviour
 
         if (target != null)
         {
-            Debug.Log($"[Server Talisman {NetworkObjectId}] Targeting closest valid enemy for {talismanOwnerRole}: {target.name} with tag {target.tag}");
+            
         }
         else
         {
-            Debug.LogWarning($"[Server Talisman {NetworkObjectId}] Failed to assign the closest target despite finding potential targets.");
+            
         }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         // --- DIAGNOSTIC LOG 1: Method Entry --- 
-        Debug.Log($"[Talisman {NetworkObjectId}] OnTriggerEnter2D entered. Collided with: {other.name} (Tag: {other.tag}). IsServer: {IsServer}, canSeek: {canSeek}");
+        
 
         // --- MODIFIED: Only check IsServer, allow collisions even if !canSeek --- 
         if (!IsServer) return;
@@ -190,12 +186,12 @@ public class HomingTalisman : NetworkBehaviour
 
         // --- DIAGNOSTIC LOG 2: Server Check Passed --- 
         // Log updated slightly to reflect change
-        Debug.Log($"[Server Talisman {NetworkObjectId}] Passed server check. Processing collision...");
+        
 
         if (targetTags.Contains(other.gameObject.tag))
         {
             // --- DIAGNOSTIC LOG 3: Tag Match --- 
-            Debug.Log($"[Server Talisman {NetworkObjectId}] Tag '{other.gameObject.tag}' found in targetTags.");
+            
 
             // --- Determine Killer Role --- 
             PlayerRole killerRole = PlayerRole.None;
@@ -206,25 +202,16 @@ public class HomingTalisman : NetworkBehaviour
                 {
                     killerRole = ownerData.Value.Role;
                 }
-                else
-                {
-                    Debug.LogWarning($"HomingTalisman {NetworkObjectId}: Could not find PlayerData for OwnerClientId {OwnerClientId}.");
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"HomingTalisman {NetworkObjectId}: PlayerDataManager.Instance is null! Cannot determine killer role.");
             }
             // ---------------------------
 
             bool damageApplied = false;
-            // Debug.Log removed, redundant with logs below
 
             // --- Try applying damage to Fairy --- 
             if (other.TryGetComponent<Fairy>(out Fairy fairy))
             {
                 // --- DIAGNOSTIC LOG 4: Fairy Component Found --- 
-                Debug.Log($"[Server Talisman {NetworkObjectId}] Found Fairy component on {other.name}. Calling ApplyDamageServer. Damage: {damage}, Killer: {killerRole}");
+                
                 fairy.ApplyDamageServer(damage, killerRole); 
                 damageApplied = true;
             }
@@ -232,7 +219,7 @@ public class HomingTalisman : NetworkBehaviour
             else if (other.TryGetComponent<SpiritController>(out SpiritController spirit))
             {
                 // --- DIAGNOSTIC LOG 5: Spirit Component Found --- 
-                 Debug.Log($"[Server Talisman {NetworkObjectId}] Found SpiritController component on {other.name}. Requesting {damage} damage. Killer: {killerRole}");
+                 
                 spirit.TakeDamage(damage, killerRole); 
                 damageApplied = true;
             }
@@ -241,26 +228,27 @@ public class HomingTalisman : NetworkBehaviour
             if (!damageApplied)
             {
                  // --- DIAGNOSTIC LOG 6: No Component Found --- 
-                Debug.LogWarning($"[Server Talisman {NetworkObjectId}] Collided object {other.name} with tag {other.gameObject.tag} does not have a recognized health component (Fairy or SpiritController).");
+                
             }
 
             // --- DIAGNOSTIC LOG 7: Despawning --- 
-            Debug.Log($"[Server Talisman {NetworkObjectId}] Despawning self directly after collision processing.");
+            
             NetworkObject netObj = GetComponent<NetworkObject>(); // Get NetworkObject
             if (netObj != null && netObj.IsSpawned) // Check if it exists and is spawned
             {
-                netObj.Despawn(true); // Despawn directly on the server
+                netObj.Despawn(true); // Despawn using the reference
             }
             else
             {
-                 Debug.LogWarning($"[Server Talisman {NetworkObjectId}] Could not despawn directly. NetworkObject is null or not spawned.");
+                // --- DIAGNOSTIC LOG 8: NetworkObject Missing on Despawn --- 
+                
             }
             canSeek = false; // Immediately stop seeking/moving after despawn initiated
         }
         else
         {
-            // --- DIAGNOSTIC LOG 8: Tag Mismatch --- 
-             Debug.Log($"[Server Talisman {NetworkObjectId}] Tag '{other.gameObject.tag}' NOT found in targetTags. Ignoring collision.");
+             // --- DIAGNOSTIC LOG 9: Tag Mismatch --- 
+             
         }
     }
 
@@ -269,7 +257,6 @@ public class HomingTalisman : NetworkBehaviour
     private void DespawnServerRpc()
     {
         // --- DIAGNOSTIC LOG 9: RPC Executing --- 
-        Debug.Log($"[Server Talisman {NetworkObjectId}] DespawnServerRpc executing. IsSpawned: {IsSpawned}");
         if (IsSpawned)
         {
             GetComponent<NetworkObject>().Despawn(true);

@@ -126,7 +126,6 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
         // We can directly perform the despawn.
         if (!IsServer) 
         {
-            Debug.LogWarning($"[Bullet {GetComponent<NetworkObject>()?.NetworkObjectId ?? 0}] ClearByBomb called on non-server. Ignoring.");
             return;
         }
 
@@ -136,13 +135,6 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
         {
             networkObject.Despawn(true); // Pass true to destroy the GameObject as well
         }
-        else 
-        {
-             // Log if despawn fails
-            ulong netId = networkObject?.NetworkObjectId ?? 0;
-            bool spawned = networkObject?.IsSpawned ?? false;
-            Debug.LogWarning($"[Server Bullet {netId}] Failed to despawn from ClearByBomb - NetworkObject null or not spawned. IsSpawned={spawned}");
-        }
     }
 
     // ServerRpc called by ClearByBomb() - NO LONGER NEEDED
@@ -150,13 +142,10 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
     [ServerRpc(RequireOwnership = false)] // Allow any client (or server) to trigger this
     private void RequestClearByBombServerRpc(ServerRpcParams rpcParams = default)
     {
-        // Debug.Log($"[Server Bullet {GetComponent<NetworkObject>()?.NetworkObjectId ?? 0}] RPC RequestClearByBombServerRpc received from client {rpcParams.Receive.SenderClientId}."); // <-- REMOVE LOG
-
         // Despawn the network object (will destroy it on all clients)
         NetworkObject networkObject = GetComponent<NetworkObject>();
         if (networkObject != null && networkObject.IsSpawned)
         {
-             // Debug.Log($"[Server Bullet {networkObject.NetworkObjectId}] Attempting to despawn self due to bomb request."); // <-- REMOVE LOG
             networkObject.Despawn(true); // Pass true to destroy the GameObject as well
         }
          else 
@@ -164,7 +153,6 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
             // Keep this warning
             ulong netId = networkObject?.NetworkObjectId ?? 0;
             bool spawned = networkObject?.IsSpawned ?? false;
-            Debug.LogWarning($"[Server Bullet {netId}] Failed to despawn due to bomb - NetworkObject null or not spawned. IsSpawned={spawned}"); 
         }
     }
     */

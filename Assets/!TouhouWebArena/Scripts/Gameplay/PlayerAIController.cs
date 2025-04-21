@@ -55,16 +55,11 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
         playerShooting = GetComponent<PlayerShooting>();
         networkObject = GetComponent<NetworkObject>(); // Get NetworkObject
 
-        if (playerMovement == null) Debug.LogError("PlayerAIController: PlayerMovement component not found!", this);
-        if (playerShooting == null) Debug.LogError("PlayerAIController: PlayerShooting component not found!", this);
-        if (networkObject == null) Debug.LogError("PlayerAIController: NetworkObject component not found!", this);
-
         if (hitboxTransform == null)
         {
             hitboxTransform = transform.Find("Hitbox");
             if (hitboxTransform == null)
             {
-                Debug.LogError("PlayerAIController could not find the Hitbox child transform!", this);
             }
         }
 
@@ -75,7 +70,6 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
             playerRole = playerMovement.GetPlayerRole();
             if(playerRole == PlayerRole.None)
             {
-                 Debug.LogWarning($"PlayerAIController (Awake): Could not determine PlayerRole for {gameObject.name}. Will retry.");
             }
         }
     }
@@ -91,7 +85,6 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
             playerRole = playerMovement.GetPlayerRole();
             if (playerRole != PlayerRole.None)
             {
-                Debug.Log($"PlayerAIController (Update): Determined PlayerRole for {gameObject.name} as {playerRole}");
             }
         }
 
@@ -137,7 +130,6 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
         if (Input.GetKeyDown(activationKey))
         {
             aiActive = !aiActive;
-            Debug.Log($"Player AI for {gameObject.name} (Role: {playerRole}) {(aiActive ? "Activated" : "Deactivated")}");
             if (!aiActive)
             {
                 StopAIControl();
@@ -174,7 +166,6 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
                                  (playerRole == PlayerRole.Player2 && hazardX > 0);
             if (!onCorrectSide)
             {
-                 // Debug.Log($"AI ({playerRole}): Ignoring hazard {hit.name} on wrong side (X: {hazardX})");
                  continue; // Skip hazards on the opponent's side
             }
             // -----------------------------------
@@ -196,7 +187,6 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
         if (closestHazard != null)
         {
             // Hazard detected, attempt to dodge
-            // Debug.Log($"AI ({playerRole}): Hazard detected ({closestHazard.name}), attempting dodge.");
             AttemptDodge(closestHazard);
             return true; // Currently dodging
         }
@@ -218,7 +208,6 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
         if (Mathf.Approximately(relativeX, 0f))
         {
             dodgeDirection = (playerRole == PlayerRole.Player1) ? -1f : 1f; // P1 dodges left, P2 dodges right
-            // Debug.Log($"AI ({playerRole}): Hazard aligned vertically, default dodge direction: {dodgeDirection}");
         }
 
         // Check if the chosen direction is clear using a short raycast
@@ -248,13 +237,15 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
             // else: Both blocked, finalMoveInput remains 0
         }
 
-        if (finalMoveInput != 0)
+        // Apply the movement input
+        if (!Mathf.Approximately(finalMoveInput, 0f))
         {
-            // Debug.Log($"AI ({playerRole}): Dodging {(finalMoveInput > 0 ? "Right" : "Left")}");
+            playerMovement.SetAIHorizontalInput(finalMoveInput);
         }
-
-        // Apply horizontal movement via PlayerMovement
-        playerMovement.SetAIHorizontalInput(finalMoveInput);
+        else
+        {
+            playerMovement.SetAIHorizontalInput(0f);
+        }
     }
 
     private void AlignWithTarget()
@@ -283,29 +274,25 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
             }
         }
 
-        float moveInput = 0f;
         if (bestTarget != null)
         {
-            // Move towards the best target's x position
-            moveInput = Mathf.Sign(bestTarget.transform.position.x - hitboxTransform.position.x);
-            // Debug.Log($"AI ({playerRole}): Aligning with {bestTarget.name} (Dir: {moveInput})");
+            float targetX = bestTarget.transform.position.x;
+            float moveInput = Mathf.Sign(targetX - transform.position.x); // Simplified move direction
+            playerMovement.SetAIHorizontalInput(moveInput);
         }
         else
         {
-            // No valid target found, stop moving horizontally
-            // Debug.Log($"AI ({playerRole}): No target found to align with.");
+            playerMovement.SetAIHorizontalInput(0f);
         }
-
-        playerMovement.SetAIHorizontalInput(moveInput);
     }
 
     private void StopAIControl()
     {
-        // Ensure the AI stops providing input to movement systems
-        // PlayerShooting doesn't need explicit stop, as AI calls StartAIShot only when active
-        playerMovement?.SetAIHorizontalInput(0f); // Use conditional access
-        isDodging = false; // Reset state
-        // Debug.Log($"AI Control Stopped for {gameObject.name}");
+        if (playerMovement != null)
+        {
+            playerMovement.SetAIHorizontalInput(0f);
+            isDodging = false;
+        }
     }
 
     // Draw Gizmos for the detection box in the Scene view for easier debugging

@@ -38,7 +38,6 @@ public class MarisaScopeStyleController : BaseScopeStyleController
         // Validation
         if (scopeVisualTransform == null)
         {
-            Debug.LogError($"MarisaScopeStyleController ({OwnerClientId}): Scope Visual Transform not set!", this);
             enabled = false;
             return;
         }
@@ -47,13 +46,12 @@ public class MarisaScopeStyleController : BaseScopeStyleController
             scopeSpriteRenderer = scopeVisualTransform.GetComponent<SpriteRenderer>();
             if (scopeSpriteRenderer == null)
             {
-                Debug.LogError($"MarisaScopeStyleController ({OwnerClientId}): Scope Sprite Renderer not set and couldn't find one on Visual Transform!", this);
                 enabled = false;
                 return;
             }
             else
             {
-                Debug.LogWarning($"MarisaScopeStyleController ({OwnerClientId}): Scope Sprite Renderer was not assigned, but found one on Visual Transform. Assigning automatically.", this);
+                
             }
         }
 
@@ -88,19 +86,17 @@ public class MarisaScopeStyleController : BaseScopeStyleController
         }
         else if (isActive)
         {
-            Debug.LogError($"MarisaScopeStyleController ({OwnerClientId}): Cannot activate visual, Scope Sprite Renderer is missing!");
+            
         }
 
         // --- ADDED: Enable/disable collider along with visual ---
         if (scopeCollider != null)
         {
             scopeCollider.enabled = isActive;
-            // Optional: Add log similar to Reimu's if needed for debugging
-            // Debug.Log($"[{ (IsServer ? "Server" : "Client") } { OwnerClientId }] SetVisualActive({isActive}). Scope Collider enabled: {scopeCollider.enabled}"); 
         }
         else if (isActive) // Only log error if trying to activate missing collider
         {
-            Debug.LogError($"MarisaScopeStyleController ({OwnerClientId}): Cannot activate collider, Scope Collider is missing!");
+            
         }
         // ------------------------------------------------------
     }
@@ -139,8 +135,6 @@ public class MarisaScopeStyleController : BaseScopeStyleController
             // Keep current Y scale, only change X
             Vector3 currentScale = scopeVisualTransform.localScale;
             scopeVisualTransform.localScale = new Vector3(width, currentScale.y, currentScale.z);
-            // Optional: Add log similar to Reimu's if needed for debugging
-            // Debug.Log($"[{ (IsServer ? "Server" : "Client") } { OwnerClientId }] ApplyScopeWidthVisual called. Setting width to: {width:F3}"); 
         }
     }
 

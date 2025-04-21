@@ -41,7 +41,6 @@ public class PlayerShooting : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn(); // Good practice to call the base method
-        Debug.Log($"Player {OwnerClientId} OnNetworkSpawn called. IsOwner: {IsOwner}"); // Log Spawn
 
         if (IsOwner)
         {
@@ -54,26 +53,21 @@ public class PlayerShooting : NetworkBehaviour
     /// </summary>
     private void FindAndAssignSpellBar()
     {
-        Debug.Log($"Player {OwnerClientId} attempting FindAndAssignSpellBar..."); // Log Start
         SpellBarController[] allSpellBars = FindObjectsOfType<SpellBarController>();
-        Debug.Log($"Found {allSpellBars.Length} SpellBarControllers in scene."); // Log Count
         bool foundBar = false;
         foreach (SpellBarController bar in allSpellBars)
         {
-            Debug.Log($"Checking bar {bar.gameObject.name} with TargetPlayerId: {bar.GetTargetPlayerId()}"); // Log Check
-            // Cast OwnerClientId to int for comparison
             if (bar.GetTargetPlayerId() == (int)OwnerClientId)
             {
                 spellBarController = bar;
                 foundBar = true;
-                Debug.Log($"Player {OwnerClientId} assigned SpellBar {bar.gameObject.name}");
                 break; // Found the correct bar, no need to check others
             }
         }
 
         if (!foundBar)
         {
-            Debug.LogWarning($"Player {OwnerClientId} could not find a SpellBarController with TargetPlayerId == {OwnerClientId}");
+            
         }
     }
 
@@ -86,15 +80,6 @@ public class PlayerShooting : NetworkBehaviour
     {
         // Only the owner of this object should process input and update state
         if (!IsOwner) return;
-
-        // --- Check if Spell Bar is assigned before proceeding ---
-        // We might still need the reference locally if shooting logic depends on charge state
-        // but calculation is now done on server.
-        // if (spellBarController == null)
-        // {
-        //     Debug.LogWarning($"Player {OwnerClientId} Update: spellBarController is NULL. Skipping Update logic.");
-        //     return; // Skip processing if bar not found
-        // }
 
         // --- Input Reading (Owner Only) ---
         isHoldingChargeKey = Input.GetKey(fireKey);
@@ -117,28 +102,6 @@ public class PlayerShooting : NetworkBehaviour
             // Let's assume holding Z prevents starting a new burst, so releasing is fine.
         }
         // --- End Charge Attack Check ---
-
-        // --- State Calculation Removed (Done on Server via RPC) ---
-        /*
-        // --- State Update (Passive Fill) ---
-        // TODO: Hook up enemy kill bonus here
-        float newPassiveFill = spellBarController.currentPassiveFill.Value + spellBarController.passiveFillRate * Time.deltaTime;
-        spellBarController.currentPassiveFill.Value = Mathf.Clamp(newPassiveFill, 0f, 4f); // Assuming MaxFillAmount is 4
-
-        // --- State Update (Active Fill) ---
-        float newActiveFill = spellBarController.currentActiveFill.Value;
-        if (isHoldingChargeKey)
-        {
-            newActiveFill += spellBarController.activeChargeRate * Time.deltaTime;
-            // Clamp against current passive value
-            newActiveFill = Mathf.Clamp(newActiveFill, 0f, spellBarController.currentPassiveFill.Value);
-        }
-        else
-        {
-            newActiveFill = 0f; // Reset when not holding key
-        }
-        spellBarController.currentActiveFill.Value = newActiveFill;
-        */
 
         // --- Burst Fire Action --- 
         // Reverted condition: Use KeyDown to initiate burst sequence.
@@ -166,19 +129,19 @@ public class PlayerShooting : NetworkBehaviour
         // --- Get Sender's Player Object and Character Stats --- 
         if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(senderClientId, out NetworkClient networkClient))
         {
-            Debug.LogError($"Server could not find NetworkClient for senderClientId {senderClientId}");
+            
             return;
         }
         NetworkObject playerObject = networkClient.PlayerObject;
         if (playerObject == null)
         {
-            Debug.LogError($"Server could not find PlayerObject for senderClientId {senderClientId}");
+            
             return;
         }
         CharacterStats stats = playerObject.GetComponent<CharacterStats>();
         if (stats == null)
         {
-            Debug.LogError($"Server could not find CharacterStats component on PlayerObject for senderClientId {senderClientId}");
+            
             return;
         }
         // --- End Get Stats ---
@@ -206,7 +169,7 @@ public class PlayerShooting : NetworkBehaviour
         }
         else
         {
-            Debug.LogWarning($"Server received UpdateChargeStateServerRpc from Client {senderClientId} but could not find a SpellBarController with TargetPlayerId == {senderClientId}");
+            
         }
     }
     // --- End RPC ---
@@ -220,14 +183,14 @@ public class PlayerShooting : NetworkBehaviour
         // Get player object and stats
         if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(ownerClientId, out NetworkClient networkClient) || networkClient.PlayerObject == null)
         {
-            Debug.LogError($"[Server] Could not find PlayerObject for senderClientId {ownerClientId} in PerformChargeAttackServerRpc");
+            
             return;
         }
         Transform playerTransform = networkClient.PlayerObject.transform;
         CharacterStats stats = networkClient.PlayerObject.GetComponent<CharacterStats>();
         if (stats == null)
         {   
-             Debug.LogError($"[Server] Could not find CharacterStats for senderClientId {ownerClientId}");
+             
              return;
         }
 
@@ -235,14 +198,14 @@ public class PlayerShooting : NetworkBehaviour
         GameObject chargePrefab = stats.GetChargeAttackPrefab();
         if (chargePrefab == null)
         {
-            Debug.LogError($"[Server] Player {ownerClientId}: Charge Attack Prefab is not assigned in CharacterStats component!");
+            
             return;
         }
         // -----------------------------------------------------------
 
         // Determine Character and Execute Attack 
         string characterName = stats.GetCharacterName(); 
-        Debug.Log($"[Server] Player {ownerClientId} ({characterName}) performing charge attack with prefab {chargePrefab.name}.");
+        
 
         // Use the exact names set in the CharacterStats Inspector
         if (characterName == "HakureiReimu") 
@@ -257,7 +220,7 @@ public class PlayerShooting : NetworkBehaviour
         }
         else
         {
-             Debug.LogWarning($"[Server] Player {ownerClientId} has unhandled character name ({characterName}) from CharacterStats for charge attack.");
+            
         }
         
         // The active spell bar resets automatically via UpdateChargeStateServerRpc when isHoldingChargeKey becomes false.
@@ -295,7 +258,6 @@ public class PlayerShooting : NetworkBehaviour
             }
             else
             {
-                Debug.LogError($"[Server] Player {ownerClientId}: Reimu Charge Attack Prefab '{attackPrefab.name}' is missing NetworkObject component! Destroying instance.");
                 Destroy(instance); 
             }
         }
@@ -306,7 +268,6 @@ public class PlayerShooting : NetworkBehaviour
     {
         if (attackPrefab == null)
         {
-            Debug.LogError($"[Server] Player {ownerClientId}: Marisa Charge Attack Prefab is null!"); // Simplified log
             return;
         }
 
@@ -328,8 +289,8 @@ public class PlayerShooting : NetworkBehaviour
         }
         else
         {
-            Debug.LogError($"[Server] Player {ownerClientId}: Marisa Charge Attack Prefab '{attackPrefab.name}' is missing NetworkObject component! Destroying instance.");
             Destroy(instance);
+            return;
         }
     }
 
@@ -338,7 +299,6 @@ public class PlayerShooting : NetworkBehaviour
         // Ensure CharacterStats is linked
         if (characterStats == null)
         {
-             Debug.LogError("PlayerShooting: CharacterStats reference is not set!");
              yield break;
         }
 
@@ -365,13 +325,13 @@ public class PlayerShooting : NetworkBehaviour
         // --- Get Sender's Player Object and Character Stats (as done in other RPC) --- 
         if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(senderClientId, out NetworkClient networkClient) || networkClient.PlayerObject == null)
         {
-            Debug.LogError($"Server could not find PlayerObject for senderClientId {senderClientId} in RequestFireServerRpc");
+            
             return;
         }
         CharacterStats senderStats = networkClient.PlayerObject.GetComponent<CharacterStats>();
         if (senderStats == null)
         {
-            Debug.LogError($"Server could not find CharacterStats on PlayerObject for senderClientId {senderClientId} in RequestFireServerRpc");
+            
             return;
         }
         // --- End Get Stats ---
@@ -379,7 +339,7 @@ public class PlayerShooting : NetworkBehaviour
         GameObject bulletToSpawn = senderStats.GetBulletPrefab();
         if (bulletToSpawn == null)
         {
-            Debug.LogError($"Bullet Prefab is not assigned in CharacterStats for player {senderClientId}!");
+            
             return;
         }
 
@@ -413,7 +373,6 @@ public class PlayerShooting : NetworkBehaviour
 
         if (bulletNetworkObject == null || bulletMovement == null) // Check for both
         {
-            Debug.LogError("Bullet Prefab is missing NetworkObject or BulletMovement script! Destroying instance.", bulletInstance); // Log context
             Destroy(bulletInstance);
             return;
         }
@@ -432,13 +391,11 @@ public class PlayerShooting : NetworkBehaviour
             }
             else
             {
-                Debug.LogError($"Could not find PlayerData for OwnerClientId {ownerId} to assign bullet owner! Setting to None.");
                 bulletMovement.OwnerRole.Value = PlayerRole.None; // Assign default
             }
         }
         else
         {
-             Debug.LogError("PlayerDataManager instance not found! Setting bullet OwnerRole to None.");
              bulletMovement.OwnerRole.Value = PlayerRole.None; // Assign default
         }
     }
@@ -449,7 +406,7 @@ public class PlayerShooting : NetworkBehaviour
         characterStats = GetComponent<CharacterStats>();
         if (characterStats == null)
         {
-            Debug.LogError("PlayerShooting could not find CharacterStats component on the same GameObject!", this);
+             enabled = false;
         } else {
              // Initialize nextFireTime based on stats to prevent immediate AI firing if cooldown is high
              nextFireTime = Time.time; // Or potentially slightly delayed if needed
@@ -464,27 +421,21 @@ public class PlayerShooting : NetworkBehaviour
     /// </summary>
     public void StartAIShot()
     {
-        // Only Owner's AI should trigger this
-        if (!IsOwner) return;
-
-        // Check cooldown and if a burst is already running
+        if (!IsOwner) return; // AI Control should be local? Or Server?
+        
+        // Check if cooldown is met AND no burst active
         if (Time.time >= nextFireTime && burstCoroutine == null)
         {
-            // Ensure CharacterStats is valid before starting
-            if (characterStats == null)
-            {
-                Debug.LogError("PlayerShooting (StartAIShot): CharacterStats reference is null!");
-                return;
-            }
-
-            // Start the burst coroutine
             burstCoroutine = StartCoroutine(BurstFireSequence());
 
-            // Calculate and set the next allowed fire time (same logic as in Update)
+            // Calculate cooldown: total burst duration + burst cooldown delay
             float burstDuration = characterStats.GetBurstCount() > 1 ? (characterStats.GetBurstCount() - 1) * characterStats.GetTimeBetweenBurstShots() : 0f;
-            nextFireTime = Time.time + burstDuration + characterStats.GetBurstCooldown();
+            nextFireTime = Time.time + burstDuration + characterStats.GetBurstCooldown(); // Use stat
         }
-        // else: Cooldown not met or burst already active, do nothing
+        else
+        {
+            
+        }
     }
     // --- End Added Method ---
 } 

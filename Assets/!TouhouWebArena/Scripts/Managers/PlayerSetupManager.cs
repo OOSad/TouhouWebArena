@@ -25,10 +25,6 @@ public class PlayerSetupManager : NetworkBehaviour
             Matchmaker.Instance.OnMatchFoundServer += HandleMatchFound;
             // We might not need OnPlayerQueuedServer listener if registration is handled elsewhere
         }
-        else
-        {
-            Debug.LogError("PlayerSetupManager could not find Matchmaker instance!", this);
-        }
     }
 
     public override void OnNetworkDespawn()
@@ -42,18 +38,14 @@ public class PlayerSetupManager : NetworkBehaviour
 
     private void HandleMatchFound(ulong player1Id, ulong player2Id)
     {
-        Debug.Log($"[PlayerSetupManager] Match found! P1={player1Id}, P2={player2Id}. Setting up...");
-
         // 1. Assign Roles
         if (PlayerDataManager.Instance != null)
         {
             PlayerDataManager.Instance.AssignPlayerRole(player1Id, PlayerRole.Player1);
             PlayerDataManager.Instance.AssignPlayerRole(player2Id, PlayerRole.Player2);
-            Debug.Log("[PlayerSetupManager] Roles assigned.");
         }
         else
         {
-            Debug.LogError("[PlayerSetupManager] PlayerDataManager Instance is null! Cannot assign roles.");
             // Decide how to handle this - maybe cancel scene load?
             return;
         }
@@ -64,14 +56,11 @@ public class PlayerSetupManager : NetworkBehaviour
 
     private IEnumerator LoadCharacterSelectSceneDelayed()
     {
-        Debug.Log($"[PlayerSetupManager] Waiting {sceneTransitionDelay}s before loading {characterSelectSceneName}...");
         yield return new WaitForSeconds(sceneTransitionDelay);
 
-        Debug.Log($"[PlayerSetupManager] Loading {characterSelectSceneName}...");
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
         {
             NetworkManager.Singleton.SceneManager.LoadScene(characterSelectSceneName, LoadSceneMode.Single);
         }
-         else Debug.LogError("[PlayerSetupManager] NetworkManager or SceneManager became invalid before server scene load.");
     }
 } 

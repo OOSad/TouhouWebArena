@@ -21,7 +21,6 @@ public class ShockwaveVisuals : MonoBehaviour
 
         if (spriteRenderer == null || shockwave == null)
         {
-            Debug.LogError("ShockwaveVisuals is missing required components!", this);
             enabled = false;
             return;
         }

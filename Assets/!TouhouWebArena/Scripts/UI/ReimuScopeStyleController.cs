@@ -39,7 +39,7 @@ public class ReimuScopeStyleController : BaseScopeStyleController
         // Validation
         if (scopeVisualTransform == null)
         {
-            Debug.LogError($"ReimuScopeStyleController ({OwnerClientId}): Scope Visual Transform not set!", this);
+            
             enabled = false;
             return; // Exit early if transform is missing
         }
@@ -49,13 +49,13 @@ public class ReimuScopeStyleController : BaseScopeStyleController
             scopeSpriteRenderer = scopeVisualTransform.GetComponent<SpriteRenderer>();
             if (scopeSpriteRenderer == null)
             {
-                Debug.LogError($"ReimuScopeStyleController ({OwnerClientId}): Scope Sprite Renderer not set and couldn't find one on Visual Transform!", this);
+                
                 enabled = false;
                 return; // Exit early if renderer is missing
             }
             else
             {
-                 Debug.LogWarning($"ReimuScopeStyleController ({OwnerClientId}): Scope Sprite Renderer was not assigned, but found one on Visual Transform. Assigning automatically.", this);
+                 
             }
         }
 
@@ -93,7 +93,7 @@ public class ReimuScopeStyleController : BaseScopeStyleController
         else if(isActive)
         {
              // Log error only if trying to activate a missing renderer
-             Debug.LogError($"ReimuScopeStyleController ({OwnerClientId}): Cannot activate visual, Scope Sprite Renderer is missing!");
+             
         }
 
         // --- ADDED: Enable/disable collider along with visual ---
@@ -103,7 +103,7 @@ public class ReimuScopeStyleController : BaseScopeStyleController
         }
         else if (isActive) // Only log error if trying to activate missing collider
         {
-            Debug.LogError($"ReimuScopeStyleController ({OwnerClientId}): Cannot activate collider, Scope Collider is missing!");
+            
         }
         // ------------------------------------------------------
     }

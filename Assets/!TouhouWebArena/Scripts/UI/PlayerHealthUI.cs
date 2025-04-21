@@ -29,16 +29,12 @@ public class PlayerHealthUI : MonoBehaviour
         // Wait until NetworkManager is ready
         yield return new WaitUntil(() => NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsClient);
 
-        // Debug.Log($"PlayerHealthUI ({targetPlayerId}) starting search..."); // Optional: Log start
-
         int attempts = 0;
         while (_targetPlayerHealth == null && attempts < maxSearchAttempts)
         {
             attempts++;
-            // Debug.Log($"PlayerHealthUI ({targetPlayerId}) attempt {attempts}/{maxSearchAttempts}..."); // Optional: Log attempt
 
             PlayerHealth[] allPlayerHealths = FindObjectsOfType<PlayerHealth>();
-            // Debug.Log($"Found {allPlayerHealths.Length} PlayerHealth components in scene."); // Optional: Log count
 
             foreach (PlayerHealth ph in allPlayerHealths)
             {
@@ -49,11 +45,9 @@ public class PlayerHealthUI : MonoBehaviour
                     _characterStats = ph.GetComponent<CharacterStats>(); 
                     if (_characterStats == null)
                     {
-                        Debug.LogError($"PlayerHealthUI ({targetPlayerId}) found PlayerHealth but could not find CharacterStats on Player {targetPlayerId}! UI will not initialize correctly.", this);
                         yield break; 
                     }
 
-                    Debug.Log($"PlayerHealthUI ({targetPlayerId}) successfully subscribed to PlayerHealth for Client ID {targetPlayerId} (Attempt {attempts}).");
                     InitializeUI(_characterStats.GetStartingHealth()); 
                     _targetPlayerHealth.OnHealthChanged += UpdateUI;
                     UpdateUI(_targetPlayerHealth.CurrentHealth.Value);
@@ -71,7 +65,7 @@ public class PlayerHealthUI : MonoBehaviour
         // Only log warning if loop finished without finding the target
         if (_targetPlayerHealth == null)
         {
-            Debug.LogWarning($"PlayerHealthUI ({targetPlayerId}) could not find PlayerHealth component for Client ID {targetPlayerId} after {attempts} attempts.", this);
+            
         }
     }
 
@@ -98,7 +92,6 @@ public class PlayerHealthUI : MonoBehaviour
         // Ensure container and prefab are assigned
         if (iconContainer == null || healthIconPrefab == null)
         {
-            Debug.LogError("Icon Container or Health Icon Prefab not assigned in PlayerHealthUI!", this);
             return;
         }
 
@@ -125,7 +118,7 @@ public class PlayerHealthUI : MonoBehaviour
         {
              // If the icon count doesn't match max health (e.g., after a stats change or initialization issue)
              // Re-initialize based on the correct max health. This is a fallback.
-             Debug.LogWarning($"PlayerHealthUI ({targetPlayerId}): Icon count ({healthIcons.Count}) mismatch with max health ({maxHealth}). Re-initializing.");
+             
              InitializeUI(maxHealth);
         }
 

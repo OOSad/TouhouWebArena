@@ -18,7 +18,6 @@ public class PlayerPositionSynchronizer : NetworkBehaviour
         playerMovement = GetComponent<PlayerMovement>();
         if (playerMovement == null)
         {
-            Debug.LogError("PlayerPositionSynchronizer requires a PlayerMovement component!", this);
             enabled = false;
         }
     }
@@ -30,7 +29,6 @@ public class PlayerPositionSynchronizer : NetworkBehaviour
         playerDataManager = PlayerDataManager.Instance;
         if (IsServer && playerDataManager == null)
         {
-            Debug.LogError("[Server PlayerPositionSynchronizer] PlayerDataManager instance not found!", this);
             // Decide if this is critical enough to disable server RPC logic?
         }
      }
@@ -85,9 +83,7 @@ public class PlayerPositionSynchronizer : NetworkBehaviour
             {
                 return PlayerMovement.player2Bounds; // Access static bounds
             }
-            else Debug.LogWarning($"[ServerSync] Sender {clientId} has unexpected Role {senderData.Value.Role}. Using default bounds.");
         }
-        else Debug.LogError($"[ServerSync] Could not retrieve PlayerData for Sender {clientId}. Using default bounds.");
 
         return new Rect(); // Default empty bounds
     }

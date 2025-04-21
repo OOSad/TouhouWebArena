@@ -37,7 +37,7 @@ public class ExtraAttackManager : NetworkBehaviour
         if (!IsServer) return;
 
         string attackerCharacter = attackerData.SelectedCharacter.ToString();
-        Debug.Log($"[ExtraAttackManager] Triggering for {attackerCharacter} (Role: {attackerData.Role}) against {opponentRole}");
+        
 
         GameObject prefabToSpawn = null;
         Action<GameObject, Transform> spawnLogic = null;
@@ -50,7 +50,7 @@ public class ExtraAttackManager : NetworkBehaviour
                 ReimuExtraAttackOrbSpawner reimuSpawner = FindObjectOfType<ReimuExtraAttackOrbSpawner>();
                 if (reimuSpawner == null)
                 {
-                    Debug.LogError("[ExtraAttackManager] Cannot trigger Reimu Extra Attack: ReimuExtraAttackOrbSpawner component not found.", this);
+                    
                     return;
                 }
                 targetSpawnArea = (opponentRole == PlayerRole.Player1) ? reimuSpawner.GetSpawnZone1() : reimuSpawner.GetSpawnZone2();
@@ -63,8 +63,7 @@ public class ExtraAttackManager : NetworkBehaviour
                          if (nob != null) nob.Spawn(true);
                          ReimuExtraAttackOrb orbScript = instance.GetComponent<ReimuExtraAttackOrb>();
                          if(orbScript != null) orbScript.TargetPlayerRole.Value = opponentRole;
-                         else Debug.LogError("[ExtraAttackManager] Failed to get ReimuExtraAttackOrb script from instantiated prefab!");
-                    } else Debug.LogError($"[ExtraAttackManager] Spawn Area Transform for Role {opponentRole} was null (Reimu).");
+                    }
                 };
                 break;
 
@@ -73,7 +72,7 @@ public class ExtraAttackManager : NetworkBehaviour
                 MarisaExtraAttackSpawner marisaSpawner = FindObjectOfType<MarisaExtraAttackSpawner>();
                  if (marisaSpawner == null)
                 {
-                    Debug.LogError("[ExtraAttackManager] Cannot trigger Marisa Extra Attack: MarisaExtraAttackSpawner component not found.", this);
+                    
                     return;
                 }
                 targetSpawnArea = (opponentRole == PlayerRole.Player1) ? marisaSpawner.GetPlayer1TargetArea() : marisaSpawner.GetPlayer2TargetArea();
@@ -90,7 +89,6 @@ public class ExtraAttackManager : NetworkBehaviour
                         float tilt = UnityEngine.Random.Range(-maxTilt, maxTilt);
                         spawnRotation = Quaternion.Euler(0, 0, tilt);
                     }
-                    else Debug.LogError("[ExtraAttackManager] Marisa Extra Attack Prefab is missing EarthlightRay component!");
                 }
 
                 spawnLogic = (prefab, spawnArea) => {
@@ -103,29 +101,26 @@ public class ExtraAttackManager : NetworkBehaviour
                         if (nob != null) nob.Spawn(true);
                         EarthlightRay rayScript = instance.GetComponent<EarthlightRay>();
                         if (rayScript != null) rayScript.AttackerRole.Value = attackerData.Role;
-                        else Debug.LogError("[ExtraAttackManager] Failed to get EarthlightRay script from instantiated prefab!");
                     }
-                    else Debug.LogError($"[ExtraAttackManager] Spawn Area Transform for Role {opponentRole} was null (Marisa).");
                 };
                 break;
 
             default:
-                 Debug.LogError($"[ExtraAttackManager] No Extra Attack defined for character: {attackerCharacter}");
+                 
                  return;
         }
 
         if (prefabToSpawn == null)
         {
-            Debug.LogError($"[ExtraAttackManager] Extra Attack Prefab is null for character: {attackerCharacter}.", this);
+            
             return;
         }
         if (targetSpawnArea == null)
         {
-             Debug.LogError($"[ExtraAttackManager] Target Extra Attack Spawn Area for Role {opponentRole} (Character: {attackerCharacter}) is not assigned or found.", this);
+             
              return;
         }
 
         if (spawnLogic != null) spawnLogic(prefabToSpawn, targetSpawnArea);
-        else Debug.LogError($"[ExtraAttackManager] Internal Error: Spawn logic not defined for {attackerCharacter}.");
     }
 } 

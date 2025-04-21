@@ -40,19 +40,11 @@ public class PathManager : MonoBehaviour
         {
             player1Paths = player1PathsParent.GetComponentsInChildren<BezierSpline>(true).ToList();
         }
-        else
-        {
-            Debug.LogError("PathManager: Player 1 Paths Parent not assigned!");
-        }
 
         player2Paths.Clear();
         if (player2PathsParent != null)
         {
             player2Paths = player2PathsParent.GetComponentsInChildren<BezierSpline>(true).ToList();
-        }
-        else
-        {
-            Debug.LogError("PathManager: Player 2 Paths Parent not assigned!");
         }
     }
 
@@ -69,7 +61,6 @@ public class PathManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"PathManager: Invalid player index requested: {playerIndex}");
             return new List<BezierSpline>(); // Return empty list
         }
     }
@@ -84,7 +75,6 @@ public class PathManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"PathManager: Invalid path index {pathIndex} requested for Player {playerIndex}. List count: {pathList.Count}");
             return null;
         }
     }

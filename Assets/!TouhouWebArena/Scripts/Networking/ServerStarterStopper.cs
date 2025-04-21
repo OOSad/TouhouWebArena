@@ -50,11 +50,6 @@ public class ServerStarterStopper : MonoBehaviour
             if (NetworkManager.Singleton.StartServer())
             {
                 isServerRunning = true;
-                Debug.Log("Server started successfully");
-            }
-            else
-            {
-                Debug.LogError("Failed to start server");
             }
         }
     }
@@ -65,7 +60,6 @@ public class ServerStarterStopper : MonoBehaviour
         {
             NetworkManager.Singleton.Shutdown();
             isServerRunning = false;
-            Debug.Log("Server stopped");
         }
     }
     

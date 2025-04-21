@@ -61,7 +61,6 @@ public class SpellBarController : NetworkBehaviour
         // Ensure this only runs on the server (which owns these scene objects)
         if (!IsServer)
         {
-             Debug.LogWarning($"ServerCalculateState called on non-server for bar {gameObject.name}. Ignoring.");
              return;
         }
 

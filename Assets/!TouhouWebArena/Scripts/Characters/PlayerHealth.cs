@@ -29,8 +29,9 @@ public class PlayerHealth : NetworkBehaviour
         characterStats = GetComponent<CharacterStats>();
         playerDeathBomb = GetComponent<PlayerDeathBomb>();
 
-        if (characterStats == null) Debug.LogError("PlayerHealth: CharacterStats not found!", this);
-        if (playerDeathBomb == null) Debug.LogWarning("PlayerHealth could not find PlayerDeathBomb component! Bomb effect will not work.", this);
+        // Logs removed, empty ifs remain
+        // if (characterStats == null) 
+        // if (playerDeathBomb == null) 
     }
 
     public override void OnNetworkSpawn()
@@ -98,9 +99,9 @@ public class PlayerHealth : NetworkBehaviour
         {
             playerDeathBomb.ExecuteBomb(); 
         }
-        else Debug.LogError("[Server PlayerHealth] Cannot execute bomb, PlayerDeathBomb component missing!", this);
         
-        IsInvincible.Value = false;
+        // This should run regardless of whether the bomb component exists/executed
+        IsInvincible.Value = false; 
     }
 
     private void HandleDeathServer()
@@ -120,7 +121,7 @@ public class PlayerHealth : NetworkBehaviour
         }
         else
         {
-            Debug.LogError($"Cannot reset health for {OwnerClientId}, CharacterStats component missing on server!", this);
+            
             // Optionally set to a default value here if needed
             // CurrentHealth.Value = 5; 
         }

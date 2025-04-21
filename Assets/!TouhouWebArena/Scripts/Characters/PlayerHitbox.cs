@@ -43,24 +43,22 @@ public class PlayerHitbox : NetworkBehaviour
         // Check if the colliding object is a stage bullet (adjust tag if needed)
         if (other.CompareTag("StageBullet"))
         {
-            Debug.Log($"[Server] Player {OwnerClientId}'s Hitbox collided with bullet {other.name}");
+            // Despawn the bullet on the server (will remove it for all clients)
+            NetworkObject bulletNetworkObject = other.GetComponent<NetworkObject>();
+            if (bulletNetworkObject != null)
+            {
+                bulletNetworkObject.Despawn();
+            }
 
+            // Process damage application on the server
             if (playerHealth != null)
             {
-                playerHealth.TakeDamage(1); 
+                playerHealth.TakeDamage(1);
             }
             else
             {
                 // This shouldn't happen if Start() check passed, but log just in case.
                 Debug.LogError($"[Server] Hitbox collided, but PlayerHealth reference is missing on {transform.root.name}!");
-            }
-
-            // Despawn the bullet on the server (will remove it for all clients)
-            NetworkObject bulletNetworkObject = other.GetComponent<NetworkObject>();
-            if (bulletNetworkObject != null)
-            {
-                Debug.Log($"[Server] Despawning bullet {other.name} (NetID: {bulletNetworkObject.NetworkObjectId})");
-                bulletNetworkObject.Despawn();
             }
         }
         // Optional: else if (other.CompareTag("OtherEnemyAttack")) { ... }

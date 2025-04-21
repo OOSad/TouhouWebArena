@@ -29,7 +29,6 @@ public class MatchmakerUI : MonoBehaviour
             matchmaker = FindObjectOfType<Matchmaker>();
             if (matchmaker == null)
             {
-                Debug.LogError("MatchmakerUI could not find the Matchmaker instance!", this);
                 this.enabled = false;
                 return;
             }

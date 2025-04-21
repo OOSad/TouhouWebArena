@@ -27,7 +27,6 @@ public class SpiritRegistry : NetworkBehaviour
 
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("Duplicate SpiritRegistry instance found, destroying self.");
             Destroy(gameObject);
             return;
         }
@@ -48,8 +47,6 @@ public class SpiritRegistry : NetworkBehaviour
     {
         if (!IsServer || spirit == null || ownerRole == PlayerRole.None)
         {
-             if (!IsServer) Debug.LogWarning("SpiritRegistry.Register called on client!");
-             else Debug.LogWarning($"SpiritRegistry.Register called with null spirit or None role. Role: {ownerRole}");
              return;
         }
 
@@ -58,12 +55,7 @@ public class SpiritRegistry : NetworkBehaviour
             if (!activeSpirits[ownerRole].Contains(spirit))
             {
                 activeSpirits[ownerRole].Add(spirit);
-                // Debug.Log($"[Server SpiritRegistry] Registered Spirit {spirit.NetworkObjectId} for {ownerRole}. Count: {activeSpirits[ownerRole].Count}");
             }
-        }
-        else
-        {
-            Debug.LogWarning($"[Server SpiritRegistry] Attempted to register spirit for invalid role: {ownerRole}");
         }
     }
 
@@ -71,17 +63,13 @@ public class SpiritRegistry : NetworkBehaviour
     {
         if (!IsServer || spirit == null || ownerRole == PlayerRole.None)
         {
-            if (!IsServer) Debug.LogWarning("SpiritRegistry.Deregister called on client!");
-            // Don't warn if role is None during potential shutdown scenarios
             return;
         }
 
         if (activeSpirits.ContainsKey(ownerRole))
         { 
             bool removed = activeSpirits[ownerRole].Remove(spirit);
-            // if(removed) Debug.Log($"[Server SpiritRegistry] Deregistered Spirit {spirit.NetworkObjectId} for {ownerRole}. Count: {activeSpirits[ownerRole].Count}");
         }
-        // No warning if role invalid here, might happen during shutdown
     }
 
     // Get the current count of active spirits for a specific player
@@ -97,7 +85,6 @@ public class SpiritRegistry : NetworkBehaviour
             return activeSpirits[role].Count;
         }
 
-        Debug.LogWarning($"[Server SpiritRegistry] GetSpiritCount called for invalid role: {role}");
         return 0;
     }
 } 

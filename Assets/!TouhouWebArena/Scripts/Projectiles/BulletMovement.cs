@@ -52,8 +52,6 @@ public class BulletMovement : NetworkBehaviour
         // Check if we hit a fairy (using the "Fairy" tag)
         if (other.CompareTag("Fairy")) // Correct check
         {
-            Debug.Log($"Bullet owned by {OwnerRole.Value} hit Fairy: {other.name}");
-
             // Try to get the fairy script
             Fairy fairy = other.GetComponent<Fairy>();
             if (fairy != null)
@@ -64,18 +62,21 @@ public class BulletMovement : NetworkBehaviour
                 // Despawn bullet immediately after hitting a fairy
                 DespawnBullet();
             }
-            else
-            {
-                Debug.LogWarning($"Bullet hit object tagged Fairy, but couldn't find Fairy script on {other.name}");
-            }
         }
         // --- NEW: Check if we hit a Spirit --- 
         else if (other.CompareTag("Spirit")) // Add check for Spirit tag
         {
-            Debug.Log($"Bullet owned by {OwnerRole.Value} hit Spirit: {other.name}");
-
-            // No need to apply damage here, SpiritController handles it.
-            // Just despawn the bullet.
+            // Get the SpiritController component
+            SpiritController spirit = other.GetComponent<SpiritController>();
+            if (spirit != null)
+            {
+                // Define damage amount (e.g., 1 for basic bullets)
+                int damageAmount = 1; 
+                // Call TakeDamage on the spirit, passing damage and the bullet's owner
+                spirit.TakeDamage(damageAmount, OwnerRole.Value); 
+            }
+            
+            // Despawn the bullet after hitting the spirit
             DespawnBullet();
         }
         // ------------------------------------

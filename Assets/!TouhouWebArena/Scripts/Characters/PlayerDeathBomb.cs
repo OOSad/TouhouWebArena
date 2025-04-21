@@ -11,7 +11,7 @@ public class PlayerDeathBomb : NetworkBehaviour
     private void Awake()
     {
         characterStats = GetComponent<CharacterStats>();
-        if (characterStats == null) Debug.LogError("PlayerDeathBomb: CharacterStats not found!", this);
+        // if (characterStats == null) 
     }
 
     // Call this method from PlayerHealth on the server
@@ -36,19 +36,16 @@ public class PlayerDeathBomb : NetworkBehaviour
             }
             else
             {
-                Debug.LogError($"[Server DeathBomb] Could not find PlayerData for bombing client {OwnerClientId}. Cannot determine role.");
                 return; // Can't determine role, abort bomb
             }
         }
         else
         {
-            Debug.LogError("[Server DeathBomb] PlayerDataManager instance not found. Cannot determine role.");
             return; // Abort if manager is missing
         }
 
         if (bombingPlayerRole == PlayerRole.None)
         {
-            Debug.LogError($"[Server DeathBomb] Bombing client {OwnerClientId} has Role None. Aborting bomb.");
             return;
         }
         // --- End Get Bombing Player's Role ---
@@ -56,7 +53,6 @@ public class PlayerDeathBomb : NetworkBehaviour
         // Ensure stats are available before proceeding
         if (characterStats == null)
         {
-            Debug.LogError($"[Server DeathBomb - Client {OwnerClientId}] CharacterStats component missing! Cannot execute bomb.", this);
             return;
         }
         float currentBombRadius = characterStats.GetDeathBombRadius(); // Read radius from stats
@@ -95,25 +91,25 @@ public class PlayerDeathBomb : NetworkBehaviour
                     // 3. If distance and side are correct, clear it
                     if (correctSide)
                     {
-                        // Debug.Log($"[Server DeathBomb - {OwnerClientId}] Clearing {mb.gameObject.name} (Distance: {distance:F2}, Side OK). Calling ClearByBomb..."); // <-- REMOVE Clearing Action Log
+                        // <-- REMOVE Clearing Action Log
                         // The ClearByBomb() method on the object itself handles the necessary ServerRpc call
                         clearable.ClearByBomb(bombingPlayerRole);
                         clearedCount++;
                     }
                     // Optional: Log why it wasn't cleared if distance/side failed
-                    // else { Debug.Log($"[Server DeathBomb - {OwnerClientId}] Not clearing {mb.gameObject.name}. Distance: {distance:F2}, Side OK: {correctSide}"); }
+                    // else { }
                 }
-                // else { Debug.Log($"[Server DeathBomb - {OwnerClientId}] Not clearing {mb.gameObject.name}. Distance: {distance:F2} > Radius: {currentBombRadius}"); }
+                // else { }
             }
              else
              {
                  // Keep these warnings for invalid objects found
-                 if (clearable is MonoBehaviour mbInvalid) Debug.LogWarning($"[Server DeathBomb - {OwnerClientId}] Found an invalid IClearableByBomb object: {mbInvalid.name}. Skipping.");
-                 else Debug.LogWarning($"[Server DeathBomb - {OwnerClientId}] Found an IClearableByBomb object that wasn't a MonoBehaviour? Type: {clearable.GetType().Name}. Skipping.");
+                 // if (clearable is MonoBehaviour mbInvalid) 
+                 // else 
              }
         }
         // Keep this summary log
-        Debug.Log($"[Server DeathBomb] Cleared {clearedCount} objects for player {bombingPlayerRole} (Client {OwnerClientId}).");
+        // Debug.Log($"[Server DeathBomb] Cleared {clearedCount} objects for player {bombingPlayerRole} (Client {OwnerClientId}).");
         // --- End Clear Objects using Interface ---
     }
 } 

@@ -74,7 +74,6 @@ public class ReimuExtraAttackOrb : NetworkBehaviour
              else
             {
                  // Keep warning for actual failure
-                 Debug.LogWarning($"[Orb {NetworkObjectId} Trigger] Collided with Player tagged object, but could NOT get PlayerMovement script in parent of {otherCollider.gameObject.name}.");
             }
         }
     }
@@ -99,7 +98,6 @@ public class ReimuExtraAttackOrb : NetworkBehaviour
         if (!TryApplyDamage(targetClientId))
         {
             // If it *still* failed after the delay, log final error and despawn
-            Debug.LogError($"[Orb {NetworkObjectId} ServerRPC Delayed] PlayerObject lookup/damage failed even after {DAMAGE_RETRY_DELAY}s delay for ClientId {targetClientId}. Despawning orb.");
              if (NetworkObject != null) NetworkObject.Despawn(true);
         }
     }
@@ -122,7 +120,6 @@ public class ReimuExtraAttackOrb : NetworkBehaviour
             }
             else
             {
-                Debug.LogError($"[Orb {NetworkObjectId} TryApplyDamage] Found PlayerObject '{targetPlayerNetworkObject.name}' for ClientId {targetClientId}, but it is missing the PlayerHealth component! Despawning orb.");
                 if (NetworkObject != null) NetworkObject.Despawn(true);
                 return true; // Considered handled (error case, but orb despawned)
             }

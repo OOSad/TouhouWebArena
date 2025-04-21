@@ -26,7 +26,6 @@ public class StageSmallBulletSpawner : NetworkBehaviour
         // --- Singleton Setup ---
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("Duplicate StageSmallBulletSpawner instance found, destroying self.");
             Destroy(gameObject);
             return;
         }
@@ -42,28 +41,24 @@ public class StageSmallBulletSpawner : NetworkBehaviour
 
         if (spawnZone1 == null || spawnZone2 == null)
         {
-            Debug.LogError("Spawn zones not assigned in StageSmallBulletSpawner.", this);
             enabled = false; // Disable the script if setup is incorrect
             return;
         }
 
         if (smallBulletPrefab == null || stageLargeBulletPrefab == null)
         {
-            Debug.LogError("Bullet prefabs not assigned in StageSmallBulletSpawner.", this);
             enabled = false;
             return;
         }
 
         if (smallBulletPrefab.GetComponent<NetworkObject>() == null || stageLargeBulletPrefab.GetComponent<NetworkObject>() == null)
         {
-            Debug.LogError("One or both bullet prefabs are missing a NetworkObject component.", this);
             enabled = false;
             return;
         }
         
         if (smallBulletPrefab.GetComponent<StageSmallBulletMoverScript>() == null || stageLargeBulletPrefab.GetComponent<StageSmallBulletMoverScript>() == null)
         {
-            Debug.LogError("One or both bullet prefabs are missing a StageSmallBulletMoverScript component.", this);
             enabled = false;
             return;
         }
@@ -93,7 +88,6 @@ public class StageSmallBulletSpawner : NetworkBehaviour
         // --- SERVER CHECK & Killer Validation --- 
         if (!IsServer)
         {
-            Debug.LogError("SpawnBulletForOpponent called on non-server instance!", this);
             return;
         }
         if (killerRole == PlayerRole.None)
@@ -109,7 +103,6 @@ public class StageSmallBulletSpawner : NetworkBehaviour
 
         if (targetZone == null) // Safety check
         {
-            Debug.LogError($"Target spawn zone for role {targetRole} is null!", this);
             return;
         }
         // ----------------------
@@ -145,13 +138,11 @@ public class StageSmallBulletSpawner : NetworkBehaviour
         // Error checking before spawn
         if (bulletMover == null)
         {
-            Debug.LogError($"Instantiated bullet {prefabToSpawn.name} is missing StageSmallBulletMoverScript! Destroying.", bulletInstance);
             Destroy(bulletInstance);
             return;
         }
         if (networkObject == null)
         {
-            Debug.LogError($"Instantiated bullet {prefabToSpawn.name} is missing NetworkObject! Destroying.", bulletInstance);
             Destroy(bulletInstance);
             return;
         }

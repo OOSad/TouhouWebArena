@@ -13,7 +13,6 @@ public class SplineLookForward : MonoBehaviour
         splineWalker = GetComponent<SplineWalker>();
         if (splineWalker == null)
         {
-            Debug.LogError("SplineLookForward requires a SplineWalker component!", this);
             enabled = false; 
         }
     }

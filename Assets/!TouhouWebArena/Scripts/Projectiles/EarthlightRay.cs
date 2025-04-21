@@ -21,10 +21,6 @@ public class EarthlightRay : NetworkBehaviour
         {
             _collider.enabled = false; // Start deactivated
         }
-        else
-        {
-            Debug.LogError("EarthlightRay needs a Collider2D component!");
-        }
 
         // The spawner is now responsible for setting the initial rotation before spawning.
 
@@ -67,15 +63,9 @@ public class EarthlightRay : NetworkBehaviour
             if (hitPlayerRole != PlayerRole.None && hitPlayerRole != AttackerRole.Value)
             {
                 // Deal damage to the opponent player
-                Debug.Log($"Player Role {hitPlayerRole} hit by Earthlight Ray from Role {AttackerRole.Value}!", this);
                 playerHealth.TakeDamage(1); // Assuming 1 damage for now
             }
         }
-        else
-        {
-            Debug.LogWarning($"EarthlightRay hit Player tagged collider, but couldn't find PlayerMovement/PlayerHealth in parent: {other.gameObject.name}", this);
-        }
-        // Ignore collisions with anything else (fairies, bullets, etc.)
     }
 
     private void SelfDestruct()

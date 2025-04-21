@@ -35,7 +35,6 @@ public class Shockwave : NetworkBehaviour
 
         if (shockwaveVisuals == null) 
         {
-            Debug.LogError("Shockwave is missing required ShockwaveVisuals component!", this);
             enabled = false; // Disable if visuals are missing
         }
     }

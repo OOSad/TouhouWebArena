@@ -26,7 +26,6 @@ public class GameInitializer : NetworkBehaviour
     {
         if (prefab == null)
         {
-            Debug.LogError($"[Server] Fairy Spawner Prefab for {playerIdentifier} is not assigned in GameInitializer!", this);
             return;
         }
 
@@ -45,14 +44,12 @@ public class GameInitializer : NetworkBehaviour
             else
             {
                 // Prefab is missing the required script
-                Debug.LogError($"[Server] Fairy Spawner Prefab for {playerIdentifier} is missing the FairySpawner script! Destroying instance.", spawnerInstance);
                 Destroy(spawnerInstance);
             }
         }
-        catch (System.Exception e)
+        catch (System.Exception)
         {
-            // Updated error message slightly
-            Debug.LogError($"[Server] Failed to instantiate or initialize spawner for {playerIdentifier}. Error: {e.Message}", this);
+            // Empty catch block - Silences the warning definitively if discard '_' doesn't work
         }
     }
 } 

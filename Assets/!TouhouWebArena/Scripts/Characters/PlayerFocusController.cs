@@ -26,17 +26,17 @@ public class PlayerFocusController : NetworkBehaviour
         // Note: Validation happens *before* initial state sync might occur.
         if (playerMovement == null)
         {
-            Debug.LogError($"PlayerFocusController ({OwnerClientId}): PlayerMovement reference not set!", this);
+            
             enabled = false;
         }
         if (hitboxSpriteRenderer == null)
         {
-             Debug.LogWarning($"PlayerFocusController ({OwnerClientId}): Hitbox SpriteRenderer reference not set! Hitbox visual disabled.", this);
+             
              ToggleHitboxVisual(false); // Keep hitbox initially off
         }
         if (scopeStyleController == null)
         {
-            Debug.LogError($"PlayerFocusController ({OwnerClientId}): Scope Style Controller reference not set! Scope Style disabled.", this);
+            
             // Don't toggle active state here, just log the error.
         }
         

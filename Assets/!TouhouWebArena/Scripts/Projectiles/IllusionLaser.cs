@@ -43,18 +43,18 @@ public class IllusionLaser : NetworkBehaviour
             }
             if (ownerRole == PlayerRole.None)
             {
-                Debug.LogWarning($"[Server Laser {NetworkObjectId}] Could not determine owner role for ClientId {OwnerClientId}. Laser may not damage correctly.");
+                
             }
 
             // --- Find Owner Transform --- 
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(OwnerClientId) != null)
             {
                 ownerTransform = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(OwnerClientId).transform;
-                Debug.Log($"[Server Laser {NetworkObjectId}] Found owner transform: {ownerTransform.name}");
+                
             }
             if (ownerTransform == null)
             {
-                Debug.LogError($"[Server Laser {NetworkObjectId}] Could not find owner player transform for ClientId {OwnerClientId}. Laser will not follow.");
+                
             }
             // --------------------------
 
@@ -68,7 +68,7 @@ public class IllusionLaser : NetworkBehaviour
         yield return new WaitForSeconds(duration);
         if (IsServer && IsSpawned) // Check IsServer as only server should despawn
         {
-            Debug.Log($"[Server Laser {NetworkObjectId}] Duration expired. Despawning.");
+            
             NetworkObject netObj = GetComponent<NetworkObject>();
             if (netObj != null) netObj.Despawn(true);
         }
@@ -172,19 +172,19 @@ public class IllusionLaser : NetworkBehaviour
         bool applied = false;
         if (target.TryGetComponent<Fairy>(out Fairy fairy))
         {
-            Debug.Log($"[Server Laser {NetworkObjectId}] Applying {damageAmount} damage to Fairy {target.name}");
+            
             fairy.ApplyDamageServer(damageAmount, ownerRole); 
             applied = true;
         }
         else if (target.TryGetComponent<SpiritController>(out SpiritController spirit))
         {
-            Debug.Log($"[Server Laser {NetworkObjectId}] Applying {damageAmount} damage to Spirit {target.name}");
+            
             spirit.TakeDamage(damageAmount, ownerRole);
             applied = true;
         }
         
         if (!applied) { 
-             Debug.LogWarning($"[Server Laser {NetworkObjectId}] ProcessCollision passed checks for {target.name} but couldn't find Fairy or SpiritController to apply damage.");
+             
         }
     }
 } 

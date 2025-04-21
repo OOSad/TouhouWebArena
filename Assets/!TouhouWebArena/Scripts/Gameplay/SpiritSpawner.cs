@@ -25,27 +25,23 @@ public class SpiritSpawner : NetworkBehaviour
     {
         if (spawnZone1 == null || spawnZone2 == null)
         {
-            Debug.LogError("Spawn zones not assigned in SpiritSpawner.", this);
             enabled = false;
             return false;
         }
 
         if (spiritPrefab == null)
         {
-            Debug.LogError("Spirit prefab not assigned in SpiritSpawner.", this);
             enabled = false;
             return false;
         }
 
         if (spiritPrefab.GetComponent<NetworkObject>() == null)
         {
-            Debug.LogError("Spirit prefab is missing a NetworkObject component.", this);
             enabled = false;
             return false;
         }
         if (spiritPrefab.GetComponent<SpiritController>() == null)
         {
-            Debug.LogError("Spirit prefab is missing a SpiritController component.", this);
             enabled = false;
             return false;
         }
@@ -103,20 +99,13 @@ public class SpiritSpawner : NetworkBehaviour
                     }
                     else
                     {
-                        Debug.LogWarning($"[SpiritSpawner] Could not find NetworkObject for ClientId {playerData.Value.ClientId} ({targetRole}) to aim spirit. Spawning downwards.", this);
                         shouldAim = false; // Fallback to not aiming
                     }
                 }
                 else
                 {
-                    Debug.LogWarning($"[SpiritSpawner] Could not find PlayerData for {targetRole} to aim spirit. Spawning downwards.", this);
                     shouldAim = false; // Fallback to not aiming
                 }
-            }
-            else
-            {
-                Debug.LogWarning("[SpiritSpawner] PlayerDataManager or NetworkManager not found. Cannot aim spirit. Spawning downwards.", this);
-                shouldAim = false; // Fallback to not aiming
             }
             // -----------------------------------------------------------------------
         }

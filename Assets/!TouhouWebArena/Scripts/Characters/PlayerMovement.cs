@@ -199,16 +199,16 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (playerDataManager == null)
         {
-            // Attempt to get the instance if it wasn't set in OnNetworkSpawn (e.g., called before spawn)
+            // Moved the GetInstance call here
             playerDataManager = PlayerDataManager.Instance;
             if (playerDataManager == null)
             {
-                 Debug.LogError($"[PlayerMovement GetPlayerRole] PlayerDataManager instance is null! Cannot determine role for {OwnerClientId}.");
-                 return PlayerRole.None;
+                // Still null after trying to get instance
+                
+                return PlayerRole.None;
             }
         }
 
-        // Use top-level PlayerData
         PlayerData? myData = playerDataManager.GetPlayerData(OwnerClientId);
         if (myData.HasValue)
         {
@@ -216,8 +216,8 @@ public class PlayerMovement : NetworkBehaviour
         }
         else
         {
-             Debug.LogWarning($"[PlayerMovement GetPlayerRole] Could not retrieve PlayerData for Owner {OwnerClientId}. Returning None.");
-             return PlayerRole.None;
+            // Removed the warning log
+            return PlayerRole.None;
         }
     }
 

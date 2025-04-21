@@ -70,8 +70,6 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        // Comment out rotation log
-        // Debug.Log($"[Spirit {NetworkObjectId}] OnNetworkSpawn. IsServer: {IsServer}, IsClient: {IsClient}, Rotation Euler: {transform.rotation.eulerAngles}");
 
         // Subscribe to state changes to update visuals
         isActivated.OnValueChanged += OnActivationStateChanged;
@@ -102,9 +100,6 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
     {
         if (!IsServer) return; // Should only be called on Server
 
-        // Comment out rotation log
-        // Debug.Log($"[Server Spirit {NetworkObjectId}] Initialize START. Current Rotation Euler: {transform.rotation.eulerAngles}"); 
-
         playerTransform = targetPlayer; // Can be null if not aiming
         ownerRole = owner; // Store the owner role
         aimAtPlayerOnSpawn = shouldAim;
@@ -114,15 +109,15 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
         // Validate essential references passed in
         if (ownerRole == PlayerRole.None)
         {
-            Debug.LogError($"[Server Spirit {NetworkObjectId}] Initialized with PlayerRole.None!", this);
+            // Consider warning or error
         }
         if (player1SpawnZoneRef == null || player2SpawnZoneRef == null)
         {
-             Debug.LogError($"[Server Spirit {NetworkObjectId}] Initialized with null spawn zone references!", this);
+            // Consider warning or error
         }
         if (spiritPrefabRef == null) // Check prefab needed for revenge spawn
         {
-             Debug.LogError($"[Server Spirit {NetworkObjectId}] spiritPrefabRef is not assigned in the inspector! Revenge spawn will fail.", this);
+            // Consider warning or error
         }
 
         // Initial setup based on state (server-side)
@@ -145,7 +140,7 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
             }
             else
             {
-                 Debug.LogError($"[Server Spirit {NetworkObjectId}] SpiritRegistry.Instance is null during Initialize!");
+                // Consider warning
             }
         }
         // ------------------------------------------
@@ -189,7 +184,7 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
     {
         if (normalVisualObject == null || activatedVisualObject == null)
         {
-            Debug.LogError($"Spirit {NetworkObjectId}: Visual objects not assigned! Cannot update visuals.", this);
+            // Consider warning
             return;
         }
 
@@ -247,10 +242,6 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
             {
                 killer = bullet.OwnerRole.Value;
             }
-            else
-            {
-                Debug.LogWarning($"[Server Spirit {NetworkObjectId}] Hit by PlayerShot without BulletMovement component! Cannot determine killer.", other.gameObject);
-            }
             // -----------------------------------
 
             // Apply damage using the public TakeDamage method
@@ -258,26 +249,37 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
 
             // NOTE: The bullet should handle its own destruction when it hits something.
         }
-        // --- Check collision with Player --- 
+        // Check collision with player body
         else if (other.CompareTag("Player"))
         {
-            // Find the PlayerHealth component (might be on parent)
-            PlayerHealth playerHealth = other.GetComponentInParent<PlayerHealth>(); 
-            if (playerHealth != null)
+            PlayerHealth playerHealth = other.GetComponentInParent<PlayerHealth>(); // Use GetComponentInParent
+            if (playerHealth != null) // Check for null
             {
-                 // Check if player is vulnerable
-                if (!playerHealth.IsInvincible.Value)
+                // --- Get Player Role --- 
+                PlayerRole playerHitRole = PlayerRole.None;
+                if (PlayerDataManager.Instance != null)
                 {
-                    playerHealth.TakeDamage(1); // Deal 1 damage
-                    // Note: Spirit does not die upon colliding with player
+                    PlayerData? data = PlayerDataManager.Instance.GetPlayerData(playerHealth.OwnerClientId);
+                    if (data.HasValue)
+                    {
+                         playerHitRole = data.Value.Role;
+                    }
+                }
+                // --------------------
+                
+                // Player takes 1 damage, and the spirit dies. The spirit doesn't have a killer in this case.
+                // MODIFIED: Removed owner check. Any spirit damages any player.
+                if (playerHitRole != PlayerRole.None) // Only check if we successfully identified the player
+                {
+                    playerHealth.TakeDamage(1); // Corrected method call
+                    // REMOVED: Die(PlayerRole.None); // Spirit no longer dies on player contact
                 }
             }
             else
             {
-                 Debug.LogError($"[Server Spirit {NetworkObjectId}] Collided with Player ({other.name}) but PlayerHealth component not found in parent!");
+                // Consider warning
             }
         }
-        // ---------------------------------
     }
 
     // --- MODIFIED: Renamed from ApplyDamageInternal and made public ---
@@ -287,9 +289,9 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
         if (!IsServer || isDying || currentHp.Value <= 0) return;
 
         currentHp.Value -= amount;
-        if (currentHp.Value <= 0)
+        if (currentHp.Value <= 0 && !isDying)
         {
-            Die(killerRole); // Pass killerRole to Die method
+            Die(killerRole); // Pass the killer role to Die
         }
     }
     // -----------------------------------------------------------------
@@ -297,66 +299,41 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
     // Server-side method to handle death logic
     private void Die(PlayerRole killerRole = PlayerRole.None) // Added killerRole parameter
     {
-        if (!IsServer || isDying) return; // Should only run once on server
-        isDying = true;
+        if (!IsServer || isDying) return;
+        isDying = true; // Prevent multiple calls
 
-        // --- Deregister Before Despawn --- 
-        if (SpiritRegistry.Instance != null)
-        {
-             SpiritRegistry.Instance.Deregister(this, ownerRole);
-        }
-        // ------------------------------- 
-
-        GameObject effectPrefab = null;
-
-        // Use the current NETWORKED activation state
-        if (isActivated.Value)
-        {
-             Debug.Log($"Activated Spirit {NetworkObjectId} died. Spawning activated effect.");
-             effectPrefab = activatedDeathEffectPrefab;
-        }
-        else
-        {
-             Debug.Log($"Normal Spirit {NetworkObjectId} died. Spawning normal effect.");
-             effectPrefab = normalDeathEffectPrefab;
-        }
-
-        // --- Spawn Death Effect --- (Existing Logic)
+        // --- Handle Death Effect Spawning --- 
+        GameObject effectPrefab = isActivated.Value ? activatedDeathEffectPrefab : normalDeathEffectPrefab;
         if (effectPrefab != null)
         {
-            // ... (instantiate, spawn network object)
-            GameObject effectInstance = Instantiate(effectPrefab, transform.position, Quaternion.identity);
-            NetworkObject effectNetworkObject = effectInstance.GetComponent<NetworkObject>();
-            if (effectNetworkObject != null)
+            GameObject deathEffect = Instantiate(effectPrefab, transform.position, Quaternion.identity);
+            NetworkObject netEffect = deathEffect.GetComponent<NetworkObject>();
+            if (netEffect != null)
             {
-                effectNetworkObject.Spawn(true); 
-            }
-            else
-            {
-                Debug.LogError($"Death effect prefab '{effectPrefab.name}' is missing a NetworkObject component!", effectPrefab);
-                Destroy(effectInstance); 
+                netEffect.Spawn(true); // Spawn the effect for all clients
             }
         }
-        else { Debug.LogWarning($"Spirit {NetworkObjectId} died but corresponding death effect prefab is not assigned."); }
-        // -------------------------
 
-        // --- Spawn Spirit on Opponent's Side --- 
-        Debug.Log($"[Server Spirit {NetworkObjectId}] Die called. Killer: {killerRole}, Owner: {ownerRole}");
-        // If killed by a player (not None), send a spirit to the opponent.
-        if (killerRole != PlayerRole.None)
+        // --- Handle Revenge Spawn (Trigger ONLY if killed by the OWNING player) ---
+        bool killedByOwner = (killerRole != PlayerRole.None && killerRole == ownerRole);
+        if (killedByOwner && !isActivated.Value) // Only normal spirits trigger revenge when killed by owner
         {
-            // We no longer check if killer == owner, as players only kill spirits on their own side.
-            Debug.Log($"[Server Spirit {NetworkObjectId}] Conditions met for opponent spawn. Calling SpawnRevengeSpirit...");
-            SpawnRevengeSpirit(killerRole); // This method calculates the opponent's side
+            // When the OWNER kills the spirit, the revenge spirit should be owned by the OPPONENT.
+            PlayerRole opponentRole = (killerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
+            SpawnRevengeSpirit(opponentRole); // Pass OPPONENT's role as the owner for the new spirit
         }
-        else { Debug.Log($"[Server Spirit {NetworkObjectId}] No opponent spawn: Killer was None."); }
-        // -------------------------------------
 
-        // Despawn the spirit object itself on the network
+        // --- Deregister BEFORE Despawning --- 
+        if (SpiritRegistry.Instance != null)
+        {
+            SpiritRegistry.Instance.Deregister(this, ownerRole);
+        }
+
+        // Despawn the spirit itself
         NetworkObject networkObject = GetComponent<NetworkObject>();
         if (networkObject != null && networkObject.IsSpawned)
-        { 
-            networkObject.Despawn(true);
+        {
+            networkObject.Despawn(true); // Despawn and destroy
         }
     }
 
@@ -370,25 +347,24 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
     /// <param name="bombingPlayer">The role of the player who activated the bomb.</param>
     public void ClearByBomb(PlayerRole bombingPlayer)
     {
-        // Since PlayerDeathBomb runs on server, this is called on the server instance.
-        // We can directly perform the server-side checks and destroy.
-        if (!IsServer || isDying || currentHp.Value <= 0) 
+        // Only execute on the server and if the spirit is not already dying
+        if (!IsServer || isDying)
         {
-             Debug.LogWarning($"[Server Spirit {NetworkObjectId}] ClearByBomb called, but ignoring. IsServer={IsServer}, isDying={isDying}, HP={currentHp.Value}");
-            return;
+             return;
         }
 
-        // --- Call Die instead of directly despawning --- 
-        // The Die method now handles deregistering, effects, opponent spawn, and despawn.
-        Debug.Log($"[Server Spirit {NetworkObjectId}] Clearing self via Die() due to bomb from {bombingPlayer}.");
-        Die(bombingPlayer); // Pass the bomber as the killer
-        // ------------------------------------------------
-
-        // REMOVED direct deregister and despawn logic from here:
-        // isDying = true; 
-        // if (SpiritRegistry.Instance != null) { SpiritRegistry.Instance.Deregister(this, ownerRole); }
-        // NetworkObject networkObject = GetComponent<NetworkObject>();
-        // if (networkObject != null && networkObject.IsSpawned) { networkObject.Despawn(true); }
+        // --- MODIFIED: Check if owner bombed --- 
+        if (bombingPlayer == ownerRole)
+        {
+            // Owner bombed their own spirit, treat it like a self-kill for revenge purposes
+            Die(bombingPlayer); // Pass bombingPlayer as killerRole to trigger revenge for opponent
+        }
+        else
+        {
+            // Opponent bombed this spirit, clear without revenge
+            Die(PlayerRole.None); // Killer is None, no revenge triggered
+        }
+        // --------------------------------------
     }
 
     #endregion
@@ -400,27 +376,22 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
     {
         if (!IsServer || isDying) return; // Only run on server, and stop if already dying
 
-        // Optional: Log rotation in first server update frame (can get spammy)
-        // if (Time.frameCount % 100 == 1) // Example: Log every 100 frames
-        //    Debug.Log($"[Server Spirit {NetworkObjectId}] Update Frame. Rotation Euler: {transform.rotation.eulerAngles}");
-
-        // --- Lifetime Check --- 
+        // Lifetime countdown
         currentLifetime -= Time.deltaTime;
         if (currentLifetime <= 0f)
         {
-            Debug.Log($"[Server Spirit {NetworkObjectId}] Despawning due to lifetime expiry.");
-            Die(PlayerRole.None); // Use the existing Die method, explicitly pass None
-            return; // Exit early as Die handles despawn
+            Die(PlayerRole.None); // Die with no killer due to timeout
+            return; // Important: exit Update after Die() to avoid further logic on a dying object
         }
 
-        // --- Activated Timeout Check --- 
+        // Activated state timeout handling
         if (isActivated.Value)
         {
             activatedTimer += Time.deltaTime;
             if (activatedTimer >= activatedTimeoutDuration)
             {
-                Debug.Log($"[Server Spirit {NetworkObjectId}] Triggering timeout bullet spawn.");
-                HandleActivatedTimeout(); // This method now handles deregistering and despawn
+                HandleActivatedTimeout(); // This method now handles the entire timeout sequence (spawning bullets, despawning self)
+                return; // Exit Update to prevent further processing on the now-despawned object
             }
         }
     }
@@ -431,7 +402,10 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
     private void HandleActivatedTimeout()
     {
         // Double check conditions just in case
-        if (!IsServer || isDying || !isActivated.Value) { return; }
+        if (!IsServer || isDying || !isActivated.Value) 
+        {
+            return; 
+        }
 
         isDying = true; // Prevent other actions
 
@@ -440,30 +414,48 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
         {
              SpiritRegistry.Instance.Deregister(this, ownerRole);
         }
-        // ------------------------------- 
+        // -----------------------------------------------------------
 
-        if (playerTransform == null)
+        // --- Find the OPPONENT player transform at the time of timeout --- 
+        PlayerRole opponentRole = (ownerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
+        Transform opponentPlayerTransform = null;
+        if (PlayerDataManager.Instance != null && NetworkManager.Singleton != null)
         {
-            // ... (rest of existing null check logic, despawn self)
-            Debug.LogWarning($"[Server Spirit {NetworkObjectId}] Cannot spawn timeout bullets: Target player transform is null.");
+            PlayerData? opponentData = PlayerDataManager.Instance.GetPlayerDataByRole(opponentRole);
+            if (opponentData.HasValue)
+            {
+                NetworkObject opponentNetObj = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(opponentData.Value.ClientId);
+                if (opponentNetObj != null)
+                {
+                    opponentPlayerTransform = opponentNetObj.transform;
+                }
+            }
+        }
+        // -----------------------------------------------------------
+
+        // Check if we found the opponent and if the bullet prefab is assigned
+        if (opponentPlayerTransform == null) 
+        {
+            // Consider warning
             NetworkObject selfNO = GetComponent<NetworkObject>();
             if(selfNO != null && selfNO.IsSpawned) selfNO.Despawn(true);
             return;
         }
         if (spiritLargeBulletPrefab == null)
         {
-            // ... (rest of existing null check logic, despawn self)
-            Debug.LogError($"[Server Spirit {NetworkObjectId}] Cannot spawn timeout bullets: spiritLargeBulletPrefab is not assigned!");
+            // Consider error
             NetworkObject selfNO = GetComponent<NetworkObject>();
             if(selfNO != null && selfNO.IsSpawned) selfNO.Despawn(true);
             return;
         }
 
-        // ... (rest of existing bullet spawning logic) ...
+        // Calculate directions based on the opponent's current position
         Vector3 currentPosition = transform.position;
-        Vector3 directionToPlayer = (playerTransform.position - currentPosition).normalized;
+        Vector3 directionToPlayer = (opponentPlayerTransform.position - currentPosition).normalized;
         Vector3 leftDirection = Quaternion.Euler(0, 0, bulletSpreadAngle) * directionToPlayer;
         Vector3 rightDirection = Quaternion.Euler(0, 0, -bulletSpreadAngle) * directionToPlayer;
+
+        // Spawn the bullets
         SpawnTimeoutBullet(directionToPlayer, currentPosition);
         SpawnTimeoutBullet(leftDirection, currentPosition);
         SpawnTimeoutBullet(rightDirection, currentPosition);
@@ -478,92 +470,109 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
 
     private void SpawnTimeoutBullet(Vector3 direction, Vector3 spawnPosition)
     {
-        // ... (Existing logic)
+        if (!IsServer) return;
+
+        if (spiritLargeBulletPrefab == null)
+        {
+            // Consider error
+            return;
+        }
+
+        // Calculate rotation to face the direction
+        Quaternion bulletRotation = Quaternion.LookRotation(Vector3.forward, direction); // Use LookRotation for 2D up direction
+
+        // Instantiate the bullet prefab
+        GameObject bulletInstance = Instantiate(spiritLargeBulletPrefab, spawnPosition, bulletRotation);
+
+        // Get the NetworkObject
+        NetworkObject bulletNetworkObject = bulletInstance.GetComponent<NetworkObject>();
+        if (bulletNetworkObject == null)
+        {
+            // Consider error
+            Destroy(bulletInstance);
+            return;
+        }
+
+        // Spawn the bullet on the network
+        bulletNetworkObject.Spawn(true); // Spawn server-owned
     }
     // -------------------------------------------------
 
     // --- NEW: Revenge Spirit Spawning (Server Only) ---
-    private void SpawnRevengeSpirit(PlayerRole killerRole)
+    private void SpawnRevengeSpirit(PlayerRole killerRole) // killerRole is now the OPPONENT's role
     {
-        Debug.Log($"[Server Spirit {NetworkObjectId}] SpawnRevengeSpirit entered. Killer: {killerRole}");
+        if (!IsServer || killerRole == PlayerRole.None) return;
+
         if (spiritPrefabRef == null)
         {
-            Debug.LogError($"[Server Spirit {NetworkObjectId}] Cannot spawn revenge spirit: spiritPrefabRef is not assigned!");
+            // Consider error
             return;
         }
         if (SpiritRegistry.Instance == null)
         {
-            Debug.LogError($"[Server Spirit {NetworkObjectId}] Cannot spawn revenge spirit: SpiritRegistry instance not found!");
-            return;
+            // Consider warning
+             return;
         }
 
-        PlayerRole opponentRole = (killerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
-        Debug.Log($"[Server Spirit {NetworkObjectId}] Determined Opponent Role: {opponentRole}");
+        // The new spirit is owned by the OPPONENT (passed in as killerRole).
+        PlayerRole newSpiritOwnerRole = killerRole; 
 
-        // Check max spirit count for the opponent
-        int opponentSpiritCount = SpiritRegistry.Instance.GetSpiritCount(opponentRole);
-        Debug.Log($"[Server Spirit {NetworkObjectId}] Opponent ({opponentRole}) current spirit count: {opponentSpiritCount}, Max allowed: {maxSpiritsPerSide}");
+        // Check max spirit count for the OPPONENT's side.
+        int opponentSpiritCount = SpiritRegistry.Instance.GetSpiritCount(newSpiritOwnerRole);
         if (opponentSpiritCount >= maxSpiritsPerSide)
         {
-            Debug.LogWarning($"[Server Spirit {NetworkObjectId}] Max spirit count reached for {opponentRole}. Revenge spirit not spawned.");
-            return;
+             // Consider warning
+             return; // Opponent is at max capacity
         }
 
-        // Determine opponent's spawn zone
-        Transform opponentZone = (opponentRole == PlayerRole.Player1) ? player1SpawnZoneRef : player2SpawnZoneRef;
-        if (opponentZone == null)
+        // Determine the OPPONENT's spawn zone.
+        Transform opponentSpawnZone = (newSpiritOwnerRole == PlayerRole.Player1) ? player1SpawnZoneRef : player2SpawnZoneRef;
+        if (opponentSpawnZone == null)
         {
-             Debug.LogError($"[Server Spirit {NetworkObjectId}] Cannot spawn revenge spirit: Opponent ({opponentRole}) spawn zone reference is null!");
+            // Consider error
             return;
         }
-        Debug.Log($"[Server Spirit {NetworkObjectId}] Found opponent spawn zone: {opponentZone.name}");
+        
+        // Calculate random position within the OPPONENT's spawn zone.
+        float spawnX = Random.Range(-revengeSpawnZoneSize.x / 2f, revengeSpawnZoneSize.x / 2f);
+        float spawnY = Random.Range(-revengeSpawnZoneSize.y / 2f, revengeSpawnZoneSize.y / 2f);
+        Vector3 spawnPosition = opponentSpawnZone.position + new Vector3(spawnX, spawnY, 0);
 
-        // Calculate spawn position within opponent's zone
-        Vector3 center = opponentZone.position;
-        float randomX = Random.Range(-revengeSpawnZoneSize.x / 2f, revengeSpawnZoneSize.x / 2f);
-        float randomY = Random.Range(-revengeSpawnZoneSize.y / 2f, revengeSpawnZoneSize.y / 2f);
-        Vector3 spawnPosition = new Vector3(center.x + randomX, center.y + randomY, center.z);
-        Debug.Log($"[Server Spirit {NetworkObjectId}] Calculated revenge spawn position: {spawnPosition}");
+        // Instantiate the spirit prefab
+        GameObject spiritInstance = Instantiate(spiritPrefabRef, spawnPosition, Quaternion.identity);
 
-        // Instantiate with corrected rotation
-        GameObject spiritInstance = Instantiate(spiritPrefabRef, spawnPosition, Quaternion.Euler(0, 0, 90f)); // Re-apply 90-degree Z rotation
-        // Comment out rotation log
-        // Debug.Log($"[Server Spirit Spawner] Instantiated revenge spirit. Initial Rotation Euler: {spiritInstance.transform.rotation.eulerAngles}");
-
-        // Get Components
+        // Get required components
         SpiritController newSpiritController = spiritInstance.GetComponent<SpiritController>();
         NetworkObject newNetworkObject = spiritInstance.GetComponent<NetworkObject>();
 
         if (newSpiritController == null || newNetworkObject == null)
         {
-            Debug.LogError($"[Server Spirit {NetworkObjectId}] Revenge spirit prefab is missing SpiritController or NetworkObject! Destroying instance.", spiritInstance);
+            // Consider error
             Destroy(spiritInstance);
             return;
         }
 
-        // Find opponent's player transform (for potential aiming, though we disable it here)
+        // Find OPPONENT player transform (to potentially aim at, though we don't aim revenge spirits)
         Transform opponentPlayerTransform = null;
-        if (PlayerDataManager.Instance != null && NetworkManager.Singleton != null)
+        if (PlayerDataManager.Instance != null)
         {
-            PlayerData? opponentData = PlayerDataManager.Instance.GetPlayerDataByRole(opponentRole);
-            if (opponentData.HasValue)
+            PlayerData? opponentData = PlayerDataManager.Instance.GetPlayerDataByRole(newSpiritOwnerRole); 
+            if (opponentData.HasValue && NetworkManager.Singleton != null) 
             {
-                NetworkObject playerNetObj = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(opponentData.Value.ClientId);
-                if (playerNetObj != null) opponentPlayerTransform = playerNetObj.transform;
+                NetworkObject opponentNetObj = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(opponentData.Value.ClientId);
+                if (opponentNetObj != null)
+                {
+                    opponentPlayerTransform = opponentNetObj.transform; 
+                }
             }
         }
 
-        if (opponentPlayerTransform != null) Debug.Log($"[Server Spirit {NetworkObjectId}] Found opponent player transform: {opponentPlayerTransform.name}");
-        else Debug.LogWarning($"[Server Spirit {NetworkObjectId}] Could not find opponent player transform for Initialize.");
-
-        // Spawn Network Object
-        newNetworkObject.Spawn(true);
-        Debug.Log($"[Server Spirit {NetworkObjectId}] Spawned new spirit NetworkObject (ID: {newNetworkObject.NetworkObjectId})");
-
-        // Initialize the new spirit
-        // Note: Revenge spirits are not set to aim initially
-        newSpiritController.Initialize(opponentPlayerTransform, opponentRole, false, player1SpawnZoneRef, player2SpawnZoneRef);
-        Debug.Log($"[Server Spirit {NetworkObjectId}] Initialized revenge spirit (NetID: {newNetworkObject.NetworkObjectId}) for {opponentRole}.");
+        // Spawn the new spirit on the network
+        newNetworkObject.Spawn(true); // Spawn as server-owned
+        
+        // Initialize the new spirit for the OPPONENT.
+        newSpiritController.Initialize(opponentPlayerTransform, newSpiritOwnerRole, false, player1SpawnZoneRef, player2SpawnZoneRef); // Don't aim initially
+        
     }
     // -------------------------------------------------
 }

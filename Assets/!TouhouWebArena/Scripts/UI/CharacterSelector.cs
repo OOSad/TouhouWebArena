@@ -33,7 +33,6 @@ public class CharacterSelector : NetworkBehaviour
         playerDataManager = PlayerDataManager.Instance;
         if (playerDataManager == null)
         {
-            Debug.LogError("PlayerDataManager instance not found!");
             this.enabled = false; // Disable script if manager is missing
             return;
         }
@@ -51,10 +50,6 @@ public class CharacterSelector : NetworkBehaviour
             // Trigger an initial update in case the event fired before we subscribed
             HandlePlayerDataUpdated();
         }
-        else
-        {
-            Debug.LogError("Cannot subscribe to PlayerDataManager events: Instance is null.");
-        }
     }
 
     private void SetupButtonListeners()
@@ -69,7 +64,7 @@ public class CharacterSelector : NetworkBehaviour
             }
             else
             {
-                Debug.LogWarning("Character button mapping is incomplete in the Inspector.");
+                
             }
         }
     }
@@ -87,7 +82,7 @@ public class CharacterSelector : NetworkBehaviour
     private void RequestSetCharacterServerRpc(string characterName, ServerRpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
-        Debug.Log($"Server received character selection '{characterName}' from client {clientId}");
+        
 
         if (playerDataManager != null)
         {
@@ -105,7 +100,7 @@ public class CharacterSelector : NetworkBehaviour
         }
         else
         {
-             Debug.LogError("PlayerDataManager is null on server during RPC.");
+             
         }
     }
 
@@ -158,7 +153,7 @@ public class CharacterSelector : NetworkBehaviour
         // Wait a fraction of a second to allow client UI updates
         yield return new WaitForSeconds(0.1f); 
 
-        Debug.Log("Both players ready. Loading Gameplay Scene after delay...");
+        
         // Ensure NetworkManager is still valid before loading
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
         {
@@ -166,7 +161,7 @@ public class CharacterSelector : NetworkBehaviour
         }
         else
         {
-            Debug.LogError("NetworkManager or SceneManager became invalid before delayed scene load.");
+            
         }
     }
 

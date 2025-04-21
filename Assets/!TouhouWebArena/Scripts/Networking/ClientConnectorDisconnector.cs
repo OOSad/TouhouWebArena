@@ -115,11 +115,6 @@ public class ClientConnectorDisconnector : MonoBehaviour
             if (NetworkManager.Singleton.StartClient())
             {
                 // Note: We'll let the callbacks handle the state change
-                Debug.Log("Client connection attempt started");
-            }
-            else
-            {
-                Debug.LogError("Failed to start client connection");
             }
         }
     }
@@ -130,7 +125,6 @@ public class ClientConnectorDisconnector : MonoBehaviour
         {
             NetworkManager.Singleton.Shutdown();
             // Note: We'll let the callbacks handle the state change
-            Debug.Log("Client disconnection initiated");
         }
     }
     
@@ -140,7 +134,6 @@ public class ClientConnectorDisconnector : MonoBehaviour
         if (clientId == NetworkManager.Singleton.LocalClientId)
         {
             isClientConnected = true;
-            Debug.Log("Client connected successfully with ID: " + clientId);
             UpdateButtonText();
         }
     }
@@ -150,7 +143,6 @@ public class ClientConnectorDisconnector : MonoBehaviour
         // This will be called when disconnected for any reason,
         // including server shutdown or local disconnect
         isClientConnected = false;
-        Debug.Log("Client disconnected with ID: " + clientId);
         UpdateButtonText();
     }
     

@@ -30,7 +30,7 @@ public class DelayedActionProcessor : MonoBehaviour
         // Basic validation
         if (_shockwavePrefab == null)
         {
-            Debug.LogWarning("[DelayedActionProcessor] Shockwave prefab is null! Cannot spawn effect.", this);
+            
         }
 
         StartCoroutine(RunDelayedActions());
@@ -67,7 +67,7 @@ public class DelayedActionProcessor : MonoBehaviour
         }
         else
         {
-            Debug.LogError("[DelayedActionProcessor] Shockwave prefab is missing NetworkObject component!", this);
+            
             Destroy(shockwaveInstance); // Clean up the non-networked instance
         }
     }
@@ -87,7 +87,7 @@ public class DelayedActionProcessor : MonoBehaviour
         }
         else
         {
-            Debug.LogError("[DelayedActionProcessor] FairyRegistry instance not found! Cannot trigger next chain link.");
+            
         }
     }
 } 

@@ -25,7 +25,7 @@ public class SplineWalker : NetworkBehaviour
         ownerFairy = GetComponentInParent<Fairy>();
         if (ownerFairy == null)
         {
-            Debug.LogError("SplineWalker cannot find Fairy component in parent!", this);
+            
             enabled = false;
         }
         // Disable self initially, wait for Fairy script to initialize path
@@ -49,7 +49,7 @@ public class SplineWalker : NetworkBehaviour
         }
         else
         {
-            Debug.LogError($"[{NetworkManager.Singleton.LocalClientId} Walker NetId:{NetworkObjectId}] InitializeSplineInternal called with NULL path! Walker remains disabled.");
+            
             this.enabled = false; // Ensure it stays disabled
         }
     }

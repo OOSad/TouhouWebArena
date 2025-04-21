@@ -20,7 +20,6 @@ public class FairyPathInitializer : NetworkBehaviour
         splineWalker = GetComponent<SplineWalker>();
         if (splineWalker == null)
         {
-             Debug.LogError($"[FairyPathInitializer NetId:{NetworkObjectId}] SplineWalker component is missing!");
         }
     }
 
@@ -51,7 +50,6 @@ public class FairyPathInitializer : NetworkBehaviour
     {
         if (!IsServer)
         {
-            Debug.LogWarning("[FairyPathInitializer] SetPathInfoOnServer called on a non-server instance.");
             return;
         }
         pathOwnerPlayerIndex.Value = ownerIndex;
@@ -75,7 +73,6 @@ public class FairyPathInitializer : NetworkBehaviour
         if (PathManager.Instance == null)
         {
             // Logged error, maybe retry later? Or maybe PathManager needs earlier initialization
-            Debug.LogError($"[FairyPathInitializer NetId:{NetworkObjectId}] PathManager.Instance is null! Cannot set path.");
             return;
         }
 
@@ -83,7 +80,6 @@ public class FairyPathInitializer : NetworkBehaviour
 
         if (chosenPath == null)
         {
-             Debug.LogError($"[FairyPathInitializer NetId:{NetworkObjectId}] Could not find path for Owner:{pathOwnerPlayerIndex.Value}, PathIdx:{pathIndex.Value} via PathManager!");
              return;
         }
 
