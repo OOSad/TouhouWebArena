@@ -120,19 +120,19 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
             // Consider warning or error
         }
 
-        // Initial setup based on state (server-side)
+        // --- Reset State for Pooling --- 
+        isDying = false; // CRITICAL: Reset dying flag
         currentHp.Value = normalMaxHp;
         isActivated.Value = false; // Explicitly set initial state
         activatedTimer = 0f; // Reset timer on init
+        currentLifetime = maxLifetime; // Reset lifetime timer
+        // -------------------------------        
 
         // Set initial velocity (server-side)
         SetInitialVelocity();
 
-        // Initialize lifetime timer on server
-        currentLifetime = maxLifetime;
-
         // --- Register with Registry (Server Only) --- 
-        if (IsServer)
+        if (IsServer) // Check IsServer here, although Initialize should only be called on server
         {
             if (SpiritRegistry.Instance != null)
             {
@@ -323,18 +323,23 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
             SpawnRevengeSpirit(opponentRole); // Pass OPPONENT's role as the owner for the new spirit
         }
 
-        // --- Deregister BEFORE Despawning --- 
+        // --- Deregister from Registry --- 
         if (SpiritRegistry.Instance != null)
         {
-            SpiritRegistry.Instance.Deregister(this, ownerRole);
+            SpiritRegistry.Instance.Deregister(this, ownerRole); 
         }
+        // ---------------------------------
 
-        // Despawn the spirit itself
-        NetworkObject networkObject = GetComponent<NetworkObject>();
-        if (networkObject != null && networkObject.IsSpawned)
+        // --- Return to Pool instead of Despawning --- 
+        if (NetworkObject != null)
         {
-            networkObject.Despawn(true); // Despawn and destroy
+            NetworkObjectPool.Instance.ReturnNetworkObject(this.NetworkObject);
         }
+        else if (gameObject != null) // Fallback if NetworkObject somehow null
+        {
+            Destroy(gameObject);
+        }
+        // --------------------------------------------
     }
 
     #endregion
@@ -538,19 +543,37 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
         float spawnY = Random.Range(-revengeSpawnZoneSize.y / 2f, revengeSpawnZoneSize.y / 2f);
         Vector3 spawnPosition = opponentSpawnZone.position + new Vector3(spawnX, spawnY, 0);
 
-        // Instantiate the spirit prefab
-        GameObject spiritInstance = Instantiate(spiritPrefabRef, spawnPosition, Quaternion.identity);
-
-        // Get required components
-        SpiritController newSpiritController = spiritInstance.GetComponent<SpiritController>();
-        NetworkObject newNetworkObject = spiritInstance.GetComponent<NetworkObject>();
-
-        if (newSpiritController == null || newNetworkObject == null)
+        // --- Pool Integration --- 
+        PoolableObjectIdentity identity = spiritPrefabRef.GetComponent<PoolableObjectIdentity>();
+        if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
         {
-            // Consider error
-            Destroy(spiritInstance);
+            Debug.LogError($"[SpiritController] Revenge Spawn: Spirit prefab ref '{spiritPrefabRef.name}' missing identity/ID!", this);
             return;
         }
+        string prefabID = identity.PrefabID;
+        NetworkObject pooledNetworkObject = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
+        if (pooledNetworkObject == null)
+        {
+            Debug.LogError($"[SpiritController] Revenge Spawn: Failed to get Spirit '{prefabID}' from pool.", this);
+            return;
+        }
+        // ----------------------
+
+        // Get required components from pooled object
+        SpiritController newSpiritController = pooledNetworkObject.GetComponent<SpiritController>();
+        // NetworkObject newNetworkObject = pooledNetworkObject; // Already have reference
+
+        if (newSpiritController == null)
+        {
+            Debug.LogError("[SpiritController] Revenge Spawn: Pooled object missing SpiritController! Returning to pool.", this);
+            NetworkObjectPool.Instance.ReturnNetworkObject(pooledNetworkObject); // Return broken object
+            return;
+        }
+
+        // Position and Activate pooled object
+        pooledNetworkObject.transform.position = spawnPosition;
+        pooledNetworkObject.transform.rotation = Quaternion.identity;
+        pooledNetworkObject.gameObject.SetActive(true);
 
         // Find OPPONENT player transform (to potentially aim at, though we don't aim revenge spirits)
         Transform opponentPlayerTransform = null;
@@ -567,12 +590,11 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
             }
         }
 
-        // Spawn the new spirit on the network
-        newNetworkObject.Spawn(true); // Spawn as server-owned
+        // Spawn the new spirit on the network FIRST
+        pooledNetworkObject.Spawn(false); 
         
-        // Initialize the new spirit for the OPPONENT.
+        // Initialize the new spirit AFTER spawning
         newSpiritController.Initialize(opponentPlayerTransform, newSpiritOwnerRole, false, player1SpawnZoneRef, player2SpawnZoneRef); // Don't aim initially
-        
     }
     // -------------------------------------------------
 }

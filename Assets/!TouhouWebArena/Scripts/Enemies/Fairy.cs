@@ -305,8 +305,8 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
         );
         // -------------------------------------------
 
-        // --- Spawn Regular Bullet on Opponent Side --- 
-        if (this.ownerRole != PlayerRole.None) 
+        // --- Spawn Regular Bullet on Opponent Side (Only if killed by player) --- 
+        if (this.ownerRole != PlayerRole.None && killerRole != PlayerRole.None)
         {
             if (StageSmallBulletSpawner.Instance != null)
             {
@@ -318,7 +318,7 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
                 
             }
         }
-        // -----------------------------------------
+        // ------------------------------------------------------------------
 
         // --- Extra Attack Trigger Logic --- 
         if (isExtraAttackTrigger && killerRole != PlayerRole.None) 
@@ -444,25 +444,16 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
     /// <param name="bombingPlayer">The role of the player who activated the bomb.</param>
     public void ClearByBomb(PlayerRole bombingPlayer)
     {
-        // --- DIAGNOSTIC LOG: ClearByBomb Called --- 
-        
+        // Only execute on the server and if the spirit is not already dying
+        if (!IsServer || isDying)
+        {
+             return;
+        }
 
-        // Ensure this runs on the server
-        if (!IsServer) 
-        { 
-            
-            return; 
-        }
-        
-        // Check isDying flag
-        if (isDying) 
-        { 
-            
-            return; 
-        }
-        
-        // Trigger death effects without a killer role (or maybe attribute to bomber?)
-        Die(PlayerRole.None); 
+        // Call Die, passing the bombingPlayer as the killer.
+        // This ensures the bullet spawn check (killer != None) passes,
+        // and the revenge spawn check (killedByOwner) works correctly.
+        Die(bombingPlayer);
     }
 
     // ServerRpc called by ClearByBomb() - NO LONGER NEEDED

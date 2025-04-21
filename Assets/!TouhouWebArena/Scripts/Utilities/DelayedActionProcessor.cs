@@ -48,8 +48,12 @@ public class DelayedActionProcessor : MonoBehaviour
             SpawnShockwaveEffect();
         }
 
-        // --- Trigger Chain Reaction (Next Fairy) ---
-        TriggerNextFairyInLine();
+        // --- Trigger Chain Reaction (Next Fairy) ONLY if killed by a player --- 
+        if (_killerRole != PlayerRole.None)
+        {
+            TriggerNextFairyInLine();
+        }
+        // ------------------------------------------------------------------
 
         // Destroy this processor object
         Destroy(gameObject);

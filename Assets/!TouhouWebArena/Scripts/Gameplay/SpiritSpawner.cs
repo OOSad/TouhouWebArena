@@ -71,12 +71,34 @@ public class SpiritSpawner : NetworkBehaviour
         float randomY = Random.Range(-spawnZoneSize.y / 2f, spawnZoneSize.y / 2f);
         Vector3 spawnPosition = new Vector3(center.x + randomX, center.y + randomY, center.z);
 
-        // Instantiate locally on server
-        GameObject spiritInstance = Instantiate(spiritPrefab, spawnPosition, Quaternion.identity);
+        // --- Pool Integration --- 
+        if (spiritPrefab == null) return; // Should be validated earlier
 
-        // Get components
-        SpiritController spiritController = spiritInstance.GetComponent<SpiritController>();
-        NetworkObject networkObject = spiritInstance.GetComponent<NetworkObject>();
+        PoolableObjectIdentity identity = spiritPrefab.GetComponent<PoolableObjectIdentity>();
+        if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
+        {
+            Debug.LogError($"[SpiritSpawner] Spirit prefab '{spiritPrefab.name}' is missing PoolableObjectIdentity or PrefabID! Cannot spawn.", this);
+            return;
+        }
+        string prefabID = identity.PrefabID;
+
+        // Get object from pool
+        NetworkObject pooledNetworkObject = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
+        if (pooledNetworkObject == null)
+        {
+            Debug.LogError($"[SpiritSpawner] Failed to get Spirit with PrefabID '{prefabID}' from pool.", this);
+            return;
+        }
+        // ----------------------
+
+        // Get components from pooled object
+        SpiritController spiritController = pooledNetworkObject.GetComponent<SpiritController>();
+        // NetworkObject networkObject = pooledNetworkObject; // Already have reference
+
+        // Position and Activate (BEFORE Initialize and Spawn)
+        pooledNetworkObject.transform.position = spawnPosition;
+        pooledNetworkObject.transform.rotation = Quaternion.identity;
+        pooledNetworkObject.gameObject.SetActive(true); 
 
         // Determine target player and aim chance
         PlayerRole targetRole = (zoneCenter == spawnZone1) ? PlayerRole.Player1 : PlayerRole.Player2;
@@ -110,13 +132,11 @@ public class SpiritSpawner : NetworkBehaviour
             // -----------------------------------------------------------------------
         }
 
-        // Spawn network object
-        networkObject.Spawn(true);
+        // Spawn network object FIRST
+        pooledNetworkObject.Spawn(false); 
 
         // Initialize the spirit AFTER spawning
-        // Pass the targetRole (owner), player transform, aim status, and zone references
         spiritController.Initialize(targetPlayerTransform, targetRole, shouldAim, spawnZone1, spawnZone2);
-
     }
 
     private void OnDrawGizmosSelected()
