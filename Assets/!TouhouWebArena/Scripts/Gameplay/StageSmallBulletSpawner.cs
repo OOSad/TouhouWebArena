@@ -119,36 +119,55 @@ public class StageSmallBulletSpawner : NetworkBehaviour
         }
         // --------------------------
 
+        // --- Get Prefab ID --- 
+        PoolableObjectIdentity identity = prefabToSpawn.GetComponent<PoolableObjectIdentity>();
+        if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
+        {
+             Debug.LogError($"Stage bullet prefab '{prefabToSpawn.name}' is missing PoolableObjectIdentity or PrefabID. Cannot get from pool.", prefabToSpawn);
+             return;
+        }
+        string prefabID = identity.PrefabID;
+
         // --- Calculate Spawn Position --- 
         Vector3 center = targetZone.position;
         float randomX = Random.Range(-spawnZoneSize.x / 2f, spawnZoneSize.x / 2f);
         float randomY = Random.Range(-spawnZoneSize.y / 2f, spawnZoneSize.y / 2f);
-        // Use the zone's z position for the bullet's z position
         Vector3 spawnPosition = new Vector3(center.x + randomX, center.y + randomY, center.z);
         // ------------------------------
 
-        // --- Instantiate and Spawn --- 
-        // Instantiate the bullet locally on the server first
-        GameObject bulletInstance = Instantiate(prefabToSpawn, spawnPosition, Quaternion.identity);
+        // --- Get from Pool, Position, Activate --- 
+        NetworkObject networkObject = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
 
-        // Get components needed before spawn
-        StageSmallBulletMoverScript bulletMover = bulletInstance.GetComponent<StageSmallBulletMoverScript>();
-        NetworkObject networkObject = bulletInstance.GetComponent<NetworkObject>();
+        if (networkObject == null)
+        {
+             Debug.LogError($"Failed to get stage bullet object with ID '{prefabID}' from NetworkObjectPool.", this);
+             return;
+        }
+
+        networkObject.transform.position = spawnPosition;
+        networkObject.transform.rotation = Quaternion.identity; // Assuming stage bullets don't need specific rotation
+        networkObject.gameObject.SetActive(true);
+        // -------------------------------------------
+
+        // Get components needed AFTER activation/positioning
+        StageSmallBulletMoverScript bulletMover = networkObject.GetComponent<StageSmallBulletMoverScript>();
 
         // Error checking before spawn
         if (bulletMover == null)
         {
-            Destroy(bulletInstance);
-            return;
-        }
-        if (networkObject == null)
-        {
-            Destroy(bulletInstance);
+            Debug.LogError($"Pooled stage bullet '{networkObject.name}' is missing StageSmallBulletMoverScript! Returning to pool.", networkObject.gameObject);
+             NetworkObjectPool.Instance.ReturnNetworkObject(networkObject); // Return immediately
             return;
         }
 
         // Spawn the instance across the network first
         networkObject.Spawn(true); // true = despawn with server
+
+         // Set parent AFTER spawning
+        if (NetworkObjectPool.Instance != null)
+        {
+            networkObject.transform.SetParent(NetworkObjectPool.Instance.transform, worldPositionStays: false);
+        }
 
         // Set Target Player Role AFTER SPAWN 
         bulletMover.TargetPlayerRole.Value = targetRole;

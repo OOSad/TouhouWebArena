@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 
+[RequireComponent(typeof(PoolableObjectIdentity))] // Ensure identity component exists
 public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
 {
     [Header("Movement & Lifetime")] // Added header for clarity
@@ -25,9 +26,13 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
     // -----------------------
 
     private float currentLifetime;
+    private bool isReturning = false; // Flag to prevent double returns
 
     public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn();
+        isReturning = false; // Reset flag
+
         // Movement logic and velocity calculation should only run on the server
         if (!IsServer) return;
 
@@ -59,15 +64,29 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
         currentLifetime = maxLifetime;
     }
 
+    // --- Add OnNetworkDespawn --- 
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+        isReturning = false; // Reset flag
+    }
+    // --------------------------
+
+    // --- Add OnDisable --- 
+    void OnDisable()
+    {
+        // Also reset flag when disabled (e.g., returned to pool)
+        isReturning = false;
+    }
+    // ---------------------
+
     // --- Public getter for speed (used by SpiritController) ---
     public float GetMinSpeed() { return minSpeed; }
     // ---------------------------------------------------------
 
     private void Update()
     {
-        // Only the server calculates and applies movement
-        // NetworkTransform will sync the position to clients
-        if (!IsServer) return;
+        if (!IsServer || isReturning) return; // Ignore if not server or already returning
 
         // Move using the velocity stored in the NetworkVariable
         transform.Translate(SyncedVelocity.Value * Time.deltaTime, Space.World);
@@ -76,19 +95,15 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
         currentLifetime -= Time.deltaTime;
         if (currentLifetime <= 0f)
         {
-            // Despawn the network object (will destroy it on all clients)
-            NetworkObject networkObject = GetComponent<NetworkObject>();
-            if (networkObject != null)
-            {
-                networkObject.Despawn();
-            }
-            // No need to Destroy(gameObject) explicitly, Despawn handles it.
-            return; // Exit Update early since the object is being destroyed
+            ReturnToPool(); // Use the new method
+            return; 
         }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (!IsServer || isReturning) return; // Ignore if not server or already returning
+
         // Check if the bullet collided with a shockwave
         if (other.CompareTag("FairyShockwave"))
         {
@@ -99,19 +114,42 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
             }
             // ----------------------------------
 
-            // Only the server should handle despawning networked objects
-            if (IsServer)
+            ReturnToPool(); // Use the new method
+        }
+        // Potentially add other collision checks here that should return the bullet to the pool
+    }
+
+    // --- New ReturnToPool Method --- 
+    private void ReturnToPool()
+    {
+        if (!IsServer || isReturning) return; // Should only run on server, prevent double calls
+
+        isReturning = true;
+
+        NetworkObject networkObject = GetComponent<NetworkObject>();
+        if (networkObject != null && networkObject.IsSpawned)
+        {
+            networkObject.Despawn(false); // Despawn WITHOUT destroying
+
+            // Return to the pool manager
+            if (NetworkObjectPool.Instance != null)
             {
-                // Despawn the bullet
-                NetworkObject networkObject = GetComponent<NetworkObject>();
-                if (networkObject != null && networkObject.IsSpawned)
-                {
-                    networkObject.Despawn(true); // Pass true to destroy the GameObject as well
-                }
+                NetworkObjectPool.Instance.ReturnNetworkObject(networkObject);
             }
-            // Note: Clients do not despawn directly. The server action will synchronize.
+            else
+            {
+                // Fallback if pool manager is gone
+                Debug.LogWarning($"NetworkObjectPool instance missing when trying to return {gameObject.name}. Destroying instead.", gameObject);
+                Destroy(gameObject);
+            }
+        }
+        else
+        {
+            // If not spawned or null, just ensure flag is reset if somehow reached here
+            isReturning = false; 
         }
     }
+    // -----------------------------
 
     #region IClearableByBomb Implementation
 
@@ -122,19 +160,8 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
     /// <param name="bombingPlayer">The role of the player who activated the bomb (unused by bullets).</param>
     public void ClearByBomb(PlayerRole bombingPlayer)
     {
-        // Since PlayerDeathBomb runs on server, this is called on the server instance.
-        // We can directly perform the despawn.
-        if (!IsServer) 
-        {
-            return;
-        }
-
-        // Despawn the network object (will destroy it on all clients)
-        NetworkObject networkObject = GetComponent<NetworkObject>();
-        if (networkObject != null && networkObject.IsSpawned)
-        {
-            networkObject.Despawn(true); // Pass true to destroy the GameObject as well
-        }
+        if (!IsServer) return;
+        ReturnToPool(); // Use the new method
     }
 
     // ServerRpc called by ClearByBomb() - NO LONGER NEEDED

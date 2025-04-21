@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7786338248282833226}
   - component: {fileID: 5684350390902999561}
   - component: {fileID: 4062325618657096987}
+  - component: {fileID: 4231376262007559490}
   m_Layer: 6
   m_Name: StageLargeBulletPrefab
   m_TagString: StageBullet
@@ -220,3 +221,17 @@ MonoBehaviour:
   maxAngleDeviation: 15
   maxLifetime: 15
   isImmuneToShockwave: 1
+--- !u!114 &4231376262007559490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 603824684173821203}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d9f797e066b44644ac93b2d3c1dde91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PrefabID: StageLargeBullet
+  OriginalPrefab: {fileID: 603824684173821203}

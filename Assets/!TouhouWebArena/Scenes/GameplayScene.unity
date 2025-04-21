@@ -2067,7 +2067,7 @@ GameObject:
   - component: {fileID: 1652915009}
   - component: {fileID: 1652915010}
   m_Layer: 0
-  m_Name: ObjectPoolManager
+  m_Name: NetworkObjectPool
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2111,6 +2111,14 @@ MonoBehaviour:
     InitialSize: 50
   - Prefab: {fileID: 5656050771762241772, guid: 59097a917c5931a43aea9a9a3a22fbe2, type: 3}
     InitialSize: 50
+  - Prefab: {fileID: 603824684173821203, guid: cf09dfab19bbdfa449358f5a311da220, type: 3}
+    InitialSize: 200
+  - Prefab: {fileID: 603824684173821203, guid: 160679763d648fe4a84680603d35f329, type: 3}
+    InitialSize: 40
+  - Prefab: {fileID: 825958184812720138, guid: 76cfe1a5018d7d74fbbbd03cf0b269ff, type: 3}
+    InitialSize: 10
+  - Prefab: {fileID: 5741200759558388235, guid: aa590f6646383c649af0871c8341a62f, type: 3}
+    InitialSize: 10
   allowPoolExpansion: 1
 --- !u!4 &1652915011
 Transform:

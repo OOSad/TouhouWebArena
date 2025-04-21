@@ -8,26 +8,97 @@ public class FairyDeathEffects : NetworkBehaviour // Needs NetworkBehaviour for 
     [Header("Effects")]
     [SerializeField] private GameObject shockwavePrefab; // Assign the FairyShockwave prefab here
 
-    // --- Public method to trigger effects immediately --- 
-    // This might be useful elsewhere, or can be removed if truly only used by the processor now.
-    public void TriggerEffects(Vector3 position)
-    {
-        if (!IsServer) return; // Should only run on server
+    // Reference to the PoolableObjectIdentity component on the prefab
+    private PoolableObjectIdentity shockwaveIdentity; 
 
+    void Awake()
+    {
+        // Debug.Log($"[FairyDeathEffects] Awake called on {(IsServer ? "Server" : "Client")}", this);
+        // Get the identity component from the prefab
         if (shockwavePrefab != null)
         {
-            // Instantiate the prefab on the server
-            GameObject shockwaveInstance = Instantiate(shockwavePrefab, position, Quaternion.identity);
-            NetworkObject networkObject = shockwaveInstance.GetComponent<NetworkObject>();
-            if (networkObject != null)
+            // Debug.Log($"[FairyDeathEffects] Awake: shockwavePrefab assigned ('{shockwavePrefab.name}')", this);
+            shockwaveIdentity = shockwavePrefab.GetComponent<PoolableObjectIdentity>();
+            if (shockwaveIdentity == null)
             {
-                networkObject.Spawn(true); // true = destroy with server
+                Debug.LogError($"[FairyDeathEffects] Awake ERROR: Shockwave prefab '{shockwavePrefab.name}' is missing the required PoolableObjectIdentity component!", this);
             }
-            else
+            else if (string.IsNullOrEmpty(shockwaveIdentity.PrefabID))
             {
-                 Debug.LogError("[FairyDeathEffects] Shockwave prefab is missing NetworkObject component!", this);
-                 Destroy(shockwaveInstance); // Clean up the non-networked instance
+                 Debug.LogError($"[FairyDeathEffects] Awake ERROR: Shockwave prefab '{shockwavePrefab.name}' has a missing or empty PrefabID in its PoolableObjectIdentity component!", this);
             }
+            // else
+            // {
+            //      Debug.Log($"[FairyDeathEffects] Awake: Found valid PoolableObjectIdentity with PrefabID: '{shockwaveIdentity.PrefabID}'", this);
+            // }
+        }
+        else
+        {
+             Debug.LogError("[FairyDeathEffects] Awake ERROR: Shockwave prefab is not assigned!", this);
+        }
+    }
+
+
+    // --- Public method to trigger effects immediately --- 
+    public void TriggerEffects(Vector3 position)
+    {
+         // Debug.Log($"[FairyDeathEffects] TriggerEffects called on {(IsServer ? "Server" : "Client")}", this);
+
+        // Ensure prefab and identity are valid, and we are the server
+        if (!IsServer || shockwavePrefab == null || shockwaveIdentity == null || string.IsNullOrEmpty(shockwaveIdentity.PrefabID)) 
+        {
+            // --- DEBUG LOG --- 
+            if (IsServer) 
+            {
+                 string reason = "Unknown";
+                 if (shockwavePrefab == null) reason = "shockwavePrefab is NULL";
+                 else if (shockwaveIdentity == null) reason = "shockwaveIdentity is NULL (check Awake logs)";
+                 else if (string.IsNullOrEmpty(shockwaveIdentity.PrefabID)) reason = "shockwaveIdentity.PrefabID is NULL or Empty";
+                 Debug.LogError($"[FairyDeathEffects] TriggerEffects returning early on Server. Reason: {reason}", this);
+            }
+            // else
+            // {
+            //      Debug.LogWarning("[FairyDeathEffects] TriggerEffects called on Client, returning.", this);
+            // }
+            // -----------------
+            return; 
+        }
+
+        // Get the PrefabID from the identity component
+        string prefabID = shockwaveIdentity.PrefabID;
+
+        // --- DEBUG LOG --- 
+        // Debug.Log($"[FairyDeathEffects] Requesting object from pool with PrefabID: '{prefabID ?? "NULL"}'"); // Keep this commented for now
+        // -----------------
+
+        // Get the shockwave instance from the pool using the PrefabID
+        NetworkObject pooledNetworkObject = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
+
+        if (pooledNetworkObject != null)
+        {
+            Shockwave shockwaveComponent = pooledNetworkObject.GetComponent<Shockwave>();
+            if (shockwaveComponent == null)
+            {
+                Debug.LogError($"[FairyDeathEffects] Pooled object for PrefabID '{prefabID}' is missing the Shockwave component! Returning to pool.", pooledNetworkObject);
+                NetworkObjectPool.Instance.ReturnNetworkObject(pooledNetworkObject); 
+                return;
+            }
+
+            // Position and activate the object (server controls state)
+            pooledNetworkObject.transform.position = position;
+            pooledNetworkObject.transform.rotation = Quaternion.identity; 
+            pooledNetworkObject.gameObject.SetActive(true); // Ensure it's active before spawning
+
+            // --- ALWAYS SPAWN --- 
+            // Since ReturnNetworkObject now Despawns, IsSpawned will be false.
+            // OnNetworkSpawn in Shockwave.cs will handle calling ResetAndStartExpansion.
+            pooledNetworkObject.Spawn(false); // false = Pool handles destruction/lifetime
+            // ------------------
+        }
+        else
+        {
+             // Log error if GetNetworkObject returned null (pool might be empty & non-expandable, or ID wrong)
+             Debug.LogError($"[FairyDeathEffects] Failed to get object with PrefabID '{prefabID}' from NetworkObjectPool.", this);
         }
     }
 

@@ -35,7 +35,16 @@ public class NetworkObjectPool : NetworkBehaviour
 
     void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); } else { Instance = this; }
+        if (Instance != null && Instance != this) 
+        { 
+            // Debug.LogWarning($"[POOL INSTANCE] Duplicate NetworkObjectPool detected (Instance ID: {GetInstanceID()}). Destroying self.", this);
+            Destroy(gameObject); 
+        }
+        else 
+        { 
+            Instance = this; 
+            // Debug.Log($"[POOL INSTANCE] Awake - Instance ID: {GetInstanceID()} assigned as Singleton.", this);
+        }
     }
 
     public override void OnNetworkSpawn()
@@ -119,34 +128,40 @@ public class NetworkObjectPool : NetworkBehaviour
     /// </summary>
     public NetworkObject GetNetworkObject(string prefabID)
     {
-        if (!IsServer) { Debug.LogError("GetNetworkObject: Server only."); return null; }
-        if (string.IsNullOrEmpty(prefabID)) { Debug.LogError("GetNetworkObject: Null or empty prefabID provided."); return null; }
+        if (!IsServer) { Debug.LogError("GetNetworkObject: Must be called on Server!"); return null; }
+        if (string.IsNullOrEmpty(prefabID)) { Debug.LogError("GetNetworkObject: Null or empty prefabID provided.", this); return null; }
 
         if (!prefabPools.TryGetValue(prefabID, out Queue<NetworkObject> objectQueue))
         {
             // Important: Check if the ID is even known before logging 'not registered'
             if (prefabIdToReference.ContainsKey(prefabID))
-                 Debug.LogWarning($"GetNetworkObject: Pool for ID '{prefabID}' exists but queue is missing? This shouldn't happen.", this);
+                 Debug.LogWarning($"[POOL] Pool for ID '{prefabID}' exists but queue is missing? This shouldn't happen.", this);
             else
-                Debug.LogError($"GetNetworkObject: Prefab ID '{prefabID}' has not been registered via Inspector list.", this);
+                Debug.LogError($"[POOL] Prefab ID '{prefabID}' has not been registered via Inspector list.", this);
             return null;
         }
 
         if (objectQueue.Count > 0)
         {
-            return objectQueue.Dequeue();
+            NetworkObject obj = objectQueue.Dequeue();
+            return obj;
         }
         else if (allowPoolExpansion)
         {
-            Debug.LogWarning($"Pool for ID '{prefabID}' was empty. Expanding.", this);
-            NetworkObject newObj = CreateAndPoolObject(prefabID, objectQueue);
-            if (newObj != null && objectQueue.Count > 0) return objectQueue.Dequeue();
-            else if (newObj != null) return newObj; // Fallback
-            else { Debug.LogError($"Failed to expand pool for ID '{prefabID}'.", this); return null; }
+            NetworkObject newObj = CreateAndPoolObject(prefabID, objectQueue); 
+            if (newObj != null && objectQueue.Count > 0) 
+            { 
+                NetworkObject obj = objectQueue.Dequeue();
+                return obj;
+            }
+            else if (newObj != null) 
+            { 
+                return newObj;
+            }
+            else { Debug.LogError($"[POOL] Failed to expand pool for ID '{prefabID}'.", this); return null; }
         }
         else
         {
-            Debug.LogWarning($"Pool for ID '{prefabID}' is empty and expansion is disabled!", this);
             return null;
         }
     }
@@ -156,13 +171,12 @@ public class NetworkObjectPool : NetworkBehaviour
     /// </summary>
     public void ReturnNetworkObject(NetworkObject networkObject)
     {
-        if (!IsServer) { Debug.LogError("ReturnNetworkObject: Server only."); return; }
-        if (networkObject == null) { Debug.LogError("ReturnNetworkObject: Null object.", this); return; }
+        if (!IsServer) { Debug.LogError("ReturnNetworkObject: Must be called on Server!"); return; }
+        if (networkObject == null) { Debug.LogError("ReturnNetworkObject: Null object provided.", this); return; }
 
         PoolableObjectIdentity identity = networkObject.GetComponent<PoolableObjectIdentity>();
         if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
         {
-            Debug.LogError($"ReturnNetworkObject: Returned object '{networkObject.name}' is missing PoolableObjectIdentity or PrefabID. Destroying.", networkObject.gameObject);
             if (networkObject.IsSpawned) networkObject.Despawn(true); else if (networkObject.gameObject != null) Destroy(networkObject.gameObject);
             return;
         }
@@ -171,14 +185,18 @@ public class NetworkObjectPool : NetworkBehaviour
 
         if (prefabPools.TryGetValue(prefabID, out Queue<NetworkObject> objectQueue))
         {
-            networkObject.gameObject.SetActive(false);
-            objectQueue.Enqueue(networkObject);
+            if (networkObject.IsSpawned) 
+            {
+                networkObject.Despawn(false); // false = Do not destroy the GameObject
+            }
+            networkObject.gameObject.SetActive(false); // Deactivate GameObject
+            objectQueue.Enqueue(networkObject); // Add to queue
         }
         else
         {
-            string registeredKeys = string.Join(", ", prefabPools.Keys);
-            Debug.LogError($"ReturnNetworkObject FAIL: Returned object '{networkObject.name}' has PrefabID '{prefabID}', which was NOT found in the pool dictionary. Registered keys: [{registeredKeys}]. Destroying instead.", networkObject.gameObject);
-            if (networkObject.IsSpawned) networkObject.Despawn(true); else if (networkObject.gameObject != null) Destroy(networkObject.gameObject);
+            // If it wasn't found in the pool, despawn/destroy it properly
+            if (networkObject.IsSpawned) networkObject.Despawn(true); // true = destroy
+            else if (networkObject.gameObject != null) Destroy(networkObject.gameObject);
         }
     }
 
@@ -210,6 +228,7 @@ public class NetworkObjectPool : NetworkBehaviour
     // Override OnDestroy to ensure base class cleanup happens
     public override void OnDestroy()
     {
+        // Debug.Log($"[POOL INSTANCE] OnDestroy - Instance ID: {GetInstanceID()}", this);
         // Custom cleanup (clearing dictionaries, etc.)
         if (Instance == this) { Instance = null; }
         // Server-side cleanup of actual GameObjects is handled in OnNetworkDespawn

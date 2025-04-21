@@ -55,20 +55,42 @@ public class DelayedActionProcessor : MonoBehaviour
         Destroy(gameObject);
     }
 
-    // Spawns the shockwave effect
+    // Spawns the shockwave effect using the NetworkObjectPool
     private void SpawnShockwaveEffect()
     {
-        // Instantiate the prefab on the server
-        GameObject shockwaveInstance = Instantiate(_shockwavePrefab, _position, Quaternion.identity);
-        NetworkObject networkObject = shockwaveInstance.GetComponent<NetworkObject>();
-        if (networkObject != null)
+        if (_shockwavePrefab == null) 
         {
-            networkObject.Spawn(true); // true = destroy with server
+            // Debug.LogError("[DelayedActionProcessor] Shockwave prefab is null, cannot spawn effect.", this);
+            return; 
+        }
+
+        // Get the PoolableObjectIdentity to find the PrefabID
+        PoolableObjectIdentity identity = _shockwavePrefab.GetComponent<PoolableObjectIdentity>();
+        if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
+        {
+            // Debug.LogError($"[DelayedActionProcessor] Shockwave prefab '{_shockwavePrefab.name}' is missing PoolableObjectIdentity or PrefabID! Cannot use pool.", this);
+            // Fallback? Maybe instantiate directly as before, but log error.
+            // For now, just return to prevent pool errors.
+            return;
+        }
+
+        string prefabID = identity.PrefabID;
+
+        // Get object from pool
+        NetworkObject pooledNetworkObject = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
+
+        if (pooledNetworkObject != null)
+        {
+            // Position, activate, and spawn the pooled object
+            pooledNetworkObject.transform.position = _position;
+            pooledNetworkObject.transform.rotation = Quaternion.identity;
+            pooledNetworkObject.gameObject.SetActive(true);
+            pooledNetworkObject.Spawn(false); // false = pool manages lifetime
         }
         else
         {
-            
-            Destroy(shockwaveInstance); // Clean up the non-networked instance
+            // Log error if pool failed to return an object
+            // Debug.LogError($"[DelayedActionProcessor] Failed to get shockwave with PrefabID '{prefabID}' from NetworkObjectPool.", this);
         }
     }
 

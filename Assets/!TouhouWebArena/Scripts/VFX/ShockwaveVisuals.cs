@@ -4,11 +4,19 @@ using UnityEngine;
 [RequireComponent(typeof(Shockwave), typeof(SpriteRenderer))]
 public class ShockwaveVisuals : MonoBehaviour
 {
-    // Visual properties (could be serialized if needed, but defaults are often fine)
-    private Color initialColor;
-    private Color endColor;
-    private Vector3 initialScale;
-    private float initialColliderRadius; // Needed for scaling calculation
+    // Visual properties stored on Awake for true reset
+    private Color trueInitialColor;
+    private Color trueEndColor;
+    private Vector3 trueInitialScale;
+    private float trueInitialColliderRadius; // Needed for scaling calculation
+
+    // --- Temporary state variables used during update --- 
+    // We keep these separate so ResetVisuals can use the true defaults
+    private Color currentInitialColor; 
+    private Color currentEndColor;
+    private Vector3 currentInitialScale;
+    private float currentInitialColliderRadius;
+    // --------------------------------------------------
 
     // Component references
     private SpriteRenderer spriteRenderer;
@@ -25,40 +33,64 @@ public class ShockwaveVisuals : MonoBehaviour
             return;
         }
 
-        // Store initial visual state
-        initialColor = spriteRenderer.color;
-        endColor = new Color(initialColor.r, initialColor.g, initialColor.b, 0f); // Fade out alpha
-        initialScale = transform.localScale;
-        initialColliderRadius = shockwave.GetInitialRadius(); // Get initial radius from Shockwave
+        // Store TRUE initial visual state from prefab defaults
+        trueInitialColor = spriteRenderer.color;
+        trueEndColor = new Color(trueInitialColor.r, trueInitialColor.g, trueInitialColor.b, 0f); // Fade out alpha
+        trueInitialScale = transform.localScale;
+        trueInitialColliderRadius = shockwave.GetInitialRadius(); // Get initial radius from Shockwave
+
+        // Initialize current state to true defaults
+        ResetVisuals(); 
     }
 
-    // Called by Shockwave during its expansion coroutine
+    // --- Public method to reset visual state for pooling ---
+    public void ResetVisuals()
+    {
+        // Reset current state variables to the true defaults captured in Awake
+        currentInitialColor = trueInitialColor;
+        currentEndColor = trueEndColor;
+        currentInitialScale = trueInitialScale;
+        currentInitialColliderRadius = trueInitialColliderRadius;
+
+        // Immediately apply the reset state visually using true defaults
+        if (spriteRenderer != null) // Add null check for safety
+        {
+             spriteRenderer.color = trueInitialColor; 
+        }
+        transform.localScale = trueInitialScale; 
+    }
+    // ----------------------------------------------------
+
+    // Called by Shockwave during its expansion
     public void UpdateVisuals(float progress, float currentRadius)
     {
         if (!enabled || spriteRenderer == null) return;
 
         // Calculate scale factor based on current collider radius and initial state
-        // Avoid division by zero if initial radius/scale was zero
-        float scaleFactor = initialScale.x; // Default to initial scale if calculation fails
-        if (initialColliderRadius > 0.001f)
+        // Use the 'currentInitial...' variables which are reset by ResetVisuals()
+        float scaleFactor = currentInitialScale.x; 
+        if (currentInitialColliderRadius > 0.001f)
         {
-             scaleFactor = currentRadius / (initialColliderRadius / initialScale.x); // Assumes uniform initial scale
+             // Calculate scale relative to the *true* initial collider radius and scale
+             scaleFactor = currentRadius / (trueInitialColliderRadius / trueInitialScale.x); 
         }
-        transform.localScale = new Vector3(scaleFactor, scaleFactor, initialScale.z);
+        // Ensure scale doesn't become invalid if calculation fails
+        if (float.IsNaN(scaleFactor) || float.IsInfinity(scaleFactor))
+        {
+             scaleFactor = currentInitialScale.x; // Fallback to initial scale
+        }
+        transform.localScale = new Vector3(scaleFactor, scaleFactor, currentInitialScale.z);
 
         // Fade out sprite based on overall progress (0 to 1)
-        spriteRenderer.color = Color.Lerp(initialColor, endColor, progress);
+        // Use the 'currentInitial...' variables for lerping
+        spriteRenderer.color = Color.Lerp(currentInitialColor, currentEndColor, progress);
     }
 
     // Ensure visuals are reset if the component is disabled externally
     void OnDisable()
     {
-        // Optional: Reset visuals to default state? 
-        // Or assume destruction handles cleanup.
-         if (spriteRenderer != null) 
-         { 
-             spriteRenderer.color = initialColor; 
-             transform.localScale = initialScale;
-         } 
+        // Now call the common reset method
+        // This ensures it resets to prefab defaults even if deactivated mid-animation
+        ResetVisuals(); 
     }
 } 

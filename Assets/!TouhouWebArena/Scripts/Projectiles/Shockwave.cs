@@ -49,6 +49,25 @@ public class Shockwave : NetworkBehaviour
         sourceCollider = source;
     }
 
+    // --- Method to reset state when reused from pool ---
+    public void ResetAndStartExpansion()
+    {
+        // Only the server should restart the logic
+        if (!IsServer) return; 
+
+        currentExpansionTime = 0f;
+        circleCollider.radius = 0f; // Reset collider
+        isExpanding = true;
+
+        // Immediately update visuals to starting state
+        if (shockwaveVisuals != null) 
+        {
+             shockwaveVisuals.ResetVisuals(); // Call the new reset method
+             UpdateVisualsClientRpc(0f, 0f); // Send initial state (redundant? maybe ok)
+        }
+    }
+    // ----------------------------------------------------
+
     void Update()
     {
         // Expansion logic only runs on the server
@@ -89,25 +108,30 @@ public class Shockwave : NetworkBehaviour
 
     private void DespawnShockwave()
     {
-        if (NetworkObject != null && NetworkObject.IsSpawned)
+        // Pool logic only runs on the server
+        if (!IsServer) 
         {
-            NetworkObject.Despawn(true); // Destroy the object after despawning
+            // If not the server, just destroy the local instance if it exists
+            if (gameObject != null) Destroy(gameObject);
+            return;
+        }
+
+        // On the server, attempt to return the object to the pool
+        if (NetworkObject != null)
+        {
+            // NetworkObjectPool handles despawning internally if needed before pooling
+            NetworkObjectPool.Instance.ReturnNetworkObject(this.NetworkObject); 
         }
         else if (gameObject != null)
-        {            
-            Destroy(gameObject); // Fallback for non-networked or already despawned cases
+        {   
+            // Fallback: If NetworkObject is somehow null but GameObject exists (unlikely for networked obj)
+            Destroy(gameObject); 
         }
     }
 
     public override void OnNetworkSpawn()
     {        
-        if (IsServer)
-        {
-            // Initialize expansion state on the server
-            currentExpansionTime = 0f;
-            circleCollider.radius = 0f;
-            isExpanding = true;
-        }
-        // Client-side visuals are handled by ShockwaveVisuals OnNetworkSpawn/OnNetworkDespawn
+        // Reset state via the common method - handles both initial spawn and potential host reuse
+        ResetAndStartExpansion(); 
     }
 } 
