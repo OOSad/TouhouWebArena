@@ -2,6 +2,9 @@ using UnityEngine;
 using Unity.Netcode;
 using Unity.Netcode.Components; // Likely needed if NetworkTransform used on bullets
 using System.Collections; // Required for Coroutines
+using System.Collections.Generic; // Added for Dictionary
+using TouhouWebArena.Spellcards; // Required for SpellcardExecutor
+using TouhouWebArena.Spellcards.Behaviors; // Required for bullet behaviors
 
 [RequireComponent(typeof(NetworkObject))] // Ensure player has NetworkObject
 [RequireComponent(typeof(CharacterStats))] // Ensure player has CharacterStats
@@ -35,6 +38,10 @@ public class PlayerShooting : NetworkBehaviour
     private CharacterStats characterStats;
     // --- End Added Reference ---
 
+    // --- Server-side cache for spell bars ---
+    private Dictionary<ulong, SpellBarController> playerSpellBars = new Dictionary<ulong, SpellBarController>();
+    // --- End server-side cache ---
+
     /// <summary>
     /// Called when the NetworkObject is spawned. We use this to find the correct spell bar.
     /// </summary>
@@ -42,11 +49,33 @@ public class PlayerShooting : NetworkBehaviour
     {
         base.OnNetworkSpawn(); // Good practice to call the base method
 
+        // Server caches all spell bars
+        if (IsServer)
+        {
+            ServerInitializeSpellBars();
+        }
+
+        // Owner finds its specific spell bar for local checks (like triggering spellcards)
         if (IsOwner)
         {
-            FindAndAssignSpellBar();
+            FindAndAssignSpellBar(); // Keep this for owner-specific UI interaction logic
         }
     }
+
+    // --- NEW: Server initializes spell bar cache ---
+    private void ServerInitializeSpellBars()
+    {
+        if (!IsServer) return;
+
+        playerSpellBars.Clear();
+        SpellBarController[] allSpellBars = FindObjectsOfType<SpellBarController>();
+        foreach (SpellBarController bar in allSpellBars)
+        {
+            // Use TargetPlayerId as the key, which corresponds to the expected ClientId
+            playerSpellBars[(ulong)bar.GetTargetPlayerId()] = bar;
+        }
+    }
+    // --- END NEW ---
 
     /// <summary>
     /// Finds the SpellBarController in the scene matching this player's OwnerClientId.
@@ -67,7 +96,7 @@ public class PlayerShooting : NetworkBehaviour
 
         if (!foundBar)
         {
-            
+
         }
     }
 
@@ -78,6 +107,35 @@ public class PlayerShooting : NetworkBehaviour
 
     void Update()
     {
+        // --- Server-Side Passive Spell Bar Update ---
+        if (IsServer)
+        {
+            foreach (var kvp in NetworkManager.Singleton.ConnectedClients) // Use kvp to get ClientId directly
+            {
+                ulong clientId = kvp.Key;
+                NetworkClient networkClient = kvp.Value;
+
+                // Find the bar associated with this client ID in our cache
+                if (playerSpellBars.TryGetValue(clientId, out SpellBarController bar))
+                {
+                    // Get the player's stats
+                    if (networkClient.PlayerObject != null)
+                    {
+                        CharacterStats stats = networkClient.PlayerObject.GetComponent<CharacterStats>();
+                        if (stats != null)
+                        {
+                            // Apply passive fill rate
+                            float passiveRate = stats.GetPassiveFillRate();
+                            float newFill = bar.currentPassiveFill.Value + passiveRate * Time.deltaTime;
+                            // Update the NetworkVariable (automatically syncs to clients)
+                            bar.currentPassiveFill.Value = Mathf.Clamp(newFill, 0f, SpellBarController.MaxFillAmount);
+                        }
+                    }
+                }
+            }
+        }
+        // --- End Server-Side Update ---
+
         // Only the owner of this object should process input and update state
         if (!IsOwner) return;
 
@@ -86,28 +144,40 @@ public class PlayerShooting : NetworkBehaviour
         bool justPressedFireKey = Input.GetKeyDown(fireKey);
         bool justReleasedFireKey = Input.GetKeyUp(fireKey); // Added KeyUp check
 
-        // --- Send Input State to Server --- 
+        // --- Send Input State to Server ---
         UpdateChargeStateServerRpc(isHoldingChargeKey);
 
-        // --- Check for Charge Attack Release --- 
+        // --- Check for Charge Attack / Spellcard Release ---
         if (justReleasedFireKey)
-        { 
+        {
             // Check charge level ONLY IF the spell bar reference is valid
-            if (spellBarController != null && spellBarController.currentActiveFill.Value >= 1.0f)
+            if (spellBarController != null)
+            {
+                float chargeLevel = spellBarController.currentActiveFill.Value;
+                int spellLevel = Mathf.FloorToInt(chargeLevel);
+
+                if (spellLevel >= 2) // Levels 2, 3, 4 are spellcards
+                {
+                    // Trigger the Spellcard
+                    RequestSpellcardServerRpc(spellLevel);
+                }
+                else if (spellLevel >= 1) // Level 1 is charge attack
             {
                 // Trigger the charge attack
-                PerformChargeAttackServerRpc(); 
+                PerformChargeAttackServerRpc();
+                }
+                // If spellLevel is 0, nothing happens on release
             }
             // Reset burst coroutine maybe? Or does holding prevent burst anyway?
             // Let's assume holding Z prevents starting a new burst, so releasing is fine.
         }
-        // --- End Charge Attack Check ---
+        // --- End Charge Attack / Spellcard Check ---
 
-        // --- Burst Fire Action --- 
+        // --- Burst Fire Action ---
         // Reverted condition: Use KeyDown to initiate burst sequence.
         // Holding the key won't re-trigger due to cooldown and burstCoroutine check.
-        if (justPressedFireKey) 
-        {   
+        if (justPressedFireKey)
+        {
             // Check if cooldown is met AND no burst active
             if (Time.time >= nextFireTime && burstCoroutine == null)
             {
@@ -126,103 +196,92 @@ public class PlayerShooting : NetworkBehaviour
     {
         ulong senderClientId = rpcParams.Receive.SenderClientId;
 
-        // --- Get Sender's Player Object and Character Stats --- 
+        // --- Get Sender's Player Object and Character Stats ---
         if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(senderClientId, out NetworkClient networkClient))
         {
-            
+
             return;
         }
         NetworkObject playerObject = networkClient.PlayerObject;
         if (playerObject == null)
         {
-            
+
             return;
         }
         CharacterStats stats = playerObject.GetComponent<CharacterStats>();
         if (stats == null)
         {
-            
+
             return;
         }
         // --- End Get Stats ---
 
         // Find the spell bar controller intended for the client who sent the RPC
-        SpellBarController targetBar = null;
-        SpellBarController[] allSpellBars = FindObjectsOfType<SpellBarController>(); // Find on server
-        foreach (SpellBarController bar in allSpellBars)
+        // Use the server cache instead of FindObjectsOfType here
+        if (playerSpellBars.TryGetValue(senderClientId, out SpellBarController targetBar))
         {
-            if (bar.GetTargetPlayerId() == (int)senderClientId)
-            {
-                targetBar = bar;
-                break;
-            }
-        }
-
-        if (targetBar != null)
-        {
-            // Get rates from the character stats
-            float passiveRate = stats.GetPassiveFillRate();
+            // Get active rate from the character stats
             float activeRate = stats.GetActiveChargeRate();
 
-            // Tell the found bar to calculate its state based on the client's input AND character's rates
-            targetBar.ServerCalculateState(clientIsCharging, Time.deltaTime, passiveRate, activeRate); // Pass rates
+            // Tell the found bar to calculate its ACTIVE state based on the client's input
+            targetBar.ServerCalculateState(clientIsCharging, activeRate); // Removed deltaTime, passiveRate
         }
         else
         {
-            
+
         }
     }
     // --- End RPC ---
 
-    // --- NEW: ServerRpc for Charge Attack --- 
+    // --- NEW: ServerRpc for Charge Attack ---
     [ServerRpc]
     private void PerformChargeAttackServerRpc(ServerRpcParams rpcParams = default)
     {
         ulong ownerClientId = rpcParams.Receive.SenderClientId;
-        
+
         // Get player object and stats
         if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(ownerClientId, out NetworkClient networkClient) || networkClient.PlayerObject == null)
         {
-            
+
             return;
         }
         Transform playerTransform = networkClient.PlayerObject.transform;
         CharacterStats stats = networkClient.PlayerObject.GetComponent<CharacterStats>();
         if (stats == null)
-        {   
-             
+        {
+
              return;
         }
 
-        // --- Get the Character-Specific Prefab from CharacterStats --- 
+        // --- Get the Character-Specific Prefab from CharacterStats ---
         GameObject chargePrefab = stats.GetChargeAttackPrefab();
         if (chargePrefab == null)
         {
-            
+
             return;
         }
         // -----------------------------------------------------------
 
-        // Determine Character and Execute Attack 
-        string characterName = stats.GetCharacterName(); 
-        
+        // Determine Character and Execute Attack
+        string characterName = stats.GetCharacterName();
+
 
         // Use the exact names set in the CharacterStats Inspector
-        if (characterName == "HakureiReimu") 
-        { 
+        if (characterName == "HakureiReimu")
+        {
             // Pass the specific prefab obtained from stats
             SpawnReimuChargeAttack(playerTransform, ownerClientId, chargePrefab);
         }
         else if (characterName == "KirisameMarisa")
-        { 
+        {
             // Pass the specific prefab obtained from stats
             SpawnMarisaChargeAttack(playerTransform, ownerClientId, chargePrefab);
         }
         else
         {
-            
+
         }
-        
+
         // The active spell bar resets automatically via UpdateChargeStateServerRpc when isHoldingChargeKey becomes false.
     }
     // --- END NEW ServerRpc ---
@@ -231,13 +290,13 @@ public class PlayerShooting : NetworkBehaviour
     private void SpawnReimuChargeAttack(Transform playerTransform, ulong ownerClientId, GameObject attackPrefab)
     {
         // No longer checks internal field, uses parameter
-        // if (reimuChargeAttackPrefab == null) ... 
+        // if (reimuChargeAttackPrefab == null) ...
 
-        // Define spawn offsets 
-        Vector3 forward = playerTransform.up; 
+        // Define spawn offsets
+        Vector3 forward = playerTransform.up;
         Vector3 right = playerTransform.right;
-        float forwardOffset = 0.8f; 
-        float horizontalSpread = 0.3f; 
+        float forwardOffset = 0.8f;
+        float horizontalSpread = 0.3f;
 
         Vector3[] relativePositions = new Vector3[4]
         {
@@ -250,15 +309,15 @@ public class PlayerShooting : NetworkBehaviour
         for (int i = 0; i < 4; i++)
         {
             Vector3 spawnPos = playerTransform.position + relativePositions[i];
-            GameObject instance = Instantiate(attackPrefab, spawnPos, playerTransform.rotation); 
+            GameObject instance = Instantiate(attackPrefab, spawnPos, playerTransform.rotation);
             NetworkObject netObj = instance.GetComponent<NetworkObject>();
             if (netObj != null)
             {
-                netObj.SpawnWithOwnership(ownerClientId); 
+                netObj.SpawnWithOwnership(ownerClientId);
             }
             else
             {
-                Destroy(instance); 
+                Destroy(instance);
             }
         }
     }
@@ -277,10 +336,10 @@ public class PlayerShooting : NetworkBehaviour
         // Removed Max check as pivot handles origin now?
         // spawnPos.y = Mathf.Max(spawnPos.y, playerTransform.position.y);
 
-        // --- Instantiate laser at the calculated START position --- 
+        // --- Instantiate laser at the calculated START position ---
         // Assumes prefab's pivot is at the bottom and sprite/collider are pre-sized
         GameObject instance = Instantiate(attackPrefab, spawnPos, Quaternion.identity);
-        
+
         // Spawn
         NetworkObject netObj = instance.GetComponent<NetworkObject>();
         if (netObj != null)
@@ -322,16 +381,16 @@ public class PlayerShooting : NetworkBehaviour
     {
         ulong senderClientId = rpcParams.Receive.SenderClientId;
 
-        // --- Get Sender's Player Object and Character Stats (as done in other RPC) --- 
+        // --- Get Sender's Player Object and Character Stats (as done in other RPC) ---
         if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(senderClientId, out NetworkClient networkClient) || networkClient.PlayerObject == null)
         {
-            
+
             return;
         }
         CharacterStats senderStats = networkClient.PlayerObject.GetComponent<CharacterStats>();
         if (senderStats == null)
         {
-            
+
             return;
         }
         // --- End Get Stats ---
@@ -339,13 +398,13 @@ public class PlayerShooting : NetworkBehaviour
         GameObject bulletToSpawn = senderStats.GetBulletPrefab();
         if (bulletToSpawn == null)
         {
-            
+
             return;
         }
 
         // Calculate the center spawn point above the player
         Transform playerTransform = networkClient.PlayerObject.transform; // Use the player object's transform
-        Vector3 centerSpawnPoint = playerTransform.position + playerTransform.up * firePointVerticalOffset; 
+        Vector3 centerSpawnPoint = playerTransform.position + playerTransform.up * firePointVerticalOffset;
         Quaternion spawnRotation = playerTransform.rotation;
 
         // Calculate left and right offset vectors based on player's right direction
@@ -367,42 +426,42 @@ public class PlayerShooting : NetworkBehaviour
     // Helper method to spawn one bullet
     private void SpawnSingleBullet(GameObject prefab, Vector3 position, Quaternion rotation, ulong ownerId) // Added prefab & ownerId parameters
     {
-        // --- Get Prefab ID --- 
+        // --- Get Prefab ID ---
         PoolableObjectIdentity identity = prefab.GetComponent<PoolableObjectIdentity>();
         if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
         {
-             Debug.LogError($"Prefab '{prefab.name}' is missing PoolableObjectIdentity or PrefabID. Cannot get from pool.", prefab);
+
              return;
         }
         string prefabID = identity.PrefabID;
 
-        // --- Get object from pool using PrefabID --- 
+        // --- Get object from pool using PrefabID ---
         NetworkObject bulletNetworkObject = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
 
         if (bulletNetworkObject == null)
         {
-            Debug.LogError($"Failed to get object with ID '{prefabID}' from NetworkObjectPool.", this);
+
             return;
         }
 
-        // --- Position, Activate, and Get Components --- 
+        // --- Position, Activate, and Get Components ---
         bulletNetworkObject.transform.position = position;
         bulletNetworkObject.transform.rotation = rotation;
         bulletNetworkObject.gameObject.SetActive(true); // Activate the object from pool
 
         // We already have the NetworkObject, get the other required component
-        BulletMovement bulletMovement = bulletNetworkObject.GetComponent<BulletMovement>(); 
+        BulletMovement bulletMovement = bulletNetworkObject.GetComponent<BulletMovement>();
 
         // Check if BulletMovement component exists (should always be there if prefab is correct)
-        if (bulletMovement == null) 
+        if (bulletMovement == null)
         {
-            Debug.LogError($"Pooled object '{prefab.name}' is missing the BulletMovement component! Returning to pool.", bulletNetworkObject.gameObject);
+
             // Return the invalid object to the pool immediately without spawning
             NetworkObjectPool.Instance.ReturnNetworkObject(bulletNetworkObject);
             return;
         }
-        
-        // --- Spawn and Assign Owner --- 
+
+        // --- Spawn and Assign Owner ---
         bulletNetworkObject.Spawn(true); // Spawn first...
 
         // ...then set parent AFTER spawning.
@@ -412,31 +471,31 @@ public class PlayerShooting : NetworkBehaviour
         }
         // else // Log removed for brevity, was logged before activation
         // {
-        //      Debug.LogError("NetworkObjectPool instance is null, cannot set parent for pooled object!", this);
+
         // }
 
-        // Assign Owner Role (Server Only) AFTER Spawning 
+        // Assign Owner Role (Server Only) AFTER Spawning
         if (PlayerDataManager.Instance != null)
         {
-            PlayerData? ownerData = PlayerDataManager.Instance.GetPlayerData(ownerId); 
+            PlayerData? ownerData = PlayerDataManager.Instance.GetPlayerData(ownerId);
             if (ownerData.HasValue)
             {
                 bulletMovement.OwnerRole.Value = ownerData.Value.Role;
             }
             else
             {
-                Debug.LogWarning($"Could not find PlayerData for ownerId {ownerId} when spawning bullet.", this);
+
                 bulletMovement.OwnerRole.Value = PlayerRole.None; // Assign default
             }
         }
         else
         {
-             Debug.LogError("PlayerDataManager instance not found! Cannot assign OwnerRole to bullet.", this);
+
              bulletMovement.OwnerRole.Value = PlayerRole.None; // Assign default
         }
     }
 
-    // --- Added Awake --- 
+    // --- Added Awake ---
     private void Awake()
     {
         characterStats = GetComponent<CharacterStats>();
@@ -458,7 +517,7 @@ public class PlayerShooting : NetworkBehaviour
     public void StartAIShot()
     {
         if (!IsOwner) return; // AI Control should be local? Or Server?
-        
+
         // Check if cooldown is met AND no burst active
         if (Time.time >= nextFireTime && burstCoroutine == null)
         {
@@ -470,8 +529,277 @@ public class PlayerShooting : NetworkBehaviour
         }
         else
         {
-            
+
         }
     }
     // --- End Added Method ---
+
+    // --- NEW: ServerRpc for Spellcard ---
+    [ServerRpc]
+    private void RequestSpellcardServerRpc(int spellLevel, ServerRpcParams rpcParams = default)
+    {
+        ulong senderClientId = rpcParams.Receive.SenderClientId;
+
+        // 1. Get Sender Info (Player Object, CharacterStats)
+        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(senderClientId, out NetworkClient senderClient) || senderClient.PlayerObject == null)
+        {
+
+            return;
+        }
+        NetworkObject senderPlayerObject = senderClient.PlayerObject;
+        CharacterStats senderStats = senderPlayerObject.GetComponent<CharacterStats>();
+        if (senderStats == null)
+        {
+
+            return;
+        }
+        string senderCharacterName = senderStats.GetCharacterName();
+        if (senderPlayerObject == null || senderStats == null) return; // Added null check consolidation
+
+        // 2. Find Opponent
+        ulong opponentClientId = ulong.MaxValue;
+        NetworkObject opponentPlayerObject = null;
+        foreach (var connectedClient in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            if (connectedClient.ClientId != senderClientId)
+            {
+                opponentClientId = connectedClient.ClientId;
+                opponentPlayerObject = connectedClient.PlayerObject;
+                break; // Found the opponent
+            }
+        }
+
+        if (opponentPlayerObject == null)
+        {
+
+            return;
+        }
+        // Don't need opponentTransform here anymore
+        // Transform opponentTransform = opponentPlayerObject.transform;
+
+        // 3. Construct Spellcard Resource Path
+        string resourcePath = $"Spellcards/{senderCharacterName}Level{spellLevel}Spellcard";
+
+        // --- Load SpellcardData ON SERVER ---
+        SpellcardData spellcardData = Resources.Load<SpellcardData>(resourcePath);
+        if (spellcardData == null)
+        {
+
+            return;
+        }
+
+        // --- Find Sender's Spell Bar Controller ---
+        SpellBarController senderBar = null;
+        SpellBarController[] allSpellBars = FindObjectsOfType<SpellBarController>(); // Find on server
+        foreach (SpellBarController bar in allSpellBars)
+        {
+            if (bar.GetTargetPlayerId() == (int)senderClientId)
+            {
+                senderBar = bar;
+                break;
+            }
+        }
+
+        if (senderBar == null)
+        {
+
+             return; // Cannot proceed without the bar
+        }
+
+        // --- Consume Spell Bar Charge (Passive and Active) ---
+        // Cost is based on spell level (L2=1 segment, L3=2, L4=3), converted to 0-4 scale
+        float cost = (spellLevel - 1) * 1.0f; // Each level costs 1.0 on the 0-4 scale (which is 25%)
+        float currentPassive = senderBar.currentPassiveFill.Value;
+        float newPassiveFill = Mathf.Max(0f, currentPassive - cost); // Subtract cost, ensure non-negative
+
+        senderBar.currentPassiveFill.Value = newPassiveFill;
+        senderBar.currentActiveFill.Value = 0f; // Reset active charge
+        // ----------------------------------------------------
+
+        // 4. Determine Spellcard Origin & Capture Target Position
+        Vector3 opponentCurrentPos = opponentPlayerObject.transform.position;
+        Vector3 originPosition = opponentCurrentPos + new Vector3(0, 5f, 0);
+        Quaternion originRotation = Quaternion.identity;
+
+        // --- 5. Execute Spawning Logic SERVER-SIDE ---
+
+        StartCoroutine(ServerExecuteSpellcardActions(spellcardData, originPosition, originRotation, opponentClientId, opponentCurrentPos)); // Removed senderId
+    }
+    // --- END Spellcard ServerRpc ---
+
+    // --- NEW: Server-side Coroutine for Spellcard Execution ---
+    private IEnumerator ServerExecuteSpellcardActions(SpellcardData spellcardData, Vector3 originPosition, Quaternion originRotation, ulong opponentId, Vector3 capturedOpponentPosition) // Removed senderId
+    {
+        if (!IsServer) yield break;
+
+        if (NetworkObjectPool.Instance == null) { /* ... error log ... */ yield break; }
+
+        // --- Determine Target Side ---
+        // Assuming boundaryX is 0. Modify if your stage center is different.
+        // We use the captured position as a reliable indicator of the side.
+        bool isTargetOnPositiveSide = (capturedOpponentPosition.x >= 0.0f);
+
+        // ---------------------------
+
+        foreach (SpellcardAction action in spellcardData.actions)
+        {
+            // Handle start delay
+            if (action.startDelay > 0)
+            {
+                yield return new WaitForSeconds(action.startDelay); // Coroutine delay works fine on server
+            }
+
+            if (action.bulletPrefabs == null || action.bulletPrefabs.Count == 0)
+            {
+
+                 continue; // Skip this action
+            }
+
+            int prefabIndex = 0;
+            Vector3 spawnPositionBase = originPosition + (Vector3)action.positionOffset;
+
+            for (int i = 0; i < action.count; i++)
+            {
+                GameObject prefabToSpawn = action.bulletPrefabs[prefabIndex % action.bulletPrefabs.Count];
+                if (prefabToSpawn == null) { continue; }
+
+                // --- Get Prefab ID ---
+                PoolableObjectIdentity identity = prefabToSpawn.GetComponent<PoolableObjectIdentity>();
+                if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
+                {
+
+                     continue;
+                }
+                string prefabID = identity.PrefabID;
+
+                Vector3 spawnPos = spawnPositionBase;
+                Quaternion spawnRot = originRotation;
+
+                // Calculate position and rotation based on formation type (Same logic as before)
+                switch (action.formation)
+                {
+                    case FormationType.Point:
+                        spawnPos = spawnPositionBase;
+                        spawnRot = originRotation;
+                        break;
+                    case FormationType.Circle:
+                        spawnPos = spawnPositionBase;
+                        if (action.count > 0) {
+                            float angleDegrees = i * (360f / action.count);
+                            spawnRot = Quaternion.Euler(0, 0, angleDegrees + 90);
+                        } else {
+                            spawnRot = originRotation;
+                        }
+                        break;
+                    case FormationType.Line:
+                        float lineAngleRad = action.angle * Mathf.Deg2Rad;
+                        Vector3 lineDirection = new Vector3(Mathf.Cos(lineAngleRad), Mathf.Sin(lineAngleRad), 0);
+                        float totalLength = action.spacing * (action.count - 1);
+                        float startOffset = -totalLength / 2f;
+                        spawnPos = spawnPositionBase + lineDirection * (startOffset + i * action.spacing);
+                        spawnRot = Quaternion.Euler(0, 0, action.angle + 90);
+                        break;
+                }
+
+                // --- Get bullet instance from the pool ON SERVER ---
+                NetworkObject bulletInstanceNO = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
+                if (bulletInstanceNO == null)
+                {
+
+                    continue;
+                }
+                GameObject bulletInstance = bulletInstanceNO.gameObject;
+
+                // --- Set Transform BEFORE Spawning ---
+                bulletInstance.transform.position = spawnPos;
+                bulletInstance.transform.rotation = spawnRot;
+                bulletInstance.gameObject.SetActive(true);
+
+                // --- Configure Behavior SERVER-SIDE ---
+                ConfigureBulletBehavior(bulletInstance, action, opponentId, capturedOpponentPosition, isTargetOnPositiveSide); // Removed senderId
+
+                // --- Spawn the NetworkObject SERVER-SIDE ---
+                bulletInstanceNO.Spawn(true); // Spawn the object on the network
+
+                // --- Set Parent AFTER Spawning ---
+                 if (NetworkObjectPool.Instance != null)
+                 {
+                      // Parent AFTER spawning
+                      bulletInstanceNO.transform.SetParent(NetworkObjectPool.Instance.transform, worldPositionStays: false);
+                 }
+                 else {
+
+                 }
+
+                prefabIndex++;
+            }
+        }
+    }
+    // --- END Server-side Coroutine ---
+
+    // --- Helper Method to Configure Behavior (Server-Side) ---
+    private void ConfigureBulletBehavior(GameObject bulletInstance, SpellcardAction action, ulong opponentId, Vector3 capturedOpponentPosition, bool isTargetOnPositiveSide) // Removed senderId
+    {
+        // Disable all potential behaviors first
+        var linear = bulletInstance.GetComponent<LinearMovement>();
+        var delayedHoming = bulletInstance.GetComponent<DelayedHoming>();
+        var lifetime = bulletInstance.GetComponent<NetworkBulletLifetime>(); // Get Lifetime component
+        if (linear) linear.enabled = false;
+        if (delayedHoming) delayedHoming.enabled = false;
+        // Don't disable lifetime, it should always run on the server
+
+        // --- Configure Lifetime Boundary ---
+        if (lifetime != null) {
+            lifetime.keepOnPositiveSide = isTargetOnPositiveSide;
+            // Removed InitializeOwner call
+            // lifetime.isClearableByBomb = action.isClearableByBomb; // Keep this if using the flag
+        } else {
+
+        }
+
+        // Enable and initialize the correct movement behavior
+        switch (action.behavior)
+        {
+            case BehaviorType.Linear:
+                if (linear != null)
+                {
+                    linear.enabled = true;
+                    linear.Initialize(action.speed);
+                }
+                else
+                {
+                    // Missing component, do nothing
+                    break; // Add break to fix fallthrough
+                }
+                break;
+
+            case BehaviorType.DelayedHoming:
+                if (delayedHoming != null)
+                {
+                    if (opponentId != ulong.MaxValue) {
+                         delayedHoming.Initialize(action.speed, action.homingSpeed, action.homingDelay, opponentId, capturedOpponentPosition);
+                         if (!delayedHoming.enabled) {
+                            delayedHoming.enabled = true;
+                         }
+                    } else {
+                        // Fallback to linear if no opponent
+                        if (linear != null) {
+                            linear.enabled = true;
+                            linear.Initialize(action.speed);
+                        }
+                    }
+                }
+                else
+                {
+                    // Missing component, do nothing
+                    break; // Add break to fix fallthrough
+                }
+                break;
+
+            case BehaviorType.Homing:
+
+                break;
+        }
+    }
+    // --- END Helper Method ---
 } 

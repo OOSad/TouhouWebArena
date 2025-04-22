@@ -27,7 +27,7 @@ public class SpellBarController : NetworkBehaviour
     public NetworkVariable<float> currentPassiveFill = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<float> currentActiveFill = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-    private const float MaxFillAmount = 4f;
+    public const float MaxFillAmount = 4f;
 
     public override void OnNetworkSpawn()
     {
@@ -51,12 +51,11 @@ public class SpellBarController : NetworkBehaviour
 
     /// <summary>
     /// Calculates and updates the spell bar state. MUST ONLY BE CALLED ON THE SERVER.
+    /// Handles ACTIVE charge based on player input. Passive fill is handled elsewhere.
     /// </summary>
     /// <param name="isCharging">Whether the targeted player is currently charging.</param>
-    /// <param name="deltaTime">Server's delta time.</param>
-    /// <param name="passiveRate">Passive fill rate for this character.</param>
     /// <param name="activeRate">Active charge rate for this character.</param>
-    public void ServerCalculateState(bool isCharging, float deltaTime, float passiveRate, float activeRate)
+    public void ServerCalculateState(bool isCharging, float activeRate)
     {
         // Ensure this only runs on the server (which owns these scene objects)
         if (!IsServer)
@@ -65,15 +64,13 @@ public class SpellBarController : NetworkBehaviour
         }
 
         // --- Passive Fill Logic (Server) ---
-        // TODO: Hook up enemy kill bonus logic here (would need another RPC or check server state)
-        float newPassiveFill = currentPassiveFill.Value + passiveRate * deltaTime;
-        currentPassiveFill.Value = Mathf.Clamp(newPassiveFill, 0f, MaxFillAmount);
+        // REMOVED - This is now handled in PlayerShooting server Update loop
 
         // --- Active Charge Logic (Server) ---
         float newActiveFill = currentActiveFill.Value; // Start with current value
         if (isCharging)
         {
-            newActiveFill += activeRate * deltaTime;
+            newActiveFill += activeRate * Time.deltaTime; // Use Time.deltaTime here for active charging
             // Active fill cannot exceed passive fill
             newActiveFill = Mathf.Clamp(newActiveFill, 0f, currentPassiveFill.Value);
         }

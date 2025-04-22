@@ -2108,9 +2108,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   poolsToCreate:
   - Prefab: {fileID: 5656050771762241772, guid: aee0e98baf9735743b3d66e821ca5936, type: 3}
-    InitialSize: 50
+    InitialSize: 100
   - Prefab: {fileID: 5656050771762241772, guid: 59097a917c5931a43aea9a9a3a22fbe2, type: 3}
-    InitialSize: 50
+    InitialSize: 100
   - Prefab: {fileID: 603824684173821203, guid: cf09dfab19bbdfa449358f5a311da220, type: 3}
     InitialSize: 200
   - Prefab: {fileID: 603824684173821203, guid: 160679763d648fe4a84680603d35f329, type: 3}
@@ -2122,9 +2122,17 @@ MonoBehaviour:
   - Prefab: {fileID: 1241426470714071119, guid: ab6e43f2a705add4f8928d6b3a7393df, type: 3}
     InitialSize: 30
   - Prefab: {fileID: 2265545678602581384, guid: 1088179f6c3b7204dbf8e29e4bdfe8bc, type: 3}
-    InitialSize: 70
+    InitialSize: 100
   - Prefab: {fileID: 2599006119773474308, guid: b9163c1d350c8c6489969e8df68532d9, type: 3}
     InitialSize: 30
+  - Prefab: {fileID: 3753940637100796060, guid: 2ca255f0a3b4acc49ac43f9a6cb19d51, type: 3}
+    InitialSize: 300
+  - Prefab: {fileID: 3753940637100796060, guid: 86b0cd61b3d7bb3469bba1e830d59d37, type: 3}
+    InitialSize: 300
+  - Prefab: {fileID: 3753940637100796060, guid: f2a3a3efbdf65af4d9c5bbad7ca3e4a6, type: 3}
+    InitialSize: 300
+  - Prefab: {fileID: 3753940637100796060, guid: b9dbc2fdf801f60469638948c951540b, type: 3}
+    InitialSize: 300
   allowPoolExpansion: 0
 --- !u!4 &1652915011
 Transform:

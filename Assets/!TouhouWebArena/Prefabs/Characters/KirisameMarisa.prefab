@@ -177,6 +177,7 @@ GameObject:
   - component: {fileID: 8745866836830213913}
   - component: {fileID: -2340701499670656051}
   - component: {fileID: 8267669922107513670}
+  - component: {fileID: -7863511752367917313}
   - component: {fileID: 3961734924531103382}
   - component: {fileID: 3185901584900274323}
   - component: {fileID: 6848750692035792943}
@@ -269,7 +270,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1167757991
+  GlobalObjectIdHash: 2122085789
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
@@ -422,7 +423,7 @@ MonoBehaviour:
   characterName: KirisameMarisa
   bulletPrefab: {fileID: 5656050771762241772, guid: 59097a917c5931a43aea9a9a3a22fbe2, type: 3}
   chargeAttackPrefab: {fileID: 4280080153862268507, guid: 27caa464793fc9e4fb8ecdaac521476a, type: 3}
-  passiveFillRate: 0.6
+  passiveFillRate: 0.06
   activeChargeRate: 15
   bulletSpread: 0.2
   burstCount: 3
@@ -451,7 +452,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1472
   detectionBoxSize: {x: 1.5, y: 2}
-  detectionDistance: 1
   dodgeCheckDistance: 1.5
   dodgeCheckLayers:
     serializedVersion: 2
@@ -460,6 +460,18 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 384
   targetDetectionRadius: 10
+--- !u!114 &-7863511752367917313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4454703587389584321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c061224a29b29947a7aa7d0086de0e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!50 &3961734924531103382
 Rigidbody2D:
   serializedVersion: 4
