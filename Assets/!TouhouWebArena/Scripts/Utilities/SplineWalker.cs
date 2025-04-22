@@ -114,10 +114,11 @@ public class SplineWalker : NetworkBehaviour
             // Instead of destroying locally, tell the server via the Fairy script
             if (destroyOnComplete)
             {
+                // Debug.Log($"[SplineWalker on {ownerFairy?.NetworkObjectId ?? 0}] Reached end. Calling ReportEndOfPath().", gameObject);
                 ownerFairy.ReportEndOfPath(); // Call the Fairy's notification method
             }
             // Disable this component locally to stop further updates
-            this.enabled = false;
+            // this.enabled = false; // <-- Commented out to see if it interferes with RPC processing
         }
     }
 
