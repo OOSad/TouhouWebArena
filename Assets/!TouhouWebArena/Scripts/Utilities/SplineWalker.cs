@@ -39,11 +39,11 @@ public class SplineWalker : NetworkBehaviour
         this.movingForward = startAtBeginning;
         this.progress = startAtBeginning ? 0f : 1f; // Set initial progress based on direction
 
-        // Immediately set initial position and rotation
+        // Immediately set initial position and rotation - REMOVED POSITION SET
         if (spline != null)
         {
-            // Set initial position NOW
-            UpdatePosition(this.progress);
+            // Set initial position NOW - REMOVED
+            // UpdatePosition(this.progress);
             // Enable the component to start the Update loop
             this.enabled = true;
         }
@@ -56,6 +56,7 @@ public class SplineWalker : NetworkBehaviour
 
     void Update()
     {
+        if (!IsServer) return;
         if (spline == null || ownerFairy == null || !this.enabled) return; // Need spline and fairy
 
         // Calculate current velocity magnitude on the spline
@@ -133,6 +134,7 @@ public class SplineWalker : NetworkBehaviour
     // --- RENAMED and MODIFIED: Only updates position ---
     private void UpdatePosition(float currentProgress)
     {
+        if (!IsServer) return;
         if (spline == null) return; // Safety check
         // Get the position on the spline
         Vector3 position = spline.GetPoint(currentProgress);

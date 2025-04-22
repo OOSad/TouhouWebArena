@@ -28,20 +28,25 @@ public class FairyPathInitializer : NetworkBehaviour
         base.OnNetworkSpawn();
 
         // Subscribe to path variable changes to initialize walker on all clients (and host/server)
-        pathOwnerPlayerIndex.OnValueChanged += OnPathInfoChanged;
-        pathIndex.OnValueChanged += OnPathInfoChanged;
-        startAtBeginning.OnValueChanged += OnPathInfoChanged;
+        // --- CLIENTS NO LONGER NEED TO INITIALIZE PATH --- 
+        // pathOwnerPlayerIndex.OnValueChanged += OnPathInfoChanged;
+        // pathIndex.OnValueChanged += OnPathInfoChanged;
+        // startAtBeginning.OnValueChanged += OnPathInfoChanged;
 
-        // Attempt initial initialization immediately in case variables were set before spawn completed
-        TryInitializePath();
+        // Attempt initial initialization immediately ON SERVER ONLY
+        if (IsServer) 
+        { 
+             TryInitializePath();
+        }
     }
 
     public override void OnNetworkDespawn()
     {
         // Unsubscribe
-        pathOwnerPlayerIndex.OnValueChanged -= OnPathInfoChanged;
-        pathIndex.OnValueChanged -= OnPathInfoChanged;
-        startAtBeginning.OnValueChanged -= OnPathInfoChanged;
+        // --- CLIENTS NO LONGER NEED TO INITIALIZE PATH --- 
+        // pathOwnerPlayerIndex.OnValueChanged -= OnPathInfoChanged;
+        // pathIndex.OnValueChanged -= OnPathInfoChanged;
+        // startAtBeginning.OnValueChanged -= OnPathInfoChanged;
         base.OnNetworkDespawn();
     }
 
@@ -57,16 +62,21 @@ public class FairyPathInitializer : NetworkBehaviour
         startAtBeginning.Value = startAtBegin;
 
         // Attempt initialization immediately on server as well
-        // TryInitializePath(); // NetworkVariable callbacks will handle this
+        // This ensures server has the path set up even if vars were set before spawn
+        TryInitializePath(); 
     }
 
     // Called when any of the path NetworkVariables change
-    private void OnPathInfoChanged(int previousValue, int newValue) => TryInitializePath();
-    private void OnPathInfoChanged(bool previousValue, bool newValue) => TryInitializePath();
+    // --- CLIENTS NO LONGER NEED TO INITIALIZE PATH --- 
+    // private void OnPathInfoChanged(int previousValue, int newValue) => TryInitializePath();
+    // private void OnPathInfoChanged(bool previousValue, bool newValue) => TryInitializePath();
 
     // Tries to initialize the path using the NetworkVariables
+    // --- NOW ONLY RUNS ON SERVER --- 
     private void TryInitializePath()
     {
+        if (!IsServer) return; // <<< ADD THIS CHECK
+
         // Only initialize once, and only if we have valid indices and splineWalker
         if (pathInitialized || splineWalker == null || pathOwnerPlayerIndex.Value < 0 || pathIndex.Value < 0) return;
 
@@ -86,5 +96,13 @@ public class FairyPathInitializer : NetworkBehaviour
         // Initialize the SplineWalker locally
         splineWalker.InitializeSplineInternal(chosenPath, startAtBeginning.Value);
         pathInitialized = true; // Mark as initialized
+        splineWalker.enabled = true; // <-- Enable walker AFTER path is set
     }
+
+    // --- NEW: Method to allow re-initialization for pooling ---
+    public void ResetInitializationFlag()
+    {
+        pathInitialized = false;
+    }
+    // --------------------------------------------------------
 } 

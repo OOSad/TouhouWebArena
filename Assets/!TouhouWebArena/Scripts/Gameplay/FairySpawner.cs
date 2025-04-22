@@ -97,50 +97,52 @@ public class FairySpawner : MonoBehaviour
                 bool makeGreat = false;
                 if (i == 0 && firstIsGreat) { makeGreat = true; }
                 else if (i == fairyCount - 1 && i != 0 && lastIsGreat) { makeGreat = true; }
-                GameObject prefabToSpawn = makeGreat ? greatFairyPrefab : normalFairyPrefab;
-
-                Vector3 spawnPos = spawnAtBeginning ? chosenPath.GetPoint(0f) : chosenPath.GetPoint(1f);
-                GameObject fairyInstance = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
-                NetworkObject fairyNetworkObject = fairyInstance.GetComponent<NetworkObject>();
-
-                if (fairyNetworkObject != null)
+                
+                // Determine prefab and ID BEFORE getting from pool
+                GameObject prefabToUse = makeGreat ? greatFairyPrefab : normalFairyPrefab;
+                PoolableObjectIdentity identity = prefabToUse.GetComponent<PoolableObjectIdentity>();
+                if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
                 {
-                    // Spawn the fairy NetworkObject FIRST
-                    fairyNetworkObject.Spawn(true);
+                     Debug.LogError($"[FairySpawner] Prefab '{prefabToUse.name}' is missing PoolableObjectIdentity or PrefabID! Skipping spawn.", this);
+                     continue;
+                }
+                string prefabID = identity.PrefabID;
 
-                    Fairy fairyScript = fairyInstance.GetComponent<Fairy>();
-                    if (fairyScript != null)
-                    {
-                        // Set NetworkVariables on the Fairy script immediately after spawning
-                        fairyScript.SetPathInfo(this.playerIndex, pathIndex, spawnAtBeginning);
-                        // --- NEW: Assign Line ID and Index ---
-                        fairyScript.AssignLineInfo(currentLineId, i);
-                        // -------------------------------------
+                // Get object from pool
+                NetworkObject pooledNetworkObject = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
+                if (pooledNetworkObject == null)
+                {
+                     Debug.LogError($"[FairySpawner] Failed to get Fairy '{prefabID}' from pool. Skipping spawn.", this);
+                     continue;
+                }
+                
+                // Position and Activate
+                Vector3 spawnPos = spawnAtBeginning ? chosenPath.GetPoint(0f) : chosenPath.GetPoint(1f);
+                pooledNetworkObject.transform.position = spawnPos;
+                pooledNetworkObject.transform.rotation = Quaternion.identity;
+                pooledNetworkObject.gameObject.SetActive(true);
 
-                        // --- NEW: Mark trigger fairy ---
-                        if (i == triggerFairyIndex) // Check if this is the designated trigger fairy
-                        {
-                            fairyScript.MarkAsExtraAttackTrigger(); 
-                            // Optional: Add visual indication here if needed
-                        }
-                        // ------------------------------
+                // Spawn FIRST
+                pooledNetworkObject.Spawn(false);
 
-                        // --- Assign Owner Role --- 
-                        PlayerRole ownerRole = (this.playerIndex == 0) ? PlayerRole.Player1 : PlayerRole.Player2;
-                        fairyScript.AssignOwnerRole(ownerRole);
-                        // --------------------------
-                    }
-                    else
-                    {
-                         Debug.LogError("Spawned fairy is missing Fairy script! Cannot set path info. Destroying.", fairyInstance);
-                         Destroy(fairyInstance);
-                         continue; // Skip to next fairy
-                    }
+                // Get script and Initialize AFTER spawning
+                Fairy fairyScript = pooledNetworkObject.GetComponent<Fairy>();
+                if (fairyScript != null)
+                {
+                    // Determine necessary parameters for initialization
+                    PlayerRole ownerRole = (this.playerIndex == 0) ? PlayerRole.Player1 : PlayerRole.Player2;
+                    bool isTrigger = (i == triggerFairyIndex);
+
+                    // Call the consolidated Initialize method
+                    fairyScript.InitializeForPooling(this.playerIndex, pathIndex, spawnAtBeginning, 
+                                                     currentLineId, i, 
+                                                     isTrigger, ownerRole);
                 }
                 else
                 {
-                    Debug.LogError("Spawned fairy is missing NetworkObject! Destroying.", fairyInstance);
-                    Destroy(fairyInstance);
+                     Debug.LogError("Pooled fairy is missing Fairy script! Returning to pool.", pooledNetworkObject);
+                     NetworkObjectPool.Instance.ReturnNetworkObject(pooledNetworkObject); // Return broken obj
+                     continue; // Skip to next fairy
                 }
 
                 // Only delay if there are more fairies to spawn in this line

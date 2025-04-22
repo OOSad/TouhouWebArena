@@ -96,37 +96,63 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
         base.OnNetworkDespawn();
     }
 
-    // Public method to set path info (delegates to initializer)
-    public void SetPathInfo(int ownerIndex, int pIndex, bool startAtBegin)
+    // --- NEW: Consolidated Initialization for Pooling ---
+    // Called by the Spawner AFTER NetworkObject.Spawn()
+    public void InitializeForPooling(int ownerIdx, int pIdx, bool startAtBegin, 
+                                       System.Guid lineGuid, int index, 
+                                       bool isTrigger, PlayerRole owner)
     {
-        // This method should only be called on the server by the spawner
-        if (!IsServer)
-        {
-             
-             return;
-        }
-        if (pathInitializer != null)
-        {
-            pathInitializer.SetPathInfoOnServer(ownerIndex, pIndex, startAtBegin);
-        }
-        else
-        {
-            
-        }
-    }
-
-    // --- NEW: Method to assign line info (called by spawner) ---
-    public void AssignLineInfo(System.Guid lineGuid, int index)
-    {
-        if (!IsServer) 
-        {
-            
-            return;
-        }
+        // --- Reset State --- 
+        isDying = false;
+        // Health is reset in OnNetworkSpawn based on isGreatFairy
+        // Flags:
+        isExtraAttackTrigger = isTrigger;
+        // isGreatFairy is part of the prefab, not reset here.
+        
+        // --- Assign Info --- 
         lineId = lineGuid;
         indexInLine = index;
-        // Can't register here, might happen before OnNetworkSpawn
+        ownerRole = owner;
+        
+        // --- Path --- 
+        if (pathInitializer != null)
+        {
+            // PathInitializer now needs to handle being called potentially multiple times
+            // or we assume it's safe to call SetPathInfoOnServer repeatedly.
+            // For now, we assume it's safe. If issues arise, PathInitializer needs adjustment.
+            pathInitializer.ResetInitializationFlag();
+            pathInitializer.SetPathInfoOnServer(ownerIdx, pIdx, startAtBegin); 
+        }
+        else if(IsServer)
+        {
+            Debug.LogError($"Fairy {NetworkObjectId} missing Path Initializer during pooled init!", this);
+        }
+
+        // --- Component States --- 
+        // Ensure components are enabled (they might be disabled by Die)
+        // if (splineWalker != null) splineWalker.enabled = true;
+        if (fairyCollider != null) fairyCollider.enabled = true;
     }
+    // -------------------------------------------------
+
+    // Public method to set path info (delegates to initializer)
+    // --- OBSOLETE: Logic moved to InitializeForPooling ---
+    /*
+    public void SetPathInfo(int ownerIndex, int pIndex, bool startAtBegin)
+    {
+        // ... existing code ...
+    }
+    */
+    // -----------------------------------------------------
+
+    // --- NEW: Method to assign line info (called by spawner)
+    // --- OBSOLETE: Logic moved to InitializeForPooling ---
+    /*
+    public void AssignLineInfo(System.Guid lineGuid, int index)
+    {
+        // ... existing code ...
+    }
+    */
     // -----------------------------------------------------------
 
     // --- NEW: Getters for line info ---
@@ -141,31 +167,24 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
     }
     // ----------------------------------
 
-    // --- NEW: Method to mark this fairy as the trigger ---
-    // Called directly by the FairySpawner on the server after instantiation
+    // --- NEW: Method to mark this fairy as the trigger --- 
+    // --- OBSOLETE: Logic moved to InitializeForPooling ---
+    /*
     public void MarkAsExtraAttackTrigger()
     {
-        // Basic check - should only be callable on server by spawner
-        if (!IsServer) 
-        {
-            
-            return;
-        }
-        isExtraAttackTrigger = true;
-        // TODO: Add visual indicator change here if desired (e.g., change sprite color, add particle effect)
+       // ... existing code ...
     }
+    */
     // ------------------------------------------------------
 
     // --- NEW: Method to assign owner role (called by spawner) --- 
+    // --- OBSOLETE: Logic moved to InitializeForPooling ---
+    /*
     public void AssignOwnerRole(PlayerRole role)
     {
-        if (!IsServer) 
-        {   
-            
-            return;
-        }
-        ownerRole = role;
+        // ... existing code ...
     }
+    */
     // ----------------------------------------------------------
 
     void Update()
@@ -359,26 +378,16 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
         }
         // ---------------------------------
 
-        // --- Deregister from Registry --- 
-        // Done in OnNetworkDespawn or just before despawn
-        if (FairyRegistry.Instance != null)
+        // --- Return to Pool instead of Despawning --- 
+        if (NetworkObject != null)
         {
-            FairyRegistry.Instance.Deregister(this); 
+            NetworkObjectPool.Instance.ReturnNetworkObject(this.NetworkObject);
         }
-        // ---------------------------------
-
-        // --- DIAGNOSTIC LOG: Despawning --- 
-        
-
-        // Despawn the NetworkObject
-        if (NetworkObject != null && NetworkObject.IsSpawned)
-        {
-            NetworkObject.Despawn(true); // true = destroy GameObject
-        }
-        else if (gameObject != null) // Fallback for local destruction if not networked/spawned
+        else if (gameObject != null) // Fallback if NetworkObject somehow null
         {
             Destroy(gameObject);
         }
+        // --------------------------------------------
     }
 
     // --- NEW: Server-side direct damage application method ---
