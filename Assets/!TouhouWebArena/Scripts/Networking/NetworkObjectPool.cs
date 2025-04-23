@@ -4,35 +4,63 @@ using UnityEngine;
 using System.Linq;
 
 /// <summary>
-/// A NetworkObject pooling system using string IDs to manage multiple prefab types,
-/// configured via a list in the Inspector.
-/// Manages the lifecycle of networked objects to improve performance.
-/// Designed to be used as a Singleton.
-/// Pooled prefabs must have PoolableObjectIdentity component with a unique PrefabID set.
+/// A singleton <see cref="NetworkBehaviour"/> that manages object pooling for networked prefabs.
+/// Improves performance by reusing NetworkObject instances instead of instantiating and destroying them frequently.
+/// Prefabs are configured in the Inspector using <see cref="PoolConfig"/> and identified at runtime by a unique <see cref="PoolableObjectIdentity.PrefabID"/> string.
+/// All pool operations (initialization, getting, returning) are server-authoritative.
 /// </summary>
 public class NetworkObjectPool : NetworkBehaviour
 {
-    // Serializable struct to hold config data in the Inspector
+    /// <summary>
+    /// Defines the configuration for a single prefab type within the object pool.
+    /// Used in the Inspector list <see cref="NetworkObjectPool.poolsToCreate"/>.
+    /// </summary>
     [System.Serializable]
     public struct PoolConfig
     {
+        /// <summary>
+        /// The prefab GameObject to be pooled. Must have <see cref="NetworkObject"/> and <see cref="PoolableObjectIdentity"/> components.
+        /// </summary>
+        [Tooltip("The prefab to pool. Must have NetworkObject and PoolableObjectIdentity components.")]
         public GameObject Prefab;
+        /// <summary>
+        /// The initial number of instances of this prefab to create when the pool initializes on the server.
+        /// </summary>
+        [Tooltip("Number of instances to pre-warm the pool with.")]
         public int InitialSize;
     }
 
+    /// <summary>
+    /// Singleton instance of the NetworkObjectPool.
+    /// </summary>
+    [Tooltip("Singleton instance.")]
     public static NetworkObjectPool Instance { get; private set; }
 
     [Header("Pool Configuration")]
+    /// <summary>
+    /// Inspector-configurable list defining the prefabs to be pooled and their initial quantities.
+    /// </summary>
     [Tooltip("List of prefabs to pool. Assign Prefab and Initial Size.")]
     [SerializeField] private List<PoolConfig> poolsToCreate = new List<PoolConfig>();
 
     [Header("Runtime Settings")]
+    /// <summary>
+    /// If true, the pool will instantiate new objects if a requested prefab type runs out.
+    /// If false, <see cref="GetNetworkObject"/> will return null when the specific pool is empty.
+    /// </summary>
+    [Tooltip("If true, the pool will instantiate new objects if a requested prefab type runs out. If false, GetNetworkObject will return null when the pool is empty.")]
     [SerializeField] private bool allowPoolExpansion = true;
 
     // --- Runtime Dictionaries (Private) ---
+    // Stores the actual pooled objects, keyed by PrefabID.
     private Dictionary<string, Queue<NetworkObject>> prefabPools = new Dictionary<string, Queue<NetworkObject>>();
+    // Maps PrefabID to the actual prefab GameObject for instantiation.
     private Dictionary<string, GameObject> prefabIdToReference = new Dictionary<string, GameObject>();
 
+    /// <summary>
+    /// Called when the script instance is being loaded.
+    /// Initializes the Singleton pattern for the pool.
+    /// </summary>
     void Awake()
     {
         if (Instance != null && Instance != this) 
@@ -47,6 +75,10 @@ public class NetworkObjectPool : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Called when the NetworkObject associated with this script is spawned.
+    /// Initializes the pools on the server (<see cref="InitializePools"/>).
+    /// </summary>
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -58,7 +90,10 @@ public class NetworkObjectPool : NetworkBehaviour
     }
 
     /// <summary>
-    /// Initializes all pools based on the poolsToCreate list configured in the Inspector.
+    /// Initializes all pools based on the <see cref="poolsToCreate"/> list configured in the Inspector.
+    /// Performs validation checks on each prefab configuration.
+    /// Populates the internal dictionaries (<see cref="prefabIdToReference"/>, <see cref="prefabPools"/>)
+    /// and pre-warms each pool by instantiating the specified initial number of objects using <see cref="CreateAndPoolObject"/>.
     /// Should only run on the server.
     /// </summary>
     private void InitializePools()
@@ -101,8 +136,12 @@ public class NetworkObjectPool : NetworkBehaviour
     }
 
     /// <summary>
-    /// Instantiates a new object for a specific prefab ID.
+    /// Server-only method. Instantiates a new instance of the specified prefab, deactivates it,
+    /// and adds its NetworkObject component to the corresponding pool queue.
     /// </summary>
+    /// <param name="prefabID">The <see cref="PoolableObjectIdentity.PrefabID"/> of the prefab to instantiate.</param>
+    /// <param name="queue">The specific queue for this prefab ID.</param>
+    /// <returns>The created NetworkObject, or null if instantiation failed or not on server.</returns>
     private NetworkObject CreateAndPoolObject(string prefabID, Queue<NetworkObject> queue)
     {
         if (!IsServer) return null;
@@ -124,8 +163,13 @@ public class NetworkObjectPool : NetworkBehaviour
     }
 
     /// <summary>
-    /// Gets an object from the pool for the specified Prefab ID.
+    /// Server-only method. Retrieves an inactive NetworkObject from the pool for the specified prefab ID.
+    /// If the pool is empty and <see cref="allowPoolExpansion"/> is true, it attempts to create a new object.
+    /// The retrieved object will be inactive; the caller is responsible for setting its position/rotation,
+    /// activating it (<c>gameObject.SetActive(true)</c>), and spawning it (<c>NetworkObject.Spawn(true)</c>).
     /// </summary>
+    /// <param name="prefabID">The <see cref="PoolableObjectIdentity.PrefabID"/> of the desired prefab.</param>
+    /// <returns>An inactive NetworkObject instance ready to be spawned, or null if unavailable/error.</returns>
     public NetworkObject GetNetworkObject(string prefabID)
     {
         if (!IsServer) { Debug.LogError("GetNetworkObject: Must be called on Server!"); return null; }
@@ -167,8 +211,12 @@ public class NetworkObjectPool : NetworkBehaviour
     }
 
     /// <summary>
-    /// Returns a NetworkObject to its appropriate pool using its PrefabID.
+    /// Server-only method. Returns a previously spawned NetworkObject to the pool.
+    /// It despawns the object across the network (without destroying it) and deactivates the GameObject,
+    /// placing it back into the appropriate queue based on its <see cref="PoolableObjectIdentity.PrefabID"/>.
+    /// If the object doesn't have a valid identity or the pool doesn't recognize it, it will be destroyed instead.
     /// </summary>
+    /// <param name="networkObject">The NetworkObject instance to return to the pool.</param>
     public void ReturnNetworkObject(NetworkObject networkObject)
     {
         if (!IsServer) { Debug.LogError("ReturnNetworkObject: Must be called on Server!"); return; }
@@ -200,7 +248,10 @@ public class NetworkObjectPool : NetworkBehaviour
         }
     }
 
-    // Cleanup logic remains the same
+    /// <summary>
+    /// Called when the NetworkObject is despawned (e.g., server shutdown).
+    /// Cleans up pooled objects on the server by despawning and destroying them.
+    /// </summary>
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
@@ -225,37 +276,17 @@ public class NetworkObjectPool : NetworkBehaviour
         if (Instance == this) { Instance = null; }
     }
 
-    // Override OnDestroy to ensure base class cleanup happens
+    /// <summary>
+    /// Called when the MonoBehaviour will be destroyed.
+    /// Ensures the Singleton instance is cleared.
+    /// </summary>
     public override void OnDestroy()
     {
-        // Debug.Log($"[POOL INSTANCE] OnDestroy - Instance ID: {GetInstanceID()}", this);
-        // Custom cleanup (clearing dictionaries, etc.)
-        if (Instance == this) { Instance = null; }
-        // Server-side cleanup of actual GameObjects is handled in OnNetworkDespawn
-        // but we clear the dictionaries here as a fallback
-        if (IsServer) // Check if this instance *was* the server
+        if (Instance == this) 
         {
-             // Destroy any remaining objects if OnNetworkDespawn didn't run
-             foreach (var kvp in prefabPools)
-            {
-                Queue<NetworkObject> queue = kvp.Value;
-                while (queue.Count > 0)
-                {
-                    NetworkObject obj = queue.Dequeue();
-                    if (obj != null && obj.gameObject != null)
-                    {
-                         // Check IsSpawned before Despawn
-                         if (obj.IsSpawned) obj.Despawn(true);
-                         // Destroy regardless if not null
-                         else Destroy(obj.gameObject); 
-                    }
-                }
-            }
+             Instance = null;
+            // Debug.Log($"[POOL INSTANCE] OnDestroy - Instance ID: {GetInstanceID()} cleared Singleton.", this);
         }
-        prefabPools.Clear();
-        prefabIdToReference.Clear();
-
-        // IMPORTANT: Call the base class method
         base.OnDestroy();
     }
 }

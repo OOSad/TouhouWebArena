@@ -1,64 +1,102 @@
 using UnityEngine;
 using Unity.Netcode;
 
+/// <summary>
+/// Controls the behavior of a Spirit collectible/enemy.
+/// Spirits have two states: normal (drifting) and activated (slowly moving up, vulnerable).
+/// Handles health, state transitions, movement, damage taking, death effects, timed despawning,
+/// and interactions with player scopes and bombs.
+/// Designed to be pooled and requires several external references and prefabs.
+/// </summary>
 public class SpiritController : NetworkBehaviour, IClearableByBomb
 {
     [Header("References")]
+    /// <summary>Reference to the Rigidbody2D component for physics-based movement.</summary>
     [SerializeField] private Rigidbody2D rb;
+    /// <summary>Reference to the main collider for the spirit body.</summary>
     [SerializeField] private CircleCollider2D bodyCollider; // Or other collider type
+    /// <summary>Reference to the Spirit prefab asset itself, used for revenge spawns.</summary>
     [SerializeField] private GameObject spiritPrefabRef; // Assign Spirit prefab itself here
     // Potential reference to a bullet clearing component
     // [SerializeField] private BulletClearer bulletClearer;
 
     [Header("Visuals (Assign Children)")]
+    /// <summary>The child GameObject holding visuals for the normal (unactivated) state.</summary>
     [SerializeField]
     [Tooltip("The child GameObject holding visuals for the normal state.")]
     private GameObject normalVisualObject;
+    /// <summary>The child GameObject holding visuals for the activated state.</summary>
     [SerializeField]
     [Tooltip("The child GameObject holding visuals for the activated state.")]
     private GameObject activatedVisualObject;
 
     [Header("Movement")]
+    /// <summary>The movement speed when in the normal (unactivated) state.</summary>
     [SerializeField] private float normalMoveSpeed = 2f;
+    /// <summary>The upward movement speed when in the activated state.</summary>
     [SerializeField] private float activatedMoveSpeed = 1f;
+    /// <summary>[Server Only] Flag set by the spawner indicating if the spirit should initially aim towards the player.</summary>
     private bool aimAtPlayerOnSpawn = false; // Set by spawner (only needed on server)
 
     [Header("Health")]
+    /// <summary>The maximum health points when in the normal (unactivated) state.</summary>
     [SerializeField] private int normalMaxHp = 5;
+    /// <summary>The maximum health points when in the activated state.</summary>
     [SerializeField] private int activatedMaxHp = 1;
 
     // --- Networked State ---
+    /// <summary>[Server Write, Client Read] The current health points of the spirit.</summary>
     private NetworkVariable<int> currentHp = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    /// <summary>[Server Write, Client Read] Indicates if the spirit is currently in the activated state (true) or normal state (false).</summary>
     private NetworkVariable<bool> isActivated = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     // -----------------------
 
     [Header("Death Effects")]
+    /// <summary>Prefab for the visual effect spawned when the spirit dies in the normal state.</summary>
     [SerializeField] private GameObject normalDeathEffectPrefab;
+    /// <summary>Prefab for the visual effect spawned when the spirit dies in the activated state.</summary>
     [SerializeField] private GameObject activatedDeathEffectPrefab;
 
     [Header("Lifetime")]
+    /// <summary>Maximum duration in seconds the spirit can exist before being automatically despawned by the server.</summary>
     [SerializeField] private float maxLifetime = 15f; // Time in seconds before auto-despawn
 
     [Header("Timeout Behavior (Server Only)")]
+    /// <summary>Prefab for the large bullet spawned when the spirit times out while activated.</summary>
     [SerializeField] private GameObject spiritLargeBulletPrefab; // Prefab to spawn on timeout (should have StageSmallBulletMoverScript)
+    /// <summary>Duration in seconds the spirit stays activated before timing out and firing bullets.</summary>
     [SerializeField] private float activatedTimeoutDuration = 3.0f;
+    /// <summary>Spread angle (degrees) for the side bullets fired during timeout.</summary>
     [SerializeField] private float bulletSpreadAngle = 15f; // Angle for side bullets
 
     [Header("Revenge Spawn (Server Only)")]
+    /// <summary>Maximum number of spirits allowed per player side (checked during revenge spawns).</summary>
     [SerializeField] private int maxSpiritsPerSide = 10; // Max spirits allowed per side
+    /// <summary>The size of the zone used for placing revenge-spawned spirits.</summary>
     [SerializeField] private Vector2 revengeSpawnZoneSize = new Vector2(7f, 1f); // How large is the spawn zone
 
     // --- Server-Side State ---
+    /// <summary>[Server Only] Cached transform of the target player (if aiming).</summary>
     private Transform playerTransform; // Set by spawner (only needed on server)
+    /// <summary>[Server Only] The role of the player whose side this spirit belongs to.</summary>
     private PlayerRole ownerRole = PlayerRole.None; // Which side this spirit belongs to
+    /// <summary>[Server Only] Flag to prevent Die() logic from executing multiple times.</summary>
     private bool isDying = false; // Server-side flag to prevent multiple deaths
+    /// <summary>[Server Only] Timer tracking the remaining lifetime of the spirit.</summary>
     private float currentLifetime; // Server-side timer
+    /// <summary>[Server Only] Timer tracking how long the spirit has been in the activated state.</summary>
     private float activatedTimer = 0f; // Server-side timer for timeout
+    /// <summary>[Server Only] Cached reference to Player 1's spirit spawn zone transform.</summary>
     private Transform player1SpawnZoneRef; // Passed in Initialize
+    /// <summary>[Server Only] Cached reference to Player 2's spirit spawn zone transform.</summary>
     private Transform player2SpawnZoneRef; // Passed in Initialize
     // ------------------------
 
     // --- NEW: Public Getter for Owner Role ---
+    /// <summary>
+    /// Gets the <see cref="PlayerRole"/> indicating which player's side this spirit belongs to.
+    /// </summary>
+    /// <returns>The owning PlayerRole.</returns>
     public PlayerRole GetOwnerRole() 
     {
         return ownerRole;
@@ -95,6 +133,16 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
     }
 
     // Called by the spawner ONLY ON SERVER after instantiation but before Spawn()
+    /// <summary>
+    /// [Server Only] Initializes the Spirit after being retrieved from a pool or instantiated.
+    /// Sets initial state, health, owner, target player (optional), spawn zone references, and initial velocity.
+    /// Registers the spirit with the <see cref="SpiritRegistry"/>.
+    /// </summary>
+    /// <param name="targetPlayer">The Transform of the player to initially aim at (can be null).</param>
+    /// <param name="owner">The <see cref="PlayerRole"/> owning this spirit.</param>
+    /// <param name="shouldAim">If true and targetPlayer is not null, the spirit will initially move towards the target player.</param>
+    /// <param name="p1Zone">Reference to Player 1's spawn zone Transform (used for revenge spawns).</param>
+    /// <param name="p2Zone">Reference to Player 2's spawn zone Transform (used for revenge spawns).</param>
     public void Initialize(Transform targetPlayer, PlayerRole owner, bool shouldAim, 
                          Transform p1Zone, Transform p2Zone) // Added spawn zone refs
     {
@@ -150,7 +198,11 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
 
     #region State Management and Visuals
 
-    // Server-only method to change the state
+    /// <summary>
+    /// [Server Only] Changes the activation state of the spirit.
+    /// Updates the <see cref="isActivated"/> NetworkVariable, adjusts health, and sets velocity.
+    /// </summary>
+    /// <param name="activate">True to activate the spirit, false to deactivate (currently unused).</param>
     private void ServerSetActivationState(bool activate)
     {
         if (!IsServer) return;
@@ -173,13 +225,22 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
         }
     }
 
-    // Callback function when isActivated changes (runs on server and clients)
+    /// <summary>
+    /// Callback function triggered when the <see cref="isActivated"/> NetworkVariable changes value.
+    /// Calls <see cref="UpdateVisuals"/> on all clients and the server.
+    /// </summary>
+    /// <param name="previousValue">The previous activation state.</param>
+    /// <param name="newValue">The new activation state.</param>
     private void OnActivationStateChanged(bool previousValue, bool newValue)
     {
         UpdateVisuals(newValue);
     }
 
-    // Updates local visuals based on the activation state
+    /// <summary>
+    /// Updates the visibility of the child GameObjects (<see cref="normalVisualObject"/>, <see cref="activatedVisualObject"/>)
+    /// based on the current activation state.
+    /// </summary>
+    /// <param name="activated">The current activation state.</param>
     private void UpdateVisuals(bool activated)
     {
         if (normalVisualObject == null || activatedVisualObject == null)
@@ -193,7 +254,10 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
         activatedVisualObject.SetActive(activated);
     }
 
-    // Server-only method to set initial velocity
+    /// <summary>
+    /// [Server Only] Sets the initial velocity of the spirit based on the <see cref="aimAtPlayerOnSpawn"/> flag.
+    /// Either aims towards the cached <see cref="playerTransform"/> or defaults to moving straight down.
+    /// </summary>
     private void SetInitialVelocity()
     {
         if (!IsServer) return;
@@ -213,7 +277,13 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
 
     #region Interaction and Damage
 
-    // Server-side check for triggers
+    /// <summary>
+    /// [Server Only] Handles trigger collisions with other objects.
+    /// Activates the spirit if it enters a "ScopeStyleZone".
+    /// Applies damage if hit by a "PlayerShot".
+    /// Damages the player if it collides with a "Player" tagged object.
+    /// </summary>
+    /// <param name="other">The Collider2D that entered the trigger.</param>
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!IsServer) return;
@@ -282,7 +352,13 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
         }
     }
 
-    // --- MODIFIED: Renamed from ApplyDamageInternal and made public ---
+    // --- Public Damage Application (Server Only) ---
+    /// <summary>
+    /// [Server Only] Applies damage to the spirit.
+    /// Reduces health and triggers the <see cref="Die"/> sequence if health drops to 0 or below.
+    /// </summary>
+    /// <param name="amount">The amount of damage to apply.</param>
+    /// <param name="killerRole">The <see cref="PlayerRole"/> of the player who dealt the damage.</param>
     public void TakeDamage(int amount, PlayerRole killerRole)
     {
         // Basic server check + check if already dying
@@ -296,7 +372,12 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
     }
     // -----------------------------------------------------------------
 
-    // Server-side method to handle death logic
+    /// <summary>
+    /// [Server Only] Handles the death sequence of the spirit.
+    /// Prevents multiple executions, spawns appropriate death effects, potentially triggers a revenge spawn,
+    /// deregisters from the <see cref="SpiritRegistry"/>, and returns the object to the pool.
+    /// </summary>
+    /// <param name="killerRole">The role of the player who caused the death, or <see cref="PlayerRole.None"/> if no specific killer.</param>
     private void Die(PlayerRole killerRole = PlayerRole.None) // Added killerRole parameter
     {
         if (!IsServer || isDying) return;
@@ -347,9 +428,11 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
     #region IClearableByBomb Implementation
 
     /// <summary>
-    /// Called when the player's death bomb effect should clear this spirit.
+    /// [Server Only] Implements the <see cref="IClearableByBomb"/> interface.
+    /// Called by <see cref="PlayerDeathBomb"/> when this spirit is caught in a bomb radius.
+    /// Triggers the <see cref="Die"/> sequence, attributing the kill to the bombing player.
     /// </summary>
-    /// <param name="bombingPlayer">The role of the player who activated the bomb.</param>
+    /// <param name="bombingPlayer">The <see cref="PlayerRole"/> of the player who used the bomb.</param>
     public void ClearByBomb(PlayerRole bombingPlayer)
     {
         // Only execute on the server and if the spirit is not already dying
@@ -376,7 +459,10 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
 
     #region Update Loop (Server)
 
-    // Server-side Update for lifetime check AND activation timeout
+    /// <summary>
+    /// [Server Only] Called every frame. Handles lifetime countdown and activated state timeout.
+    /// Calls <see cref="Die"/> or <see cref="HandleActivatedTimeout"/> if conditions are met.
+    /// </summary>
     void Update()
     {
         if (!IsServer || isDying) return; // Only run on server, and stop if already dying
@@ -403,7 +489,11 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
 
     #endregion
 
-    // --- Activated Timeout Bullet Spawning (Server Only) ---
+    /// <summary>
+    /// [Server Only] Handles the logic when an activated spirit times out.
+    /// Prevents multiple executions, deregisters from the registry, finds the opponent player,
+    /// spawns timeout bullets aimed at the opponent, and returns the spirit to the pool.
+    /// </summary>
     private void HandleActivatedTimeout()
     {
         // Double check conditions just in case
@@ -473,6 +563,12 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
         }
     }
 
+    /// <summary>
+    /// [Server Only] Spawns a single timeout bullet (typically a large stage bullet)
+    /// with a specified initial velocity and position.
+    /// </summary>
+    /// <param name="direction">The direction the bullet should travel.</param>
+    /// <param name="spawnPosition">The world position where the bullet should spawn.</param>
     private void SpawnTimeoutBullet(Vector3 direction, Vector3 spawnPosition)
     {
         if (!IsServer) return;
@@ -503,10 +599,15 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
     }
     // -------------------------------------------------
 
-    // --- NEW: Revenge Spirit Spawning (Server Only) ---
-    private void SpawnRevengeSpirit(PlayerRole killerRole) // killerRole is now the OPPONENT's role
+    /// <summary>
+    /// [Server Only] Handles the spawning of a "revenge" spirit on the opponent's side.
+    /// Checks if the maximum spirit count for that side has been reached.
+    /// Calculates a random spawn position within the opponent's designated zone and calls <see cref="SpawnSpiritAtPosition"/>.
+    /// </summary>
+    /// <param name="revengeOwnerRole">The role of the player who will own the newly spawned revenge spirit (typically the opponent of the killer).</param>
+    private void SpawnRevengeSpirit(PlayerRole revengeOwnerRole) // killerRole is now the OPPONENT's role
     {
-        if (!IsServer || killerRole == PlayerRole.None) return;
+        if (!IsServer || revengeOwnerRole == PlayerRole.None) return;
 
         if (spiritPrefabRef == null)
         {
@@ -519,8 +620,8 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
              return;
         }
 
-        // The new spirit is owned by the OPPONENT (passed in as killerRole).
-        PlayerRole newSpiritOwnerRole = killerRole; 
+        // The new spirit is owned by the OPPONENT (passed in as revengeOwnerRole).
+        PlayerRole newSpiritOwnerRole = revengeOwnerRole; 
 
         // Check max spirit count for the OPPONENT's side.
         int opponentSpiritCount = SpiritRegistry.Instance.GetSpiritCount(newSpiritOwnerRole);

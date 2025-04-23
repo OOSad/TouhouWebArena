@@ -1,6 +1,11 @@
 using UnityEngine;
 using Unity.Netcode;
 
+/// <summary>
+/// [Server Only] A simple utility component that destroys its networked GameObject
+/// after a specified delay.
+/// Uses <see cref="NetworkObject.Despawn(true)"/> to remove the object across the network.
+/// </summary>
 public class DestroyAfterDelay : NetworkBehaviour
 {
     [SerializeField] private float delay = 1.0f; // Time in seconds before destroying

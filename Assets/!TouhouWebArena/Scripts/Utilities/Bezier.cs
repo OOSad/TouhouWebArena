@@ -1,8 +1,19 @@
 using UnityEngine;
 
+/// <summary>
+/// Provides static methods for calculating points and derivatives on cubic Bezier curves.
+/// </summary>
 public static class Bezier
 {
-    // Calculates a point on a cubic Bézier curve
+    /// <summary>
+    /// Calculates a point on a cubic Bezier curve defined by four control points.
+    /// </summary>
+    /// <param name="p0">The first control point (start point).</param>
+    /// <param name="p1">The second control point.</param>
+    /// <param name="p2">The third control point.</param>
+    /// <param name="p3">The fourth control point (end point).</param>
+    /// <param name="t">The parameter along the curve, clamped between 0 and 1.</param>
+    /// <returns>The Vector3 position on the curve at parameter t.</returns>
     public static Vector3 GetPoint(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t)
     {
         t = Mathf.Clamp01(t);
@@ -14,8 +25,16 @@ public static class Bezier
             t * t * t * p3;
     }
 
-    // Calculates the first derivative (velocity vector) of a cubic Bézier curve
-    // This indicates the direction and speed of movement along the curve
+    /// <summary>
+    /// Calculates the first derivative (velocity vector) of a cubic Bezier curve.
+    /// The magnitude of the vector represents the speed, and the direction indicates the tangent.
+    /// </summary>
+    /// <param name="p0">The first control point (start point).</param>
+    /// <param name="p1">The second control point.</param>
+    /// <param name="p2">The third control point.</param>
+    /// <param name="p3">The fourth control point (end point).</param>
+    /// <param name="t">The parameter along the curve, clamped between 0 and 1.</param>
+    /// <returns>The Vector3 representing the velocity vector on the curve at parameter t.</returns>
     public static Vector3 GetFirstDerivative(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t)
     {
         t = Mathf.Clamp01(t);

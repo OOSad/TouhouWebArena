@@ -4,8 +4,15 @@ using System.Collections.Generic;
 
 // Singleton registry to track active spirits per player.
 // This runs ONLY on the server.
+/// <summary>
+/// [Server Only] Singleton registry to track active <see cref="SpiritController"/> instances for each player.
+/// Provides methods for registering, deregistering, and counting active spirits based on their owner's <see cref="PlayerRole"/>.
+/// </summary>
 public class SpiritRegistry : NetworkBehaviour
 {
+    /// <summary>
+    /// Gets the singleton instance of the SpiritRegistry. Server only.
+    /// </summary>
     public static SpiritRegistry Instance { get; private set; }
 
     // Dictionaries to store active spirits for each player role
@@ -43,6 +50,11 @@ public class SpiritRegistry : NetworkBehaviour
         base.OnNetworkDespawn();
     }
 
+    /// <summary>
+    /// [Server Only] Registers a <see cref="SpiritController"/> with the specified owner.
+    /// </summary>
+    /// <param name="spirit">The spirit instance to register. Ignored if null.</param>
+    /// <param name="ownerRole">The <see cref="PlayerRole"/> of the spirit's owner. Ignored if None.</param>
     public void Register(SpiritController spirit, PlayerRole ownerRole)
     {
         if (!IsServer || spirit == null || ownerRole == PlayerRole.None)
@@ -59,6 +71,11 @@ public class SpiritRegistry : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// [Server Only] Deregisters a <see cref="SpiritController"/> from its owner's list.
+    /// </summary>
+    /// <param name="spirit">The spirit instance to deregister. Ignored if null.</param>
+    /// <param name="ownerRole">The <see cref="PlayerRole"/> of the spirit's owner. Ignored if None.</param>
     public void Deregister(SpiritController spirit, PlayerRole ownerRole)
     {
         if (!IsServer || spirit == null || ownerRole == PlayerRole.None)
@@ -72,7 +89,11 @@ public class SpiritRegistry : NetworkBehaviour
         }
     }
 
-    // Get the current count of active spirits for a specific player
+    /// <summary>
+    /// [Server Only] Gets the current count of active spirits for a specific player.
+    /// </summary>
+    /// <param name="role">The <see cref="PlayerRole"/> to query.</param>
+    /// <returns>The number of active spirits for the given player, or 0 if the role is invalid or not found.</returns>
     public int GetSpiritCount(PlayerRole role)
     {
         if (!IsServer || role == PlayerRole.None)

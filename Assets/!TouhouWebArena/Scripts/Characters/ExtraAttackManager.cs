@@ -3,12 +3,23 @@ using Unity.Netcode;
 using System.Collections.Generic;
 using System;
 
+/// <summary>
+/// A server-authoritative singleton responsible for managing and triggering character-specific Extra Attacks.
+/// This manager is typically called when a player fulfills a specific condition (e.g., defeating a certain enemy type).
+/// It determines the correct extra attack prefab and spawn logic based on the attacking character and targets the opponent.
+/// </summary>
 public class ExtraAttackManager : NetworkBehaviour
 {
+    /// <summary>
+    /// Singleton instance of the ExtraAttackManager.
+    /// </summary>
+    [Tooltip("Singleton instance.")]
     public static ExtraAttackManager Instance { get; private set; }
 
-    [Header("Extra Attack Settings")]
+    [Header("Extra Attack Prefabs")]
+    [Tooltip("Prefab for Reimu Hakurei's extra attack (likely Homing Orbs). Required if Reimu is playable.")]
     [SerializeField] private GameObject reimuExtraAttackPrefab;
+    [Tooltip("Prefab for Marisa Kirisame's extra attack (likely Earthlight Ray). Required if Marisa is playable.")]
     [SerializeField] private GameObject marisaExtraAttackPrefab;
 
     private void Awake()
@@ -31,7 +42,14 @@ public class ExtraAttackManager : NetworkBehaviour
     }
 
     // --- Core Attack Trigger Logic ---
-    // Now public so Fairy.cs can call it directly
+    /// <summary>
+    /// Server-only internal method to trigger an extra attack.
+    /// Called by other server systems (e.g., when a specific fairy is killed) to initiate the attack.
+    /// Determines the correct prefab and spawn logic based on the attacker's character, finds the appropriate
+    /// spawn area/target for the opponent, and executes the spawn logic.
+    /// </summary>
+    /// <param name="attackerData">PlayerData of the player initiating the attack.</param>
+    /// <param name="opponentRole">The PlayerRole of the opponent who will be targeted by the attack.</param>
     public void TriggerExtraAttackInternal(PlayerData attackerData, PlayerRole opponentRole)
     {
         if (!IsServer) return;

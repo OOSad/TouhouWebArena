@@ -4,31 +4,54 @@ using System.Collections;
 using System.Collections.Generic; // Required for List
 using System.Linq; // Required for LINQ
 
-// Changed from NetworkBehaviour to MonoBehaviour
+/// <summary>
+/// [Server Only] Responsible for spawning waves (lines) of Fairy enemies along predefined paths for a specific player.
+/// This component is expected to be instantiated and initialized by <see cref="GameInitializer"/> on the server.
+/// It retrieves paths from <see cref="PathManager"/>, uses the <see cref="NetworkObjectPool"/> for fairy instances,
+/// and configures each spawned <see cref="Fairy"/> via its Initialize method.
+/// Includes logic for randomizing wave size, path selection, great fairy chance, and optional extra attack triggers.
+/// </summary>
 public class FairySpawner : MonoBehaviour
 {
+    [Tooltip("Player index this spawner belongs to (0 for Player 1, 1 for Player 2). Determines paths and ownership.")]
     [SerializeField] private int playerIndex; // 0 for P1, 1 for P2
 
     [Header("Prefabs")]
+    [Tooltip("The prefab used for spawning standard fairies.")]
     [SerializeField] private GameObject normalFairyPrefab;
+    [Tooltip("The prefab used for spawning 'great' fairies (typically first/last in a line).")]
     [SerializeField] private GameObject greatFairyPrefab;
 
     [Header("Spawning Configuration")]
+    [Tooltip("Time in seconds between the start of each new line of fairies.")]
     [SerializeField] private float spawnInterval = 5f; // Time between spawning lines
+    [Tooltip("Minimum number of fairies to spawn in a single line.")]
     [SerializeField] private int minFairiesPerLine = 6;
+    [Tooltip("Maximum number of fairies to spawn in a single line.")]
     [SerializeField] private int maxFairiesPerLine = 10;
+    [Tooltip("Probability (0-1) that the first and/or last fairy in a line will be a 'great' fairy.")]
     [SerializeField] [Range(0f, 1f)] private float greatFairyChance = 0.2f; // Chance for first/last fairy to be great
+    [Tooltip("Delay in seconds between spawning individual fairies within the same line.")]
     [SerializeField] private float delayBetweenFairies = 0.3f; // Delay spawning fairies in a line for spacing
+    [Tooltip("If true, lines have a 50% chance to spawn from the end of the path instead of the beginning.")]
     [SerializeField] private bool allowReverseSpawning = true; // Allow fairies to spawn from the end of the path
 
     [Header("Extra Attack Trigger (Server Only)")]
+    [Tooltip("If enabled, every N waves, one fairy will be marked as an extra attack trigger.")]
     [SerializeField] private int extraAttackTriggerWaveInterval = 4; // Every N waves, one fairy becomes a trigger
+    [Tooltip("Master toggle for the extra attack trigger functionality.")]
     [SerializeField] private bool enableExtraAttackTrigger = true; // Toggle for this feature
 
+    /// <summary>Reference to the main spawning coroutine.</summary>
     private Coroutine spawnCoroutine;
+    /// <summary>Counter tracking the number of waves (lines) spawned.</summary>
     private int waveCounter = 0; // Counter for waves spawned
 
-    // Changed from OnNetworkSpawn, called by GameInitializer on the server
+    /// <summary>
+    /// [Server Only] Initializes the spawner and starts the spawning loop.
+    /// Called externally (e.g., by <see cref="GameInitializer"/>) after instantiation.
+    /// Validates prefabs and starts the <see cref="ServerSpawnLoop"/> coroutine.
+    /// </summary>
     public void InitializeAndStartSpawning()
     {
         // Basic validation
@@ -46,7 +69,13 @@ public class FairySpawner : MonoBehaviour
         }
     }
 
-    // This method MUST only be called on the server
+    /// <summary>
+    /// [Server Only] The main coroutine loop responsible for spawning waves of fairies.
+    /// Runs indefinitely, waiting <see cref="spawnInterval"/> seconds between waves.
+    /// Retrieves paths, selects path/count/direction, determines great/trigger fairies,
+    /// gets instances from the <see cref="NetworkObjectPool"/>, spawns them, and initializes them.
+    /// </summary>
+    /// <returns>IEnumerator for the coroutine.</returns>
     private IEnumerator ServerSpawnLoop()
     {
         // Get path list from PathManager ONCE
@@ -140,7 +169,7 @@ public class FairySpawner : MonoBehaviour
                 }
                 else
                 {
-                     Debug.LogError("Pooled fairy is missing Fairy script! Returning to pool.", pooledNetworkObject);
+                     Debug.LogError($"[FairySpawner P{playerIndex}] Pooled fairy is missing Fairy script! Returning to pool.", pooledNetworkObject);
                      NetworkObjectPool.Instance.ReturnNetworkObject(pooledNetworkObject); // Return broken obj
                      continue; // Skip to next fairy
                 }
@@ -154,7 +183,10 @@ public class FairySpawner : MonoBehaviour
         }
     }
 
-    // Optional: Add OnDestroy to stop coroutine if the spawner GO is destroyed
+    /// <summary>
+    /// Called when the MonoBehaviour will be destroyed.
+    /// Stops the active <see cref="spawnCoroutine"/> if it exists.
+    /// </summary>
     void OnDestroy()
     {
         if (spawnCoroutine != null)

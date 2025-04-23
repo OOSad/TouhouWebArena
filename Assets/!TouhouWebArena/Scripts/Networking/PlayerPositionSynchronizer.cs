@@ -1,27 +1,49 @@
 using UnityEngine;
 using Unity.Netcode;
 
-// Handles synchronizing the player's position from client to server periodically
-[RequireComponent(typeof(PlayerMovement))] // Needs access to PlayerMovement data
+/// <summary>
+/// Works alongside client-authoritative <see cref="PlayerMovement"/> to synchronize
+/// the player's position to the server periodically for validation.
+/// The owning client sends its position at a fixed interval.
+/// The server receives this position, clamps it within the correct player bounds
+/// (determined via <see cref="PlayerDataManager"/>), and updates its own transform.
+/// This server position is then replicated to other clients via <see cref="NetworkTransform"/>.
+/// </summary>
+[RequireComponent(typeof(PlayerMovement))] // Needs access to PlayerMovement data and methods
 public class PlayerPositionSynchronizer : NetworkBehaviour
 {
     [Header("Sync Settings")]
-    [SerializeField] private float networkSendInterval = 0.05f; // Send position updates 20 times per second
+    /// <summary>
+    /// The interval in seconds at which the client sends position updates to the server.
+    /// </summary>
+    [Tooltip("The interval in seconds at which the client sends position updates to the server.")]
+    [SerializeField] private float networkSendInterval = 0.05f; // e.g., 0.05f = 20 updates per second
 
-    // Private variables
+    /// <summary>Time elapsed since the last position update was sent.</summary>
     private float timeSinceLastSend = 0f;
-    private PlayerMovement playerMovement; // Reference to the core movement script
-    private PlayerDataManager playerDataManager; // Needed for server-side role check
+    /// <summary>Cached reference to the PlayerMovement script on the same GameObject.</summary>
+    private PlayerMovement playerMovement;
+    /// <summary>Cached reference to the PlayerDataManager singleton (used only on server).</summary>
+    private PlayerDataManager playerDataManager;
 
+    /// <summary>
+    /// Called when the script instance is being loaded.
+    /// Caches the required <see cref="PlayerMovement"/> component.
+    /// </summary>
     void Awake()
     {
         playerMovement = GetComponent<PlayerMovement>();
         if (playerMovement == null)
         {
+            Debug.LogError("PlayerPositionSynchronizer requires a PlayerMovement component on the same GameObject.", this);
             enabled = false;
         }
     }
 
+    /// <summary>
+    /// Called when the network object is spawned.
+    /// Caches the <see cref="PlayerDataManager"/> instance (primarily needed on the server).
+    /// </summary>
      public override void OnNetworkSpawn()
      {
         base.OnNetworkSpawn();
@@ -29,10 +51,15 @@ public class PlayerPositionSynchronizer : NetworkBehaviour
         playerDataManager = PlayerDataManager.Instance;
         if (IsServer && playerDataManager == null)
         {
-            // Decide if this is critical enough to disable server RPC logic?
+            Debug.LogWarning("PlayerPositionSynchronizer: PlayerDataManager instance not found on server. Cannot validate client positions accurately.", this);
         }
      }
 
+    /// <summary>
+    /// Called every frame.
+    /// If this client is the owner, it increments the timer and calls <see cref="SubmitPositionRequestServerRpc"/>
+    /// if the <see cref="networkSendInterval"/> has elapsed.
+    /// </summary>
     void Update()
     {
         // Only the owner sends position updates
@@ -49,6 +76,14 @@ public class PlayerPositionSynchronizer : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// [ServerRpc] Receives a position update from an owning client.
+    /// Validates the position by clamping it within the appropriate bounds for that client's role
+    /// (obtained via <see cref="GetBoundsForClient"/>).
+    /// Sets the server's authoritative transform position to the clamped value.
+    /// </summary>
+    /// <param name="clientPosition">The position sent by the client.</param>
+    /// <param name="rpcParams">Contains metadata about the RPC call, including the sender's ClientId.</param>
     [ServerRpc]
     private void SubmitPositionRequestServerRpc(Vector3 clientPosition, ServerRpcParams rpcParams = default)
     {
@@ -67,7 +102,12 @@ public class PlayerPositionSynchronizer : NetworkBehaviour
         transform.position = clampedPosition;
     }
 
-    // Helper to get bounds on the server based on client ID
+    /// <summary>
+    /// [Server Only] Helper method to retrieve the correct movement bounds (<see cref="PlayerMovement.player1Bounds"/> or <see cref="PlayerMovement.player2Bounds"/>)
+    /// for a given client based on their assigned <see cref="PlayerRole"/> stored in the <see cref="PlayerDataManager"/>.
+    /// </summary>
+    /// <param name="clientId">The ClientId of the player whose bounds are needed.</param>
+    /// <returns>The Rect defining the movement bounds for the client, or an empty Rect if data is unavailable.</returns>
     private Rect GetBoundsForClient(ulong clientId)
     {
         if (!IsServer || playerDataManager == null) return new Rect(); // Safety checks
@@ -83,8 +123,16 @@ public class PlayerPositionSynchronizer : NetworkBehaviour
             {
                 return PlayerMovement.player2Bounds; // Access static bounds
             }
+            else
+            {
+                Debug.LogWarning($"PlayerPositionSynchronizer: Client {clientId} has unexpected Role {senderData.Value.Role} in PlayerDataManager. Using default bounds.", this);
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"PlayerPositionSynchronizer: Could not find PlayerData for client {clientId}. Using default bounds.", this);
         }
 
         return new Rect(); // Default empty bounds
     }
-} 
+}

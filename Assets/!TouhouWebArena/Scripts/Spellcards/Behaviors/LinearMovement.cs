@@ -4,17 +4,27 @@ using Unity.Netcode;
 namespace TouhouWebArena.Spellcards.Behaviors
 {
     /// <summary>
-    /// Moves the GameObject forward at a constant speed.
-    /// Assumes the bullet's rotation is set correctly upon spawning.
+    /// A server-authoritative movement behavior that moves the attached GameObject forward
+    /// along its local Y-axis (<c>transform.up</c>) at a constant speed.
+    /// The initial direction must be set by rotating the GameObject upon spawning.
     /// </summary>
     public class LinearMovement : NetworkBehaviour // Inherits from NetworkBehaviour for potential network context, even if movement is local
     {
+        /// <summary>
+        /// The speed at which the GameObject moves forward.
+        /// Can be set via the Inspector or using <see cref="Initialize"/>.
+        /// </summary>
+        [Tooltip("Speed in units per second along the local Y-axis.")]
         public float speed = 5f;
 
         // We assume the initial direction is baked into the transform's rotation
         // by the spawning logic.
         // Movement is executed client-side for performance in bullet hell scenarios.
 
+        /// <summary>
+        /// Server-only Update loop to move the object.
+        /// Client positions are updated via NetworkTransform synchronization (assuming one is attached).
+        /// </summary>
         void Update()
         {
             // Movement logic should only be executed on the server
@@ -31,11 +41,14 @@ namespace TouhouWebArena.Spellcards.Behaviors
         }
 
         /// <summary>
-        /// Sets the speed for this bullet.
-        /// This should be called by the spellcard activation logic after spawning.
+        /// Initializes the movement speed. Typically called by the spawning logic on the server
+        /// immediately after retrieving the object from the pool and before spawning it.
         /// </summary>
+        /// <param name="initialSpeed">The desired movement speed.</param>
         public void Initialize(float initialSpeed)
         {
+            // Ensure this is only called on the server where the speed matters for movement calculation
+            if (!IsServer) return;
             speed = initialSpeed;
         }
     }

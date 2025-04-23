@@ -2,6 +2,15 @@ using UnityEngine;
 using Unity.Netcode;
 using Unity.Netcode.Components; // Added for NetworkTransform
 
+/// <summary>
+/// Handles client-authoritative movement for player characters.
+/// Reads input locally on the owning client, calculates movement based on current speed (normal or focused),
+/// clamps the position within defined bounds, and applies the movement directly to the transform.
+/// The position is synchronized to other clients via the <see cref="NetworkTransform"/> component,
+/// which is disabled on the owning client to prevent conflicts.
+/// Also interacts with <see cref="CharacterStats"/>, <see cref="CharacterAnimation"/>, <see cref="PlayerHealth"/>,
+/// and optionally <see cref="PlayerAIController"/>.
+/// </summary>
 [RequireComponent(typeof(NetworkObject))] // Ensure NetworkObject is present
 [RequireComponent(typeof(Rigidbody2D))] // Keep this if other logic relies on it
 [RequireComponent(typeof(CharacterAnimation))] // Add this back
@@ -9,30 +18,52 @@ using Unity.Netcode.Components; // Added for NetworkTransform
 [RequireComponent(typeof(CharacterStats))] // Added
 public class PlayerMovement : NetworkBehaviour
 {
-    // Make bounds public static so other scripts (like PlayerDeathBomb) can access them
+    /// <summary>
+    /// Hardcoded movement bounds for Player 1 (left side of the screen).
+    /// Accessed publicly by other scripts (e.g., PlayerDeathBomb).
+    /// </summary>
     public static readonly Rect player1Bounds = new Rect(-8f, -4f, 7f, 8f); // Public Hardcoded Left Bounds
+    /// <summary>
+    /// Hardcoded movement bounds for Player 2 (right side of the screen).
+    /// Accessed publicly by other scripts.
+    /// </summary>
     public static readonly Rect player2Bounds = new Rect(1f, -4f, 7f, 8f); // Public Hardcoded Right Bounds
 
-    // Private variables
+    // --- Component References ---
+    /// <summary>Reference to the NetworkTransform component for state synchronization (disabled for owner).</summary>
     private NetworkTransform networkTransform;
-    private Rect currentBounds; // Which bounds apply to this player instance
-    private PlayerDataManager playerDataManager; // To check P1/P2
+    /// <summary>Reference to the PlayerDataManager singleton to determine player role and bounds.</summary>
+    private PlayerDataManager playerDataManager;
+    /// <summary>Reference to the PlayerHealth component to check for invincibility.</summary>
     private PlayerHealth playerHealth;
-    private CharacterAnimation characterAnimation; // Add this reference back
-    private CharacterStats characterStats; // Added reference
-    private PlayerAIController playerAIController; // Added: Reference to AI controller
+    /// <summary>Reference to the CharacterAnimation component to update visual state.</summary>
+    private CharacterAnimation characterAnimation;
+    /// <summary>Reference to the CharacterStats component to get movement speeds.</summary>
+    private CharacterStats characterStats;
+    /// <summary>Optional reference to the PlayerAIController for AI-driven movement.</summary>
+    private PlayerAIController playerAIController;
 
-    // --- Added: AI Control State ---
+    // --- State Variables ---
+    /// <summary>The movement bounds currently applied to this player instance (determined in OnNetworkSpawn).</summary>
+    private Rect currentBounds;
+    /// <summary>Stores the horizontal movement input provided by the AI controller, if active.</summary>
     private float aiHorizontalInput = 0f;
-    // ----------------------------
 
-    // Public property to access the current bounds (read-only from outside)
+    /// <summary>
+    /// Gets the movement bounds currently applied to this player instance.
+    /// </summary>
     public Rect CurrentBounds => currentBounds;
 
-    // Public property to let other scripts control the focus state
+    /// <summary>
+    /// Gets or sets whether the player is currently in focus mode (slowed movement).
+    /// This is typically controlled by an external script like PlayerFocusController.
+    /// </summary>
     public bool IsFocused { get; set; } = false;
 
-    // Add Awake back to get components reliably before OnNetworkSpawn
+    /// <summary>
+    /// Called once when the script instance is first loaded.
+    /// Used to cache required component references reliably before network spawning.
+    /// </summary>
     void Awake()
     {
         networkTransform = GetComponent<NetworkTransform>(); // Good practice to get components early
@@ -49,6 +80,11 @@ public class PlayerMovement : NetworkBehaviour
         // AI Controller is optional, so no error check here
     }
 
+    /// <summary>
+    /// Called when the NetworkObject associated with this script is spawned across the network.
+    /// Fetches the PlayerDataManager instance, disables the NetworkTransform for the owner,
+    /// and determines the appropriate movement <see cref="currentBounds"/> based on the player's role.
+    /// </summary>
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -95,6 +131,12 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Called every frame.
+    /// If this client is the owner and the player is not invincible, it calls <see cref="HandleInputAndMove"/>
+    /// to process input and update the player's position locally.
+    /// Ensures the NetworkTransform remains disabled for the owner.
+    /// </summary>
     void Update()
     {
         if (!IsOwner) return;
@@ -118,6 +160,12 @@ public class PlayerMovement : NetworkBehaviour
         HandleInputAndMove();
     }
 
+    /// <summary>
+    /// Handles reading input (either from player or AI), calculating the movement vector based on speed and focus state,
+    /// clamping the target position within bounds, and applying the final position to the transform.
+    /// Also updates the <see cref="CharacterAnimation"/> component.
+    /// This method is called only on the owning client.
+    /// </summary>
     private void HandleInputAndMove()
     {
         // Get raw input (returns -1, 0, or 1)
@@ -180,7 +228,12 @@ public class PlayerMovement : NetworkBehaviour
         transform.position = clampedPosition;
     }
 
-    // Helper function to clamp position within a Rect - Make public
+    /// <summary>
+    /// Clamps the given position vector within the provided rectangular bounds.
+    /// </summary>
+    /// <param name="position">The position to clamp.</param>
+    /// <param name="bounds">The Rect defining the minimum and maximum X and Y coordinates.</param>
+    /// <returns>The clamped position vector.</returns>
     public Vector3 ClampPositionToBounds(Vector3 position, Rect bounds)
     {
         return new Vector3(
@@ -191,10 +244,10 @@ public class PlayerMovement : NetworkBehaviour
     }
 
     /// <summary>
-    /// Retrieves the PlayerRole for this player instance.
-    /// Relies on PlayerDataManager being available.
+    /// Retrieves the <see cref="PlayerRole"/> (Player1 or Player2) for this player instance.
+    /// Relies on the <see cref="PlayerDataManager"/> being available.
     /// </summary>
-    /// <returns>The PlayerRole (Player1, Player2) or PlayerRole.None if data is not found.</returns>
+    /// <returns>The <see cref="PlayerRole"/>, or <see cref="PlayerRole.None"/> if data cannot be retrieved.</returns>
     public PlayerRole GetPlayerRole()
     {
         if (playerDataManager == null)
@@ -221,11 +274,12 @@ public class PlayerMovement : NetworkBehaviour
         }
     }
 
-    // --- Added: Method for AI to set horizontal input ---
+    // --- AI Control Method ---
     /// <summary>
-    /// Allows the PlayerAIController to set the horizontal movement input.
+    /// Allows the <see cref="PlayerAIController"/> (or other scripts) to set the horizontal movement input externally.
+    /// The input value is clamped between -1 and 1.
     /// </summary>
-    /// <param name="input">Horizontal input value (-1 to 1).</param>
+    /// <param name="input">Horizontal input value (-1 for left, 1 for right, 0 for none).</param>
     public void SetAIHorizontalInput(float input)
     {
         aiHorizontalInput = Mathf.Clamp(input, -1f, 1f);

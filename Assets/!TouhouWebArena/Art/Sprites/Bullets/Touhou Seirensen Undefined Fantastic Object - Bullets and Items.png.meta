@@ -113,9 +113,9 @@ TextureImporter:
       name: Touhou Seirensen Undefined Fantastic Object - Bullets and Items_0
       rect:
         serializedVersion: 2
-        x: 1
-        y: 756
-        width: 256
+        x: 82
+        y: 596
+        width: 14
         height: 14
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -420,27 +420,6 @@ TextureImporter:
       bones: []
       spriteID: 5ad54e6ce5229934bad917fb912ebecd
       internalID: -1364147039
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Touhou Seirensen Undefined Fantastic Object - Bullets and Items_15
-      rect:
-        serializedVersion: 2
-        x: 1
-        y: 707
-        width: 256
-        height: 47
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: bebfa903338ec9745a5bc32ecf141892
-      internalID: -494367735
       vertices: []
       indices: 
       edges: []
@@ -840,27 +819,6 @@ TextureImporter:
       bones: []
       spriteID: 9a0368c61cadcfd4f9ea61f045d597b6
       internalID: 704541259
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Touhou Seirensen Undefined Fantastic Object - Bullets and Items_37
-      rect:
-        serializedVersion: 2
-        x: 1
-        y: 563
-        width: 256
-        height: 128
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 70fa42651f9d85040b49c9fc29f4401d
-      internalID: -1669541640
       vertices: []
       indices: 
       edges: []
@@ -4255,7 +4213,7 @@ TextureImporter:
         width: 8
         height: 8
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -4263,6 +4221,27 @@ TextureImporter:
       bones: []
       spriteID: 84d1c1a267fc7174096c33a586f7f92b
       internalID: -1021332001
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Seirensen Undefined Fantastic Object - Bullets and Items_15
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 523
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 088e490e520bc9d48bb6808ca28a8599
+      internalID: -494367735
       vertices: []
       indices: 
       edges: []

@@ -4,12 +4,21 @@ using Unity.Netcode;
 // Require NetworkObject as this script assumes the bullet is networked
 [RequireComponent(typeof(NetworkObject))]
 [RequireComponent(typeof(PoolableObjectIdentity))] // Ensure it has the identity component
+/// <summary>
+/// Base class for handling projectile movement, lifetime, collision, and ownership.
+/// Assumes server-authoritative movement and collision detection.
+/// Manages automatic despawning based on lifetime and handles returning the object to the <see cref="NetworkObjectPool"/>.
+/// </summary>
 public class BulletMovement : NetworkBehaviour
 {
     [SerializeField] private float moveSpeed = 10f; // Speed of the bullet
     [SerializeField] private float bulletLifetime = 3.0f; // Seconds before the bullet despawns automatically
 
     // NetworkVariable to identify the owner
+    /// <summary>
+    /// [Server Write, Client Read] Identifies which player (<see cref="PlayerRole"/>) owns this bullet.
+    /// Used for attributing kills/damage and potentially for collision filtering.
+    /// </summary>
     public NetworkVariable<PlayerRole> OwnerRole { get; private set; } = 
         new NetworkVariable<PlayerRole>(PlayerRole.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
@@ -146,7 +155,10 @@ public class BulletMovement : NetworkBehaviour
         }
     }
 
-    // Keep the public method for external calls like ClearByBomb, but have it call ReturnToPool
+    /// <summary>
+    /// [Server Only] Initiates the process of despawning the bullet and returning it to the pool.
+    /// If called on a client, this method does nothing.
+    /// </summary>
     public void DespawnBullet()
     {
          if (IsServer)

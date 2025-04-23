@@ -3,9 +3,13 @@ using System.Collections;
 using System.Collections.Generic; // For List
 using Unity.Netcode; // For NetworkObject spawning
 
-// This temporary object handles delayed actions after a Fairy dies,
-// allowing the Fairy GameObject to be destroyed immediately.
-// It holds data directly instead of component references.
+/// <summary>
+/// A temporary MonoBehaviour created by a <see cref="Fairy"/> upon its death
+/// to handle actions that need to occur after a short delay (e.g., spawning effects,
+/// triggering the next fairy in a chain reaction) without keeping the original Fairy object alive.
+/// This processor holds the necessary data and destroys itself after executing the delayed actions.
+/// Note: This object itself is NOT networked; it executes server-side logic initiated by the Fairy.
+/// </summary>
 public class DelayedActionProcessor : MonoBehaviour
 {
     // Data needed for actions
@@ -16,7 +20,15 @@ public class DelayedActionProcessor : MonoBehaviour
     private System.Guid _lineId;
     private int _indexInLine;
 
-    // Initialize with data and start the coroutine
+    /// <summary>
+    /// Initializes the processor with the required data and starts the delayed action coroutine.
+    /// </summary>
+    /// <param name="position">The position where the original Fairy died (used for effects).</param>
+    /// <param name="killer">The <see cref="PlayerRole"/> who killed the Fairy (None if not killed by a player).</param>
+    /// <param name="delay">The time in seconds to wait before executing actions.</param>
+    /// <param name="shockwavePrefab">The shockwave effect prefab to spawn.</param>
+    /// <param name="lineId">The Guid of the line the Fairy belonged to.</param>
+    /// <param name="indexInLine">The index of the Fairy within its line.</param>
     public void InitializeAndRun(Vector3 position, PlayerRole killer, float delay, 
                                  GameObject shockwavePrefab, System.Guid lineId, int indexInLine)
     {

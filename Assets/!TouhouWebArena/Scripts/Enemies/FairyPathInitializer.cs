@@ -3,6 +3,13 @@ using Unity.Netcode;
 
 // Handles receiving path info and initializing the SplineWalker for a Fairy
 [RequireComponent(typeof(Fairy), typeof(SplineWalker))] // Requires Fairy and SplineWalker
+/// <summary>
+/// [Server Only] Handles receiving path information via NetworkVariables and initializing the
+/// associated <see cref="SplineWalker"/> component for a <see cref="Fairy"/>.
+/// Ensures the SplineWalker is set up with the correct path from <see cref="PathManager"/>
+/// based on owner index, path index, and starting direction.
+/// Designed to work with object pooling via <see cref="ResetInitializationFlag"/>.
+/// </summary>
 public class FairyPathInitializer : NetworkBehaviour
 {
     // --- Path Initialization NetworkVariables ---
@@ -51,6 +58,14 @@ public class FairyPathInitializer : NetworkBehaviour
     }
 
     // Public method for the Spawner (via Fairy script) to set path info on the Server
+    /// <summary>
+    /// [Server Only] Sets the path information NetworkVariables.
+    /// Called by the spawner (or <see cref="Fairy.InitializeForPooling"/>) to configure the path for this fairy.
+    /// Also attempts to initialize the path immediately on the server.
+    /// </summary>
+    /// <param name="ownerIndex">The player index (0 or 1) owning the path.</param>
+    /// <param name="pIndex">The index of the specific path within the owner's list.</param>
+    /// <param name="startAtBegin">True to start at the beginning of the spline, false to start at the end.</param>
     public void SetPathInfoOnServer(int ownerIndex, int pIndex, bool startAtBegin)
     {
         if (!IsServer)
@@ -100,6 +115,11 @@ public class FairyPathInitializer : NetworkBehaviour
     }
 
     // --- NEW: Method to allow re-initialization for pooling ---
+    /// <summary>
+    /// Resets the internal path initialization flag.
+    /// This allows the path to be re-initialized when the Fairy is reused from a pool.
+    /// Called by <see cref="Fairy.InitializeForPooling"/>.
+    /// </summary>
     public void ResetInitializationFlag()
     {
         pathInitialized = false;

@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2029427263933689195}
   - component: {fileID: 2442655208907664675}
-  - component: {fileID: 5864363964830725988}
   - component: {fileID: 5765213580922380714}
+  - component: {fileID: -5884376341793209524}
   - component: {fileID: 5240710830465845626}
   - component: {fileID: 2129972034794337261}
   - component: {fileID: -6737211584121348743}
@@ -61,7 +61,21 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &5864363964830725988
+--- !u!114 &5765213580922380714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8937448580770282229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d9f797e066b44644ac93b2d3c1dde91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PrefabID: BaseBullet
+  OriginalPrefab: {fileID: 8937448580770282229}
+--- !u!114 &-5884376341793209524
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -92,20 +106,6 @@ MonoBehaviour:
   InLocalSpace: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &5765213580922380714
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8937448580770282229}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d9f797e066b44644ac93b2d3c1dde91, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  PrefabID: BaseBullet
-  OriginalPrefab: {fileID: 8937448580770282229}
 --- !u!212 &5240710830465845626
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -236,7 +236,6 @@ MonoBehaviour:
   enforceBounds: 1
   boundaryX: 0
   keepOnPositiveSide: 1
-  isClearableByBomb: 0
 --- !u!114 &6551332447265239885
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -249,7 +248,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9aec3c383106ee48b0e91d0fcba8107, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 5
 --- !u!114 &3222724681119919273
 MonoBehaviour:
   m_ObjectHideFlags: 0

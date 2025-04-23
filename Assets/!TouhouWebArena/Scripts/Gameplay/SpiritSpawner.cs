@@ -2,52 +2,88 @@ using UnityEngine;
 using System.Collections;
 using Unity.Netcode;
 
-// Spawns Spirit enemies in the designated zones
+/// <summary>
+/// [Server Only] Spawns Spirit items periodically within designated zones for each player.
+/// Uses the <see cref="NetworkObjectPool"/> to manage Spirit instances.
+/// Has a configurable chance to aim spawned Spirits towards the corresponding player.
+/// Requires references to spawn zone transforms and the Spirit prefab.
+/// </summary>
 public class SpiritSpawner : NetworkBehaviour
 {
     [Header("References")]
-    [SerializeField] private Transform spawnZone1; // Same as StageSmallBulletSpawner zones
+    [Tooltip("Transform defining the center of the spawn zone for Player 1's side.")]
+    [SerializeField] private Transform spawnZone1;
+    [Tooltip("Transform defining the center of the spawn zone for Player 2's side.")]
     [SerializeField] private Transform spawnZone2;
+    [Tooltip("The prefab for the Spirit item. Must have NetworkObject, PoolableObjectIdentity, and SpiritController components.")]
     [SerializeField] private GameObject spiritPrefab;
 
     [Header("Spawning Configuration")]
-    [SerializeField] private Vector2 spawnZoneSize = new Vector2(2f, 1f); // Match bullet spawner or customize
-    [SerializeField] private float spawnInterval = 2.0f; // Time between spirit spawns
-    [SerializeField, Range(0f, 1f)] private float aimAtPlayerChance = 0.25f; // 25% chance to aim at player
+    [Tooltip("The dimensions (Width, Height) of the rectangular spawn zones centered on the spawnZone transforms.")]
+    [SerializeField] private Vector2 spawnZoneSize = new Vector2(2f, 1f);
+    [Tooltip("Average time in seconds between spawning a new Spirit in each zone.")]
+    [SerializeField] private float spawnInterval = 2.0f;
+    [Tooltip("Probability (0-1) that a newly spawned Spirit will initially move towards the corresponding player.")]
+    [SerializeField, Range(0f, 1f)] private float aimAtPlayerChance = 0.25f;
 
+    /// <summary>
+    /// Called on the frame when a script is enabled just before any of the Update methods are called the first time.
+    /// Validates required references and starts the <see cref="SpawnSpirits"/> coroutine if validation passes.
+    /// </summary>
     private void Start()
     {
         if (!ValidateReferences()) return;
         StartCoroutine(SpawnSpirits());
     }
 
+    /// <summary>
+    /// Validates that all required component references and prefab configurations are set correctly.
+    /// Disables the component and logs errors if validation fails.
+    /// </summary>
+    /// <returns>True if all references and configurations are valid, false otherwise.</returns>
     private bool ValidateReferences()
     {
         if (spawnZone1 == null || spawnZone2 == null)
         {
+            Debug.LogError("SpiritSpawner: Spawn Zone 1 or Spawn Zone 2 is not assigned.", this);
             enabled = false;
             return false;
         }
 
         if (spiritPrefab == null)
         {
+            Debug.LogError("SpiritSpawner: Spirit Prefab is not assigned.", this);
             enabled = false;
             return false;
         }
 
         if (spiritPrefab.GetComponent<NetworkObject>() == null)
         {
+            Debug.LogError("SpiritSpawner: Spirit Prefab is missing a NetworkObject component.", this);
             enabled = false;
             return false;
         }
         if (spiritPrefab.GetComponent<SpiritController>() == null)
         {
+            Debug.LogError("SpiritSpawner: Spirit Prefab is missing a SpiritController component.", this);
+            enabled = false;
+            return false;
+        }
+        // Also check for PoolableObjectIdentity
+        if (spiritPrefab.GetComponent<PoolableObjectIdentity>() == null || string.IsNullOrEmpty(spiritPrefab.GetComponent<PoolableObjectIdentity>().PrefabID))
+        {
+            Debug.LogError("SpiritSpawner: Spirit Prefab is missing PoolableObjectIdentity or has an empty PrefabID.", this);
             enabled = false;
             return false;
         }
         return true;
     }
 
+    /// <summary>
+    /// [Server Only] Coroutine loop that periodically spawns spirits in both zones.
+    /// Contains the main spawning logic, waiting <see cref="spawnInterval"/> seconds between spawns.
+    /// </summary>
+    /// <returns>IEnumerator for the coroutine.</returns>
     private IEnumerator SpawnSpirits()
     {
         if (!IsServer) yield break; // Only server spawns
@@ -63,6 +99,13 @@ public class SpiritSpawner : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// [Server Only] Spawns a single spirit within the specified zone.
+    /// Calculates a random position, gets a Spirit instance from the <see cref="NetworkObjectPool"/>,
+    /// determines if it should aim at the player, finds the player transform if necessary,
+    /// spawns the NetworkObject, and calls <see cref="SpiritController.Initialize"/>.
+    /// </summary>
+    /// <param name="zoneCenter">The Transform representing the center of the spawn zone.</param>
     private void SpawnSpiritInZone(Transform zoneCenter)
     {
         // Calculate spawn position
@@ -121,13 +164,20 @@ public class SpiritSpawner : NetworkBehaviour
                     }
                     else
                     {
+                        Debug.LogWarning($"[SpiritSpawner] Could not find NetworkObject for Player {targetRole}. Spirit will not aim.", this);
                         shouldAim = false; // Fallback to not aiming
                     }
                 }
                 else
                 {
+                    Debug.LogWarning($"[SpiritSpawner] Could not find PlayerData for Role {targetRole}. Spirit will not aim.", this);
                     shouldAim = false; // Fallback to not aiming
                 }
+            }
+            else
+            {
+                Debug.LogWarning("[SpiritSpawner] PlayerDataManager or NetworkManager not available. Spirit will not aim.", this);
+                shouldAim = false; // Fallback to not aiming
             }
             // -----------------------------------------------------------------------
         }
@@ -139,6 +189,9 @@ public class SpiritSpawner : NetworkBehaviour
         spiritController.Initialize(targetPlayerTransform, targetRole, shouldAim, spawnZone1, spawnZone2);
     }
 
+    /// <summary>
+    /// Draws wireframe cubes in the editor scene view to visualize the spawn zones.
+    /// </summary>
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.cyan; // Use a different color for spirit zones

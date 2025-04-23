@@ -3,6 +3,12 @@ using Unity.Netcode;
 using System.Collections.Generic;
 using System.Linq; // Added for OfType<T>
 
+/// <summary>
+/// Handles the server-side logic for the player's "death bomb" effect.
+/// This effect triggers automatically after a player takes damage and their invincibility period ends (see <see cref="PlayerHealth"/>).
+/// It finds and clears specific objects (e.g., bullets, certain enemies) within a radius around the player,
+/// but only on the player's own side of the playfield.
+/// </summary>
 [RequireComponent(typeof(CharacterStats))]
 public class PlayerDeathBomb : NetworkBehaviour
 {
@@ -14,7 +20,13 @@ public class PlayerDeathBomb : NetworkBehaviour
         // if (characterStats == null) 
     }
 
-    // Call this method from PlayerHealth on the server
+    /// <summary>
+    /// Executes the death bomb logic ONLY on the server.
+    /// Finds all objects implementing <see cref="IClearableByBomb"/> within the bomb radius 
+    /// (defined by <see cref="CharacterStats.GetDeathBombRadius"/>) on the correct side of the playfield 
+    /// for the bombing player, and calls their <see cref="IClearableByBomb.ClearByBomb"/> method.
+    /// This method is typically called by <see cref="PlayerHealth"/> after the invincibility timer.
+    /// </summary>
     public void ExecuteBomb()
     {
         if (!IsServer)

@@ -2,13 +2,25 @@ using UnityEngine;
 using System.Collections;
 using Unity.Netcode; // Added for NetworkVariable & NetworkBehaviour
 
+/// <summary>
+/// Represents Marisa's extra attack projectile (Master Spark).
+/// Handles activation delay, lifetime, collision detection, and despawning.
+/// Applies damage to the opponent player on collision.
+/// </summary>
 public class EarthlightRay : NetworkBehaviour
 {
+    /// <summary>Time in seconds after spawning before the laser collider activates and can deal damage.</summary>
     public float activationDelay = 0.5f; // Time before the laser becomes harmful
+    /// <summary>Total time in seconds the laser exists before automatically despawning.</summary>
     public float lifetime = 2.0f;       // How long the laser stays active
+    /// <summary>Maximum random tilt in degrees applied to the laser's rotation upon spawning.</summary>
     public float maxTiltAngle = 10f;   // Maximum tilt in degrees +/-
 
     // Store the role of the player who fired the laser
+    /// <summary>
+    /// [Server Write, Client Read] The <see cref="PlayerRole"/> of the player who triggered this laser.
+    /// Used to prevent the laser from damaging its owner.
+    /// </summary>
     public NetworkVariable<PlayerRole> AttackerRole { get; private set; } =
         new NetworkVariable<PlayerRole>(PlayerRole.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 

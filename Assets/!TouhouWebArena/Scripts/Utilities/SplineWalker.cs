@@ -5,7 +5,12 @@ using Unity.Netcode;
 [RequireComponent(typeof(Fairy))] // Restored
 // --- NEW: Require the look forward component ---
 [RequireComponent(typeof(SplineLookForward))] 
-// Inherit from NetworkBehaviour instead of MonoBehaviour
+/// <summary>
+/// [Server Only] Moves a GameObject along a <see cref="BezierSpline"/> at a constant speed.
+/// Handles calculating progress along the spline based on desired speed and curve velocity.
+/// Can optionally destroy the GameObject or notify its owner (<see cref="Fairy"/>) upon reaching the end.
+/// Requires initialization via <see cref="InitializeSplineInternal"/>.
+/// </summary>
 public class SplineWalker : NetworkBehaviour
 {
     [SerializeField] private BezierSpline spline; // The spline to follow
@@ -16,7 +21,9 @@ public class SplineWalker : NetworkBehaviour
     private bool movingForward = true; // Direction of travel
     private Fairy ownerFairy; // Reference to the controlling Fairy script
 
-    // --- NEW: Public getter for the spline --- 
+    /// <summary>
+    /// Gets the <see cref="BezierSpline"/> currently being followed.
+    /// </summary>
     public BezierSpline Spline => spline;
     // ----------------------------------------
 
@@ -32,7 +39,13 @@ public class SplineWalker : NetworkBehaviour
         enabled = false; 
     }
 
-    // This is now called INTERNALLY by the Fairy script after path data is synced
+    /// <summary>
+    /// [Server Only] Initializes the walker with the spline to follow and the starting direction/progress.
+    /// Called internally by the owning <see cref="Fairy"/> after path data is synchronized.
+    /// Enables the component to start movement.
+    /// </summary>
+    /// <param name="chosenPath">The <see cref="BezierSpline"/> to follow.</param>
+    /// <param name="startAtBeginning">True to start at progress 0 and move forward, false to start at progress 1 and move backward.</param>
     public void InitializeSplineInternal(BezierSpline chosenPath, bool startAtBeginning)
     {
         this.spline = chosenPath;
@@ -122,7 +135,11 @@ public class SplineWalker : NetworkBehaviour
         }
     }
 
-    // --- NEW: Public method to get current direction ---
+    /// <summary>
+    /// Gets the current direction of movement along the spline.
+    /// Takes into account whether the walker is moving forward or backward.
+    /// </summary>
+    /// <returns>The normalized direction vector in world space, or Vector3.zero if the spline is invalid.</returns>
     public Vector3 GetCurrentDirection()
     {
         if (spline == null) return Vector3.zero;
@@ -130,7 +147,6 @@ public class SplineWalker : NetworkBehaviour
         Vector3 direction = spline.GetDirection(progress);
         return movingForward ? direction : -direction;
     }
-    // -------------------------------------------------
 
     // --- RENAMED and MODIFIED: Only updates position ---
     private void UpdatePosition(float currentProgress)

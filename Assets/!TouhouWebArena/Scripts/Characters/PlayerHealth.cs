@@ -6,18 +6,38 @@ using System.Collections; // Added for Coroutines
 // NEW: Require the visuals component
 [RequireComponent(typeof(PlayerInvincibilityVisuals))]
 [RequireComponent(typeof(CharacterStats))]
+/// <summary>
+/// Manages the health state of a player character in a networked environment.
+/// Handles taking damage, death, invincibility frames, and synchronization of health/invincibility state.
+/// This component is server-authoritative for all health modifications and state changes.
+/// </summary>
 public class PlayerHealth : NetworkBehaviour
 {
-    // NetworkVariable constructor needs a default value, cannot use CharacterStats here yet.
-    // We will set the correct value authoritatively on the server in OnNetworkSpawn.
+    /// <summary>
+    /// The current health of the player. Synchronized from server to clients.
+    /// Initialized by the server in OnNetworkSpawn based on CharacterStats.
+    /// </summary>
+    [Tooltip("Current health points. Synced from server.")]
     public NetworkVariable<int> CurrentHealth = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server); // Default to 1, server will fix
 
-    // Event to notify UI or other systems about health changes
+    /// <summary>
+    /// Event invoked on both server and clients whenever <see cref="CurrentHealth"/> changes.
+    /// Primarily used by UI elements to update health displays.
+    /// </summary>
+    [Tooltip("Invoked when health changes. Parameter is the new health value.")]
     public event Action<int> OnHealthChanged;
-    // Event to notify game state manager about death (server-side)
+    /// <summary>
+    /// Static server-side event invoked ONLY on the server when a player's health reaches zero or less.
+    /// Carries the NetworkClientId of the player who died. Used by game managers to handle player death logic.
+    /// </summary>
+    [Tooltip("Server-only event invoked when a player dies. Parameter is the OwnerClientId.")]
     public static event Action<ulong> OnPlayerDeathServer; 
 
-    // NetworkVariable to sync invincibility state (server writes, everyone reads)
+    /// <summary>
+    /// Networked state indicating if the player is currently invincible (cannot take damage).
+    /// Controlled and synchronized by the server.
+    /// </summary>
+    [Tooltip("Is the player currently invincible? Synced from server.")]
     public NetworkVariable<bool> IsInvincible = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     private PlayerDeathBomb playerDeathBomb; // Reference to the bomb component
@@ -61,7 +81,12 @@ public class PlayerHealth : NetworkBehaviour
         OnHealthChanged?.Invoke(newValue);
     }
 
-    // Call this method from PlayerHitbox on the server OR via RequestDamageServerRpc
+    /// <summary>
+    /// Server-authoritative method to apply damage to the player.
+    /// Checks for invincibility and current health state before applying damage.
+    /// Triggers invincibility frames or handles death if health drops to zero.
+    /// </summary>
+    /// <param name="amount">The amount of damage to apply.</param>
     public void TakeDamage(int amount)
     {
         if (!IsServer) return;
@@ -104,13 +129,21 @@ public class PlayerHealth : NetworkBehaviour
         IsInvincible.Value = false; 
     }
 
+    /// <summary>
+    /// Server-side logic executed when the player's health reaches zero.
+    /// Invokes the static <see cref="OnPlayerDeathServer"/> event.
+    /// </summary>
     private void HandleDeathServer()
     {
         // This runs ONLY on the server when health reaches 0
         OnPlayerDeathServer?.Invoke(OwnerClientId);
     }
 
-    // Example: Reset health (e.g., called by a game manager at round start)
+    /// <summary>
+    /// ServerRpc allowing the server (or potentially clients with authority, though not recommended for health)
+    /// to reset the player's health to its starting value defined in <see cref="CharacterStats"/>.
+    /// Useful for starting new rounds or respawning.
+    /// </summary>
     [ServerRpc(RequireOwnership = false)] // Allow server to call this on player objects
     public void ResetHealthServerRpc()
     {

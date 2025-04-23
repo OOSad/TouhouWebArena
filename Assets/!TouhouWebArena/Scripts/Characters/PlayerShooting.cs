@@ -6,44 +6,49 @@ using System.Collections.Generic; // Added for Dictionary
 using TouhouWebArena.Spellcards; // Required for SpellcardExecutor
 using TouhouWebArena.Spellcards.Behaviors; // Required for bullet behaviors
 
+/// <summary>
+/// Handles player input for shooting actions (basic shot, charge attacks, spellcards)
+/// and communicates with the server to execute these actions authoritatively.
+/// Also interacts with the <see cref="SpellBarController"/> to manage charge levels and spellcard costs.
+/// </summary>
 [RequireComponent(typeof(NetworkObject))] // Ensure player has NetworkObject
 [RequireComponent(typeof(CharacterStats))] // Ensure player has CharacterStats
 public class PlayerShooting : NetworkBehaviour
 {
-    [Header("Prefabs")] // Added Header
+    // Note: Prefabs specific to characters (like charge attacks) are now typically fetched from CharacterStats.
+    // These fields might be deprecated or serve as fallbacks if needed.
+    [Header("Prefabs")]
     [SerializeField]
-    [Tooltip("The prefab for Reimu's Charge Attack projectiles (HomingTalisman).")]
-    private GameObject reimuChargeAttackPrefab; // Renamed
+    [Tooltip("(Legacy/Fallback?) The prefab for Reimu's Charge Attack projectiles (HomingTalisman).")]
+    private GameObject reimuChargeAttackPrefab;
     [SerializeField]
-    [Tooltip("The prefab for Marisa's Charge Attack projectile (IllusionLaser).")]
-    private GameObject marisaChargeAttackPrefab; // Added
+    [Tooltip("(Legacy/Fallback?) The prefab for Marisa's Charge Attack projectile (IllusionLaser).")]
+    private GameObject marisaChargeAttackPrefab;
 
     [Header("Spell Bar")]
-    [Tooltip("Reference to the player's spell bar controller. Assigned at runtime.")]
+    [Tooltip("Reference to the player's spell bar controller. Assigned at runtime by the owning client.")]
     private SpellBarController spellBarController;
 
     [Header("Input Settings")]
-    [SerializeField] private KeyCode fireKey = KeyCode.Z; // Configurable fire key
+    [Tooltip("The keyboard key used to trigger shooting actions.")]
+    [SerializeField] private KeyCode fireKey = KeyCode.Z;
 
-    // Private variables
-    private float nextFireTime = 0f; // Time when next burst can start
-    private const float firePointVerticalOffset = 0.5f; // How far above the player center bullets spawn
-    private Coroutine burstCoroutine; // To track if a burst is active
+    // --- Timing and State --- 
+    private float nextFireTime = 0f; // Tracks cooldown for basic shot bursts.
+    private const float firePointVerticalOffset = 0.5f; // Vertical offset from player center for bullet spawns.
+    private Coroutine burstCoroutine; // Reference to the active basic shot burst coroutine.
+    private bool isHoldingChargeKey = false; // Local state tracking if the fire key is held down.
 
-    // --- Added Local state for charging ---
-    private bool isHoldingChargeKey = false;
-    // --- End Added ---
+    // --- Component References --- 
+    private CharacterStats characterStats; // Cached reference to the player's stats.
 
-    // --- Added Reference to CharacterStats ---
-    private CharacterStats characterStats;
-    // --- End Added Reference ---
-
-    // --- Server-side cache for spell bars ---
+    // --- Server-Side Cache --- 
+    // Cache of SpellBarControllers keyed by ClientId, used by the server for updates.
     private Dictionary<ulong, SpellBarController> playerSpellBars = new Dictionary<ulong, SpellBarController>();
-    // --- End server-side cache ---
 
     /// <summary>
-    /// Called when the NetworkObject is spawned. We use this to find the correct spell bar.
+    /// Initializes references and caches when the NetworkObject spawns.
+    /// Server caches all spell bars, Owner client finds its own spell bar.
     /// </summary>
     public override void OnNetworkSpawn()
     {
@@ -105,6 +110,12 @@ public class PlayerShooting : NetworkBehaviour
         // Initialize to allow firing immediately
     }
 
+    /// <summary>
+    /// Main update loop.
+    /// Server: Handles passive spell bar fill for all connected players.
+    /// Owner Client: Reads input, sends charge state to server, requests attacks/spellcards on key release,
+    /// initiates basic shot burst sequence on key press (respecting cooldown).
+    /// </summary>
     void Update()
     {
         // --- Server-Side Passive Spell Bar Update ---
@@ -190,7 +201,12 @@ public class PlayerShooting : NetworkBehaviour
         }
     }
 
-    // --- RPC to inform server of charging state ---
+    /// <summary>
+    /// ServerRpc called by the owning client to inform the server whether the fire key is being held.
+    /// The server uses this information to update the corresponding player's active spell bar charge.
+    /// </summary>
+    /// <param name="clientIsCharging">True if the client is holding the fire key, false otherwise.</param>
+    /// <param name="rpcParams">Standard RPC parameters.</param>
     [ServerRpc]
     private void UpdateChargeStateServerRpc(bool clientIsCharging, ServerRpcParams rpcParams = default)
     {
@@ -233,7 +249,12 @@ public class PlayerShooting : NetworkBehaviour
     }
     // --- End RPC ---
 
-    // --- NEW: ServerRpc for Charge Attack ---
+    /// <summary>
+    /// ServerRpc called by the owning client when the fire key is released with enough charge for a Charge Attack (Level 1).
+    /// The server identifies the character, fetches the appropriate charge attack prefab from <see cref="CharacterStats"/>,
+    /// and executes the corresponding spawn logic (e.g., <see cref="SpawnReimuChargeAttack"/> or <see cref="SpawnMarisaChargeAttack"/>).
+    /// </summary>
+    /// <param name="rpcParams">Standard RPC parameters.</param>
     [ServerRpc]
     private void PerformChargeAttackServerRpc(ServerRpcParams rpcParams = default)
     {
@@ -286,7 +307,13 @@ public class PlayerShooting : NetworkBehaviour
     }
     // --- END NEW ServerRpc ---
 
-    // --- Helper method for Reimu's Attack (Now takes prefab parameter) ---
+    /// <summary>
+    /// Server-side helper to spawn Reimu's charge attack pattern.
+    /// Instantiates and spawns multiple projectiles based on the provided prefab.
+    /// </summary>
+    /// <param name="playerTransform">The transform of the owning player.</param>
+    /// <param name="ownerClientId">The NetworkClientId of the owning player.</param>
+    /// <param name="attackPrefab">The specific GameObject prefab for Reimu's charge attack.</param>
     private void SpawnReimuChargeAttack(Transform playerTransform, ulong ownerClientId, GameObject attackPrefab)
     {
         // No longer checks internal field, uses parameter
@@ -322,7 +349,13 @@ public class PlayerShooting : NetworkBehaviour
         }
     }
 
-    // --- Helper method for Marisa's Attack ---
+    /// <summary>
+    /// Server-side helper to spawn Marisa's charge attack (Illusion Laser).
+    /// Instantiates and spawns the laser prefab.
+    /// </summary>
+    /// <param name="playerTransform">The transform of the owning player.</param>
+    /// <param name="ownerClientId">The NetworkClientId of the owning player.</param>
+    /// <param name="attackPrefab">The specific GameObject prefab for Marisa's charge attack.</param>
     private void SpawnMarisaChargeAttack(Transform playerTransform, ulong ownerClientId, GameObject attackPrefab)
     {
         if (attackPrefab == null)
@@ -353,6 +386,10 @@ public class PlayerShooting : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Coroutine run by the owning client to handle the burst fire sequence for the basic shot.
+    /// Calls <see cref="RequestFireServerRpc"/> repeatedly based on burst count and timing defined in <see cref="CharacterStats"/>.
+    /// </summary>
     private IEnumerator BurstFireSequence()
     {
         // Ensure CharacterStats is linked
@@ -376,6 +413,12 @@ public class PlayerShooting : NetworkBehaviour
         burstCoroutine = null; // Allow next burst after cooldown
     }
 
+    /// <summary>
+    /// ServerRpc called by the owning client for each shot within a basic shot burst.
+    /// Fetches the player's standard bullet prefab from <see cref="CharacterStats"/> and spawns a pair of bullets
+    /// using <see cref="SpawnSingleBullet"/>.
+    /// </summary>
+    /// <param name="rpcParams">Standard RPC parameters.</param>
     [ServerRpc]
     private void RequestFireServerRpc(ServerRpcParams rpcParams = default)
     {
@@ -424,6 +467,16 @@ public class PlayerShooting : NetworkBehaviour
     }
 
     // Helper method to spawn one bullet
+    /// <summary>
+    /// Server-side helper method to spawn a single bullet.
+    /// Gets an object from the <see cref="NetworkObjectPool"/> using the prefab's <see cref="PoolableObjectIdentity.PrefabID"/>,
+    /// sets its position/rotation, activates it, spawns it on the network with ownership,
+    /// parents it to the pool object, and assigns the owner's role to the <see cref="BulletMovement"/> component.
+    /// </summary>
+    /// <param name="prefab">The bullet prefab GameObject to spawn.</param>
+    /// <param name="position">The world position to spawn the bullet at.</param>
+    /// <param name="rotation">The world rotation to spawn the bullet with.</param>
+    /// <param name="ownerId">The NetworkClientId of the player spawning the bullet.</param>
     private void SpawnSingleBullet(GameObject prefab, Vector3 position, Quaternion rotation, ulong ownerId) // Added prefab & ownerId parameters
     {
         // --- Get Prefab ID ---
@@ -509,10 +562,9 @@ public class PlayerShooting : NetworkBehaviour
     }
     // --- End Added Awake ---
 
-    // --- Added: Method for AI to trigger shooting ---
     /// <summary>
-    /// Initiates a standard burst fire sequence if the cooldown allows.
-    /// Should only be called by the owner client's AI Controller.
+    /// Called by an AI controller (presumably on the owner client) to initiate a basic shot burst,
+    /// respecting the standard shooting cooldowns.
     /// </summary>
     public void StartAIShot()
     {
@@ -534,7 +586,14 @@ public class PlayerShooting : NetworkBehaviour
     }
     // --- End Added Method ---
 
-    // --- NEW: ServerRpc for Spellcard ---
+    /// <summary>
+    /// ServerRpc called by the owning client when the fire key is released with enough charge for a Spellcard (Level 2, 3, or 4).
+    /// Identifies sender and opponent, loads the appropriate <see cref="SpellcardData"/> resource,
+    /// consumes the spell bar cost on the server, and starts the <see cref="ServerExecuteSpellcardActions"/> coroutine
+    /// to handle the spellcard's execution on the opponent's side.
+    /// </summary>
+    /// <param name="spellLevel">The level of the spellcard being declared (2, 3, or 4).</param>
+    /// <param name="rpcParams">Standard RPC parameters.</param>
     [ServerRpc]
     private void RequestSpellcardServerRpc(int spellLevel, ServerRpcParams rpcParams = default)
     {
@@ -627,7 +686,18 @@ public class PlayerShooting : NetworkBehaviour
     }
     // --- END Spellcard ServerRpc ---
 
-    // --- NEW: Server-side Coroutine for Spellcard Execution ---
+    /// <summary>
+    /// Server-side coroutine that executes the actions defined in a <see cref="SpellcardData"/> ScriptableObject.
+    /// Handles delays and iterates through actions, spawning projectiles using the <see cref="NetworkObjectPool"/>
+    /// and configuring their behavior via <see cref="ConfigureBulletBehavior"/>.
+    /// Spellcards typically spawn on the opponent's side of the field.
+    /// </summary>
+    /// <param name="spellcardData">The ScriptableObject defining the spellcard pattern.</param>
+    /// <param name="originPosition">The calculated origin point for the spellcard pattern (usually above the opponent).</param>
+    /// <param name="originRotation">The base rotation for the spellcard pattern.</param>
+    /// <param name="opponentId">The NetworkClientId of the opponent player.</param>
+    /// <param name="capturedOpponentPosition">The opponent's position captured when the spellcard was initiated.</param>
+    /// <returns>IEnumerator for coroutine execution.</returns>
     private IEnumerator ServerExecuteSpellcardActions(SpellcardData spellcardData, Vector3 originPosition, Quaternion originRotation, ulong opponentId, Vector3 capturedOpponentPosition) // Removed senderId
     {
         if (!IsServer) yield break;
@@ -737,7 +807,16 @@ public class PlayerShooting : NetworkBehaviour
     }
     // --- END Server-side Coroutine ---
 
-    // --- Helper Method to Configure Behavior (Server-Side) ---
+    /// <summary>
+    /// Server-side helper method called by <see cref="ServerExecuteSpellcardActions"/> to configure a newly spawned spellcard projectile.
+    /// Disables unused movement behaviors, sets up the <see cref="NetworkBulletLifetime"/> boundary based on the target's side,
+    /// and initializes the chosen movement behavior (<see cref="LinearMovement"/>, <see cref="DelayedHoming"/>, etc.) with parameters from the <see cref="SpellcardAction"/>.
+    /// </summary>
+    /// <param name="bulletInstance">The GameObject of the spawned projectile.</param>
+    /// <param name="action">The <see cref="SpellcardAction"/> defining the projectile's properties.</param>
+    /// <param name="opponentId">The NetworkClientId of the opponent player (used for homing targets).</param>
+    /// <param name="capturedOpponentPosition">The opponent's captured position (used for homing targets).</param>
+    /// <param name="isTargetOnPositiveSide">Whether the target opponent is on the positive X side (right side) of the playfield.</param>
     private void ConfigureBulletBehavior(GameObject bulletInstance, SpellcardAction action, ulong opponentId, Vector3 capturedOpponentPosition, bool isTargetOnPositiveSide) // Removed senderId
     {
         // Disable all potential behaviors first

@@ -5,23 +5,42 @@ using Unity.Collections;
 using System;
 using System.Collections;
 
-// Define PlayerRole enum
+/// <summary>
+/// Defines the possible roles a player can have in the game.
+/// </summary>
 public enum PlayerRole
 {
+    /// <summary>No role assigned or role is unknown.</summary>
     None,
+    /// <summary>Represents Player 1 (typically left side).</summary>
     Player1,
+    /// <summary>Represents Player 2 (typically right side).</summary>
     Player2
 }
 
-// --- MOVED PlayerData struct outside the class ---
+/// <summary>
+/// Structure holding the synchronized data for a single player.
+/// Includes identification, selected character, and assigned role.
+/// Implements <see cref="INetworkSerializable"/> for network transport
+/// and <see cref="IEquatable{T}"/> for efficient comparisons based on ClientId.
+/// </summary>
 [System.Serializable]
 public struct PlayerData : INetworkSerializable, System.IEquatable<PlayerData>
 {
+    /// <summary>The unique network identifier for the player's client.</summary>
     public ulong ClientId;
+    /// <summary>The player's chosen display name (fixed size for network serialization).</summary>
     public FixedString64Bytes PlayerName;
+    /// <summary>The name identifier of the character selected by the player (fixed size for network serialization).</summary>
     public FixedString32Bytes SelectedCharacter;
+    /// <summary>The assigned role (<see cref="PlayerRole"/>) determining the player's side and potentially other gameplay aspects.</summary>
     public PlayerRole Role;
 
+    /// <summary>
+    /// Serializes/deserializes the struct's fields for network transmission.
+    /// </summary>
+    /// <typeparam name="T">The type of the buffer serializer.</typeparam>
+    /// <param name="serializer">The serializer instance used for reading or writing.</param>
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref ClientId);
@@ -30,28 +49,57 @@ public struct PlayerData : INetworkSerializable, System.IEquatable<PlayerData>
         serializer.SerializeValue(ref Role);
     }
 
+    /// <summary>
+    /// Determines equality based solely on the <see cref="ClientId"/>.
+    /// </summary>
+    /// <param name="other">The other PlayerData instance to compare against.</param>
+    /// <returns>True if the ClientIds match, false otherwise.</returns>
     public bool Equals(PlayerData other)
     {
         return ClientId == other.ClientId;
     }
 
+    /// <summary>
+    /// Provides a string representation of the player data for debugging purposes.
+    /// </summary>
+    /// <returns>A formatted string containing player details.</returns>
     public override string ToString()
     {
         return $"Player: {PlayerName} (ID: {ClientId}, Character: {SelectedCharacter}, Role: {Role})";
     }
 }
-// --------------------------------------------------
 
+/// <summary>
+/// Manages player data across the network using a singleton pattern.
+/// Acts as a central repository for <see cref="PlayerData"/> for all connected clients.
+/// Uses a <see cref="NetworkList{T}"/> to synchronize player data automatically.
+/// Provides methods for registering, updating, and retrieving player information, primarily intended for server use.
+/// Includes integration with <see cref="NetworkManager"/> for disconnect handling and <see cref="Matchmaker"/> for player queuing.
+/// </summary>
 public class PlayerDataManager : NetworkBehaviour
 {
-    // Singleton pattern
+    /// <summary>
+    /// Singleton instance of the PlayerDataManager.
+    /// </summary>
     public static PlayerDataManager Instance { get; private set; }
     
-    // Event triggered when the player list changes
+    /// <summary>
+    /// Event triggered whenever the list of player data (<see cref="players"/>) changes (add, remove, update).
+    /// UI elements or other systems can subscribe to this to react to player list modifications.
+    /// </summary>
     public event Action OnPlayerDataUpdated;
     
+    /// <summary>
+    /// The synchronized list containing <see cref="PlayerData"/> for all connected players.
+    /// Automatically replicated from server to clients.
+    /// </summary>
     private NetworkList<PlayerData> players;
     
+    /// <summary>
+    /// Called when the script instance is being loaded.
+    /// Implements the singleton pattern and initializes the <see cref="players"/> NetworkList.
+    /// Ensures the manager persists across scene loads.
+    /// </summary>
     private void Awake()
     {
         // Singleton pattern implementation
@@ -68,6 +116,12 @@ public class PlayerDataManager : NetworkBehaviour
         players = new NetworkList<PlayerData>();
     }
     
+    /// <summary>
+    /// Called when the network object is spawned.
+    /// Subscribes to the <see cref="players"/> list changes and, if on the server,
+    /// subscribes to NetworkManager disconnect events and Matchmaker queuing events.
+    /// Invokes <see cref="OnPlayerDataUpdated"/> to ensure initial state synchronization.
+    /// </summary>
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -90,6 +144,11 @@ public class PlayerDataManager : NetworkBehaviour
         OnPlayerDataUpdated?.Invoke(); // Trigger initial UI update
     }
     
+    /// <summary>
+    /// Called when the network object is despawned.
+    /// Unsubscribes from all previously subscribed events (<see cref="NetworkList{T}.OnListChanged"/>,
+    /// NetworkManager events, Matchmaker events) to prevent memory leaks.
+    /// </summary>
     public override void OnNetworkDespawn()
     {
         if (players != null)
@@ -115,11 +174,20 @@ public class PlayerDataManager : NetworkBehaviour
         base.OnNetworkDespawn();
     }
     
+    /// <summary>
+    /// Callback handler for the <see cref="players"/> <see cref="NetworkList{T}.OnListChanged"/> event.
+    /// Invokes the <see cref="OnPlayerDataUpdated"/> event to notify subscribers.
+    /// </summary>
+    /// <param name="changeEvent">Details about the change in the NetworkList.</param>
     private void HandlePlayerDataListChanged(NetworkListEvent<PlayerData> changeEvent)
     {
         OnPlayerDataUpdated?.Invoke();
     }
     
+    /// <summary>
+    /// Called when the MonoBehaviour will be destroyed.
+    /// Disposes the <see cref="players"/> NetworkList and clears the singleton instance if this is the active instance.
+    /// </summary>
     public override void OnDestroy()
     {
         if (players != null)
@@ -137,14 +205,24 @@ public class PlayerDataManager : NetworkBehaviour
     
     #region Public Methods
     
-    // --- NEW: Handler for the Matchmaker event --- 
+    /// <summary>
+    /// Server-side handler for the <see cref="Matchmaker.OnPlayerQueuedServer"/> event.
+    /// Automatically calls <see cref="RegisterPlayer"/> when the Matchmaker signals a player has queued.
+    /// </summary>
+    /// <param name="clientId">The ClientId of the player who queued.</param>
+    /// <param name="playerName">The name of the player who queued.</param>
     private void HandlePlayerQueued(ulong clientId, string playerName)
     {
         RegisterPlayer(clientId, playerName);
     }
-    // ------------------------------------------
 
-    // Register a player with the player data manager
+    /// <summary>
+    /// [Server Only] Registers a new player in the manager.
+    /// Checks if the player already exists. If not, creates a new <see cref="PlayerData"/> entry
+    /// with the provided ClientId and name, default character/role, and adds it to the <see cref="players"/> list.
+    /// </summary>
+    /// <param name="clientId">The ClientId of the player to register.</param>
+    /// <param name="playerName">The display name of the player.</param>
     public void RegisterPlayer(ulong clientId, string playerName)
     {
         if (!IsServer) return;
@@ -171,7 +249,12 @@ public class PlayerDataManager : NetworkBehaviour
         players.Add(newPlayer);
     }
     
-    // Update player character selection
+    /// <summary>
+    /// [Server Only] Sets the selected character for a specific player.
+    /// Finds the player by <see cref="clientId"/> and updates their <see cref="PlayerData.SelectedCharacter"/>.
+    /// </summary>
+    /// <param name="clientId">The ClientId of the player whose character to set.</param>
+    /// <param name="characterName">The name identifier of the selected character.</param>
     public void SetPlayerCharacter(ulong clientId, string characterName)
     {
         if (!IsServer) return;
@@ -189,7 +272,12 @@ public class PlayerDataManager : NetworkBehaviour
         }
     }
     
-    // Add method to assign player roles (Server only)
+    /// <summary>
+    /// [Server Only] Assigns a <see cref="PlayerRole"/> (Player1 or Player2) to a specific player.
+    /// Finds the player by <see cref="clientId"/> and updates their <see cref="PlayerData.Role"/>.
+    /// </summary>
+    /// <param name="clientId">The ClientId of the player whose role to assign.</param>
+    /// <param name="role">The <see cref="PlayerRole"/> to assign.</param>
     public void AssignPlayerRole(ulong clientId, PlayerRole role)
     {
         if (!IsServer) return;
@@ -206,7 +294,12 @@ public class PlayerDataManager : NetworkBehaviour
         }
     }
     
-    // --- MODIFIED: Increment kill count - now delegates to ExtraAttackManager ---
+    /// <summary>
+    /// [Server Only] Placeholder method potentially related to tracking kills.
+    /// Currently finds player data by role but does not modify state directly.
+    /// Intended to delegate to other systems like <see cref="NetworkExtraAttackManager"/>.
+    /// </summary>
+    /// <param name="killerRole">The role of the player who got the kill.</param>
     public void IncrementFairyKillCount(PlayerRole killerRole)
     {
         if (!IsServer || killerRole == PlayerRole.None) return;
@@ -225,12 +318,17 @@ public class PlayerDataManager : NetworkBehaviour
         // If player found, notify the ExtraAttackManager
         if (killerData.HasValue)
         {
-            // TODO: Add score increment or other logic here if needed for regular kills
+            // TODO: Call NetworkExtraAttackManager or scoring system here.
+            // Example: NetworkExtraAttackManager.Instance?.RecordKill(killerData.Value.ClientId);
         }
     }
-    // ------------------------------------------------------------------------
 
-    // Remove a player from the player data manager
+    /// <summary>
+    /// [Server Only] Removes a player's data from the manager.
+    /// Finds the player by <see cref="clientId"/> and removes their entry from the <see cref="players"/> list.
+    /// Typically called when a client disconnects.
+    /// </summary>
+    /// <param name="clientId">The ClientId of the player to unregister.</param>
     public void UnregisterPlayer(ulong clientId)
     {
         if (!IsServer) return;
@@ -245,7 +343,13 @@ public class PlayerDataManager : NetworkBehaviour
         }
     }
     
-    // Get player data (can be called from any client)
+    /// <summary>
+    /// Gets the <see cref="PlayerData"/> for a specific client.
+    /// Can be called by any client or server.
+    /// Iterates through the synchronized <see cref="players"/> list.
+    /// </summary>
+    /// <param name="clientId">The ClientId of the player whose data to retrieve.</param>
+    /// <returns>The <see cref="PlayerData"/> struct if found, otherwise null.</returns>
     public PlayerData? GetPlayerData(ulong clientId)
     {
         for (int i = 0; i < players.Count; i++)
@@ -259,7 +363,10 @@ public class PlayerDataManager : NetworkBehaviour
         return null;
     }
     
-    // Get player 1 data based on Role
+    /// <summary>
+    /// Gets the <see cref="PlayerData"/> for the client currently assigned the <see cref="PlayerRole.Player1"/> role.
+    /// </summary>
+    /// <returns>The PlayerData for Player 1 if assigned, otherwise null.</returns>
     public PlayerData? GetPlayer1Data()
     {
         foreach (var player in players)
@@ -272,7 +379,10 @@ public class PlayerDataManager : NetworkBehaviour
         return null;
     }
     
-    // Get player 2 data based on Role
+    /// <summary>
+    /// Gets the <see cref="PlayerData"/> for the client currently assigned the <see cref="PlayerRole.Player2"/> role.
+    /// </summary>
+    /// <returns>The PlayerData for Player 2 if assigned, otherwise null.</returns>
     public PlayerData? GetPlayer2Data()
     {
         foreach (var player in players)
@@ -285,7 +395,11 @@ public class PlayerDataManager : NetworkBehaviour
         return null;
     }
     
-    // Check if both players have selected characters and have roles assigned
+    /// <summary>
+    /// Checks if both Player 1 and Player 2 roles have been assigned and have selected a character.
+    /// Useful for determining game readiness.
+    /// </summary>
+    /// <returns>True if both players are assigned a role and have a non-empty selected character, false otherwise.</returns>
     public bool AreBothPlayersReady()
     {
         // Check if Player1 and Player2 roles are assigned
@@ -299,7 +413,12 @@ public class PlayerDataManager : NetworkBehaviour
                !string.IsNullOrEmpty(p2Data.Value.SelectedCharacter.ToString());
     }
     
-    // --- NEW HELPER: Get PlayerData by Role ---
+    /// <summary>
+    /// Gets the <see cref="PlayerData"/> for a specific <see cref="PlayerRole"/>.
+    /// Searches the list for a player matching the given role.
+    /// </summary>
+    /// <param name="role">The <see cref="PlayerRole"/> to search for.</param>
+    /// <returns>The <see cref="PlayerData"/> if a player with that role exists, otherwise null.</returns>
     public PlayerData? GetPlayerDataByRole(PlayerRole role)
     {
         if (role == PlayerRole.None) return null;
@@ -313,11 +432,16 @@ public class PlayerDataManager : NetworkBehaviour
         }
         return null; // Role not found among registered players
     }
-    // ---------------------------------------
-
     #endregion
 
-    // --- NEW: Coroutine to delay subscription slightly ---
+    #region Private Helpers / Coroutines
+
+    /// <summary>
+    /// Coroutine that waits briefly before subscribing to Matchmaker events.
+    /// This delay helps ensure the Matchmaker singleton instance is available.
+    /// Only runs on the server.
+    /// </summary>
+    /// <returns>IEnumerator for the coroutine.</returns>
     private IEnumerator SubscribeToMatchmakerEventsDelayed()
     {
         yield return new WaitForSeconds(0.1f); // Short delay
@@ -327,11 +451,15 @@ public class PlayerDataManager : NetworkBehaviour
             Matchmaker.Instance.OnPlayerQueuedServer += HandlePlayerQueued;
         }
     }
-    // ----------------------------------------------------
 
-    // Server-side handler for client disconnection
+    /// <summary>
+    /// Server-side handler for the <see cref="NetworkManager.OnClientDisconnectCallback"/> event.
+    /// Automatically calls <see cref="UnregisterPlayer"/> when a client disconnects from the server.
+    /// </summary>
+    /// <param name="clientId">The ClientId of the player who disconnected.</param>
     private void HandleClientDisconnect(ulong clientId)
     {
         UnregisterPlayer(clientId);
     }
+    #endregion
 }

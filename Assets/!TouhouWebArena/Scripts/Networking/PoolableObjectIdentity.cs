@@ -1,19 +1,33 @@
 using UnityEngine;
 
 /// <summary>
-/// Attach this component to prefabs that will be pooled.
-/// It helps the NetworkObjectPool identify which pool an instance belongs to when returned,
-/// using a string ID instead of a direct GameObject reference.
+/// A component required on all networked prefabs managed by the <see cref="NetworkObjectPool"/>.
+/// Provides a unique string identifier (<see cref="PrefabID"/>) used by the pool to categorize
+/// and retrieve instances, avoiding direct prefab references at runtime for returning objects.
 /// </summary>
 public class PoolableObjectIdentity : MonoBehaviour
 {
+    /// <summary>
+    /// A unique string identifier for this specific prefab type (e.g., "ReimuBullet", "FairyTypeA"). 
+    /// This ID **must** be manually assigned in the Inspector on the prefab asset itself and must match
+    /// the ID used when requesting objects from the <see cref="NetworkObjectPool"/>.
+    /// </summary>
     [Tooltip("Unique string identifier for this prefab type (e.g., 'ReimuBullet', 'FairyTypeA'). Must be set on the prefab asset.")]
     public string PrefabID;
 
-    // We keep the OriginalPrefab reference for potential debugging or other uses, but the pool will primarily use PrefabID.
+    /// <summary>
+    /// A reference to the original prefab asset this instance was created from.
+    /// Primarily used for potential validation or debugging purposes; the <see cref="NetworkObjectPool"/>
+    /// mainly relies on the <see cref="PrefabID"/> for runtime operations.
+    /// </summary>
     [Tooltip("Reference to the original prefab asset. Should still be assigned correctly on the prefab itself for potential validation/debugging.")]
     public GameObject OriginalPrefab;
 
+    /// <summary>
+    /// Called when the script instance is being loaded.
+    /// Validates that the required <see cref="PrefabID"/> has been assigned in the Inspector.
+    /// Also provides a warning if the <see cref="OriginalPrefab"/> reference is missing.
+    /// </summary>
     void Awake()
     {
         // Validation: Ensure PrefabID is set.

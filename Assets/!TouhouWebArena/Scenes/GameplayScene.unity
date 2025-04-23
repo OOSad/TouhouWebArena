@@ -510,6 +510,37 @@ MonoBehaviour:
   - {x: 0.6993818, y: 5.05431, z: 0}
   - {x: -1.5480893, y: 6.949412, z: 0}
   - {x: -7.5439224, y: 1.6950452, z: 0}
+--- !u!1 &422618548
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 422618549}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &422618549
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 422618548}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 7.52, y: 3.42, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &474647435
 GameObject:
   m_ObjectHideFlags: 0
@@ -2133,6 +2164,10 @@ MonoBehaviour:
     InitialSize: 300
   - Prefab: {fileID: 3753940637100796060, guid: b9dbc2fdf801f60469638948c951540b, type: 3}
     InitialSize: 300
+  - Prefab: {fileID: 6122134282644584376, guid: 3329b70d36180964793ae9eff2309fd7, type: 3}
+    InitialSize: 300
+  - Prefab: {fileID: 3361972619914011690, guid: 76c70dd5d99bd9e4887ee2077c18d79c, type: 3}
+    InitialSize: 300
   allowPoolExpansion: 0
 --- !u!4 &1652915011
 Transform:
@@ -3133,3 +3168,4 @@ SceneRoots:
   - {fileID: 474647436}
   - {fileID: 881664902}
   - {fileID: 1652915011}
+  - {fileID: 422618549}

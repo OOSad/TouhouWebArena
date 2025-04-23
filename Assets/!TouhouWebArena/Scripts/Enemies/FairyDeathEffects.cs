@@ -3,6 +3,11 @@ using Unity.Netcode;
 
 // Handles visual/audio effects upon Fairy death 
 [RequireComponent(typeof(Fairy))] // Requires the main Fairy script
+/// <summary>
+/// [Server Only] Handles spawning visual/audio effects, specifically a shockwave,
+/// when the associated <see cref="Fairy"/> dies.
+/// Relies on the <see cref="NetworkObjectPool"/> to instantiate and manage the shockwave effect prefab.
+/// </summary>
 public class FairyDeathEffects : NetworkBehaviour // Needs NetworkBehaviour for IsServer check 
 {
     [Header("Effects")]
@@ -40,6 +45,12 @@ public class FairyDeathEffects : NetworkBehaviour // Needs NetworkBehaviour for 
 
 
     // --- Public method to trigger effects immediately --- 
+    /// <summary>
+    /// [Server Only] Spawns the configured shockwave effect prefab at the specified position.
+    /// Retrieves the shockwave object from the <see cref="NetworkObjectPool"/> using the prefab's
+    /// <see cref="PoolableObjectIdentity"/>, positions it, activates it, and spawns it.
+    /// </summary>
+    /// <param name="position">The world position where the death occurred and the effect should spawn.</param>
     public void TriggerEffects(Vector3 position)
     {
          // Debug.Log($"[FairyDeathEffects] TriggerEffects called on {(IsServer ? "Server" : "Client")}", this);
@@ -102,7 +113,10 @@ public class FairyDeathEffects : NetworkBehaviour // Needs NetworkBehaviour for 
         }
     }
 
-    // Getter for the prefab needed by DelayedActionProcessor 
+    /// <summary>
+    /// Gets the GameObject prefab configured for the shockwave effect.
+    /// </summary>
+    /// <returns>The shockwave effect GameObject prefab.</returns>
     public GameObject GetShockwavePrefab() 
     {
         return shockwavePrefab;

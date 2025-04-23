@@ -2,30 +2,64 @@ using UnityEngine;
 using Unity.Netcode;
 
 [RequireComponent(typeof(PoolableObjectIdentity))] // Ensure identity component exists
+/// <summary>
+/// Controls the movement and behavior of small and large stage bullets.
+/// Handles random velocity calculation (or uses a set initial velocity),
+/// network synchronization of velocity, lifetime management, collision with shockwaves,
+/// and interaction with player bombs.
+/// Designed to be pooled.
+/// </summary>
 public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
 {
     [Header("Movement & Lifetime")] // Added header for clarity
+    /// <summary>
+    /// The minimum speed for randomly generated velocity.
+    /// </summary>
     [SerializeField] private float minSpeed = 2f;
+    /// <summary>
+    /// The maximum speed for randomly generated velocity.
+    /// </summary>
     [SerializeField] private float maxSpeed = 5f;
-    // Max deviation angle from straight down (in degrees)
+    /// <summary>
+    /// Maximum deviation angle from straight down (in degrees) for random velocity generation.
+    /// </summary>
     [SerializeField] private float maxAngleDeviation = 15f; 
+    /// <summary>
+    /// Maximum time in seconds before the bullet is automatically despawned by the server.
+    /// </summary>
     [SerializeField] private float maxLifetime = 15f; // Seconds before the bullet despawns
 
     [Header("Behavior")] // Added header
+    /// <summary>
+    /// If true, this bullet will not be destroyed upon collision with a shockwave (e.g., for Large Stage Bullets).
+    /// </summary>
     [SerializeField] private bool isImmuneToShockwave = false; // Set true for Large Bullets
 
     // --- Networked State --- 
-    // Store the calculated/set velocity, writeable only by the server.
+    /// <summary>
+    /// [Server Write, Client Read] The authoritative velocity vector calculated or set by the server.
+    /// Used by the server to move the bullet and implicitly synced for client-side prediction/movement.
+    /// </summary>
     private NetworkVariable<Vector3> SyncedVelocity = new NetworkVariable<Vector3>(writePerm: NetworkVariableWritePermission.Server);
     // NetworkVariable to store which player this bullet belongs to
+    /// <summary>
+    /// [Server Write, Client Read] The <see cref="PlayerRole"/> this bullet is targeting or associated with.
+    /// Used for logic like bomb clearing.
+    /// </summary>
     public NetworkVariable<PlayerRole> TargetPlayerRole { get; private set; } = new NetworkVariable<PlayerRole>(PlayerRole.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    // Flag to indicate if a specific velocity should be used instead of random calculation
+    /// <summary>
+    /// [Server Write, Client Read] If true, the bullet will use the <see cref="InitialVelocity"/> instead of calculating a random one.
+    /// </summary>
     public NetworkVariable<bool> UseInitialVelocity { get; private set; } = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    // The specific velocity to use if UseInitialVelocity is true
+    /// <summary>
+    /// [Server Write, Client Read] The specific velocity vector to use if <see cref="UseInitialVelocity"/> is true.
+    /// </summary>
     public NetworkVariable<Vector3> InitialVelocity { get; private set; } = new NetworkVariable<Vector3>(Vector3.zero, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     // -----------------------
 
+    /// <summary>Remaining time before the bullet automatically despawns (server-side timer).</summary>
     private float currentLifetime;
+    /// <summary>Server-side flag to prevent ReturnToPool from being called multiple times in quick succession.</summary>
     private bool isReturning = false; // Flag to prevent double returns
 
     public override void OnNetworkSpawn()
@@ -81,6 +115,10 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
     // ---------------------
 
     // --- Public getter for speed (used by SpiritController) ---
+    /// <summary>
+    /// Gets the minimum speed configured for this bullet type.
+    /// </summary>
+    /// <returns>The minimum speed.</returns>
     public float GetMinSpeed() { return minSpeed; }
     // ---------------------------------------------------------
 
@@ -154,8 +192,8 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
     #region IClearableByBomb Implementation
 
     /// <summary>
-    /// Called when the player's death bomb effect should clear this bullet.
-    /// Directly performs the server-side despawn if called on the server.
+    /// [Server Only] Implements <see cref="IClearableByBomb"/>. Handles the bullet being cleared by a player's bomb.
+    /// Returns the bullet to the object pool.
     /// </summary>
     /// <param name="bombingPlayer">The role of the player who activated the bomb (unused by bullets).</param>
     public void ClearByBomb(PlayerRole bombingPlayer)

@@ -9,8 +9,11 @@ namespace TouhouWebArena.Spellcards
 {
     /// <summary>
     /// Handles the execution of spellcard patterns based on SpellcardData.
-    /// This script *was* for client-side execution, now primarily exists as a component holder.
-    /// Spawning logic is now handled server-side in PlayerShooting.cs.
+    /// DEPRECATED: This script originally handled client-side spellcard execution.
+    /// All spellcard spawning and execution logic is now handled server-side within
+    /// <see cref="TouhouWebArena.PlayerShooting.RequestSpellcardServerRpc(int, ServerRpcParams)"/> and its helper methods/coroutines.
+    /// This class currently exists mainly as a potential component holder or for legacy reference.
+    /// It does not contain active spellcard execution logic.
     /// </summary>
     public class SpellcardExecutor : MonoBehaviour // Keep MonoBehaviour if other logic might be added
     {

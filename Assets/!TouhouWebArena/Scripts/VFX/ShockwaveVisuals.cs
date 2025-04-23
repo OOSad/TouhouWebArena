@@ -1,6 +1,11 @@
 using UnityEngine;
 
-// Handles the visual scaling and fading of the shockwave effect.
+/// <summary>
+/// Manages the visual appearance (scaling, fading) of a <see cref="Shockwave"/> effect.
+/// Reads initial state from the SpriteRenderer and Shockwave components on Awake.
+/// Provides methods to update the visuals based on the shockwave's expansion progress
+/// and to reset the visuals when the object is reused from a pool.
+/// </summary>
 [RequireComponent(typeof(Shockwave), typeof(SpriteRenderer))]
 public class ShockwaveVisuals : MonoBehaviour
 {
@@ -44,6 +49,10 @@ public class ShockwaveVisuals : MonoBehaviour
     }
 
     // --- Public method to reset visual state for pooling ---
+    /// <summary>
+    /// Resets the visual state (color, scale) to the initial values captured on Awake.
+    /// Should be called when the shockwave object is obtained from a pool before reuse.
+    /// </summary>
     public void ResetVisuals()
     {
         // Reset current state variables to the true defaults captured in Awake
@@ -61,7 +70,14 @@ public class ShockwaveVisuals : MonoBehaviour
     }
     // ----------------------------------------------------
 
-    // Called by Shockwave during its expansion
+    /// <summary>
+    /// Updates the shockwave's visual scale and color based on expansion progress.
+    /// Calculates scale based on the current collider radius and initial radius/scale.
+    /// Lerps the color from its initial value to fully transparent based on progress.
+    /// Called by the main <see cref="Shockwave"/> script during its Update loop.
+    /// </summary>
+    /// <param name="progress">The normalized progress of the shockwave expansion (0 to 1).</param>
+    /// <param name="currentRadius">The current radius of the shockwave's collider.</param>
     public void UpdateVisuals(float progress, float currentRadius)
     {
         if (!enabled || spriteRenderer == null) return;

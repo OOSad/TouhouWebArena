@@ -5,58 +5,66 @@ using System.Collections.Generic; // Needed for NetworkManager access?
 namespace TouhouWebArena.Spellcards.Behaviors
 {
     /// <summary>
-    /// Moves the GameObject forward at an initial speed for a specified delay,
-    /// then homes in on a target transform.
+    /// A server-authoritative movement behavior that moves the attached GameObject forward
+    /// (<c>transform.up</c>) at an <see cref="initialSpeed"/> for a set <see cref="homingDelay"/>.
+    /// After the delay, it locks onto the *direction* towards a target position (captured at initialization)
+    /// and continues moving in that fixed direction at <see cref="homingSpeed"/>.
     /// </summary>
     [RequireComponent(typeof(NetworkObject))] 
     public class DelayedHoming : NetworkBehaviour
     {
+        /// <summary>The speed during the initial linear movement phase.</summary>
+        [Tooltip("Speed during the initial linear phase.")]
         public float initialSpeed = 5f;
+        /// <summary>The speed after the delay when moving towards the locked target direction.</summary>
+        [Tooltip("Speed after the delay, moving towards the locked target direction.")]
         public float homingSpeed = 4f;
+        /// <summary>The duration in seconds of the initial linear movement phase before homing starts.</summary>
+        [Tooltip("Duration of the initial linear phase before homing direction is locked.")]
         public float homingDelay = 0.5f;
         // Optional: Add turning speed if you want gradual rotation towards the target
         // public float turnSpeed = 180f; 
 
-        // Store target by ID, not direct Transform reference
+        // --- State Variables (Server-Only) ---
+        // Store target by ID, not direct Transform reference (ID currently unused, uses position)
         private ulong targetNetworkObjectId = ulong.MaxValue; 
-        private Vector3 initialTargetPosition; // Store the captured position
-
+        // The world position of the target captured when Initialize was called.
+        private Vector3 initialTargetPosition; 
+        // Timer for the initial delay phase.
         private float delayTimer = 0f;
+        // Flag indicating if the homing phase has started.
         private bool isHoming = false;
-        // private Vector3 lockedTargetPosition; // Remove locked position
-        private Vector3 lockedTargetDirection; // Store the direction when homing starts
-        private bool targetDirectionLocked = false; // Flag to ensure we only lock once
+        // The fixed direction vector calculated when the homing phase starts.
+        private Vector3 lockedTargetDirection; 
+        // Flag to ensure the target direction is calculated only once.
+        private bool targetDirectionLocked = false;
 
-        void Start()
-        {
-            // Initialize timer on Start (or potentially Awake)
-            // delayTimer = homingDelay; // Delay is set in Initialize
-            // isHoming = false;
-            // targetDirectionLocked = false;
-        }
+        // Start is not strictly necessary as state is reset in Initialize/OnNetworkSpawn
+        // void Start() { ... }
 
+        /// <summary>
+        /// Ensures the component is disabled on clients and resets state on the server when spawned.
+        /// </summary>
         public override void OnNetworkSpawn() {
             base.OnNetworkSpawn();
             // Only run logic on the server
             if (!IsServer) {
                 this.enabled = false;
             }
-            // Reset state when spawned/reused
-            // isHoming = false; // State is reset in Initialize
-            // targetDirectionLocked = false;
-            // delayTimer = homingDelay; 
+            // Reset state when spawned/reused (though Initialize should handle this primarily)
+            ResetState(); 
         }
 
+        /// <summary>
+        /// Server-only Update loop.
+        /// Handles the initial linear movement and timer countdown.
+        /// When the timer expires, calculates and locks the homing direction.
+        /// Continues moving in the locked direction during the homing phase.
+        /// </summary>
         void Update()
         {
-            // Remove verbose Update log
-            // Debug.Log($"[Server] Bullet {gameObject.name} Update Frame...", this);
-
             if (!IsServer) return;
             
-            // Remove pre-lock log
-            // if (isHoming && !targetDirectionLocked && delayTimer <= 0f) { ... }
-
             if (!isHoming)
             {
                 // Initial linear movement phase
@@ -65,20 +73,21 @@ namespace TouhouWebArena.Spellcards.Behaviors
 
                 if (delayTimer <= 0f)
                 {
-                    isHoming = true;
+                    isHoming = true; // Start homing phase
+                    // Calculate and lock direction only if not already locked
                     if (!targetDirectionLocked) 
                     {
                         lockedTargetDirection = (initialTargetPosition - transform.position).normalized;
+                        // Prevent zero direction if already at the target position
                         if (lockedTargetDirection == Vector3.zero) { 
-                            lockedTargetDirection = transform.up; 
+                            lockedTargetDirection = transform.up; // Default to current forward direction
                         }
                         targetDirectionLocked = true;
-                        // Remove direction lock log
-                        // Debug.Log($"[Server] Bullet {gameObject.name} locked homing direction...", this);
                     } 
                 }
             }
             
+            // Move in the locked direction once homing starts and direction is locked
             if (isHoming && targetDirectionLocked) 
             {
                  transform.position += lockedTargetDirection * homingSpeed * Time.deltaTime; 
@@ -86,26 +95,42 @@ namespace TouhouWebArena.Spellcards.Behaviors
         }
 
         /// <summary>
-        /// Initializes the behavior with speeds, delay, and the target.
-        /// Should be called by the spellcard activation logic after spawning.
+        /// Initializes the movement behavior parameters. Should be called by the spawning logic on the server
+        /// immediately after retrieving the object from the pool and before spawning it.
+        /// Resets the internal state for reuse.
         /// </summary>
+        /// <param name="initialSpeed">Speed during the initial delay phase.</param>
+        /// <param name="homingSpeed">Speed during the homing phase (after delay).</param>
+        /// <param name="homingDelay">Duration of the initial delay phase.</param>
+        /// <param name="targetId">The NetworkObjectId of the target (currently unused, uses position).</param>
+        /// <param name="targetPosition">The world position of the target to home towards (captured at this moment).</param>
         public void Initialize(float initialSpeed, float homingSpeed, float homingDelay, ulong targetId, Vector3 targetPosition)
         {
+             // Ensure this is only called on the server
+            if (!IsServer) return;
+
             this.initialSpeed = initialSpeed;
             this.homingSpeed = homingSpeed;
             this.homingDelay = homingDelay;
-            this.targetNetworkObjectId = targetId; 
-            this.initialTargetPosition = targetPosition; 
+            this.targetNetworkObjectId = targetId; // Store ID even if unused for now
+            this.initialTargetPosition = targetPosition; // Capture position
             
-            // Remove Initialize log
-            // string status = (this.targetNetworkObjectId == ulong.MaxValue) ? "INVALID_ID" : "VALID_ID";
-            // Debug.Log($"[Server] Bullet {gameObject.name} (Instance:{GetInstanceID()}) Initialize END. TargetID: {this.targetNetworkObjectId} ({status}), InitialTargetPos: {this.initialTargetPosition}. Timer: {this.delayTimer}", this);
+            // Reset state for potential reuse
+            ResetState();
 
+            // Ensure the component is enabled if it was disabled
+            if(!this.enabled) this.enabled = true; 
+        }
+
+        /// <summary>
+        /// Resets the internal state variables to their defaults.
+        /// </summary>
+        private void ResetState() 
+        {
             this.delayTimer = this.homingDelay;
             this.isHoming = false;
             this.targetDirectionLocked = false;
-
-            if(!this.enabled) this.enabled = true; 
+            this.lockedTargetDirection = Vector3.zero; // Reset locked direction
         }
         
         // Optional: Add a method to update the target if needed during the bullet's lifetime

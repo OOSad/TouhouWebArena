@@ -10,6 +10,13 @@ using System.Collections.Generic; // Needed for List
 [RequireComponent(typeof(FairyCollisionHandler))]
 [RequireComponent(typeof(FairyDeathEffects))]
 [RequireComponent(typeof(FairyPathInitializer))] // Added path initializer
+/// <summary>
+/// Represents a Fairy enemy unit. Handles health, path following initialization, line formation tracking,
+/// damage taking, death effects triggering, and interactions with bombs.
+/// Relies on several other components (SplineWalker, Collider2D, NetworkObject, FairyCollisionHandler,
+/// FairyDeathEffects, FairyPathInitializer) for its functionality.
+/// Designed to be pooled and reused.
+/// </summary>
 public class Fairy : NetworkBehaviour, IClearableByBomb
 {
     [Header("Stats")]
@@ -94,6 +101,17 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
 
     // --- NEW: Consolidated Initialization for Pooling ---
     // Called by the Spawner AFTER NetworkObject.Spawn()
+    /// <summary>
+    /// [Server Only] Initializes or re-initializes the Fairy after being obtained from a pool.
+    /// Resets state, assigns line/owner/trigger info, and sets up the path using <see cref="FairyPathInitializer"/>.
+    /// </summary>
+    /// <param name="ownerIdx">The player index (0 or 1) associated with this fairy's path.</param>
+    /// <param name="pIdx">The specific path index within the owner's path list.</param>
+    /// <param name="startAtBegin">True if the fairy should start at the beginning of the path, false to start at the end.</param>
+    /// <param name="lineGuid">The unique ID for the line of fairies this instance belongs to.</param>
+    /// <param name="index">The index of this fairy within its line.</param>
+    /// <param name="isTrigger">True if this fairy should trigger an extra attack on death.</param>
+    /// <param name="owner">The <see cref="PlayerRole"/> who owns this fairy (whose side it spawns bullets on).</param>
     public void InitializeForPooling(int ownerIdx, int pIdx, bool startAtBegin, 
                                        System.Guid lineGuid, int index, 
                                        bool isTrigger, PlayerRole owner)
@@ -152,11 +170,24 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
     // -----------------------------------------------------------
 
     // --- NEW: Getters for line info ---
+    /// <summary>
+    /// Gets the unique identifier for the line of fairies this instance belongs to.
+    /// </summary>
+    /// <returns>The line's Guid.</returns>
     public System.Guid GetLineId() { return lineId; }
+    /// <summary>
+    /// Gets the index of this fairy within its line.
+    /// </summary>
+    /// <returns>The zero-based index in the line.</returns>
     public int GetIndexInLine() { return indexInLine; }
     // ---------------------------------
 
     // --- NEW: Getter for Owner Role --- 
+    /// <summary>
+    /// Gets the <see cref="PlayerRole"/> that owns this fairy.
+    /// This determines which player's side bullets spawn on when this fairy is destroyed.
+    /// </summary>
+    /// <returns>The owning PlayerRole.</returns>
     public PlayerRole GetOwnerRole() 
     {
         return ownerRole;
@@ -191,13 +222,24 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
     }
 
     // Public method called locally (e.g., by shockwave) to request damage
+    /// <summary>
+    /// [Client/Server] Requests that this fairy takes damage.
+    /// This is typically called by local effects (like a shockwave) where the specific killer isn't known.
+    /// Invokes <see cref="TakeDamageServerRpc"/> with <see cref="PlayerRole.None"/> as the killer.
+    /// </summary>
+    /// <param name="amount">The amount of damage to request.</param>
     public void RequestDamage(int amount)
     {
         // Default killer role if called without specific attribution (e.g., shockwave, collision with player)
         RequestDamage(amount, PlayerRole.None); 
     }
     
-    // Overload to specify the killer
+    /// <summary>
+    /// [Client/Server] Requests that this fairy takes damage, attributing it to a specific player.
+    /// Invokes <see cref="TakeDamageServerRpc"/>.
+    /// </summary>
+    /// <param name="amount">The amount of damage to request.</param>
+    /// <param name="killerRole">The <see cref="PlayerRole"/> credited with the kill if the damage is lethal.</param>
     public void RequestDamage(int amount, PlayerRole killerRole)
     {
         TakeDamageServerRpc(amount, killerRole);
@@ -246,6 +288,12 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
     // --------------------------------------------------------------
 
     // --- NEW: Public method for SERVER-SIDE damage application --- 
+    /// <summary>
+    /// [Server Only] Directly applies damage to the fairy on the server.
+    /// Use this for server-authoritative damage sources (e.g., direct bullet hits processed on the server).
+    /// </summary>
+    /// <param name="amount">The amount of damage to apply.</param>
+    /// <param name="killerRole">The <see cref="PlayerRole"/> credited with the kill if the damage is lethal.</param>
     public void ApplyDamageServer(int amount, PlayerRole killerRole)
     {
         // Ensure this is only called on the server
@@ -260,6 +308,10 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
     // -----------------------------------------------------------
 
     // --- New method called by SplineWalker --- 
+    /// <summary>
+    /// [Client/Server] Called by <see cref="SplineWalker"/> when the end of the path is reached.
+    /// If on the server, calls <see cref="HandleEndOfPathServer"/>. If on a client, does nothing.
+    /// </summary>
     public void ReportEndOfPath()
     {
         // Since SplineWalker Update runs only on server, this method is only called on server.
@@ -267,6 +319,10 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
         HandleEndOfPathServer();
     }
 
+    /// <summary>
+    /// [Server Only] Handles the logic when a fairy reaches the end of its path.
+    /// Currently logs a warning and requests the fairy be destroyed.
+    /// </summary>
     public void HandleEndOfPathServer()
     {
         // This method is now executed on the server
@@ -279,6 +335,10 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
     // -------------------------------------------
 
     // --- NEW: Helper to check if alive (used by Chain Reaction) ---
+    /// <summary>
+    /// [Server/Client] Checks if the fairy is currently considered alive (health > 0 and not in the process of dying).
+    /// </summary>
+    /// <returns>True if the fairy is alive, false otherwise.</returns>
     public bool IsAlive()
     {
         // Consider network readiness if necessary, but health is a good indicator server-side
@@ -381,6 +441,11 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
     // --- NEW: Server-side direct damage application method ---
     // This bypasses the RPC for server-side calls like chain reactions
     // Needs to remain public for the Chain Reaction handler to call it on other fairies
+    /// <summary>
+    /// [Server Only] Applies lethal damage, bypassing normal health checks, and triggers the Die sequence.
+    /// Useful for effects that should instantly kill fairies (e.g., bomb clearing).
+    /// </summary>
+    /// <param name="killerRole">The <see cref="PlayerRole"/> attributed to the kill (used for bomb effect attribution).</param>
     public void ApplyLethalDamage(PlayerRole killerRole)
     {
         // Ensure this is only called on the server
@@ -404,6 +469,11 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
 
     // Common method for destruction logic, run ONLY on server
     // Made public so Chain Reaction handler can call it
+    /// <summary>
+    /// [Server Only] Handles the final destruction/despawning of the fairy GameObject.
+    /// Deregisters from <see cref="FairyRegistry"/>, hides the object, and returns it to the <see cref="NetworkObjectPool"/>.
+    /// Logs an error if called on a client.
+    /// </summary>
     public void DestroySelf()
     {
         // Ensure this runs on the server
@@ -429,10 +499,11 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
     #region IClearableByBomb Implementation
 
     /// <summary>
-    /// Called when the player's death bomb effect should clear this fairy.
-    /// Sends an RPC to the server to handle the destruction.
+    /// [Server Only] Implements the <see cref="IClearableByBomb"/> interface.
+    /// Called by <see cref="PlayerDeathBomb"/> when this fairy is caught in a bomb radius.
+    /// Applies lethal damage attributed to the bombing player.
     /// </summary>
-    /// <param name="bombingPlayer">The role of the player who activated the bomb.</param>
+    /// <param name="bombingPlayer">The <see cref="PlayerRole"/> of the player who used the bomb.</param>
     public void ClearByBomb(PlayerRole bombingPlayer)
     {
         // Only execute on the server and if the spirit is not already dying

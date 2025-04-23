@@ -14,6 +14,16 @@ Netcode for GameObjects provides several building blocks for networked applicati
     *   **`ClientRpc`:** Used by the server to command one or more clients to execute a function. The function name typically ends with `ClientRpc`. This might be used for triggering visual effects, playing sounds, or updating UI elements that don't rely on `NetworkVariables`. The server *tells* clients to do these things.
 *   **`NetworkVariable`:** Used to automatically synchronize simple data types (like health, score, charge level, position, rotation) from the server to all clients. When the server changes the value of a `NetworkVariable`, the change is automatically propagated to all clients. Examples include player health in `CharacterStats` and charge levels in `SpellBarController`. This is efficient for frequently changing state.
 
+## Starting a Session / Connection Flow
+
+When running the game locally for development or testing using the Unity editor and standalone builds (or multiple editor instances), follow this specific connection procedure:
+
+1.  **Start the Server:** Launch one instance of the game (editor or build) and click the "Start Server" button in the `NetworkManager` UI (or equivalent trigger). This instance becomes the dedicated server and will have `ClientId = 0`.
+2.  **Start Client 1:** Launch a second instance and click "Start Client". This client connects to the running server and should receive `ClientId = 1`.
+3.  **Start Client 2:** Launch a third instance and click "Start Client". This client connects to the running server and should receive `ClientId = 2`.
+
+**Important:** Do **not** use the "Start Host" button. The Host mode acts as both a server and a client simultaneously, which does not fit our intended dedicated server + two clients architecture for a standard 1v1 match.
+
 ## Key Systems
 
 Here's how major game systems interact with the network under our server-authoritative model:
