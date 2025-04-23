@@ -129,12 +129,23 @@ public class Shockwave : NetworkBehaviour
     }
 
     /// <summary>
-    /// [Server Only] Handles trigger collision events. Currently empty, but can be used for interactions.
+    /// [Server Only] Handles trigger collision events. Checks for colliders with the IClearableByBomb interface
+    /// and calls their ClearByBomb method.
     /// </summary>
     /// <param name="other">The Collider2D that entered the trigger.</param>
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!IsServer) return; // Only server handles collision logic
+
+        // Check if the collided object implements the clearable interface
+        IClearableByBomb clearable = other.GetComponent<IClearableByBomb>(); // Check directly on the collided object
+        // Alternative: Check parent if bullets have hitboxes as children: other.GetComponentInParent<IClearableByBomb>();
+
+        if (clearable != null)
+        {
+            // Call the interface method. Pass None as the role for environmental clears.
+            clearable.ClearByBomb(PlayerRole.None);
+        }
 
         // Add other collision logic here if needed (e.g., interacting with players, other enemies)
     }

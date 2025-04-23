@@ -50,7 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2442655208907664675, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 4176163935
+      value: 1806895215
       objectReference: {fileID: 0}
     - target: {fileID: 5240710830465845626, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
       propertyPath: m_Sprite
@@ -63,6 +63,10 @@ PrefabInstance:
     - target: {fileID: 8937448580770282229, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
       propertyPath: m_Name
       value: RedSmallCircleBullet_Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 8937448580770282229, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
+      propertyPath: m_TagString
+      value: ClearableDanmaku
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

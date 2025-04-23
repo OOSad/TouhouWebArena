@@ -375,8 +375,18 @@ public class ServerAttackSpawner : NetworkBehaviour
             if (action.startDelay > 0) yield return new WaitForSeconds(action.startDelay);
             if (action.bulletPrefabs == null || action.bulletPrefabs.Count == 0) continue; // Skip action if no prefabs assigned
 
+            // --- Calculate adjusted position/angle based on target side ---
+            Vector2 currentOffset = action.positionOffset;
+            float currentAngle = action.angle;
+            if (!isTargetOnPositiveSide) // Target is Player 1 (left side)
+            {
+                currentOffset.x *= -1f; // Flip the horizontal offset
+                currentAngle *= -1f;   // Flip the angle across the Y-axis
+            }
+
             int prefabIndex = 0;
-            Vector3 spawnPositionBase = originPosition + (Vector3)action.positionOffset;
+            // Use adjusted offset for the base position
+            Vector3 spawnPositionBase = originPosition + (Vector3)currentOffset;
 
             // Spawn projectiles for this action
             for (int i = 0; i < action.count; i++)
@@ -396,28 +406,29 @@ public class ServerAttackSpawner : NetworkBehaviour
                 {
                     case FormationType.Point: // Spawn at offset point
                         // Position is already spawnPositionBase
-                        // Rotation is already originRotation
+                        // Rotation is already originRotation (we might need adjusted angle here too?)
+                        // Let's assume Point doesn't need angle adjustment for now.
                         break;
                     case FormationType.Circle: // Spawn in a circle around offset point
                         if (action.count > 0) {
                             float angleDegrees = i * (360f / action.count);
-                            float angleRad = angleDegrees * Mathf.Deg2Rad;
-                            // Position offset for circle radius
-                            // Vector3 circleOffset = originRotation * new Vector3(Mathf.Cos(angleRad), Mathf.Sin(angleRad), 0) * action.radius;
-                            spawnPos = spawnPositionBase; // Spawn all bullets at the center point for outward expansion
-                            // Rotation needs to align transform.up radially outward (which is at angleDegrees)
-                            spawnRot = originRotation * Quaternion.Euler(0, 0, angleDegrees - 90f); // Use angleDegrees - 90 to align transform.up outwards
+                            // Use adjusted angle for the base rotation offset? No, circle bullets aim radially.
+                            // Spawn position is fine (center), rotation aims them outwards.
+                            spawnPos = spawnPositionBase;
+                            // The rotation calculation here uses angleDegrees, which is relative to the circle itself, not the action angle.
+                            // We might need to apply currentAngle *if* the base originRotation wasn't identity, but it is.
+                            spawnRot = originRotation * Quaternion.Euler(0, 0, angleDegrees - 90f);
                         }
                         break;
                     case FormationType.Line: // Spawn in a line relative to offset point
-                        float lineAngleRad = action.angle * Mathf.Deg2Rad;
-                        // Calculate direction relative to origin rotation
+                        // Use adjusted angle for line direction and rotation
+                        float lineAngleRad = currentAngle * Mathf.Deg2Rad;
                         Vector3 lineDirection = originRotation * new Vector3(Mathf.Cos(lineAngleRad), Mathf.Sin(lineAngleRad), 0);
                         float totalLength = action.spacing * (action.count - 1);
                         float startOffset = -totalLength / 2f;
                         spawnPos = spawnPositionBase + lineDirection * (startOffset + i * action.spacing);
-                        // Rotation matches line angle relative to origin
-                        spawnRot = originRotation * Quaternion.Euler(0, 0, action.angle);
+                        // Use adjusted angle for rotation
+                        spawnRot = originRotation * Quaternion.Euler(0, 0, currentAngle);
                         break;
                 }
 
@@ -459,8 +470,15 @@ public class ServerAttackSpawner : NetworkBehaviour
                 // Spellcard bullets are typically environment hazards, spawn as server-owned.
                 bulletInstanceNO.Spawn(true); // Spawn server-owned (or use SpawnWithOwnership if needed)
 
-                // --- Configure Behavior AFTER Spawning ---
-                ConfigureBulletBehavior(bulletInstance, action, opponentId, capturedOpponentPosition, isTargetOnPositiveSide);
+                // --- Calculate Speed (using original action data) ---
+                float currentBulletSpeed = action.speed;
+                if (action.formation == FormationType.Line && action.speedIncrementPerBullet != 0f)
+                {
+                    currentBulletSpeed += (i * action.speedIncrementPerBullet);
+                }
+
+                // --- Configure Behavior AFTER Spawning (using original action data for behavior type etc) ---
+                ConfigureBulletBehavior(bulletInstance, action, currentBulletSpeed, opponentId, capturedOpponentPosition, isTargetOnPositiveSide);
 
                 // --- Parent (if pooled) ---
                 if (usePool)
@@ -480,11 +498,12 @@ public class ServerAttackSpawner : NetworkBehaviour
     /// Also configures the <see cref="NetworkBulletLifetime"/> boundary check.
     /// </summary>
     /// <param name="bulletInstance">The instantiated bullet GameObject.</param>
-    /// <param name="action">The SpellcardAction defining the behavior.</param>
+    /// <param name="action">The SpellcardAction defining the behavior and other non-speed parameters.</param>
+    /// <param name="currentSpeed">The calculated speed for this specific bullet.</param>
     /// <param name="opponentId">The ClientId of the opponent player (target for homing).</param>
     /// <param name="capturedOpponentPosition">The captured position of the opponent (initial target for homing).</param>
     /// <param name="isTargetOnPositiveSide">Whether the target is on the right side (for boundary checks).</param>
-    private void ConfigureBulletBehavior(GameObject bulletInstance, SpellcardAction action, ulong opponentId, Vector3 capturedOpponentPosition, bool isTargetOnPositiveSide)
+    private void ConfigureBulletBehavior(GameObject bulletInstance, SpellcardAction action, float currentSpeed, ulong opponentId, Vector3 capturedOpponentPosition, bool isTargetOnPositiveSide)
     {
         // Disable all potential behaviors first to ensure clean state
         var linear = bulletInstance.GetComponent<LinearMovement>();
@@ -496,6 +515,10 @@ public class ServerAttackSpawner : NetworkBehaviour
         // Configure Lifetime Boundary Check
         if (lifetime != null) {
             lifetime.keepOnPositiveSide = isTargetOnPositiveSide;
+            if (action.lifetime > 0f)
+            {
+                lifetime.maxLifetime = action.lifetime;
+            }
         } else {
             Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' missing NetworkBulletLifetime component.");
         }
@@ -504,7 +527,7 @@ public class ServerAttackSpawner : NetworkBehaviour
         switch (action.behavior)
         {
             case BehaviorType.Linear:
-                if (linear != null) { linear.enabled = true; linear.Initialize(action.speed); }
+                if (linear != null) { linear.enabled = true; linear.Initialize(currentSpeed); } // Use currentSpeed
                 else { Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to Linear but missing LinearMovement component."); }
                 break;
             case BehaviorType.DelayedHoming:
@@ -513,11 +536,12 @@ public class ServerAttackSpawner : NetworkBehaviour
                     if (opponentId != ulong.MaxValue) // Ensure opponent exists
                     {
                          delayedHoming.enabled = true;
-                         delayedHoming.Initialize(action.speed, action.homingSpeed, action.homingDelay, opponentId, capturedOpponentPosition);
+                         // Use currentSpeed for initial linear phase
+                         delayedHoming.Initialize(currentSpeed, action.homingSpeed, action.homingDelay, opponentId, capturedOpponentPosition);
                     } else {
                         // Fallback to linear if no opponent found (should be rare in 2-player game)
                         Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to DelayedHoming but no opponent found. Falling back to Linear.");
-                        if (linear != null) { linear.enabled = true; linear.Initialize(action.speed); } // Fallback
+                        if (linear != null) { linear.enabled = true; linear.Initialize(currentSpeed); } // Fallback with currentSpeed
                     }
                 }
                  else { Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to DelayedHoming but missing DelayedHoming component."); }
@@ -525,7 +549,7 @@ public class ServerAttackSpawner : NetworkBehaviour
             // TODO: Add other cases like Homing if implemented
             default:
                  Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' has unhandled BehaviorType: {action.behavior}. Defaulting to Linear if possible.");
-                 if (linear != null) { linear.enabled = true; linear.Initialize(action.speed); } // Default fallback
+                 if (linear != null) { linear.enabled = true; linear.Initialize(currentSpeed); } // Default fallback with currentSpeed
                  break;
         }
     }

@@ -101,6 +101,12 @@ namespace TouhouWebArena.Spellcards
         public float speed = 5f;
 
         /// <summary>
+        /// For Line formations, this value is added to the speed of each subsequent bullet in the line (bullet 0 gets base speed, bullet 1 gets speed + increment, etc.).
+        /// </summary>
+        [Tooltip("For Line formations, the speed added to each subsequent bullet (0 = no increment).")]
+        public float speedIncrementPerBullet = 0f;
+
+        /// <summary>
         /// The speed at which bullets move while actively homing (used by Homing and DelayedHoming behaviors).
         /// </summary>
         [Tooltip("The speed at which bullets move while actively homing (used by Homing and DelayedHoming behaviors).")]
@@ -112,12 +118,11 @@ namespace TouhouWebArena.Spellcards
         [Tooltip("The duration (in seconds) the bullet travels linearly before starting to home (used only by DelayedHoming behavior).")]
         public float homingDelay = 0.5f;
 
-        [Header("Interaction")]
         /// <summary>
-        /// If true, bullets spawned by this action can be destroyed by a player's death bomb.
+        /// Overrides the default lifetime of the spawned bullet prefab. Set to a positive value (seconds) to enable override. Values <= 0 use the prefab's default lifetime.
         /// </summary>
-        [Tooltip("If true, bullets spawned by this action can be destroyed by a player's death bomb.")]
-        public bool isClearableByBomb = true;
+        [Tooltip("Override default bullet lifetime (seconds). <= 0 uses prefab default.")]
+        public float lifetime = -1f;
 
         // Potential future additions: Target acquisition parameters (e.g., target tag, closest player), bullet lifetime override, sound effects per action.
     }

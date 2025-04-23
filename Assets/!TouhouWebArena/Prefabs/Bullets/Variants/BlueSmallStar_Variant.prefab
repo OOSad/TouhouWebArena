@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &5192825465058513513
+--- !u!1001 &8176618869781304161
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -50,23 +50,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2442655208907664675, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 334847139
+      value: 1409656774
       objectReference: {fileID: 0}
     - target: {fileID: 5240710830465845626, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 213837874, guid: c86dd6c6a87385944a38d0d0d3a90441, type: 3}
+      objectReference: {fileID: -1524994054, guid: c86dd6c6a87385944a38d0d0d3a90441, type: 3}
     - target: {fileID: 5765213580922380714, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
       propertyPath: PrefabID
-      value: WhiteSmallCircle
+      value: SmallBlueStar
       objectReference: {fileID: 0}
     - target: {fileID: 8937448580770282229, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
       propertyPath: m_Name
-      value: WhiteSmallCircleBullet_Variant
-      objectReference: {fileID: 0}
-    - target: {fileID: 8937448580770282229, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
-      propertyPath: m_TagString
-      value: ClearableDanmaku
+      value: BlueSmallStar_Variant
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

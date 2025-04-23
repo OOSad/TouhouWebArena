@@ -10,6 +10,8 @@ TagManager:
   - FairyShockwave
   - ScopeStyleZone
   - Spirit
+  - Danmaku
+  - ClearableDanmaku
   layers:
   - Default
   - TransparentFX

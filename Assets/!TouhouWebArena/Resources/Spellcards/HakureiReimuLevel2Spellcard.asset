@@ -26,8 +26,11 @@ MonoBehaviour:
     angle: 0
     behavior: 0
     speed: 2
+    speedIncrementPerBullet: 0
     homingSpeed: 4
     homingDelay: 0
+    isClearableByBomb: 0
+    lifetime: 20
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 3753940637100796060, guid: f2a3a3efbdf65af4d9c5bbad7ca3e4a6, type: 3}
@@ -40,5 +43,8 @@ MonoBehaviour:
     angle: 0
     behavior: 2
     speed: 1
+    speedIncrementPerBullet: 0
     homingSpeed: 4
     homingDelay: 1
+    isClearableByBomb: 1
+    lifetime: 20

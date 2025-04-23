@@ -3,14 +3,18 @@ using Unity.Netcode;
 
 namespace TouhouWebArena.Spellcards.Behaviors
 {
+    // Forward declare the interface if it's not in this file
+    // Assumed definition: interface IClearableByBomb { void ClearByBomb(PlayerRole sourceRole); }
+
     /// <summary>
     /// Server-authoritative script to manage the lifetime and boundary checks for networked projectiles (bullets).
     /// Automatically returns the projectile's NetworkObject to the NetworkObjectPool when its lifetime expires
     /// or if it crosses a defined boundary. Also handles basic collision detection to apply damage.
     /// Should be attached to bullet prefabs managed by the NetworkObjectPool.
+    /// Implements IClearableByBomb allowing it to be cleared by effects like player bombs or shockwaves.
     /// </summary>
     [RequireComponent(typeof(NetworkObject))] // Ensures we have a NetworkObject
-    public class NetworkBulletLifetime : NetworkBehaviour
+    public class NetworkBulletLifetime : NetworkBehaviour, IClearableByBomb // Implement the interface
     {
         [Header("Lifetime Settings")] // Added Header
         [Tooltip("Maximum time in seconds before the bullet is returned to the pool.")]
@@ -145,5 +149,21 @@ namespace TouhouWebArena.Spellcards.Behaviors
                 // ReturnToPool();
             }
         }
+
+        // --- Implementation of IClearableByBomb ---
+        /// <summary>
+        /// Called by effects like PlayerDeathBomb or Shockwave to clear this bullet.
+        /// On the server, returns the bullet to the object pool.
+        /// </summary>
+        /// <param name="sourceRole">The role of the player causing the clear (ignored by this implementation).</param>
+        public void ClearByBomb(PlayerRole sourceRole)
+        {
+            // Clearing logic only runs on the server
+            if (!IsServer) return;
+
+            // Reuse the existing pooling logic
+            ReturnToPool();
+        }
+        // -------------------------------------------
     }
 } 
