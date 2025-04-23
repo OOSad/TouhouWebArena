@@ -7,7 +7,7 @@ using UnityEngine;
 /// This component only performs actions if running on the Owner client.
 /// </summary>
 [RequireComponent(typeof(PlayerMovement))] // Dependency
-[RequireComponent(typeof(PlayerShooting))] // Dependency
+[RequireComponent(typeof(PlayerShootingController))] // Dependency
 public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it sends RPCs directly, but relies on other components for now
 {
     [Header("AI Settings")]
@@ -21,7 +21,7 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
     [SerializeField] private Transform hitboxTransform;
     // --- Added Component References ---
     private PlayerMovement playerMovement;
-    private PlayerShooting playerShooting;
+    private PlayerShootingController playerShootingController;
     private NetworkObject networkObject; // Needed for IsOwner check
     // ------------------------------
 
@@ -52,7 +52,7 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
     {
         // Get required components
         playerMovement = GetComponent<PlayerMovement>();
-        playerShooting = GetComponent<PlayerShooting>();
+        playerShootingController = GetComponent<PlayerShootingController>();
         networkObject = GetComponent<NetworkObject>(); // Get NetworkObject
 
         if (hitboxTransform == null)
@@ -100,7 +100,7 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
         // --- AI Active Logic ---
 
         // Continuously try to shoot if AI is active
-        playerShooting?.StartAIShot(); // StartAIShot checks cooldowns internally
+        playerShootingController?.StartAIShot(); // StartAIShot checks cooldowns internally
 
         // Movement logic is handled in FixedUpdate for physics consistency
     }
