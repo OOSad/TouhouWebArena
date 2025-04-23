@@ -403,10 +403,10 @@ public class ServerAttackSpawner : NetworkBehaviour
                             float angleDegrees = i * (360f / action.count);
                             float angleRad = angleDegrees * Mathf.Deg2Rad;
                             // Position offset for circle radius
-                            Vector3 circleOffset = originRotation * new Vector3(Mathf.Cos(angleRad), Mathf.Sin(angleRad), 0) * action.radius;
-                            spawnPos = spawnPositionBase + circleOffset;
-                            // Rotation based on angle from center
-                            spawnRot = originRotation * Quaternion.Euler(0, 0, angleDegrees + 90f); // +90 to point outwards from circle center
+                            // Vector3 circleOffset = originRotation * new Vector3(Mathf.Cos(angleRad), Mathf.Sin(angleRad), 0) * action.radius;
+                            spawnPos = spawnPositionBase; // Spawn all bullets at the center point for outward expansion
+                            // Rotation needs to align transform.up radially outward (which is at angleDegrees)
+                            spawnRot = originRotation * Quaternion.Euler(0, 0, angleDegrees - 90f); // Use angleDegrees - 90 to align transform.up outwards
                         }
                         break;
                     case FormationType.Line: // Spawn in a line relative to offset point
