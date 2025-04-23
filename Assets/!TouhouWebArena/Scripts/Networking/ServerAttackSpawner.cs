@@ -270,7 +270,8 @@ public class ServerAttackSpawner : NetworkBehaviour
     /// <summary>
     /// **[Server Only]** Core helper method to spawn a single projectile **using the NetworkObjectPool**.
     /// Gets an object from the pool via <see cref="PoolableObjectIdentity.PrefabID"/>, positions it,
-    /// assigns owner role via <see cref="PlayerDataManager"/>, spawns it with ownership, and parents it to the pool.
+    /// spawns it with ownership, assigns owner role via <see cref="PlayerDataManager"/> **after spawning**,
+    /// and parents it to the pool.
     /// Used for basic shots and potentially spellcard bullets (if pooled).
     /// </summary>
     /// <param name="prefab">The pooled prefab to spawn.</param>
@@ -313,13 +314,17 @@ public class ServerAttackSpawner : NetworkBehaviour
         bulletNetworkObject.transform.rotation = rotation;
         bulletNetworkObject.gameObject.SetActive(true);
 
-        // Assign Owner Role
+        // --- Spawn FIRST ---
+        bulletNetworkObject.SpawnWithOwnership(ownerId);
+
+        // --- Assign Owner Role AFTER Spawning ---
         BulletMovement bulletMovement = bulletNetworkObject.GetComponent<BulletMovement>();
         if (bulletMovement != null)
         {
             if (PlayerDataManager.Instance != null)
             {
                 PlayerData? ownerData = PlayerDataManager.Instance.GetPlayerData(ownerId);
+                // Now it's safe to set the NetworkVariable
                 bulletMovement.OwnerRole.Value = ownerData.HasValue ? ownerData.Value.Role : PlayerRole.None;
             }
             else
@@ -334,9 +339,8 @@ public class ServerAttackSpawner : NetworkBehaviour
             // Debug.LogWarning($"[ServerAttackSpawner.SpawnSinglePooledBullet] Spawned object '{prefabID}' is missing BulletMovement component.");
         }
 
-        // Spawn and Parent
-        bulletNetworkObject.SpawnWithOwnership(ownerId);
-        bulletNetworkObject.transform.SetParent(NetworkObjectPool.Instance.transform, worldPositionStays: true); // Parent after setting pos/rot
+        // Parent AFTER setting position/rotation and spawning
+        bulletNetworkObject.transform.SetParent(NetworkObjectPool.Instance.transform, worldPositionStays: true);
 
     }
 
@@ -380,7 +384,7 @@ public class ServerAttackSpawner : NetworkBehaviour
                 GameObject prefabToSpawn = action.bulletPrefabs[prefabIndex % action.bulletPrefabs.Count];
                 if (prefabToSpawn == null) continue;
 
-                // --- Check if this spellcard bullet prefab should be pooled --- 
+                // --- Check if this spellcard bullet prefab should be pooled ---
                 PoolableObjectIdentity identity = prefabToSpawn.GetComponent<PoolableObjectIdentity>();
                 bool usePool = (identity != null && !string.IsNullOrEmpty(identity.PrefabID) && NetworkObjectPool.Instance != null);
 
@@ -391,11 +395,18 @@ public class ServerAttackSpawner : NetworkBehaviour
                 switch (action.formation)
                 {
                     case FormationType.Point: // Spawn at offset point
+                        // Position is already spawnPositionBase
+                        // Rotation is already originRotation
                         break;
                     case FormationType.Circle: // Spawn in a circle around offset point
                         if (action.count > 0) {
                             float angleDegrees = i * (360f / action.count);
-                            spawnRot = originRotation * Quaternion.Euler(0, 0, angleDegrees); // Apply circle rotation relative to origin rotation
+                            float angleRad = angleDegrees * Mathf.Deg2Rad;
+                            // Position offset for circle radius
+                            Vector3 circleOffset = originRotation * new Vector3(Mathf.Cos(angleRad), Mathf.Sin(angleRad), 0) * action.radius;
+                            spawnPos = spawnPositionBase + circleOffset;
+                            // Rotation based on angle from center
+                            spawnRot = originRotation * Quaternion.Euler(0, 0, angleDegrees + 90f); // +90 to point outwards from circle center
                         }
                         break;
                     case FormationType.Line: // Spawn in a line relative to offset point
@@ -405,11 +416,12 @@ public class ServerAttackSpawner : NetworkBehaviour
                         float totalLength = action.spacing * (action.count - 1);
                         float startOffset = -totalLength / 2f;
                         spawnPos = spawnPositionBase + lineDirection * (startOffset + i * action.spacing);
-                        spawnRot = originRotation * Quaternion.Euler(0, 0, action.angle); // Apply line angle relative to origin rotation
+                        // Rotation matches line angle relative to origin
+                        spawnRot = originRotation * Quaternion.Euler(0, 0, action.angle);
                         break;
                 }
 
-                // --- Spawn the bullet (Pooled or Non-Pooled) --- 
+                // --- Spawn the bullet (Pooled or Non-Pooled) ---
                 GameObject bulletInstance = null;
                 NetworkObject bulletInstanceNO = null;
 
@@ -443,14 +455,14 @@ public class ServerAttackSpawner : NetworkBehaviour
                     }
                 }
 
-                // --- Configure Behavior --- 
+                // --- Spawn NetworkObject FIRST ---
+                // Spellcard bullets are typically environment hazards, spawn as server-owned.
+                bulletInstanceNO.Spawn(true); // Spawn server-owned (or use SpawnWithOwnership if needed)
+
+                // --- Configure Behavior AFTER Spawning ---
                 ConfigureBulletBehavior(bulletInstance, action, opponentId, capturedOpponentPosition, isTargetOnPositiveSide);
 
-                // --- Spawn NetworkObject --- 
-                // Spellcard bullets are typically environment hazards, spawn as server-owned.
-                bulletInstanceNO.Spawn(true); // Spawn server-owned
-
-                // --- Parent (if pooled) --- 
+                // --- Parent (if pooled) ---
                 if (usePool)
                 {
                     bulletInstanceNO.transform.SetParent(NetworkObjectPool.Instance.transform, worldPositionStays: true);

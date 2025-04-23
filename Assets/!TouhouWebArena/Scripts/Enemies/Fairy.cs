@@ -27,6 +27,17 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
     [SerializeField] private int initialMaxHealth = 1; // Used for initialization
     [SerializeField] private bool isGreatFairy = false; // Determines health and potentially score later
 
+    [Header("Chain Reaction")] // New Header
+    [SerializeField] 
+    [Tooltip("Delay in seconds before the next fairy in line is destroyed.")]
+    private float chainReactionDelay = 0.08f; // Example delay, adjust as needed
+    [SerializeField] 
+    [Tooltip("The prefab for the DelayedActionProcessor utility.")]
+    private GameObject delayedActionProcessorPrefab;
+    [SerializeField] 
+    [Tooltip("The shockwave effect prefab triggered on death (passed to DelayedActionProcessor).")]
+    private GameObject deathShockwavePrefab; 
+
     // --- NEW: Flag for Extra Attack Trigger ---
     private bool isExtraAttackTrigger = false;
     // ------------------------------------------
@@ -362,34 +373,58 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
         if (fairyCollider != null) fairyCollider.enabled = false;
         // No need to explicitly disable path initializer, it runs once.
 
-        // 1. Trigger Death Effects (e.g., Shockwave)
-        if (deathEffectsHandler != null)
+        // --- Create DelayedActionProcessor --- 
+        // This now handles delayed effects and triggering the next fairy.
+        if (delayedActionProcessorPrefab != null)
         {
-            deathEffectsHandler.TriggerEffects(transform.position);
+            GameObject processorGO = Instantiate(delayedActionProcessorPrefab, transform.position, Quaternion.identity);
+            DelayedActionProcessor processor = processorGO.GetComponent<DelayedActionProcessor>();
+            if (processor != null)
+            {
+                // Initialize with all necessary data
+                processor.InitializeAndRun(
+                    transform.position, 
+                    killerRole, 
+                    chainReactionDelay, 
+                    deathShockwavePrefab, // Use the specific prefab field
+                    lineId, 
+                    indexInLine
+                );
+            }
+            else
+            {
+                 Debug.LogError($"DelayedActionProcessor prefab is missing the DelayedActionProcessor script!", delayedActionProcessorPrefab);
+                 Destroy(processorGO); // Clean up useless object
+            }
         }
-        else if (IsServer)
+        else
         {
-            Debug.LogWarning($"Fairy {NetworkObjectId} missing death effects handler in Die().", this);
+            Debug.LogError("DelayedActionProcessor prefab is not assigned on Fairy! Cannot run delayed actions.", this);
+            // Fallback? Maybe trigger immediate effects/next fairy here if processor missing?
         }
+        // --- End DelayedActionProcessor Creation ---
 
-        // 2. Trigger Next Fairy ONLY if killed by a player
-        if (killerRole != PlayerRole.None)
-        {
-            if (FairyRegistry.Instance != null)
-            {
-                Fairy nextFairy = FairyRegistry.Instance.FindNextInLine(lineId, indexInLine);
-                if (nextFairy != null)
-                {
-                    nextFairy.ApplyLethalDamage(killerRole); 
-                }
-            }
-            else if (IsServer)
-            {
-                 Debug.LogWarning($"FairyRegistry instance is null, cannot trigger next fairy.", this);
-            }
-        }
+        // REMOVED: Immediate effect trigger (now handled by processor after delay)
+        // if (deathEffectsHandler != null)
+        // {
+        //     deathEffectsHandler.TriggerEffects(transform.position);
+        // }
+
+        // REMOVED: Immediate next fairy trigger (now handled by processor after delay)
+        // if (killerRole != PlayerRole.None)
+        // {
+        //     if (FairyRegistry.Instance != null)
+        //     {
+        //         Fairy nextFairy = FairyRegistry.Instance.FindNextInLine(lineId, indexInLine);
+        //         if (nextFairy != null)
+        //         {
+        //             nextFairy.ApplyLethalDamage(killerRole); 
+        //         }
+        //     }
+        //     ...
+        // }
         
-        // 3. Spawn Regular Bullet on Opponent Side (Only if killed by player)
+        // --- Spawn Regular Bullet on Opponent Side (Keep this immediate logic) ---
         if (this.ownerRole != PlayerRole.None && killerRole != PlayerRole.None)
         {
             if (StageSmallBulletSpawner.Instance != null)
@@ -440,12 +475,12 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
 
     // --- NEW: Server-side direct damage application method ---
     // This bypasses the RPC for server-side calls like chain reactions
-    // Needs to remain public for the Chain Reaction handler to call it on other fairies
+    // Needs to remain public for the Chain Reaction handler (DelayedActionProcessor) to call it on other fairies
     /// <summary>
     /// [Server Only] Applies lethal damage, bypassing normal health checks, and triggers the Die sequence.
-    /// Useful for effects that should instantly kill fairies (e.g., bomb clearing).
+    /// Useful for effects that should instantly kill fairies (e.g., bomb clearing, chain reactions via DelayedActionProcessor).
     /// </summary>
-    /// <param name="killerRole">The <see cref="PlayerRole"/> attributed to the kill (used for bomb effect attribution).</param>
+    /// <param name="killerRole">The <see cref="PlayerRole"/> attributed to the kill (used for bomb effect attribution or chain reaction propagation).</param>
     public void ApplyLethalDamage(PlayerRole killerRole)
     {
         // Ensure this is only called on the server
