@@ -26,7 +26,9 @@ namespace TouhouWebArena.Spellcards
         /// <summary>Bullet attempts to home towards the opponent player.</summary>
         Homing,
         /// <summary>Bullet travels linearly for a duration (<see cref="SpellcardAction.homingDelay"/>) before starting to home.</summary>
-        DelayedHoming
+        DelayedHoming,
+        /// <summary>Bullet performs DelayedHoming, pauses, then homes again after <see cref="SpellcardAction.secondHomingDelay"/>.</summary>
+        DoubleHoming // Added for Fantasy Seal
         // Add more complex behaviors here later (e.g., Wavy, Orbit, Accelerate)
     }
 
@@ -113,10 +115,29 @@ namespace TouhouWebArena.Spellcards
         public float homingSpeed = 4f;
 
         /// <summary>
-        /// The duration (in seconds) the bullet travels linearly before starting to home (used only by DelayedHoming behavior).
+        /// The duration (in seconds) the bullet travels linearly before starting the first homing phase (used by DelayedHoming and DoubleHoming).
         /// </summary>
-        [Tooltip("The duration (in seconds) the bullet travels linearly before starting to home (used only by DelayedHoming behavior).")]
+        [Tooltip("The duration (in seconds) the bullet travels linearly before starting the first homing phase (used by DelayedHoming and DoubleHoming).")]
         public float homingDelay = 0.5f;
+
+        /// <summary>
+        /// The duration (in seconds) the bullet waits after the first homing phase completes before starting the second homing phase (used only by <see cref="BehaviorType.DoubleHoming"/>).
+        /// </summary>
+        [Tooltip("Duration of the pause between homing phases (used only by DoubleHoming).")]
+        public float secondHomingDelay = 0.3f; // Added for Fantasy Seal
+
+        /// <summary>
+        /// The duration (in seconds) the first homing phase lasts (used only by <see cref="BehaviorType.DoubleHoming"/>).
+        /// </summary>
+        [Tooltip("Duration of the first homing phase (used only by DoubleHoming).")]
+        public float firstHomingDuration = 0.5f; // Added for DoubleHoming duration
+
+        /// <summary>
+        /// Distance ahead of the bullet to set the fixed target point for the second homing phase (used only by <see cref="BehaviorType.DoubleHoming"/>).
+        /// This determines how far the second homing phase aims relative to the bullet's position when the phase starts.
+        /// </summary>
+        [Tooltip("Distance ahead for the second homing phase target point (used only by DoubleHoming).")]
+        public float secondHomingLookAheadDistance = 10f; // Replaces secondHomingDuration
 
         /// <summary>
         /// Overrides the default lifetime of the spawned bullet prefab. Set to a positive value (seconds) to enable override. Values <= 0 use the prefab's default lifetime.

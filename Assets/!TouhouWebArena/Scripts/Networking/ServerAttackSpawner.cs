@@ -508,9 +508,13 @@ public class ServerAttackSpawner : NetworkBehaviour
         // Disable all potential behaviors first to ensure clean state
         var linear = bulletInstance.GetComponent<LinearMovement>();
         var delayedHoming = bulletInstance.GetComponent<DelayedHoming>();
+        // Get DoubleHoming component
+        var doubleHoming = bulletInstance.GetComponent<DoubleHoming>(); 
         var lifetime = bulletInstance.GetComponent<NetworkBulletLifetime>();
         if (linear) linear.enabled = false;
         if (delayedHoming) delayedHoming.enabled = false;
+        // Disable DoubleHoming initially
+        if (doubleHoming) doubleHoming.enabled = false; 
 
         // Configure Lifetime Boundary Check
         if (lifetime != null) {
@@ -545,6 +549,40 @@ public class ServerAttackSpawner : NetworkBehaviour
                     }
                 }
                  else { Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to DelayedHoming but missing DelayedHoming component."); }
+                break;
+            // --- Add case for DoubleHoming ---    
+            case BehaviorType.DoubleHoming:
+                if (doubleHoming != null)
+                {
+                    // Get opponent PlayerMovement component
+                    PlayerMovement opponentMovement = null;
+                    if (opponentId != ulong.MaxValue && NetworkManager.Singleton.ConnectedClients.TryGetValue(opponentId, out var opponentClient) && opponentClient.PlayerObject != null)
+                    {
+                        opponentMovement = opponentClient.PlayerObject.GetComponent<PlayerMovement>();
+                    }
+                    
+                    if (opponentMovement != null)
+                    {
+                        doubleHoming.enabled = true;
+                        // Initialize using currentSpeed, homingSpeed, delays, first duration, look-ahead distance, and opponent reference
+                        doubleHoming.Initialize(
+                            currentSpeed, 
+                            action.homingSpeed, 
+                            action.homingDelay, 
+                            action.secondHomingDelay, 
+                            action.firstHomingDuration, // Pass duration 1
+                            action.secondHomingLookAheadDistance, // Pass look ahead distance
+                            opponentMovement
+                        );
+                    }
+                    else
+                    {
+                        // Fallback to linear if no opponent or opponent component found
+                        Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to DoubleHoming but couldn't find opponent PlayerMovement. Falling back to Linear.");
+                        if (linear != null) { linear.enabled = true; linear.Initialize(currentSpeed); }
+                    }
+                }
+                else { Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to DoubleHoming but missing DoubleHoming component."); }
                 break;
             // TODO: Add other cases like Homing if implemented
             default:

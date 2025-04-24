@@ -1,11 +1,13 @@
 using UnityEngine;
 using Unity.Netcode;
+// using TouhouWebArena.Spellcards.Behaviors; // No longer needed as we don't check the component
 
 /// <summary>
 /// Attached to the player's hitbox GameObject (which must have a Collider2D set to IsTrigger).
-/// Detects collisions with damaging objects (e.g., bullets) on the server side.
+/// Detects collisions with damaging objects (e.g., bullets, enemies) based on Physics Layer settings.
 /// Checks for player invincibility via <see cref="PlayerHealth"/> before processing hits.
-/// If a valid hit occurs, it despawns the projectile and calls <see cref="PlayerHealth.TakeDamage(int)"/> on the server.
+/// If a valid hit occurs, it calls <see cref="PlayerHealth.TakeDamage(int)"/> on the server.
+/// **It does NOT destroy the colliding object.**
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class PlayerHitbox : NetworkBehaviour
@@ -41,9 +43,9 @@ public class PlayerHitbox : NetworkBehaviour
 
     /// <summary>
     /// [Server Only] Called by Unity's physics engine when another Collider2D enters this trigger.
-    /// Relies on the Physics 2D Layer Collision Matrix to ensure only relevant objects (e.g., EnemyProjectiles layer)
-    /// trigger this event. Checks for player invincibility before processing hits.
-    /// If a valid hit occurs, despawns the projectile and calls <see cref="PlayerHealth.TakeDamage"/>.
+    /// Relies on the Physics 2D Layer Collision Matrix to ensure only relevant objects trigger this event.
+    /// Checks for player invincibility before processing hits.
+    /// If a valid hit occurs, calls <see cref="PlayerHealth.TakeDamage"/> but does NOT destroy the collider.
     /// </summary>
     /// <param name="other">The Collider2D of the object that entered the trigger.</param>
     private void OnTriggerEnter2D(Collider2D other)
@@ -53,35 +55,24 @@ public class PlayerHitbox : NetworkBehaviour
         // --- Invincibility Check ---
         if (playerHealth != null && playerHealth.IsInvincible.Value) 
         {
+            // Debug.Log($"[Server] Player invincible, ignoring collision with {other.name}");
             return; // Ignore hit if invincible
         }
         // --- End Invincibility Check ---
 
-        // --- REMOVED Tag Check --- 
-        // The Layer Collision Matrix should now filter collisions, so any object 
-        // reaching this point is assumed to be a valid projectile.
-        // if (other.CompareTag("StageBullet")) 
-        // { ... } // <--- Removed the surrounding if statement
-
-        // Despawn the projectile on the server (will remove it for all clients)
-        NetworkObject projectileNetworkObject = other.GetComponent<NetworkObject>(); // Renamed for clarity
-        if (projectileNetworkObject != null)
-        {
-            // Consider using ReturnToPool if projectiles are pooled and have a specific script
-            // For now, just despawn.
-            projectileNetworkObject.Despawn(); 
-        }
-
-        // Process damage application on the server
+        // --- Apply Damage --- 
+        // Assume Layer Matrix filtered correctly. Any object reaching here deals damage.
+        // DO NOT DESPAWN the 'other' object here.
         if (playerHealth != null)
         {
-            playerHealth.TakeDamage(1);
+            // Debug.Log($"[Server] PlayerHitbox applying damage from {other.name}");
+            playerHealth.TakeDamage(1); 
         }
         else
         {
             // This shouldn't happen if Start() check passed, but log just in case.
-            Debug.LogError($"[Server] Hitbox collided, but PlayerHealth reference is missing on {transform.root.name}!");
+            Debug.LogError($"[Server] Hitbox collided with {other.name}, but PlayerHealth reference is missing on {transform.root.name}! Cannot apply damage.");
         }
-        // --- End Original Tag Check Block --- 
+        // --- End Apply Damage ---
     }
 } 
