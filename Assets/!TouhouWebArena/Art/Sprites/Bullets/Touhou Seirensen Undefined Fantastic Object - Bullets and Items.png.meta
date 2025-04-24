@@ -4255,7 +4255,7 @@ TextureImporter:
         width: 14
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -4276,7 +4276,7 @@ TextureImporter:
         width: 14
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -4284,6 +4284,27 @@ TextureImporter:
       bones: []
       spriteID: 86b8e5353380d6b46ae3050299c89271
       internalID: -1669541640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Seirensen Undefined Fantastic Object - Bullets and Items_199
+      rect:
+        serializedVersion: 2
+        x: 146
+        y: 596
+        width: 14
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0914dbf0746e3d243b636e045e788d54
+      internalID: 1649990621
       vertices: []
       indices: 
       edges: []
@@ -4410,6 +4431,7 @@ TextureImporter:
       Touhou Seirensen Undefined Fantastic Object - Bullets and Items_196: -1005776171
       Touhou Seirensen Undefined Fantastic Object - Bullets and Items_197: 528690124
       Touhou Seirensen Undefined Fantastic Object - Bullets and Items_198: 1315402719
+      Touhou Seirensen Undefined Fantastic Object - Bullets and Items_199: 1649990621
       Touhou Seirensen Undefined Fantastic Object - Bullets and Items_2: 1956377477
       Touhou Seirensen Undefined Fantastic Object - Bullets and Items_20: -1781751767
       Touhou Seirensen Undefined Fantastic Object - Bullets and Items_21: -397464823
