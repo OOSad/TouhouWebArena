@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2675754632089818387}
   - component: {fileID: 722548025617567487}
   - component: {fileID: 2068635599780888344}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Hitbox
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -536,8 +536,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e679f4f196141f24291c54f43d2611ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  reimuChargeAttackPrefab: {fileID: 0}
-  marisaChargeAttackPrefab: {fileID: 0}
   fireKey: 122
 --- !u!114 &-7306010092121350103
 MonoBehaviour:

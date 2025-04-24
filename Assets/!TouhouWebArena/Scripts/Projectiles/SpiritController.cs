@@ -1,14 +1,15 @@
 using UnityEngine;
 using Unity.Netcode;
+using TouhouWebArena; // Add namespace for IClearable and PlayerRole
 
 /// <summary>
 /// Controls the behavior of a Spirit collectible/enemy.
 /// Spirits have two states: normal (drifting) and activated (slowly moving up, vulnerable).
 /// Handles health, state transitions, movement, damage taking, death effects, timed despawning,
-/// and interactions with player scopes and bombs.
+/// and interactions with player scopes and clearing effects via IClearable.
 /// Designed to be pooled and requires several external references and prefabs.
 /// </summary>
-public class SpiritController : NetworkBehaviour, IClearableByBomb
+public class SpiritController : NetworkBehaviour, IClearable
 {
     [Header("References")]
     /// <summary>Reference to the Rigidbody2D component for physics-based movement.</summary>
@@ -425,37 +426,24 @@ public class SpiritController : NetworkBehaviour, IClearableByBomb
 
     #endregion
 
-    #region IClearableByBomb Implementation
-
+    // --- Implementation of IClearable ---
     /// <summary>
-    /// [Server Only] Implements the <see cref="IClearableByBomb"/> interface.
-    /// Called by <see cref="PlayerDeathBomb"/> when this spirit is caught in a bomb radius.
-    /// Triggers the <see cref="Die"/> sequence, attributing the kill to the bombing player.
+    /// Called by effects like PlayerDeathBomb or Shockwave to clear this spirit.
+    /// On the server, triggers the spirit's death sequence.
     /// </summary>
-    /// <param name="bombingPlayer">The <see cref="PlayerRole"/> of the player who used the bomb.</param>
-    public void ClearByBomb(PlayerRole bombingPlayer)
+    /// <param name="forceClear">Ignored by spirits, as they are always clearable.</param>
+    /// <param name="sourceRole">The role of the player causing the clear (used for kill attribution).</param>
+    public void Clear(bool forceClear, PlayerRole sourceRole)
     {
-        // Only execute on the server and if the spirit is not already dying
-        if (!IsServer || isDying)
-        {
-             return;
-        }
+        // Clearing logic only runs on the server
+        if (!IsServer) return;
 
-        // --- MODIFIED: Check if owner bombed --- 
-        if (bombingPlayer == ownerRole)
-        {
-            // Owner bombed their own spirit, treat it like a self-kill for revenge purposes
-            Die(bombingPlayer); // Pass bombingPlayer as killerRole to trigger revenge for opponent
-        }
-        else
-        {
-            // Opponent bombed this spirit, clear without revenge
-            Die(PlayerRole.None); // Killer is None, no revenge triggered
-        }
-        // --------------------------------------
+        // Spirits are always cleared, regardless of forceClear.
+        // Call the existing Die method, passing the sourceRole for attribution.
+        // The Die method itself handles logic based on who the killer is (e.g., for revenge spawns).
+        Die(sourceRole);
     }
-
-    #endregion
+    // ------------------------------------
 
     #region Update Loop (Server)
 

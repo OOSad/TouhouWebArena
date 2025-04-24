@@ -20,13 +20,19 @@ public class FairyCollisionHandler : NetworkBehaviour // Inherit from NetworkBeh
     void OnTriggerEnter2D(Collider2D other)
     {
         // Collision logic should only run on the server, and only if the source fairy is valid
-        if (!IsServer || sourceFairy == null) return;
+        if (!IsServer || sourceFairy == null || !sourceFairy.IsAlive()) return; // Also check if fairy is alive
 
         // Check collision with Player
         if (other.CompareTag("Player"))
         {
             HandlePlayerCollision(other);
         }
+        // --- NEW: Check collision with Player Shots --- 
+        else if (other.CompareTag("PlayerShot"))
+        {
+            HandlePlayerShotCollision(other);
+        }
+        // --------------------------------------------
     }
 
     private void HandlePlayerCollision(Collider2D playerCollider)
@@ -48,4 +54,42 @@ public class FairyCollisionHandler : NetworkBehaviour // Inherit from NetworkBeh
             Debug.LogError($"[Server FairyCollisionHandler NetId:{sourceFairy?.NetworkObjectId}] Collided with Player ({playerCollider.name}) but PlayerHealth is NULL in parent!");
         }
     }
+
+    // --- NEW: Handler for Player Shot Collisions --- 
+    private void HandlePlayerShotCollision(Collider2D shotCollider)
+    {
+        // Get damage amount from the projectile
+        int damageAmount = 1; // Default damage
+        ProjectileDamager damager = shotCollider.GetComponent<ProjectileDamager>();
+        if (damager != null) { damageAmount = damager.damage; }
+
+        // Get the role of the player who fired the shot
+        PlayerRole killerRole = PlayerRole.None;
+        BulletMovement bullet = shotCollider.GetComponent<BulletMovement>();
+        if (bullet != null) { killerRole = bullet.OwnerRole.Value; }
+
+        // Apply damage directly on the server
+        sourceFairy.ApplyDamageServer(damageAmount, killerRole);
+
+        // --- REMOVED Player Shot Despawn Logic --- 
+        // The BulletMovement script on the shot itself should now handle this
+        // when its own OnTriggerEnter2D detects the collision with the Fairy.
+        /*
+        NetworkObject shotNetworkObject = shotCollider.GetComponent<NetworkObject>();
+        if (shotNetworkObject != null)
+        {
+            PoolableObjectIdentity shotIdentity = shotCollider.GetComponent<PoolableObjectIdentity>();
+            if (shotIdentity != null && NetworkObjectPool.Instance != null) 
+            {
+                NetworkObjectPool.Instance.ReturnNetworkObject(shotNetworkObject);
+            }
+            else
+            {
+                 shotNetworkObject.Despawn(true); 
+            }
+        }
+        */
+        // -------------------------------------------
+    }
+    // --------------------------------------------
 } 

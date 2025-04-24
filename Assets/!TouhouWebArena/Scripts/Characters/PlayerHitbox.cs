@@ -41,9 +41,9 @@ public class PlayerHitbox : NetworkBehaviour
 
     /// <summary>
     /// [Server Only] Called by Unity's physics engine when another Collider2D enters this trigger.
-    /// Checks if the server is running and if the player is currently invincible.
-    /// Filters for collisions with objects tagged "StageBullet".
-    /// If a valid bullet hit occurs, despawns the bullet and calls <see cref="PlayerHealth.TakeDamage"/>.
+    /// Relies on the Physics 2D Layer Collision Matrix to ensure only relevant objects (e.g., EnemyProjectiles layer)
+    /// trigger this event. Checks for player invincibility before processing hits.
+    /// If a valid hit occurs, despawns the projectile and calls <see cref="PlayerHealth.TakeDamage"/>.
     /// </summary>
     /// <param name="other">The Collider2D of the object that entered the trigger.</param>
     private void OnTriggerEnter2D(Collider2D other)
@@ -57,27 +57,31 @@ public class PlayerHitbox : NetworkBehaviour
         }
         // --- End Invincibility Check ---
 
-        // Check if the colliding object is a stage bullet (adjust tag if needed)
-        if (other.CompareTag("StageBullet"))
-        {
-            // Despawn the bullet on the server (will remove it for all clients)
-            NetworkObject bulletNetworkObject = other.GetComponent<NetworkObject>();
-            if (bulletNetworkObject != null)
-            {
-                bulletNetworkObject.Despawn();
-            }
+        // --- REMOVED Tag Check --- 
+        // The Layer Collision Matrix should now filter collisions, so any object 
+        // reaching this point is assumed to be a valid projectile.
+        // if (other.CompareTag("StageBullet")) 
+        // { ... } // <--- Removed the surrounding if statement
 
-            // Process damage application on the server
-            if (playerHealth != null)
-            {
-                playerHealth.TakeDamage(1);
-            }
-            else
-            {
-                // This shouldn't happen if Start() check passed, but log just in case.
-                Debug.LogError($"[Server] Hitbox collided, but PlayerHealth reference is missing on {transform.root.name}!");
-            }
+        // Despawn the projectile on the server (will remove it for all clients)
+        NetworkObject projectileNetworkObject = other.GetComponent<NetworkObject>(); // Renamed for clarity
+        if (projectileNetworkObject != null)
+        {
+            // Consider using ReturnToPool if projectiles are pooled and have a specific script
+            // For now, just despawn.
+            projectileNetworkObject.Despawn(); 
         }
-        // Optional: else if (other.CompareTag("OtherEnemyAttack")) { ... }
+
+        // Process damage application on the server
+        if (playerHealth != null)
+        {
+            playerHealth.TakeDamage(1);
+        }
+        else
+        {
+            // This shouldn't happen if Start() check passed, but log just in case.
+            Debug.LogError($"[Server] Hitbox collided, but PlayerHealth reference is missing on {transform.root.name}!");
+        }
+        // --- End Original Tag Check Block --- 
     }
 } 

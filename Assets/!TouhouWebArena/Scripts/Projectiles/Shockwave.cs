@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using Unity.Netcode;
+using TouhouWebArena; // Add namespace for IClearable
 
 // Now requires ShockwaveVisuals instead of SpriteRenderer
 [RequireComponent(typeof(CircleCollider2D))]
@@ -129,25 +130,25 @@ public class Shockwave : NetworkBehaviour
     }
 
     /// <summary>
-    /// [Server Only] Handles trigger collision events. Checks for colliders with the IClearableByBomb interface
-    /// and calls their ClearByBomb method.
+    /// [Server Only] Handles trigger collision events. Checks for colliders with the IClearable interface
+    /// and calls their Clear method with forceClear set to false.
     /// </summary>
     /// <param name="other">The Collider2D that entered the trigger.</param>
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!IsServer) return; // Only server handles collision logic
 
-        // Check if the collided object implements the clearable interface
-        IClearableByBomb clearable = other.GetComponent<IClearableByBomb>(); // Check directly on the collided object
-        // Alternative: Check parent if bullets have hitboxes as children: other.GetComponentInParent<IClearableByBomb>();
+        // Check if the collided object implements the IClearable interface
+        IClearable clearable = other.GetComponent<IClearable>(); // Check directly on the collided object
+        // Alternative: Check parent if objects have hitboxes as children: other.GetComponentInParent<IClearable>();
 
         if (clearable != null)
         {
-            // Call the interface method. Pass None as the role for environmental clears.
-            clearable.ClearByBomb(PlayerRole.None);
+            // Call the interface method. Pass false for normal shockwave clear.
+            clearable.Clear(false, PlayerRole.None); // Use false for forceClear
         }
 
-        // Add other collision logic here if needed (e.g., interacting with players, other enemies)
+        // Add other collision logic here if needed (e.g., interacting with players)
     }
 
     /// <summary>

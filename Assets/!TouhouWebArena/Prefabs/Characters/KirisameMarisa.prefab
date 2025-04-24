@@ -270,7 +270,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2122085789
+  GlobalObjectIdHash: 1167757991
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
@@ -347,8 +347,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e679f4f196141f24291c54f43d2611ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  reimuChargeAttackPrefab: {fileID: 0}
-  marisaChargeAttackPrefab: {fileID: 0}
   fireKey: 122
 --- !u!114 &-6644605225323382049
 MonoBehaviour:
@@ -642,7 +640,7 @@ GameObject:
   - component: {fileID: 2167936687915659690}
   - component: {fileID: 6247756814895974152}
   - component: {fileID: 3758689041060863562}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Hitbox
   m_TagString: Player
   m_Icon: {fileID: 0}

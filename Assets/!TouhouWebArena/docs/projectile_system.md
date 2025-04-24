@@ -11,9 +11,13 @@ Projectile prefabs generally share a common set of components:
 *   **`NetworkObject`:** Essential for network synchronization.
 *   **`Collider2D`:** Used for collision detection (often set as a Trigger).
 *   **Visual Components:** `SpriteRenderer`, `Animator`, `ParticleSystem`, etc. for appearance.
-*   **Movement Script(s):** One or more scripts defining how the projectile moves (see below). Attached and configured by the spawning logic (e.g., `PlayerShooting` server-side).
-*   **`NetworkBulletLifetime.cs`:** Manages lifetime and boundary checks (server-side only, see details below).
+*   **Movement Script(s):** One or more scripts defining how the projectile moves (see below). Attached and configured by the spawning logic (e.g., `ServerAttackSpawner`).
+*   **Pooling/Lifetime Script:**
+    *   **`NetworkBulletLifetime.cs`:** Used for spellcard bullets. Manages lifetime, boundary checks, pooling, and implements `IClearable`.
+    *   **`StageSmallBulletMoverScript.cs`:** Used for stage bullets (from Fairies/Spirits). Manages lifetime, movement, pooling, and implements `IClearable`.
+    *   Other projectiles (player shots, charge attacks, extra attacks) might use `BulletMovement.cs` or have custom lifetime/collision logic.
 *   **`PoolableObjectIdentity.cs`:** Required for integration with the `NetworkObjectPool`. Contains the unique `PrefabID` string which **must be set in the Inspector on the prefab asset**.
+*   **`ProjectileDamager.cs`:** (Optional) Can be attached to projectiles to specify a damage value other than the default (usually 1).
 
 There isn't a single mandatory "BaseProjectile" script; behavior is primarily defined by the combination of attached component scripts.
 
@@ -35,18 +39,30 @@ These scripts define how projectiles move after being spawned. They reside in `/
 
 ## Lifetime Management
 
-*   **`NetworkBulletLifetime.cs`:** This server-side script is attached to most pooled projectiles. It is automatically disabled on clients in `OnNetworkSpawn`.
-    *   **Max Lifetime:** Returns the projectile to the `NetworkObjectPool` after `maxLifetime` seconds (configurable field).
-    *   **Boundary Check:** If `enforceBounds` is true (configurable field), it checks if the projectile has crossed the center line (`boundaryX`) onto the wrong side (determined by `keepOnPositiveSide`, also configurable). If out of bounds, it's returned to the pool.
-    *   **Pooling Interaction:** Calls `NetworkObjectPool.Instance.ReturnNetworkObject()` to despawn the `NetworkObject` without destroying it and return it to the pool.
+*   **Pooled Projectiles:** Scripts like `NetworkBulletLifetime.cs` and `StageSmallBulletMoverScript.cs` handle returning the projectile to the `NetworkObjectPool` after a `maxLifetime` duration or if boundary checks fail (server-side).
+*   **Player Projectiles:** `BulletMovement.cs` uses `Invoke(nameof(ReturnToPool), bulletLifetime)` for time-based pooling.
+*   **Collision:** Projectiles are typically returned to the pool immediately upon hitting a valid target (player or enemy), handled within the projectile's own collision logic (e.g., `BulletMovement.OnTriggerEnter2D`).
 
 ## Collision & Damage
 
-*   **Detection:** Collision detection happens **on the server**. Projectile `Collider2D` components (usually triggers) detect collisions with other objects. Tags and Layers are likely used to filter valid interactions (e.g., player bullets only hit enemies/opponent, enemy bullets only hit players).
+*   **Detection:** Collision detection happens **on the server**. Projectile `Collider2D` components (usually triggers) detect collisions with other objects. The **Physics 2D Layer Collision Matrix** is the primary method used to filter valid interactions (e.g., player shots only hit enemies/opponent, enemy projectiles only hit players). Tags (`PlayerShot`, `Fairy`, `Spirit`) are used within collision scripts for specific logic checks.
 *   **Damage Application:**
-    *   The `NetworkBulletLifetime.cs` script's `OnTriggerEnter2D` method (server-only) checks for collision with objects having a `PlayerHealth` component (typically the player's hitbox child object) and calls `PlayerHealth.TakeDamage(1)` on the server.
-    *   Other projectile types (e.g., charge attacks, extra attacks) might have their own specific collision scripts to handle different damage amounts or effects.
-    *   Damage is always applied authoritatively on the server via scripts like `PlayerHealth`.
+    *   Player shots (`BulletMovement`) apply damage via methods on the target (`Fairy.ApplyLethalDamage`, `SpiritController.TakeDamage`).
+    *   Enemy projectiles hitting the player are handled by `PlayerHitbox.cs`, which detects the collision (filtered by layers) and calls `PlayerHealth.TakeDamage(1)`.
+    *   Damage is always applied authoritatively on the server.
+
+## Clearing Effects (`IClearable` Interface)
+
+Certain projectiles (and enemies) implement the `IClearable` interface, allowing them to be removed by area effects like bombs or shockwaves.
+
+*   **Interface:** `IClearable` defines a `Clear(bool forceClear, PlayerRole sourceRole)` method.
+*   **Implementation:** Found on scripts like `NetworkBulletLifetime.cs` (for spellcard bullets) and `StageSmallBulletMoverScript.cs` (for stage bullets). **Not** implemented on standard player shots (`BulletMovement.cs`).
+*   **`isNormallyClearable` Flag:** Components implementing `IClearable` have a public boolean field `isNormallyClearable` (settable in the prefab inspector). 
+    *   If `forceClear` is `true` (e.g., Player Death Bomb), the `Clear` method always despawns/pools the object.
+    *   If `forceClear` is `false` (e.g., Fairy Shockwave), the `Clear` method only despawns/pools the object if `isNormallyClearable` is also `true`.
+*   **Triggers:**
+    *   **Player Death Bomb:** Uses `Physics2D.OverlapCircleAll` and calls `Clear(true, ...)`.
+    *   **Fairy Shockwave:** Uses trigger colliders (`OnTriggerEnter2D`) and calls `Clear(false, ...)`.
 
 ## Special Interactions
 
@@ -66,7 +82,7 @@ These scripts define how projectiles move after being spawned. They reside in `/
 
 ## Key Scripts
 
-*   Movement: `LinearMovement.cs`, `DelayedHoming.cs`
-*   Lifetime/Pooling: `NetworkBulletLifetime.cs`, `NetworkObjectPool.cs`, `PoolableObjectIdentity.cs`
-*   Interactions: `IClearableByBomb.cs`, `PlayerDeathBomb.cs` (handler), `PlayerHealth.cs` (damage receiver)
-*   Spawners: `PlayerShooting.cs` (handles basic shot, charge attack, spellcard request RPCs and server-side execution), `SpellcardExecutor.cs` (DEPRECATED for execution logic), `ExtraAttackManager.cs` 
+*   Movement: `LinearMovement.cs`, `DelayedHoming.cs`, `BulletMovement.cs`, `StageSmallBulletMoverScript.cs`
+*   Lifetime/Pooling: `NetworkBulletLifetime.cs`, `StageSmallBulletMoverScript.cs`, `BulletMovement.cs`, `NetworkObjectPool.cs`, `PoolableObjectIdentity.cs`
+*   Interactions: `IClearable.cs` (Interface), `NetworkBulletLifetime.cs` (Implementation), `StageSmallBulletMoverScript.cs` (Implementation), `PlayerDeathBomb.cs` (Forced Clear Trigger), `Shockwave.cs` (Normal Clear Trigger), `PlayerHitbox.cs` (Player Damage Receiver), `FairyCollisionHandler.cs` (Enemy Damage Receiver), `SpiritController.cs` (Enemy Damage Receiver)
+*   Spawners: `ServerAttackSpawner.cs` (Player Attacks/Spellcards), `StageSmallBulletSpawner.cs`, `SpiritController.cs` (Timeout Spawn), `Fairy.cs` (Death Spawn) 

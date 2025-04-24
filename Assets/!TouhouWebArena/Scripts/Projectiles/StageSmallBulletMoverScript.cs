@@ -1,15 +1,16 @@
 using UnityEngine;
 using Unity.Netcode;
+using TouhouWebArena; // Add namespace for IClearable and PlayerRole
 
 [RequireComponent(typeof(PoolableObjectIdentity))] // Ensure identity component exists
 /// <summary>
 /// Controls the movement and behavior of small and large stage bullets.
 /// Handles random velocity calculation (or uses a set initial velocity),
-/// network synchronization of velocity, lifetime management, collision with shockwaves,
-/// and interaction with player bombs.
+/// network synchronization of velocity, lifetime management, pooling,
+/// and interaction with clearing effects via the IClearable interface.
 /// Designed to be pooled.
 /// </summary>
-public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
+public class StageSmallBulletMoverScript : NetworkBehaviour, IClearable // Implement IClearable
 {
     [Header("Movement & Lifetime")] // Added header for clarity
     /// <summary>
@@ -31,9 +32,14 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
 
     [Header("Behavior")] // Added header
     /// <summary>
-    /// If true, this bullet will not be destroyed upon collision with a shockwave (e.g., for Large Stage Bullets).
+    /// If true, this bullet will not be destroyed upon collision with a standard shockwave (e.g., for Large Stage Bullets).
+    /// Used by the IClearable implementation.
     /// </summary>
-    [SerializeField] private bool isImmuneToShockwave = false; // Set true for Large Bullets
+    [SerializeField] 
+    [Tooltip("Can this bullet be cleared by standard shockwaves (non-forced clears)?")]
+    private bool isNormallyClearable = true; // Add field, default to true?
+    // --- REMOVED isImmuneToShockwave, replaced by isNormallyClearable for the interface logic ---
+    // [SerializeField] private bool isImmuneToShockwave = false;
 
     // --- Networked State --- 
     /// <summary>
@@ -145,16 +151,16 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
         // Check if the bullet collided with a shockwave
         if (other.CompareTag("FairyShockwave"))
         {
-            // --- NEW: Check Immunity Flag --- 
-            if (isImmuneToShockwave)
-            {
-                return; // Do nothing if immune
-            }
-            // ----------------------------------
-
-            ReturnToPool(); // Use the new method
+            // --- REMOVED Immunity Check Here - Now handled by IClearable --- 
+            // if (isImmuneToShockwave) return;
+            
+            // Instead of directly returning, the shockwave will now call IClearable.Clear
+            // on this object, which will handle the logic based on isNormallyClearable.
+            // So, we remove the ReturnToPool call from here.
+            // ReturnToPool(); 
         }
         // Potentially add other collision checks here that should return the bullet to the pool
+        // (but clearing is now primarily handled via the interface)
     }
 
     // --- New ReturnToPool Method --- 
@@ -189,37 +195,26 @@ public class StageSmallBulletMoverScript : NetworkBehaviour, IClearableByBomb
     }
     // -----------------------------
 
-    #region IClearableByBomb Implementation
-
+    // --- Implementation of IClearable ---
     /// <summary>
-    /// [Server Only] Implements <see cref="IClearableByBomb"/>. Handles the bullet being cleared by a player's bomb.
-    /// Returns the bullet to the object pool.
+    /// Called by effects like PlayerDeathBomb or Shockwave to clear this bullet.
+    /// On the server, checks if the clear should happen based on forceClear and isNormallyClearable flags,
+    /// then returns the bullet to the object pool if applicable.
     /// </summary>
-    /// <param name="bombingPlayer">The role of the player who activated the bomb (unused by bullets).</param>
-    public void ClearByBomb(PlayerRole bombingPlayer)
+    /// <param name="forceClear">If true, the bullet is cleared regardless of isNormallyClearable.</param>
+    /// <param name="sourceRole">The role of the player causing the clear (ignored by this implementation).</param>
+    public void Clear(bool forceClear, PlayerRole sourceRole)
     {
-        if (!IsServer) return;
-        ReturnToPool(); // Use the new method
-    }
+        // Clearing logic only runs on the server
+        if (!IsServer || isReturning) return;
 
-    // ServerRpc called by ClearByBomb() - NO LONGER NEEDED
-    /*
-    [ServerRpc(RequireOwnership = false)] // Allow any client (or server) to trigger this
-    private void RequestClearByBombServerRpc(ServerRpcParams rpcParams = default)
-    {
-        // Despawn the network object (will destroy it on all clients)
-        NetworkObject networkObject = GetComponent<NetworkObject>();
-        if (networkObject != null && networkObject.IsSpawned)
+        // If it's a forced clear (player bomb) OR this bullet is normally clearable
+        if (forceClear || isNormallyClearable)
         {
-            networkObject.Despawn(true); // Pass true to destroy the GameObject as well
+            // Reuse the existing pooling logic
+            ReturnToPool();
         }
-         else 
-        {
-            // Keep this warning
-            ulong netId = networkObject?.NetworkObjectId ?? 0;
-            bool spawned = networkObject?.IsSpawned ?? false;
-        }
+        // Else: Normal clear attempt on a bullet that is not normally clearable - do nothing.
     }
-    */
-    #endregion
+    // ------------------------------------
 } 

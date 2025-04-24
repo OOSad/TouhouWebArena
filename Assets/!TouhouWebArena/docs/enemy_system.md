@@ -22,18 +22,34 @@ Enemy spawning is controlled entirely by the server.
 
 *   **Fairies (`NormalFairy`, `GreatFairy` prefabs, using `Fairy.cs`, `SplineWalker.cs`):**
     *   **Movement:** Follow fixed spline paths.
-    *   **Interaction:** Can be destroyed by player shots.
-    *   **On-Death Effect:** When destroyed by a player, sends bullets to the opponent's side (details of bullet type/pattern TBD). Specific fairies (`GreatFairy`?) trigger chain reactions (`DelayedActionProcessor.cs`, `FairyRegistry.cs`) or Extra Attacks (configured in `FairySpawner`).
+    *   **Interaction:** 
+        *   Can be destroyed by player shots.
+        *   Implement the `IClearable` interface and are **always** cleared by bombs or shockwaves (see Clearing Effects section below).
+    *   **On-Death Effect:** 
+        *   When destroyed by a player (or a player-attributed clearing effect), sends bullets to the opponent's side.
+        *   Triggers chain reactions (`DelayedActionProcessor.cs`, `FairyRegistry.cs`) or Extra Attacks (configured in `FairySpawner`).
+    *   **Path End:** When a fairy reaches the end of its spline path, it is quietly despawned and returned to the object pool **without** triggering chain reaction effects (like shockwaves or killing the next fairy). This ensures smooth offscreen transitions.
+
 *   **Spirits (`Spirit` prefab, using `SpiritController.cs`):**
     *   **States:** Exist in an `inactive` state initially. Become `activated` when touched by the player's Scope Style (Shift key). Activation state (`isActivated`) is a `NetworkVariable` managed by the server.
     *   **Movement:** Move generally downwards (or according to specific logic within `SpiritController`).
     *   **Interaction:**
         *   Can be destroyed by player shots.
         *   Deal 1 damage to the player on contact, regardless of activation state (`inactive` or `activated`).
-        *   Can be cleared by player death bombs (`IClearableByBomb` interface, handled in `SpiritController.cs` on the server).
+        *   Implement the `IClearable` interface and are **always** cleared by bombs or shockwaves (see Clearing Effects section below).
     *   **On-Death Effect:**
         *   If killed by the *owner* while `inactive`, spawns a "revenge" spirit (inactive) on the *opponent's* side.
-        *   If killed by the *opponent*, or killed while `activated` (by owner or opponent), it spawns an inactive spirit on the *opponent's* side. (Essentially, killing a spirit always sends an inactive spirit to the opponent, except when cleared by a bomb).
+        *   If killed by the *opponent*, or killed while `activated` (by owner or opponent), it spawns an inactive spirit on the *opponent's* side. (Killing a spirit generally sends an inactive spirit to the opponent).
+
+## Clearing Effects (`IClearable` Interface)
+
+Enemies and certain bullets implement the `IClearable` interface, allowing them to be removed by area effects.
+
+*   **Interface:** `IClearable` defines a `Clear(bool forceClear, PlayerRole sourceRole)` method.
+*   **Enemy Implementation:** Both `Fairy.cs` and `SpiritController.cs` implement `IClearable`. Their `Clear` method triggers their respective `Die` sequence, regardless of the `forceClear` flag (enemies are always cleared).
+*   **Triggers:**
+    *   **Player Death Bomb:** Uses `Physics2D.OverlapCircleAll` and calls `Clear(true, ...)` on detected `IClearable` objects (a forced clear).
+    *   **Fairy Shockwave:** Uses trigger colliders (`OnTriggerEnter2D`) and calls `Clear(false, ...)` on detected `IClearable` objects (a normal clear).
 
 ## Data Structure / Definition
 

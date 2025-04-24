@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic; // Needed for List
+using TouhouWebArena; // Add namespace for IClearable and PlayerRole
 
 // Final set of required components
 [RequireComponent(typeof(SplineWalker))]
@@ -12,12 +13,12 @@ using System.Collections.Generic; // Needed for List
 [RequireComponent(typeof(FairyPathInitializer))] // Added path initializer
 /// <summary>
 /// Represents a Fairy enemy unit. Handles health, path following initialization, line formation tracking,
-/// damage taking, death effects triggering, and interactions with bombs.
+/// damage taking, death effects triggering, and interactions with clearing effects via IClearable.
 /// Relies on several other components (SplineWalker, Collider2D, NetworkObject, FairyCollisionHandler,
 /// FairyDeathEffects, FairyPathInitializer) for its functionality.
 /// Designed to be pooled and reused.
 /// </summary>
-public class Fairy : NetworkBehaviour, IClearableByBomb
+public class Fairy : NetworkBehaviour, IClearable
 {
     [Header("Stats")]
     // Use NetworkVariable for synchronized health
@@ -332,15 +333,14 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
 
     /// <summary>
     /// [Server Only] Handles the logic when a fairy reaches the end of its path.
-    /// Currently logs a warning and requests the fairy be destroyed.
+    /// Calls Die without triggering chain reaction effects.
     /// </summary>
     public void HandleEndOfPathServer()
     {
-        // This method is now executed on the server
         bool alive = IsAlive();
-        if (alive) // Only destroy if still alive
+        if (alive) 
         {
-            Die(PlayerRole.None); // Dies from reaching end, no specific killer
+            Die(PlayerRole.None, triggerChainReaction: false); // Set flag to false
         }
     }
     // -------------------------------------------
@@ -357,8 +357,14 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
     }
     // -------------------------------------------------------------
 
-    // This function now ONLY runs on the server
-    private void Die(PlayerRole killerRole = PlayerRole.None)
+    /// <summary>
+    /// [Server Only] Handles the death sequence of the fairy.
+    /// Disables components, optionally triggers chain reaction effects (shockwave, next fairy kill, bullet spawns, extra attacks)
+    /// based on the triggerChainReaction flag, and returns the object to the pool.
+    /// </summary>
+    /// <param name="killerRole">The role of the player who caused the death, or PlayerRole.None if no specific killer.</param>
+    /// <param name="triggerChainReaction">If true (default), triggers shockwaves, kills the next fairy, spawns opponent bullets, and checks for extra attacks. If false, only despawns the fairy.</param>
+    private void Die(PlayerRole killerRole = PlayerRole.None, bool triggerChainReaction = true)
     {
          // --- RE-ADD: Early exit if already dying --- 
         if (isDying || !IsServer) 
@@ -371,93 +377,77 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
         // Disable components immediately
         if (splineWalker != null) splineWalker.enabled = false;
         if (fairyCollider != null) fairyCollider.enabled = false;
-        // No need to explicitly disable path initializer, it runs once.
 
-        // --- Create DelayedActionProcessor --- 
-        // This now handles delayed effects and triggering the next fairy.
-        if (delayedActionProcessorPrefab != null)
+        // --- CHAIN REACTION EFFECTS (Conditional) --- 
+        if (triggerChainReaction)
         {
-            GameObject processorGO = Instantiate(delayedActionProcessorPrefab, transform.position, Quaternion.identity);
-            DelayedActionProcessor processor = processorGO.GetComponent<DelayedActionProcessor>();
-            if (processor != null)
+            // --- Create DelayedActionProcessor --- 
+            if (delayedActionProcessorPrefab != null)
             {
-                // Initialize with all necessary data
-                processor.InitializeAndRun(
-                    transform.position, 
-                    killerRole, 
-                    chainReactionDelay, 
-                    deathShockwavePrefab, // Use the specific prefab field
-                    lineId, 
-                    indexInLine
-                );
+                GameObject processorGO = Instantiate(delayedActionProcessorPrefab, transform.position, Quaternion.identity);
+                DelayedActionProcessor processor = processorGO.GetComponent<DelayedActionProcessor>();
+                if (processor != null)
+                {
+                    processor.InitializeAndRun(
+                        transform.position, 
+                        killerRole, 
+                        chainReactionDelay, 
+                        deathShockwavePrefab, 
+                        lineId, 
+                        indexInLine
+                    );
+                }
+                else
+                {
+                    Debug.LogError($"DelayedActionProcessor prefab is missing the DelayedActionProcessor script!", delayedActionProcessorPrefab);
+                    Destroy(processorGO); 
+                }
             }
             else
             {
-                 Debug.LogError($"DelayedActionProcessor prefab is missing the DelayedActionProcessor script!", delayedActionProcessorPrefab);
-                 Destroy(processorGO); // Clean up useless object
+                Debug.LogError("DelayedActionProcessor prefab is not assigned on Fairy! Cannot run delayed actions.", this);
             }
-        }
-        else
-        {
-            Debug.LogError("DelayedActionProcessor prefab is not assigned on Fairy! Cannot run delayed actions.", this);
-            // Fallback? Maybe trigger immediate effects/next fairy here if processor missing?
-        }
-        // --- End DelayedActionProcessor Creation ---
+            // --- End DelayedActionProcessor Creation ---
 
-        // REMOVED: Immediate effect trigger (now handled by processor after delay)
-        // if (deathEffectsHandler != null)
-        // {
-        //     deathEffectsHandler.TriggerEffects(transform.position);
-        // }
-
-        // REMOVED: Immediate next fairy trigger (now handled by processor after delay)
-        // if (killerRole != PlayerRole.None)
-        // {
-        //     if (FairyRegistry.Instance != null)
-        //     {
-        //         Fairy nextFairy = FairyRegistry.Instance.FindNextInLine(lineId, indexInLine);
-        //         if (nextFairy != null)
-        //         {
-        //             nextFairy.ApplyLethalDamage(killerRole); 
-        //         }
-        //     }
-        //     ...
-        // }
-        
-        // --- Spawn Regular Bullet on Opponent Side (Keep this immediate logic) ---
-        if (this.ownerRole != PlayerRole.None && killerRole != PlayerRole.None)
-        {
-            if (StageSmallBulletSpawner.Instance != null)
+            // Effects below should only happen if killed BY A PLAYER during a chain reaction scenario
+            if (killerRole != PlayerRole.None)
             {
-                StageSmallBulletSpawner.Instance.SpawnBulletForOpponent(this.ownerRole); 
-            }
-            else if (IsServer) // Log error only on server
-            {
-                Debug.LogWarning("StageSmallBulletSpawner instance is null, cannot spawn bullet.", this);
-            }
-        }
-
-        // Extra Attack Trigger Logic --- 
-        if (isExtraAttackTrigger && killerRole != PlayerRole.None) 
-        {
-            if (IsServer)
-            {
-                ExtraAttackManager attackManager = ExtraAttackManager.Instance;
-                PlayerDataManager dataManager = PlayerDataManager.Instance;
-
-                if (attackManager != null && dataManager != null)
+                // --- Spawn Regular Bullet on Opponent Side --- 
+                if (this.ownerRole != PlayerRole.None) // Check owner is valid
                 {
-                    PlayerData? attackerData = dataManager.GetPlayerDataByRole(killerRole);
-
-                    if (attackerData.HasValue)
+                    if (StageSmallBulletSpawner.Instance != null)
                     {
-                        PlayerRole opponentRole = (killerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
-                        attackManager.TriggerExtraAttackInternal(attackerData.Value, opponentRole); 
+                        StageSmallBulletSpawner.Instance.SpawnBulletForOpponent(this.ownerRole); 
+                    }
+                    else if (IsServer) 
+                    {
+                        Debug.LogWarning("StageSmallBulletSpawner instance is null, cannot spawn bullet.", this);
                     }
                 }
-            }
-        }
 
+                // Extra Attack Trigger Logic --- 
+                if (isExtraAttackTrigger) 
+                {
+                    if (IsServer)
+                    {
+                        ExtraAttackManager attackManager = ExtraAttackManager.Instance;
+                        PlayerDataManager dataManager = PlayerDataManager.Instance;
+
+                        if (attackManager != null && dataManager != null)
+                        {
+                            PlayerData? attackerData = dataManager.GetPlayerDataByRole(killerRole);
+
+                            if (attackerData.HasValue)
+                            {
+                                PlayerRole opponentRole = (killerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
+                                attackManager.TriggerExtraAttackInternal(attackerData.Value, opponentRole); 
+                            }
+                        }
+                    }
+                }
+            } // End if (killerRole != PlayerRole.None)
+        } // --- END CHAIN REACTION EFFECTS ---
+        
         // Return to Pool AFTER handling effects/triggers --- 
         if (NetworkObject != null && NetworkObjectPool.Instance != null)
         {
@@ -473,9 +463,7 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
         }
     }
 
-    // --- NEW: Server-side direct damage application method ---
-    // This bypasses the RPC for server-side calls like chain reactions
-    // Needs to remain public for the Chain Reaction handler (DelayedActionProcessor) to call it on other fairies
+    // --- NEW: Server-side direct damage application method --- 
     /// <summary>
     /// [Server Only] Applies lethal damage, bypassing normal health checks, and triggers the Die sequence.
     /// Useful for effects that should instantly kill fairies (e.g., bomb clearing, chain reactions via DelayedActionProcessor).
@@ -506,69 +494,32 @@ public class Fairy : NetworkBehaviour, IClearableByBomb
     // Made public so Chain Reaction handler can call it
     /// <summary>
     /// [Server Only] Handles the final destruction/despawning of the fairy GameObject.
-    /// Deregisters from <see cref="FairyRegistry"/>, hides the object, and returns it to the <see cref="NetworkObjectPool"/>.
-    /// Logs an error if called on a client.
+    /// Calls Die without triggering chain reaction effects.
     /// </summary>
     public void DestroySelf()
     {
-        // Ensure this runs on the server
-        if (!IsServer) 
-        { 
-            
-            return; 
-        }
-        
-        // Check isDying flag
-        if (isDying) 
-        { 
-            
-            return; 
-        }
-        
-        Die(PlayerRole.None); // Killer is None when self-destructing
+        if (!IsServer || isDying) return; 
+        Die(PlayerRole.None, triggerChainReaction: false); // Set flag to false
     }
 
     // We might need a method to assign a path later
     // public void SetPath(Path pathToFollow) { ... }
 
-    #region IClearableByBomb Implementation
-
+    // --- Implementation of IClearable ---
     /// <summary>
-    /// [Server Only] Implements the <see cref="IClearableByBomb"/> interface.
-    /// Called by <see cref="PlayerDeathBomb"/> when this fairy is caught in a bomb radius.
-    /// Applies lethal damage attributed to the bombing player.
+    /// Called by effects like PlayerDeathBomb or Shockwave to clear this fairy.
+    /// On the server, triggers the fairy's death sequence.
     /// </summary>
-    /// <param name="bombingPlayer">The <see cref="PlayerRole"/> of the player who used the bomb.</param>
-    public void ClearByBomb(PlayerRole bombingPlayer)
+    /// <param name="forceClear">Ignored by fairies, as they are always clearable.</param>
+    /// <param name="sourceRole">The role of the player causing the clear (used for kill attribution).</param>
+    public void Clear(bool forceClear, PlayerRole sourceRole)
     {
-        // Only execute on the server and if the spirit is not already dying
-        if (!IsServer || isDying)
-        {
-             return;
-        }
+        // Clearing logic only runs on the server
+        if (!IsServer) return;
 
-        // Call Die, passing the bombingPlayer as the killer.
-        // This ensures the bullet spawn check (killer != None) passes,
-        // and the revenge spawn check (killedByOwner) works correctly.
-        Die(bombingPlayer);
+        // Fairies are always cleared, regardless of forceClear.
+        // Call the existing Die method, passing the sourceRole for attribution.
+        Die(sourceRole);
     }
-
-    // ServerRpc called by ClearByBomb() - NO LONGER NEEDED
-    /*
-    [ServerRpc(RequireOwnership = false)] // Allow any client (or server) to trigger this
-    private void RequestClearByBombServerRpc(ServerRpcParams rpcParams = default)
-    {
-        // Only destroy if still alive (hasn't been killed by something else)
-        // Use the IsAlive check for consistency
-        if (IsAlive() && !isDying) // Added !isDying check
-        {
-             DestroySelf();
-        }
-        else
-        {
-            // Debug.LogWarning($"[Server Fairy {NetworkObjectId}] Received ClearByBomb request, but fairy is already dead/dying or not alive. Ignoring."); // Original log
-        }
-    }
-    */
-    #endregion
+    // ------------------------------------
 } 

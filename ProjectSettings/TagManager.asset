@@ -4,13 +4,11 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - StageBullet
   - PlayerShot
   - Fairy
   - FairyShockwave
   - ScopeStyleZone
   - Spirit
-  - Danmaku
   - ClearableDanmaku
   layers:
   - Default
@@ -19,12 +17,12 @@ TagManager:
   - 
   - Water
   - UI
-  - ClearableDanmaku
+  - EnemyProjectiles
   - Fairies
   - Spirits
   - StageWalls
   - ExtraAttacks
-  - SpellcardBullets
+  - PlayerHitbox
   - 
   - 
   - 

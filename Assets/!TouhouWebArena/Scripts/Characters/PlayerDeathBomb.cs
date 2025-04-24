@@ -1,13 +1,14 @@
 using UnityEngine;
 using Unity.Netcode;
-using System.Collections.Generic;
-using System.Linq; // Added for OfType<T>
+// using System.Collections.Generic; // No longer needed for FindObjectsOfType
+// using System.Linq; // No longer needed for OfType<T>
+using TouhouWebArena; // Add namespace for IClearable and PlayerRole
 
 /// <summary>
 /// Handles the server-side logic for the player's "death bomb" effect.
 /// This effect triggers automatically after a player takes damage and their invincibility period ends (see <see cref="PlayerHealth"/>).
-/// It finds and clears specific objects (e.g., bullets, certain enemies) within a radius around the player,
-/// but only on the player's own side of the playfield.
+/// It finds all colliders within a radius and attempts to clear any objects implementing <see cref="IClearable"/>
+/// using a forced clear (ignores normal clearability rules).
 /// </summary>
 [RequireComponent(typeof(CharacterStats))]
 public class PlayerDeathBomb : NetworkBehaviour
@@ -17,30 +18,31 @@ public class PlayerDeathBomb : NetworkBehaviour
     private void Awake()
     {
         characterStats = GetComponent<CharacterStats>();
-        // if (characterStats == null) 
+        if (characterStats == null)
+        {
+            Debug.LogError("PlayerDeathBomb requires CharacterStats component!", this);
+            enabled = false;
+        }
     }
 
     /// <summary>
     /// Executes the death bomb logic ONLY on the server.
-    /// Finds all objects implementing <see cref="IClearableByBomb"/> within the bomb radius 
-    /// (defined by <see cref="CharacterStats.GetDeathBombRadius"/>) on the correct side of the playfield 
-    /// for the bombing player, and calls their <see cref="IClearableByBomb.ClearByBomb"/> method.
+    /// Uses Physics2D.OverlapCircleAll to find objects within the bomb radius
+    /// (defined by <see cref="CharacterStats.GetDeathBombRadius"/>) and calls <see cref="IClearable.Clear"/>
+    /// with forceClear set to true.
     /// This method is typically called by <see cref="PlayerHealth"/> after the invincibility timer.
     /// </summary>
     public void ExecuteBomb()
     {
         if (!IsServer)
         {
-            // Debug.LogWarning("ExecuteBomb called on client, ignoring.");
             return;
         }
-        // Debug.Log($"[Server DeathBomb - {OwnerClientId}] ExecuteBomb called."); // <-- REMOVE Start Log
 
         // --- Get Bombing Player's Role --- 
         PlayerRole bombingPlayerRole = PlayerRole.None;
         if (PlayerDataManager.Instance != null)
         {
-            // Use top-level PlayerData
             PlayerData? playerData = PlayerDataManager.Instance.GetPlayerData(OwnerClientId);
             if (playerData.HasValue)
             {
@@ -48,80 +50,42 @@ public class PlayerDeathBomb : NetworkBehaviour
             }
             else
             {
+                Debug.LogError($"[PlayerDeathBomb] Could not get PlayerData for bombing client {OwnerClientId}. Aborting bomb.", gameObject);
                 return; // Can't determine role, abort bomb
             }
         }
         else
         {
+             Debug.LogError("[PlayerDeathBomb] PlayerDataManager instance not found. Aborting bomb.", gameObject);
             return; // Abort if manager is missing
         }
 
-        if (bombingPlayerRole == PlayerRole.None)
-        {
-            return;
-        }
-        // --- End Get Bombing Player's Role ---
+        // Role check might not be strictly necessary if logic doesn't depend on it, but good for logging/context.
+        // if (bombingPlayerRole == PlayerRole.None) return; 
 
-        // Ensure stats are available before proceeding
-        if (characterStats == null)
-        {
-            return;
-        }
         float currentBombRadius = characterStats.GetDeathBombRadius(); // Read radius from stats
 
-        // --- Clear Objects using Interface --- 
-        // Find all components implementing IClearableByBomb in the scene
-        // Includes inactive objects just in case, but checks validity later
-        var clearables = FindObjectsOfType<MonoBehaviour>(true).OfType<IClearableByBomb>();
-        // Debug.Log($"[Server DeathBomb - {OwnerClientId}] Found {clearables.Count()} potential objects with IClearableByBomb."); // <-- REMOVE Count Log
-
+        // --- Clear Objects using Physics Overlap and Interface --- 
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, currentBombRadius);
         int clearedCount = 0;
-        foreach (IClearableByBomb clearable in clearables)
+
+        foreach (Collider2D hit in hits)
         {
-            // Ensure it's a valid MonoBehaviour in the scene
-            if (clearable is MonoBehaviour mb && mb.gameObject.scene.IsValid())
+            // Optional: Ignore the player's own collider if it has IClearable (unlikely but possible)
+            // if (hit.transform.root == this.transform.root) continue; 
+
+            IClearable clearable = hit.GetComponent<IClearable>(); // Check directly on hit collider's object
+            // If clearable components might be on parent objects of the collider:
+            // IClearable clearable = hit.GetComponentInParent<IClearable>();
+
+            if (clearable != null)
             {
-                Vector3 position = mb.transform.position;
-                 // <-- REMOVE Found Object Info Log -->
-                // Debug.Log($"[Server DeathBomb - {OwnerClientId}] Checking clearable: {mb.gameObject.name} at {position} (Type: {clearable.GetType().Name})"); 
-
-                // 1. Check distance
-                float distance = Vector3.Distance(transform.position, position); // Calculate distance
-                if (distance <= currentBombRadius) // Use radius from stats
-                {
-                    // 2. Check side
-                    bool correctSide = false;
-                    if (bombingPlayerRole == PlayerRole.Player1 && PlayerMovement.player1Bounds.Contains(new Vector2(position.x, position.y)))
-                    {
-                        correctSide = true;
-                    }
-                    else if (bombingPlayerRole == PlayerRole.Player2 && PlayerMovement.player2Bounds.Contains(new Vector2(position.x, position.y)))
-                    {
-                        correctSide = true;
-                    }
-
-                    // 3. If distance and side are correct, clear it
-                    if (correctSide)
-                    {
-                        // <-- REMOVE Clearing Action Log
-                        // The ClearByBomb() method on the object itself handles the necessary ServerRpc call
-                        clearable.ClearByBomb(bombingPlayerRole);
-                        clearedCount++;
-                    }
-                    // Optional: Log why it wasn't cleared if distance/side failed
-                    // else { }
-                }
-                // else { }
+                // Player Bomb is a special/forced clear. Side checks are omitted as per requirement.
+                clearable.Clear(true, bombingPlayerRole); // Pass true for forced clear
+                clearedCount++;
             }
-             else
-             {
-                 // Keep these warnings for invalid objects found
-                 // if (clearable is MonoBehaviour mbInvalid) 
-                 // else 
-             }
         }
-        // Keep this summary log
-        // Debug.Log($"[Server DeathBomb] Cleared {clearedCount} objects for player {bombingPlayerRole} (Client {OwnerClientId}).");
-        // --- End Clear Objects using Interface ---
+        // Optional: Keep summary log
+        // Debug.Log($"[Server DeathBomb] Attempted forced clear on {clearedCount} objects for player {bombingPlayerRole} (Client {OwnerClientId}).");
     }
 } 

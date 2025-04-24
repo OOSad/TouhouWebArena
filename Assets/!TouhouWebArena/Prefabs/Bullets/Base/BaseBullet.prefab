@@ -18,9 +18,9 @@ GameObject:
   - component: {fileID: -2628911404798002816}
   - component: {fileID: 6551332447265239885}
   - component: {fileID: 3222724681119919273}
-  m_Layer: 11
+  m_Layer: 6
   m_Name: BaseBullet
-  m_TagString: Danmaku
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -52,7 +52,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1064700816
+  GlobalObjectIdHash: 2961315053
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
@@ -236,6 +236,7 @@ MonoBehaviour:
   enforceBounds: 1
   boundaryX: 0
   keepOnPositiveSide: 1
+  isNormallyClearable: 1
 --- !u!114 &6551332447265239885
 MonoBehaviour:
   m_ObjectHideFlags: 0

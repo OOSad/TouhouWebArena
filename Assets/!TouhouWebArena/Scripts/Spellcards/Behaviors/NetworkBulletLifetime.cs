@@ -1,29 +1,30 @@
 using UnityEngine;
 using Unity.Netcode;
+using TouhouWebArena; // Add namespace for IClearable
 
 namespace TouhouWebArena.Spellcards.Behaviors
 {
-    // Forward declare the interface if it's not in this file
-    // Assumed definition: interface IClearableByBomb { void ClearByBomb(PlayerRole sourceRole); }
+    // Remove Forward declaration for IClearableByBomb if it exists
+    // interface IClearableByBomb { void ClearByBomb(PlayerRole sourceRole); }
 
     /// <summary>
     /// Server-authoritative script to manage the lifetime and boundary checks for networked projectiles (bullets).
     /// Automatically returns the projectile's NetworkObject to the NetworkObjectPool when its lifetime expires
     /// or if it crosses a defined boundary. Also handles basic collision detection to apply damage.
     /// Should be attached to bullet prefabs managed by the NetworkObjectPool.
-    /// Implements IClearableByBomb allowing it to be cleared by effects like player bombs or shockwaves.
+    /// Implements IClearable allowing it to be cleared by effects like bombs or shockwaves based on configuration.
     /// </summary>
     [RequireComponent(typeof(NetworkObject))] // Ensures we have a NetworkObject
-    public class NetworkBulletLifetime : NetworkBehaviour, IClearableByBomb // Implement the interface
+    public class NetworkBulletLifetime : NetworkBehaviour, IClearable // Implement IClearable, remove IClearableByBomb
     {
-        [Header("Lifetime Settings")] // Added Header
+        [Header("Lifetime Settings")]
         [Tooltip("Maximum time in seconds before the bullet is returned to the pool.")]
         /// <summary>
         /// Maximum time in seconds the projectile can exist before being automatically returned to the pool by the server.
         /// </summary>
         public float maxLifetime = 5.0f;
 
-        [Header("Boundary Settings")] // Added Header
+        [Header("Boundary Settings")]
         [Tooltip("If true, enforces boundary checks.")]
         /// <summary>
         /// If true, the server checks if the projectile crosses the <see cref="boundaryX"/> coordinate based on <see cref="keepOnPositiveSide"/>.
@@ -39,6 +40,10 @@ namespace TouhouWebArena.Spellcards.Behaviors
         /// Determines which side of the <see cref="boundaryX"/> the projectile should remain on. True for the positive X side (e.g., right player's area), false for the negative X side (e.g., left player's area).
         /// </summary>
         public bool keepOnPositiveSide = true; // Default for opponent bullets on right side
+
+        [Header("Clearing Settings")] // Add Header
+        [Tooltip("Can this bullet be cleared by standard shockwaves (non-forced clears)?")]
+        public bool isNormallyClearable = true; // Add field
 
         private float lifeTimer = 0f;
 
@@ -150,20 +155,27 @@ namespace TouhouWebArena.Spellcards.Behaviors
             }
         }
 
-        // --- Implementation of IClearableByBomb ---
+        // --- Implementation of IClearable ---
         /// <summary>
         /// Called by effects like PlayerDeathBomb or Shockwave to clear this bullet.
-        /// On the server, returns the bullet to the object pool.
+        /// On the server, checks if the clear should happen based on forceClear and isNormallyClearable flags,
+        /// then returns the bullet to the object pool if applicable.
         /// </summary>
+        /// <param name="forceClear">If true, the bullet is cleared regardless of isNormallyClearable.</param>
         /// <param name="sourceRole">The role of the player causing the clear (ignored by this implementation).</param>
-        public void ClearByBomb(PlayerRole sourceRole)
+        public void Clear(bool forceClear, PlayerRole sourceRole)
         {
             // Clearing logic only runs on the server
             if (!IsServer) return;
 
-            // Reuse the existing pooling logic
-            ReturnToPool();
+            // If it's a forced clear (player bomb) OR this bullet is normally clearable
+            if (forceClear || isNormallyClearable)
+            {
+                // Reuse the existing pooling logic
+                ReturnToPool();
+            }
+            // Else: Normal clear attempt on a bullet that is not normally clearable - do nothing.
         }
-        // -------------------------------------------
+        // ------------------------------------
     }
 } 

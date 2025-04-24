@@ -43,10 +43,30 @@ public class BulletMovement : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         base.OnNetworkDespawn();
+
         // Always cancel invokes when despawned, regardless of reason
         CancelInvoke(nameof(ReturnToPool));
-        // Note: We don't return to pool here, because Despawn(true) might have been called.
-        // ReturnToPool is called explicitly by logic that wants to reuse the object.
+        
+        // Reset flag immediately
+        isDespawning = false; 
+
+        // --- Client-Side Visual Hiding --- 
+        if (!IsServer) // Only clients need to explicitly hide visuals on despawn sometimes
+        {
+            // Use GetComponentInChildren to find renderer on child object
+            SpriteRenderer sprite = GetComponentInChildren<SpriteRenderer>(); 
+            if (sprite != null) 
+            { 
+                sprite.enabled = false; 
+            }
+            // Add similar checks for MeshRenderer if using 3D models
+            // MeshRenderer mesh = GetComponentInChildren<MeshRenderer>();
+            // if (mesh != null) { mesh.enabled = false; }
+        }
+        // ---------------------------------
+
+        // Note: We don't return to pool here automatically on Despawn.
+        // ReturnToPool is called explicitly by server logic that wants to reuse the object.
     }
 
     // Called when the GameObject is disabled (e.g., when returned to pool)
@@ -77,40 +97,34 @@ public class BulletMovement : NetworkBehaviour
     {
         if (!IsServer || isDespawning) return; // Only server handles collisions, ignore if already despawning
 
-        bool shouldDespawn = false;
+        bool shouldDespawn = false; // Back to original flag name
 
         // --- NEW: Check for Shockwave collision --- 
         if (other.CompareTag("FairyShockwave")) // Ensure Shockwave prefab has this tag
         {
             shouldDespawn = true;
-            return; // Bullet is destroyed, no need for further checks
         }
         // ----------------------------------------
 
         // Check if we hit a fairy (using the "Fairy" tag)
         if (other.CompareTag("Fairy")) // Correct check
         {
-            // Try to get the fairy script
             Fairy fairy = other.GetComponent<Fairy>();
             if (fairy != null)
             {
-                // Call the server-side lethal damage method directly
                 fairy.ApplyLethalDamage(OwnerRole.Value); // Correct call
-                shouldDespawn = true;
+                shouldDespawn = true; // Set original flag
             }
         }
-        // --- NEW: Check if we hit a Spirit --- 
+        // Check if we hit a Spirit
         else if (other.CompareTag("Spirit")) // Add check for Spirit tag
         {
-            // Get the SpiritController component
             SpiritController spirit = other.GetComponent<SpiritController>();
             if (spirit != null)
             {
-                // Define damage amount (e.g., 1 for basic bullets)
                 int damageAmount = 1; 
-                // Call TakeDamage on the spirit, passing damage and the bullet's owner
                 spirit.TakeDamage(damageAmount, OwnerRole.Value); 
-                shouldDespawn = true;
+                shouldDespawn = true; // Set original flag
             }
         }
         // ------------------------------------
@@ -118,7 +132,7 @@ public class BulletMovement : NetworkBehaviour
         // If any collision triggered despawn logic:
         if (shouldDespawn)
         {
-            ReturnToPool();
+            ReturnToPool(); // Use normal pooling
         }
     }
 
@@ -133,6 +147,7 @@ public class BulletMovement : NetworkBehaviour
         // Check if the object still exists and is spawned before proceeding
         if (gameObject == null || NetworkObject == null || !NetworkObject.IsSpawned)
         {
+            isDespawning = false; // Reset flag if aborting here
             return; // Object already gone or not networked correctly
         }
 
@@ -149,7 +164,6 @@ public class BulletMovement : NetworkBehaviour
         }
         else
         {
-            // Fallback: If pool doesn't exist (shouldn't happen normally), just destroy
             Debug.LogWarning("NetworkObjectPool instance not found when trying to return bullet. Destroying instead.", this);
             Destroy(gameObject); 
         }
