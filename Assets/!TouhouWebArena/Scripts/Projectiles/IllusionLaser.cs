@@ -179,7 +179,7 @@ public class IllusionLaser : NetworkBehaviour
         else if (target.TryGetComponent<SpiritController>(out SpiritController spirit))
         {
             
-            spirit.TakeDamage(damageAmount, ownerRole);
+            spirit.ApplyDamageServer(damageAmount, ownerRole);
             applied = true;
         }
         

@@ -29,7 +29,7 @@ namespace TouhouWebArena.Spellcards.Behaviors
         /// <summary>
         /// If true, the server checks if the projectile crosses the <see cref="boundaryX"/> coordinate based on <see cref="keepOnPositiveSide"/>.
         /// </summary>
-        public bool enforceBounds = true; // Enable check by default
+        public bool enforceBounds = true;
         [Tooltip("The X coordinate representing the center boundary.")]
         /// <summary>
         /// The X coordinate used for boundary checks when <see cref="enforceBounds"/> is true. Typically the center of the playfield.
@@ -39,11 +39,11 @@ namespace TouhouWebArena.Spellcards.Behaviors
         /// <summary>
         /// Determines which side of the <see cref="boundaryX"/> the projectile should remain on. True for the positive X side (e.g., right player's area), false for the negative X side (e.g., left player's area).
         /// </summary>
-        public bool keepOnPositiveSide = true; // Default for opponent bullets on right side
+        public bool keepOnPositiveSide = true;
 
         [Header("Clearing Settings")] // Add Header
         [Tooltip("Can this bullet be cleared by standard shockwaves (non-forced clears)?")]
-        public bool isNormallyClearable = true; // Add field
+        public bool isNormallyClearable = true;
 
         private float lifeTimer = 0f;
 

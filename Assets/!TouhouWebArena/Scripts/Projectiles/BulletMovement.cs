@@ -123,7 +123,7 @@ public class BulletMovement : NetworkBehaviour
             if (spirit != null)
             {
                 int damageAmount = 1; 
-                spirit.TakeDamage(damageAmount, OwnerRole.Value); 
+                spirit.ApplyDamageServer(damageAmount, OwnerRole.Value); // NEW
                 shouldDespawn = true; // Set original flag
             }
         }

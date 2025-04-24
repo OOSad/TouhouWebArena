@@ -220,7 +220,7 @@ public class HomingTalisman : NetworkBehaviour
             {
                 // --- DIAGNOSTIC LOG 5: Spirit Component Found --- 
                  
-                spirit.TakeDamage(damage, killerRole); 
+                spirit.ApplyDamageServer(damage, killerRole);
                 damageApplied = true;
             }
             // ---------------------------------

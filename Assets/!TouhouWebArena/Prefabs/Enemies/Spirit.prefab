@@ -166,7 +166,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 4176723456
+  GlobalObjectIdHash: 2332357840
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
@@ -215,7 +215,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1241426470714071119}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 383aeb1735142554b90f88e9675a79ab, type: 3}
+  m_Script: {fileID: 11500000, guid: 21bbc8b2e68a4664db2fb84d0039c1a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   rb: {fileID: 8395408942226847826}
@@ -229,7 +229,7 @@ MonoBehaviour:
   activatedMaxHp: 1
   normalDeathEffectPrefab: {fileID: 5741200759558388235, guid: aa590f6646383c649af0871c8341a62f, type: 3}
   activatedDeathEffectPrefab: {fileID: 825958184812720138, guid: 76cfe1a5018d7d74fbbbd03cf0b269ff, type: 3}
-  maxLifetime: 10
+  maxLifetime: 15
   spiritLargeBulletPrefab: {fileID: 603824684173821203, guid: 160679763d648fe4a84680603d35f329, type: 3}
   activatedTimeoutDuration: 3
   bulletSpreadAngle: 15
