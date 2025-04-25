@@ -2513,6 +2513,8 @@ MonoBehaviour:
     InitialSize: 300
   - Prefab: {fileID: 2173492373472071295, guid: 3f2279f364f549a459822741608eda89, type: 3}
     InitialSize: 300
+  - Prefab: {fileID: 968588019201452436, guid: 352bd47918805104da288ef0e3d913e8, type: 3}
+    InitialSize: 300
   allowPoolExpansion: 0
 --- !u!4 &1652915011
 Transform:

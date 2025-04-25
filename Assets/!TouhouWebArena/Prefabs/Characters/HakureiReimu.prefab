@@ -610,7 +610,7 @@ MonoBehaviour:
   characterName: HakureiReimu
   bulletPrefab: {fileID: 5656050771762241772, guid: aee0e98baf9735743b3d66e821ca5936, type: 3}
   chargeAttackPrefab: {fileID: 3646520139153876449, guid: 3ec2a5d1f99b35844b76285fbcca410d, type: 3}
-  passiveFillRate: 0.05
+  passiveFillRate: 15
   activeChargeRate: 15
   bulletSpread: 0.2
   burstCount: 3
