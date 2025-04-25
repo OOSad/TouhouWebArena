@@ -57,12 +57,13 @@ Certain projectiles (and enemies) implement the `IClearable` interface, allowing
 
 *   **Interface:** `IClearable` defines a `Clear(bool forceClear, PlayerRole sourceRole)` method.
 *   **Implementation:** Found on scripts like `NetworkBulletLifetime.cs` (for spellcard bullets) and `StageSmallBulletMoverScript.cs` (for stage bullets). **Not** implemented on standard player shots (`BulletMovement.cs`).
+    *   Both `NetworkBulletLifetime` and `StageSmallBulletMoverScript` provide a `public NetworkVariable<PlayerRole> TargetPlayerRole`.
 *   **`isNormallyClearable` Flag:** Components implementing `IClearable` have a public boolean field `isNormallyClearable` (settable in the prefab inspector). 
-    *   If `forceClear` is `true` (e.g., Player Death Bomb), the `Clear` method always despawns/pools the object.
+    *   If `forceClear` is `true` (e.g., Player Death Bomb), the `Clear` method always despawns/pools the object **if the bullet's `TargetPlayerRole` matches the bombing player's role**.
     *   If `forceClear` is `false` (e.g., Fairy Shockwave), the `Clear` method only despawns/pools the object if `isNormallyClearable` is also `true`.
 *   **Triggers:**
-    *   **Player Death Bomb:** Uses `Physics2D.OverlapCircleAll` and calls `Clear(true, ...)`.
-    *   **Fairy Shockwave:** Uses trigger colliders (`OnTriggerEnter2D`) and calls `Clear(false, ...)`.
+    *   **Player Death Bomb:** Uses `Physics2D.OverlapCircleAll`. Checks the `TargetPlayerRole` of the detected `IClearable` bullet (`NetworkBulletLifetime.TargetPlayerRole.Value`, `StageSmallBulletMoverScript.TargetPlayerRole.Value`). Only calls `Clear(true, ...)` if the bullet's `TargetPlayerRole` matches the role of the player who died.
+    *   **Fairy Shockwave:** Uses trigger colliders (`OnTriggerEnter2D`) and calls `Clear(false, ...)`. Shockwaves typically only collide with objects on the same side due to physics layers/positioning, but the `Clear` method itself doesn't perform a role check for shockwaves.
 
 ## Special Interactions
 

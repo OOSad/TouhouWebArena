@@ -81,7 +81,7 @@ public class PlayerShootingController : NetworkBehaviour
             {
                 spellBarController = bar;
                 foundBar = true;
-                Debug.Log($"[PlayerShootingController] Found spell bar for OwnerRole: {ownerRole}");
+                // Debug.Log($"[PlayerShootingController] Found spell bar for OwnerRole: {ownerRole}");
                 break;
             }
         }

@@ -45,6 +45,14 @@ namespace TouhouWebArena.Spellcards.Behaviors
         [Tooltip("Can this bullet be cleared by standard shockwaves (non-forced clears)?")]
         public bool isNormallyClearable = true;
 
+        // --- NEW: Target Role --- 
+        /// <summary>
+        /// [Server Write, Client Read] The <see cref="PlayerRole"/> this bullet is primarily associated with (usually the player being targeted).
+        /// Used for logic like bomb clearing.
+        /// </summary>
+        public NetworkVariable<PlayerRole> TargetPlayerRole { get; private set; } = new NetworkVariable<PlayerRole>(PlayerRole.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        // ------------------------
+
         private float lifeTimer = 0f;
 
         /// <summary>

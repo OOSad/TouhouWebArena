@@ -821,13 +821,27 @@ public class ServerAttackSpawner : NetworkBehaviour
         if (doubleHoming) doubleHoming.enabled = false; 
         if (spiral) spiral.enabled = false; // Disable spiral initially
 
-        // Configure Lifetime Boundary Check
+        // Configure Lifetime Boundary Check and Target Role
         if (lifetime != null) {
             lifetime.keepOnPositiveSide = isTargetOnPositiveSide;
             if (action.lifetime > 0f)
             {
                 lifetime.maxLifetime = action.lifetime;
             }
+            
+            // --- Assign Target Role --- 
+            if (PlayerDataManager.Instance != null)
+            {
+                PlayerData? opponentData = PlayerDataManager.Instance.GetPlayerData(opponentId);
+                lifetime.TargetPlayerRole.Value = opponentData.HasValue ? opponentData.Value.Role : PlayerRole.None;
+            }
+            else
+            {
+                Debug.LogError("[ServerAttackSpawner.ConfigureBulletBehavior] PlayerDataManager missing! Cannot set bullet TargetPlayerRole.");
+                lifetime.TargetPlayerRole.Value = PlayerRole.None; // Assign default
+            }
+            // -------------------------
+
         } else {
             Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' missing NetworkBulletLifetime component.");
         }

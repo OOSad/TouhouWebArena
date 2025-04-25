@@ -21,12 +21,6 @@ namespace TouhouWebArena.Spellcards
         // private NetworkObjectPool pool;
         // private Transform opponentPlayerTransform;
 
-        void Start()
-        {
-            // Original Start logic is no longer needed for client-side execution
-            // FindOpponentPlayer(); 
-        }
-
         /* // Comment out original FindOpponentPlayer 
         void FindOpponentPlayer()
         {
@@ -70,5 +64,19 @@ namespace TouhouWebArena.Spellcards
         */
 
         // Keep the class shell in case it's needed for other spellcard-related functionality later
+
+        Transform FindOpponentPlayerTransform()
+        {
+            var players = FindObjectsOfType<CharacterStats>(); 
+            foreach (var player in players)
+            {
+                if (!player.IsOwner) 
+                {
+                    return player.transform;
+                }
+            }
+            Debug.LogWarning("SpellcardExecutor could not find opponent player transform!");
+            return null;
+        }
     }
 } 

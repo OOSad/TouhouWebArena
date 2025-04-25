@@ -80,9 +80,42 @@ public class PlayerDeathBomb : NetworkBehaviour
 
             if (clearable != null)
             {
-                // Player Bomb is a special/forced clear. Side checks are omitted as per requirement.
-                clearable.Clear(true, bombingPlayerRole); // Pass true for forced clear
-                clearedCount++;
+                // --- NEW: Role Check --- 
+                PlayerRole objectRole = PlayerRole.None;
+                bool roleFound = false;
+
+                // Check based on component type
+                if (clearable is SpiritController spirit) 
+                {
+                    objectRole = spirit.GetOwnerRole();
+                    roleFound = true;
+                }
+                else if (clearable is Fairy fairy)
+                {
+                    objectRole = fairy.GetOwnerRole();
+                    roleFound = true;
+                }
+                else if (clearable is StageSmallBulletMoverScript stageBullet)
+                {
+                    objectRole = stageBullet.TargetPlayerRole.Value;
+                    roleFound = true;
+                }
+                else if (clearable is TouhouWebArena.Spellcards.Behaviors.NetworkBulletLifetime spellBullet) // Use full namespace if needed
+                {
+                     objectRole = spellBullet.TargetPlayerRole.Value;
+                    roleFound = true;
+                }
+                // Add else if blocks for any other IClearable types
+
+                // Only clear if the object's role matches the bombing player's role
+                if (roleFound && objectRole == bombingPlayerRole)
+                {
+                    // Player Bomb is a special/forced clear.
+                    clearable.Clear(true, bombingPlayerRole); // Pass true for forced clear
+                    clearedCount++;
+                }
+                // else: Role mismatch or couldn't determine role - don't clear.
+                // -----------------------
             }
         }
         // Optional: Keep summary log

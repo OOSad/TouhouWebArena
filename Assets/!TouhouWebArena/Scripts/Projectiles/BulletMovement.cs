@@ -96,52 +96,71 @@ public class BulletMovement : NetworkBehaviour
     // Server-side collision detection
     void OnTriggerEnter2D(Collider2D other)
     {
-        // --- VERY FIRST LOG --- 
-        Debug.Log($"[BulletMovement] Server: OnTriggerEnter2D called with other: {other.name} (Tag: {other.tag}, Layer: {LayerMask.LayerToName(other.gameObject.layer)})", gameObject);
-        // ---------------------
+        if (!IsServer) return; // Only server should handle collision logic
 
-        if (!IsServer || isDespawning) return; // Only server handles collisions, ignore if already despawning
-
-        bool shouldDespawn = false; // Flag to indicate if bullet should be despawned
-
-        // --- Check for Illusion Hit FIRST --- 
-        if (other.CompareTag("Illusion")) // Assumes Illusion prefab has this tag
+        // Check if collided with an illusion
+        if (other.CompareTag("Illusion"))
         {
-            IllusionHealth illusionHealth = other.GetComponent<IllusionHealth>();
-            if (illusionHealth != null)
+            if (other.TryGetComponent<IllusionHealth>(out var illusionHealth))
             {
-                Debug.Log($"[BulletMovement] Server: Hit Illusion object '{other.name}'. Checking owner role...", gameObject);
-                // Check if this bullet belongs to the player the illusion is targeting
+                // Check if the bullet owner's role matches the illusion's targeted role
                 if (OwnerRole.Value == illusionHealth.TargetedPlayerRole)
                 {
-                    Debug.Log($"[BulletMovement] Server: Owner role ({OwnerRole.Value}) MATCHES target role ({illusionHealth.TargetedPlayerRole}). Proceeding with damage.", gameObject);
                     // Get damage from ProjectileDamager (or default to 1)
                     float damageToDeal = 1f;
-                    ProjectileDamager damager = GetComponent<ProjectileDamager>();
-                    if (damager != null) 
+                    if (TryGetComponent<ProjectileDamager>(out var damager))
                     {
                         damageToDeal = damager.damage;
                     }
 
-                    Debug.Log($"[BulletMovement] Server: Attempting to call IllusionHealth directly...", gameObject);
-                    // Deal damage via direct server-side method call
-                    illusionHealth.TakeDamageServerSide(damageToDeal, OwnerRole.Value);
-                    shouldDespawn = true; // Mark bullet for despawn
+                    illusionHealth.TakeDamageServerSide(damageToDeal, OwnerRole.Value); // Use ServerSide and pass damage/role
                 }
                 else
                 {
-                    Debug.Log($"[BulletMovement] Server: Owner role ({OwnerRole.Value}) does NOT match target role ({illusionHealth.TargetedPlayerRole}). Ignoring hit.", gameObject);
+                    // Ignore the hit if the roles don't match
                 }
             }
             else { Debug.LogWarning("[BulletMovement] Hit object with Illusion tag but missing IllusionHealth component!", other.gameObject); }
+
+            // Despawn the bullet after hitting an illusion, regardless of match
+            ReturnToPool();
+            return; // Stop further collision checks for this bullet
         }
-        // --- Check for Shockwave collision --- 
-        else if (other.CompareTag("FairyShockwave")) // Ensure Shockwave prefab has this tag
+
+        // Check if collided with a spirit
+        if (other.CompareTag("Spirit"))
         {
-            shouldDespawn = true;
+            // NEW LOGIC: Always attempt to apply damage to spirits hit by player shots.
+            // Player shots are confined to their side, so complex ownership checks aren't needed here.
+            if (other.TryGetComponent<SpiritController>(out var spiritController))
+            {
+                // Get damage from ProjectileDamager (or default to 1)
+                int damageToDeal = 1;
+                if (TryGetComponent<ProjectileDamager>(out var damager))
+                {
+                    damageToDeal = (int)damager.damage;
+                }
+                // Pass the bullet's owner role as the killer for potential scoring/attribution
+                spiritController.ApplyDamageServer(damageToDeal, OwnerRole.Value); 
+            }
+            else {
+                Debug.LogWarning($"[BulletMovement] Server: Spirit {other.name} missing SpiritController component!", other.gameObject);
+            }
+            
+            // Always despawn the bullet after hitting a spirit.
+            ReturnToPool();
+            
+            return; // Processed spirit collision
         }
-        // --- Check for Fairy Hit --- 
-        else if (other.CompareTag("Fairy")) // Correct check
+
+        // Check if we hit a Shockwave
+        if (other.CompareTag("FairyShockwave"))
+        {
+            ReturnToPool();
+        }
+
+        // Check if we hit a Fairy
+        if (other.CompareTag("Fairy"))
         {
             Fairy fairy = other.GetComponent<Fairy>();
             if (fairy != null)
@@ -152,46 +171,9 @@ public class BulletMovement : NetworkBehaviour
                  if (ownerData.HasValue && fairy.GetOwnerRole() != ownerData.Value.Role)
                  {
                     fairy.ApplyLethalDamage(OwnerRole.Value); // Pass PlayerRole
-                    shouldDespawn = true; 
+                    ReturnToPool(); 
                  }
             }
-        }
-        // Check if we hit a Spirit
-        else if (other.CompareTag("Spirit")) // Add check for Spirit tag
-        {
-            SpiritController spirit = other.GetComponent<SpiritController>();
-            if (spirit != null)
-            {
-                PlayerData? ownerData = PlayerDataManager.Instance?.GetPlayerData(OwnerClientId);
-                PlayerRole spiritOwner = spirit.GetOwnerRole(); // Get role once
-
-                // --- DEBUG LOGGING for Spirit Hit ---
-                if (ownerData.HasValue)
-                {
-                     Debug.Log($"[BulletMovement] Server: Hit Spirit. Bullet Owner={ownerData.Value.Role}, Spirit Owner={spiritOwner}", gameObject);
-                }
-                else { Debug.LogWarning("[BulletMovement] Server: Hit Spirit, but couldn't get PlayerData for bullet owner!", gameObject); }
-                // -------------------------------------
-
-                 // Use the public GetOwnerRole() method
-                 // REMOVED Condition: if (ownerData.HasValue && spiritOwner != ownerData.Value.Role)
-                 // Spirits are always damageable by any player shot.
-                Debug.Log("[BulletMovement] Server: Applying damage to spirit.", gameObject); // Updated log
-                int damageAmount = 1; 
-                // Get damage from ProjectileDamager if attached
-                ProjectileDamager damager = GetComponent<ProjectileDamager>();
-                if (damager != null) damageAmount = (int)damager.damage;
-
-                spirit.ApplyDamageServer(damageAmount, OwnerRole.Value); // Pass damage, then PlayerRole
-                shouldDespawn = true; 
-            }
-        }
-        // ------------------------------------
-
-        // If any collision triggered despawn logic:
-        if (shouldDespawn)
-        {
-            ReturnToPool(); // Use normal pooling
         }
     }
 

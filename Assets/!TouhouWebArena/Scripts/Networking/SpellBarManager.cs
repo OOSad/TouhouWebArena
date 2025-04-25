@@ -114,7 +114,8 @@ public class SpellBarManager : NetworkBehaviour
                 Debug.LogWarning($"[SpellBarManager] Found SpellBarController with TargetPlayerRole set to None. It will be ignored.", bar.gameObject);
             }
         }
-        Debug.Log($"[SpellBarManager] Initialized cache with {playerSpellBars.Count} spell bars.");
+        // Removed Debug.Log from here
+        // // Debug.Log($"[SpellBarManager] Initialized cache with {playerSpellBars.Count} spell bars.");
     }
 
     // --- Server-Side Update Loop --- 
@@ -296,9 +297,8 @@ public class SpellBarManager : NetworkBehaviour
             else
             {
                 // Not enough charge - log the failure reason
-                Debug.Log($"[SpellBarManager] Client {clientId} failed spellcard level {spellLevel}: Insufficient passive charge (Needs {cost}, Has {senderBar.currentPassiveFill.Value}).");
-                // Do not reset active charge here, as the action failed.
-                return false; // Cost could not be paid
+                // Debug.Log($"[SpellBarManager] Client {clientId} failed spellcard level {spellLevel}: Insufficient passive charge (Needs {cost}, Has {senderBar.currentPassiveFill.Value}).");
+                return false; // Failed: Not enough charge
             }
         }
         else

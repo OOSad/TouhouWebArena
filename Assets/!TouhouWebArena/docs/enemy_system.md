@@ -14,8 +14,8 @@ Enemy spawning is controlled entirely by the server.
     *   Fairies follow predefined paths using the `SplineWalker.cs` component, which gets path data synchronized from the server.
     *   The `FairyRegistry.cs` likely tracks active fairies.
 *   **Spirits:**
-    *   Spawned periodically within designated spawn zones for each player (`player1SpawnZoneRef`, `player2SpawnZoneRef` likely referenced in the spawning script). The exact script triggering periodic spirit spawns needs identification (possibly a Game Manager or dedicated spawner).
-    *   Revenge Spirits: When a player destroys one of their *own* normal (unactivated) spirits, a new "revenge" spirit is spawned on the *opponent's* side. This is handled server-side within `SpiritController.cs`.
+    *   Spawned periodically within designated spawn zones for each player (`player1SpawnZoneRef`, `player2SpawnZoneRef` likely referenced in `SpiritSpawner.cs`).
+    *   Simplified Spawning: When a spirit is destroyed (by player shot, timeout, or clear effect), a new inactive spirit is immediately spawned on the *opponent's* side. This is handled server-side within `SpiritController.cs` -> `Die()` method.
     *   The `SpiritRegistry.cs` tracks active spirits per side and enforces a maximum count (`maxSpiritsPerSide`).
 
 ## Enemy Types & Behavior
@@ -34,22 +34,22 @@ Enemy spawning is controlled entirely by the server.
     *   **States:** Exist in an `inactive` state initially. Become `activated` when touched by the player's Scope Style (Shift key). Activation state (`isActivated`) is a `NetworkVariable` managed by the server.
     *   **Movement:** Move generally downwards (or according to specific logic within `SpiritController`).
     *   **Interaction:**
-        *   Can be destroyed by player shots.
+        *   Can be destroyed by player shots (regardless of owner).
         *   Deal 1 damage to the player on contact, regardless of activation state (`inactive` or `activated`).
-        *   Implement the `IClearable` interface and are **always** cleared by bombs or shockwaves (see Clearing Effects section below).
+        *   Implement the `IClearable` interface and are **always** cleared by bombs or shockwaves (if the effect source matches the spirit's side - see Clearing Effects section below).
     *   **On-Death Effect:**
-        *   If killed by the *owner* while `inactive`, spawns a "revenge" spirit (inactive) on the *opponent's* side.
-        *   If killed by the *opponent*, or killed while `activated` (by owner or opponent), it spawns an inactive spirit on the *opponent's* side. (Killing a spirit generally sends an inactive spirit to the opponent).
+        *   Simplified: When a spirit is destroyed for any reason (player shot, timeout, clearing effect), it spawns an inactive spirit on the *opponent's* side.
 
 ## Clearing Effects (`IClearable` Interface)
 
 Enemies and certain bullets implement the `IClearable` interface, allowing them to be removed by area effects.
 
 *   **Interface:** `IClearable` defines a `Clear(bool forceClear, PlayerRole sourceRole)` method.
-*   **Enemy Implementation:** Both `Fairy.cs` and `SpiritController.cs` implement `IClearable`. Their `Clear` method triggers their respective `Die` sequence, regardless of the `forceClear` flag (enemies are always cleared).
+*   **Enemy Implementation:** Both `Fairy.cs` and `SpiritController.cs` implement `IClearable`. Their `Clear` method triggers their respective `Die` sequence, regardless of the `forceClear` flag.
+    *   Both `Fairy` and `SpiritController` provide a `public PlayerRole GetOwnerRole()` method.
 *   **Triggers:**
-    *   **Player Death Bomb:** Uses `Physics2D.OverlapCircleAll` and calls `Clear(true, ...)` on detected `IClearable` objects (a forced clear).
-    *   **Fairy Shockwave:** Uses trigger colliders (`OnTriggerEnter2D`) and calls `Clear(false, ...)` on detected `IClearable` objects (a normal clear).
+    *   **Player Death Bomb:** Uses `Physics2D.OverlapCircleAll`. Checks the `ownerRole` of the detected `IClearable` enemy (`Fairy.GetOwnerRole()`, `SpiritController.GetOwnerRole()`). Only calls `Clear(true, ...)` if the enemy's `ownerRole` matches the role of the player who died.
+    *   **Fairy Shockwave:** Uses trigger colliders (`OnTriggerEnter2D`) and calls `Clear(false, ...)` on detected `IClearable` objects (a normal clear). Shockwaves typically only collide with objects on the same side due to physics layers/positioning, but the `Clear` method itself doesn't perform an owner check for shockwaves.
 
 ## Data Structure / Definition
 
