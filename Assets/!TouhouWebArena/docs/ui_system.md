@@ -8,7 +8,7 @@ The UI system displays critical game information to the players, including healt
 
 *   **HUD (Heads-Up Display):**
     *   **Health Bars:** Implemented by `PlayerHealthUI.cs`. Uses individual icons (prefabs) instantiated within a container. Displays the current health for a specific player (Player 1 or Player 2, configured via `targetPlayerId`).
-    *   **Spellbar:** Implemented by `SpellBarController.cs`. Uses two `UnityEngine.UI.Image` components (`passiveFillImage`, `activeFillImage`) whose `fillAmount` property is updated to represent the passive and active charge levels.
+    *   **Spellbar:** Implemented by `SpellBarController.cs`. Uses two `UnityEngine.UI.Image` components (`passiveFillImage`, `activeFillImage`) whose `fillAmount` property is updated to represent the passive and active charge levels. Each instance is assigned a `TargetPlayerRole` (Player1 or Player2) in the Inspector to determine which player it represents.
     *   **Round Counters (Assumed):** UI elements to display the current round wins for each player (likely updated based on `NetworkVariables` from a GameManager).
     *   **Timers (Assumed):** Potential UI for round timers or cooldowns.
 *   **Menus:**
@@ -23,7 +23,10 @@ The UI needs to reflect the authoritative game state from the server.
 
 *   **`NetworkVariables`:** This is the primary method for updating HUD elements linked to changing game state:
     *   **Health:** `PlayerHealthUI` subscribes to the `OnHealthChanged` event from the `PlayerHealth` script. This event is triggered when the server modifies the `PlayerHealth.CurrentHealth` NetworkVariable. `PlayerHealthUI` then updates the visible health icons locally.
-    *   **Spell Charge:** `SpellBarController` continuously reads its `currentPassiveFill` and `currentActiveFill` NetworkVariables in its `Update()` loop and directly sets the `fillAmount` of its `Image` components. The server is responsible for updating these NetworkVariables.
+    *   **Spell Charge:** 
+        *   The server's `SpellBarManager` finds all `SpellBarController` instances and caches them based on their assigned `TargetPlayerRole`.
+        *   The `SpellBarManager` updates the `currentPassiveFill` and `currentActiveFill` NetworkVariables based on game events and client input (forwarded via RPCs).
+        *   The client-side `SpellBarController` script continuously reads its own `currentPassiveFill` and `currentActiveFill` NetworkVariables in its `Update()` loop and directly sets the `fillAmount` of its `Image` components.
     *   **Round Wins/Game State (Assumed):** Round counters or match status indicators would likely be driven by `NetworkVariables` located in a `GameManager` script. UI scripts would read these variables and update text or images accordingly.
 *   **RPCs (`ClientRpc`):** While NetworkVariables handle continuous state, `ClientRpc` calls from the server *could* be used for infrequent, event-based UI updates, such as:
     *   Displaying "Round Start" or "Round Win" messages.
@@ -37,7 +40,7 @@ The UI needs to reflect the authoritative game state from the server.
 ## Important UI Scripts
 
 *   **`PlayerHealthUI.cs`:** Manages the health icon display for one player.
-*   **`SpellBarController.cs`:** Manages the visual fill for one player's spell bar, driven by NetworkVariables.
+*   **`SpellBarController.cs`:** Manages the visual fill for one player's spell bar, driven by NetworkVariables. Must have its `TargetPlayerRole` set in the Inspector.
 *   **`MatchmakerUI.cs`:** Handles UI interactions for joining the matchmaking queue.
 *   **`CharacterSelector.cs`:** Handles UI for selecting characters.
 *   **`ClientConnectorDisconnector.cs`:** Handles UI button for connecting/disconnecting the client.
