@@ -14,8 +14,8 @@ public class SpellBarManager : NetworkBehaviour
     /// <summary>Singleton instance of the SpellBarManager.</summary>
     public static SpellBarManager Instance { get; private set; }
 
-    // Server-side cache of SpellBarControllers keyed by the ClientId they target.
-    private Dictionary<ulong, SpellBarController> playerSpellBars = new Dictionary<ulong, SpellBarController>();
+    // Cache keyed by PlayerRole now
+    private Dictionary<PlayerRole, SpellBarController> playerSpellBars = new Dictionary<PlayerRole, SpellBarController>();
 
     /// <summary>
     /// Unity Awake method. Implements the singleton pattern.
@@ -93,20 +93,25 @@ public class SpellBarManager : NetworkBehaviour
         if (!IsServer) return;
 
         playerSpellBars.Clear();
-        // Find all active SpellBarControllers in the loaded scenes.
         SpellBarController[] allSpellBars = FindObjectsOfType<SpellBarController>();
         foreach (SpellBarController bar in allSpellBars)
         {
-            // Use the TargetPlayerId configured on the SpellBarController as the key.
-            ulong targetClientId = (ulong)bar.GetTargetPlayerId();
-            if (!playerSpellBars.ContainsKey(targetClientId))
+            // Use the TargetPlayerRole configured on the SpellBarController as the key.
+            PlayerRole targetRole = bar.TargetPlayerRole;
+            if (targetRole != PlayerRole.None) // Only add bars with a valid role assigned
             {
-                playerSpellBars.Add(targetClientId, bar);
+                if (!playerSpellBars.ContainsKey(targetRole))
+                {
+                    playerSpellBars.Add(targetRole, bar);
+                }
+                else
+                {
+                    Debug.LogWarning($"[SpellBarManager] Duplicate SpellBarController found targeting Role {targetRole}. Using the first instance found.", bar.gameObject);
+                }
             }
             else
             {
-                // This indicates a configuration error (two bars targeting the same player).
-                Debug.LogWarning($"[SpellBarManager] Duplicate SpellBarController found targeting ClientId {targetClientId}. Using the first instance found.", bar.gameObject);
+                Debug.LogWarning($"[SpellBarManager] Found SpellBarController with TargetPlayerRole set to None. It will be ignored.", bar.gameObject);
             }
         }
         Debug.Log($"[SpellBarManager] Initialized cache with {playerSpellBars.Count} spell bars.");
@@ -134,13 +139,26 @@ public class SpellBarManager : NetworkBehaviour
     /// </summary>
     private void UpdatePassiveFillForAllPlayers()
     {
-         foreach (var kvp in NetworkManager.Singleton.ConnectedClients) // Use ConnectedClients dictionary for direct ClientId access
+         foreach (var kvp in NetworkManager.Singleton.ConnectedClients) 
          {
              ulong clientId = kvp.Key;
              NetworkClient networkClient = kvp.Value;
 
-             // Find the bar associated with this client ID in our cache
-             if (playerSpellBars.TryGetValue(clientId, out SpellBarController bar))
+             // --- Get PlayerRole from ClientId --- 
+             PlayerRole clientRole = PlayerRole.None;
+             if (PlayerDataManager.Instance != null)
+             {
+                 PlayerData? data = PlayerDataManager.Instance.GetPlayerData(clientId);
+                 if (data.HasValue) 
+                 {
+                     clientRole = data.Value.Role;
+                 }
+             }
+             if (clientRole == PlayerRole.None) continue; // Skip if no role found for this client
+             // --------------------------------------
+
+             // Find the bar associated with this player's ROLE in our cache
+             if (playerSpellBars.TryGetValue(clientRole, out SpellBarController bar))
              {
                  // Get the player's stats for the fill rate
                  if (networkClient.PlayerObject != null)
@@ -184,8 +202,25 @@ public class SpellBarManager : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        // Find the target spell bar in the cache
-        if (playerSpellBars.TryGetValue(clientId, out SpellBarController targetBar))
+        // --- Get PlayerRole from ClientId --- 
+        PlayerRole clientRole = PlayerRole.None;
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerData? data = PlayerDataManager.Instance.GetPlayerData(clientId);
+            if (data.HasValue) 
+            {
+                clientRole = data.Value.Role;
+            }
+        }
+        if (clientRole == PlayerRole.None)
+        {
+            Debug.LogWarning($"[SpellBarManager] Could not determine PlayerRole for ClientId {clientId} in UpdatePlayerActiveCharge.");
+            return; 
+        }
+        // --------------------------------------
+
+        // Find the target spell bar using PlayerRole
+        if (playerSpellBars.TryGetValue(clientRole, out SpellBarController targetBar))
         {
             // Get Player Stats required for the active charge rate
             if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out NetworkClient networkClient) && networkClient.PlayerObject != null)
@@ -209,7 +244,7 @@ public class SpellBarManager : NetworkBehaviour
         else
         {
             // This might happen briefly during connection/disconnection, or if cache initialization failed.
-             Debug.LogWarning($"[SpellBarManager] Could not find SpellBarController for client {clientId} to update active charge.");
+             Debug.LogWarning($"[SpellBarManager] Could not find SpellBarController for Role {clientRole} to update active charge.");
         }
     }
 
@@ -226,8 +261,25 @@ public class SpellBarManager : NetworkBehaviour
     {
         if (!IsServer) return false;
 
-        // Find the sender's spell bar in the cache
-        if (playerSpellBars.TryGetValue(clientId, out SpellBarController senderBar))
+        // --- Get PlayerRole from ClientId --- 
+        PlayerRole clientRole = PlayerRole.None;
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerData? data = PlayerDataManager.Instance.GetPlayerData(clientId);
+            if (data.HasValue) 
+            {
+                clientRole = data.Value.Role;
+            }
+        }
+        if (clientRole == PlayerRole.None)
+        {
+             Debug.LogWarning($"[SpellBarManager] Could not determine PlayerRole for ClientId {clientId} in ConsumeSpellCost.");
+             return false; 
+        }
+        // --------------------------------------
+
+        // Find the sender's spell bar using PlayerRole
+        if (playerSpellBars.TryGetValue(clientRole, out SpellBarController senderBar))
         {
             // Calculate cost based on spell level (Level 2 costs 1, Level 3 costs 2, Level 4 costs 3 segments)
             float cost = (spellLevel - 1) * 1.0f; // Cost is 1.0 per level above 1 on the 0-4 scale
@@ -251,7 +303,7 @@ public class SpellBarManager : NetworkBehaviour
         }
         else
         {
-             Debug.LogWarning($"[SpellBarManager] Could not find SpellBarController for client {clientId} to consume spell cost.");
+             Debug.LogWarning($"[SpellBarManager] Could not find SpellBarController for Role {clientRole} to consume spell cost.");
              return false;
         }
     }

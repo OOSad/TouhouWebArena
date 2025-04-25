@@ -5,7 +5,7 @@ using Unity.Netcode;
 /// <summary>
 /// Manages the UI display for a player's spell bar, showing passive and active charge levels.
 /// The spell bar's state (fill levels) is controlled by networked variables, updated authoritatively by the server.
-/// Each instance targets a specific player defined by <see cref="targetPlayerId"/>.
+/// Each instance targets a specific player defined by <see cref="TargetPlayerRole"/>.
 /// </summary>
 public class SpellBarController : NetworkBehaviour
 {
@@ -18,10 +18,10 @@ public class SpellBarController : NetworkBehaviour
     [Tooltip("The Image component representing the active charge level (an overlay on the passive fill).")]
     private Image activeFillImage;
 
-    [Header("Target Player")]
+    [Header("Target Player Role")]
     [SerializeField]
-    [Tooltip("The OwnerClientId of the player this spell bar belongs to (e.g., 1 for Player 1, 2 for Player 2). Must be set in the Inspector.")]
-    private int targetPlayerId = 1; // Default to 1, should be set in Inspector
+    [Tooltip("The PlayerRole this spell bar represents (Player1 or Player2). Must be set in the Inspector.")]
+    public PlayerRole TargetPlayerRole = PlayerRole.None;
 
     /// <summary>
     /// The current passive charge level of the spell bar.
@@ -118,15 +118,5 @@ public class SpellBarController : NetworkBehaviour
         {
             activeFillImage.fillAmount = currentActiveFill.Value / MaxFillAmount;
         }
-    }
-
-    /// <summary>
-    /// Gets the target player's OwnerClientId assigned to this spell bar instance.
-    /// Used to associate this UI element with the correct player data.
-    /// </summary>
-    /// <returns>The target player's OwnerClientId.</returns>
-    public int GetTargetPlayerId()
-    {
-        return targetPlayerId;
     }
 } 

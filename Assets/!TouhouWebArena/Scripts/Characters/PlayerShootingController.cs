@@ -55,25 +55,40 @@ public class PlayerShootingController : NetworkBehaviour
     /// </summary>
     private void FindAndAssignSpellBar()
     {
-        // Ensure this only runs on the owner
         if (!IsOwner) return;
+
+        // --- Get Owner's PlayerRole --- 
+        PlayerRole ownerRole = PlayerRole.None;
+        if (PlayerDataManager.Instance != null) 
+        {
+            PlayerData? data = PlayerDataManager.Instance.GetPlayerData(OwnerClientId);
+            if (data.HasValue) ownerRole = data.Value.Role;
+        }
+        
+        if (ownerRole == PlayerRole.None)
+        {
+             Debug.LogError($"[PlayerShootingController] Could not determine own PlayerRole (ClientId: {OwnerClientId}). Cannot find SpellBarController.");
+             return;
+        }
+        // ------------------------------
 
         SpellBarController[] allSpellBars = FindObjectsOfType<SpellBarController>();
         bool foundBar = false;
         foreach (SpellBarController bar in allSpellBars)
         {
-            if (bar.GetTargetPlayerId() == (int)OwnerClientId)
+            // Compare roles instead of IDs
+            if (bar.TargetPlayerRole == ownerRole)
             {
                 spellBarController = bar;
                 foundBar = true;
-                Debug.Log($"[PlayerShootingController] Found spell bar for OwnerClientId: {OwnerClientId}");
+                Debug.Log($"[PlayerShootingController] Found spell bar for OwnerRole: {ownerRole}");
                 break;
             }
         }
 
         if (!foundBar)
         {
-            Debug.LogError($"[PlayerShootingController] Could not find SpellBarController for OwnerClientId: {OwnerClientId}. Charge attacks and spellcards might not work correctly.");
+            Debug.LogError($"[PlayerShootingController] Could not find SpellBarController for OwnerRole: {ownerRole}.");
         }
     }
 

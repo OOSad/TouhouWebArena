@@ -2283,7 +2283,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   passiveFillImage: {fileID: 715303988}
   activeFillImage: {fileID: 361464714}
-  targetPlayerId: 1
+  TargetPlayerRole: 1
   currentPassiveFill:
     m_InternalValue: 0
   currentActiveFill:
@@ -3669,7 +3669,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   passiveFillImage: {fileID: 1733334889}
   activeFillImage: {fileID: 1808353387}
-  targetPlayerId: 2
+  TargetPlayerRole: 2
   currentPassiveFill:
     m_InternalValue: 0
   currentActiveFill:
