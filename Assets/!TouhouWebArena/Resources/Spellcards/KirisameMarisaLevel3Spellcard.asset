@@ -17,9 +17,9 @@ MonoBehaviour:
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
-    formation: 2
-    positionOffset: {x: 0.5, y: 0}
+    positionOffset: {x: 6.5, y: 0}
     count: 8
+    formation: 2
     radius: 0
     spacing: 0
     angle: 125
@@ -27,6 +27,10 @@ MonoBehaviour:
     speed: 0.5
     speedIncrementPerBullet: 0.5
     homingSpeed: 0
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
     homingDelay: 0
     secondHomingDelay: 0.3
     firstHomingDuration: 0.5
@@ -35,9 +39,9 @@ MonoBehaviour:
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 352bd47918805104da288ef0e3d913e8, type: 3}
-    formation: 2
-    positionOffset: {x: -6.5, y: 0}
+    positionOffset: {x: -0.5, y: 0}
     count: 8
+    formation: 2
     radius: 0
     spacing: 0
     angle: -125
@@ -45,6 +49,10 @@ MonoBehaviour:
     speed: 0.5
     speedIncrementPerBullet: 0.5
     homingSpeed: 0
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
     homingDelay: 0
     secondHomingDelay: 0.3
     firstHomingDuration: 0.5
@@ -53,9 +61,9 @@ MonoBehaviour:
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
-    formation: 2
-    positionOffset: {x: 0.5, y: -2}
+    positionOffset: {x: 6.5, y: -2}
     count: 8
+    formation: 2
     radius: 0
     spacing: 0
     angle: 125
@@ -63,6 +71,10 @@ MonoBehaviour:
     speed: 0.5
     speedIncrementPerBullet: 0.5
     homingSpeed: 0
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
     homingDelay: 0
     secondHomingDelay: 0.3
     firstHomingDuration: 0.5
@@ -71,9 +83,9 @@ MonoBehaviour:
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 352bd47918805104da288ef0e3d913e8, type: 3}
-    formation: 2
-    positionOffset: {x: -6.5, y: -2}
+    positionOffset: {x: -0.5, y: -2}
     count: 8
+    formation: 2
     radius: 0
     spacing: 0
     angle: -125
@@ -81,6 +93,10 @@ MonoBehaviour:
     speed: 0.5
     speedIncrementPerBullet: 0.5
     homingSpeed: 0
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
     homingDelay: 0
     secondHomingDelay: 0.3
     firstHomingDuration: 0.5
@@ -89,9 +105,9 @@ MonoBehaviour:
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
-    formation: 2
-    positionOffset: {x: 0.5, y: -4}
+    positionOffset: {x: 6.5, y: -4}
     count: 8
+    formation: 2
     radius: 0
     spacing: 0
     angle: 125
@@ -99,6 +115,10 @@ MonoBehaviour:
     speed: 0.5
     speedIncrementPerBullet: 0.5
     homingSpeed: 0
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
     homingDelay: 0
     secondHomingDelay: 0.3
     firstHomingDuration: 0.5
@@ -107,9 +127,9 @@ MonoBehaviour:
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 352bd47918805104da288ef0e3d913e8, type: 3}
-    formation: 2
-    positionOffset: {x: -6.5, y: -4}
+    positionOffset: {x: -0.5, y: -4}
     count: 8
+    formation: 2
     radius: 0
     spacing: 0
     angle: -125
@@ -117,6 +137,10 @@ MonoBehaviour:
     speed: 0.5
     speedIncrementPerBullet: 0.5
     homingSpeed: 0
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
     homingDelay: 0
     secondHomingDelay: 0.3
     firstHomingDuration: 0.5

@@ -1,0 +1,276 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe9fc6f2497ee49489b44ab665d44845, type: 3}
+  m_Name: HakureiReimuLevel4Spellcard
+  m_EditorClassIdentifier: 
+  illusionPrefab: {fileID: 6341418190357833515, guid: ea724cabd1330d84f89e40ac7c7d24bb, type: 3}
+  duration: 15
+  health: 75
+  movementAreaHeight: 2
+  minMoveDelay: 2
+  maxMoveDelay: 3.5
+  attackPool:
+  - patternName: Claw with Talismans
+    orientPatternTowardsTarget: 1
+    actions:
+    - startDelay: 0
+      bulletPrefabs:
+      - {fileID: 2173492373472071295, guid: 3f2279f364f549a459822741608eda89, type: 3}
+      positionOffset: {x: 0, y: 0}
+      count: 15
+      formation: 2
+      radius: 0
+      spacing: 0
+      angle: -90
+      behavior: 0
+      speed: 1
+      speedIncrementPerBullet: 0.1
+      homingSpeed: 0
+      tangentialSpeed: 0
+      useInitialSpeed: 0
+      initialSpeed: 0
+      speedTransitionDuration: 0
+      homingDelay: 0
+      secondHomingDelay: 0
+      firstHomingDuration: 0
+      secondHomingLookAheadDistance: 0
+      lifetime: 20
+    - startDelay: 0
+      bulletPrefabs:
+      - {fileID: 3753940637100796060, guid: 2ca255f0a3b4acc49ac43f9a6cb19d51, type: 3}
+      positionOffset: {x: 0, y: 0}
+      count: 15
+      formation: 2
+      radius: 0
+      spacing: 0
+      angle: -90
+      behavior: 0
+      speed: 1
+      speedIncrementPerBullet: 0.2
+      homingSpeed: 0
+      tangentialSpeed: 0
+      useInitialSpeed: 0
+      initialSpeed: 0
+      speedTransitionDuration: 0
+      homingDelay: 0
+      secondHomingDelay: 0
+      firstHomingDuration: 0
+      secondHomingLookAheadDistance: 0
+      lifetime: 20
+    - startDelay: 0
+      bulletPrefabs:
+      - {fileID: 3753940637100796060, guid: 2ca255f0a3b4acc49ac43f9a6cb19d51, type: 3}
+      positionOffset: {x: 0, y: 0}
+      count: 15
+      formation: 2
+      radius: 0
+      spacing: 0
+      angle: -110
+      behavior: 0
+      speed: 1
+      speedIncrementPerBullet: 0.1
+      homingSpeed: 0
+      tangentialSpeed: 0
+      useInitialSpeed: 0
+      initialSpeed: 0
+      speedTransitionDuration: 0
+      homingDelay: 0
+      secondHomingDelay: 0
+      firstHomingDuration: 0
+      secondHomingLookAheadDistance: 0
+      lifetime: 20
+    - startDelay: 0
+      bulletPrefabs:
+      - {fileID: 3753940637100796060, guid: 2ca255f0a3b4acc49ac43f9a6cb19d51, type: 3}
+      positionOffset: {x: 0, y: 0}
+      count: 15
+      formation: 2
+      radius: 0
+      spacing: 0
+      angle: -70
+      behavior: 0
+      speed: 1
+      speedIncrementPerBullet: 0.1
+      homingSpeed: 0
+      tangentialSpeed: 0
+      useInitialSpeed: 0
+      initialSpeed: 0
+      speedTransitionDuration: 0
+      homingDelay: 0
+      secondHomingDelay: 0
+      firstHomingDuration: 0
+      secondHomingLookAheadDistance: 0
+      lifetime: 20
+  - patternName: Criss-Cross Circles
+    orientPatternTowardsTarget: 0
+    actions:
+    - startDelay: 0
+      bulletPrefabs:
+      - {fileID: 3753940637100796060, guid: 2ca255f0a3b4acc49ac43f9a6cb19d51, type: 3}
+      positionOffset: {x: 0, y: 0}
+      count: 15
+      formation: 1
+      radius: 0
+      spacing: 0
+      angle: 0
+      behavior: 4
+      speed: 1
+      speedIncrementPerBullet: 0
+      homingSpeed: 0
+      tangentialSpeed: 2
+      useInitialSpeed: 0
+      initialSpeed: 0
+      speedTransitionDuration: 0
+      homingDelay: 0
+      secondHomingDelay: 0
+      firstHomingDuration: 0
+      secondHomingLookAheadDistance: 0
+      lifetime: 20
+    - startDelay: 0
+      bulletPrefabs:
+      - {fileID: 3753940637100796060, guid: f2a3a3efbdf65af4d9c5bbad7ca3e4a6, type: 3}
+      positionOffset: {x: 0, y: 0}
+      count: 15
+      formation: 1
+      radius: 0
+      spacing: 0
+      angle: 0
+      behavior: 4
+      speed: 1
+      speedIncrementPerBullet: 0
+      homingSpeed: 0
+      tangentialSpeed: -2
+      useInitialSpeed: 0
+      initialSpeed: 0
+      speedTransitionDuration: 0
+      homingDelay: 0
+      secondHomingDelay: 0
+      firstHomingDuration: 0
+      secondHomingLookAheadDistance: 0
+      lifetime: 20
+  - patternName: Three Circles of Talismans
+    orientPatternTowardsTarget: 0
+    actions:
+    - startDelay: 0
+      bulletPrefabs:
+      - {fileID: 2173492373472071295, guid: 3f2279f364f549a459822741608eda89, type: 3}
+      positionOffset: {x: 0, y: 0}
+      count: 100
+      formation: 1
+      radius: 0
+      spacing: 0
+      angle: 0
+      behavior: 0
+      speed: 1
+      speedIncrementPerBullet: 0
+      homingSpeed: 0
+      tangentialSpeed: 0
+      useInitialSpeed: 0
+      initialSpeed: 0
+      speedTransitionDuration: 0
+      homingDelay: 0
+      secondHomingDelay: 0
+      firstHomingDuration: 0
+      secondHomingLookAheadDistance: 0
+      lifetime: 20
+    - startDelay: 0.4
+      bulletPrefabs:
+      - {fileID: 2173492373472071295, guid: 3f2279f364f549a459822741608eda89, type: 3}
+      positionOffset: {x: 0, y: 0}
+      count: 100
+      formation: 1
+      radius: 0
+      spacing: 0
+      angle: 0
+      behavior: 0
+      speed: 1
+      speedIncrementPerBullet: 0
+      homingSpeed: 0
+      tangentialSpeed: 0
+      useInitialSpeed: 0
+      initialSpeed: 0
+      speedTransitionDuration: 0
+      homingDelay: 0
+      secondHomingDelay: 0
+      firstHomingDuration: 0
+      secondHomingLookAheadDistance: 0
+      lifetime: 20
+    - startDelay: 0.4
+      bulletPrefabs:
+      - {fileID: 2173492373472071295, guid: 3f2279f364f549a459822741608eda89, type: 3}
+      positionOffset: {x: 0, y: 0}
+      count: 100
+      formation: 1
+      radius: 0
+      spacing: 0
+      angle: 0
+      behavior: 0
+      speed: 1
+      speedIncrementPerBullet: 0
+      homingSpeed: 0
+      tangentialSpeed: 0
+      useInitialSpeed: 0
+      initialSpeed: 0
+      speedTransitionDuration: 0
+      homingDelay: 0
+      secondHomingDelay: 0
+      firstHomingDuration: 0
+      secondHomingLookAheadDistance: 0
+      lifetime: 20
+  - patternName: Two Homing Circles of Talismans
+    orientPatternTowardsTarget: 0
+    actions:
+    - startDelay: 0
+      bulletPrefabs:
+      - {fileID: 3623579197644259766, guid: 044aacc1cd040ac4db9cb9b9b57acf82, type: 3}
+      positionOffset: {x: 0, y: 0}
+      count: 80
+      formation: 1
+      radius: 0
+      spacing: 0
+      angle: 0
+      behavior: 2
+      speed: 1
+      speedIncrementPerBullet: 0
+      homingSpeed: 1
+      tangentialSpeed: 0
+      useInitialSpeed: 0
+      initialSpeed: 0
+      speedTransitionDuration: 0
+      homingDelay: 1
+      secondHomingDelay: 0
+      firstHomingDuration: 0
+      secondHomingLookAheadDistance: 0
+      lifetime: 20
+    - startDelay: 0
+      bulletPrefabs:
+      - {fileID: 3623579197644259766, guid: 044aacc1cd040ac4db9cb9b9b57acf82, type: 3}
+      positionOffset: {x: 0, y: 0}
+      count: 80
+      formation: 1
+      radius: 0
+      spacing: 0
+      angle: 0
+      behavior: 2
+      speed: 0.5
+      speedIncrementPerBullet: 0
+      homingSpeed: 1
+      tangentialSpeed: 0
+      useInitialSpeed: 0
+      initialSpeed: 0
+      speedTransitionDuration: 0
+      homingDelay: 1
+      secondHomingDelay: 0
+      firstHomingDuration: 0
+      secondHomingLookAheadDistance: 0
+      lifetime: 20
+  attacksPerMove: 1

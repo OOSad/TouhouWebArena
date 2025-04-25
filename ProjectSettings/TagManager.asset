@@ -10,6 +10,7 @@ TagManager:
   - ScopeStyleZone
   - Spirit
   - ClearableDanmaku
+  - Illusion
   layers:
   - Default
   - TransparentFX
@@ -23,7 +24,7 @@ TagManager:
   - StageWalls
   - ExtraAttacks
   - PlayerHitbox
-  - 
+  - Illusions
   - 
   - 
   - 

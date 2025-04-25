@@ -10,46 +10,98 @@ namespace TouhouWebArena.Spellcards.Behaviors
     /// </summary>
     public class LinearMovement : NetworkBehaviour // Inherits from NetworkBehaviour for potential network context, even if movement is local
     {
-        /// <summary>
-        /// The speed at which the GameObject moves forward.
-        /// Can be set via the Inspector or using <see cref="Initialize"/>.
-        /// </summary>
-        [Tooltip("Speed in units per second along the local Y-axis.")]
-        public float speed = 5f;
+        // Removed public speed field, now managed internally
+        // public float speed = 5f; 
+
+        // --- Internal State for Speed Transition ---
+        private bool _useTransition = false;
+        private float _initialSpeed = 0f;
+        private float _targetSpeed = 5f; // Default target speed
+        private float _transitionDuration = 0f;
+        private float _spawnTime = 0f;
 
         // We assume the initial direction is baked into the transform's rotation
         // by the spawning logic.
         // Movement is executed client-side for performance in bullet hell scenarios.
 
         /// <summary>
-        /// Server-only Update loop to move the object.
-        /// Client positions are updated via NetworkTransform synchronization (assuming one is attached).
+        /// Server-only Update loop to calculate current speed and move the object.
+        /// Client positions are updated via NetworkTransform synchronization.
         /// </summary>
         void Update()
         {
-            // Movement logic should only be executed on the server
-            // Clients receive position updates via NetworkObject synchronization
             if (!IsServer) return;
 
-            // Use transform.up because in 2D, forward is typically the Y axis.
-            // Adjust if your project uses a different convention.
-            transform.position += transform.up * speed * Time.deltaTime;
+            float currentSpeed = CalculateCurrentSpeed();
 
-            // Note: No network synchronization here (no NetworkTransform).
-            // The spawner tells clients where to spawn and with what parameters.
-            // Movement is predicted/handled locally.
+            // Use transform.up because in 2D, forward is typically the Y axis.
+            transform.position += transform.up * currentSpeed * Time.deltaTime;
         }
 
         /// <summary>
-        /// Initializes the movement speed. Typically called by the spawning logic on the server
-        /// immediately after retrieving the object from the pool and before spawning it.
+        /// **[Server Only]** Calculates the speed for the current frame, handling the transition if active.
         /// </summary>
-        /// <param name="initialSpeed">The desired movement speed.</param>
-        public void Initialize(float initialSpeed)
+        private float CalculateCurrentSpeed()
         {
-            // Ensure this is only called on the server where the speed matters for movement calculation
+            if (!_useTransition) 
+            {
+                return _targetSpeed;
+            }
+
+            float elapsedTime = Time.time - _spawnTime;
+
+            if (elapsedTime >= _transitionDuration)
+            {
+                // Transition finished
+                _useTransition = false; // Stop calculating lerp
+                return _targetSpeed;
+            }
+            else
+            {
+                // Still transitioning
+                // Ensure duration is not zero to avoid division by zero
+                if (_transitionDuration <= 0f) return _targetSpeed;
+                return Mathf.Lerp(_initialSpeed, _targetSpeed, elapsedTime / _transitionDuration);
+            }
+        }
+
+        // --- Initialization Methods (Called by Spawner) --- 
+
+        /// <summary>
+        /// **[Server Only]** Initializes the movement with a constant speed (no transition).
+        /// </summary>
+        /// <param name="targetSpeed">The constant movement speed.</param>
+        public void Initialize(float targetSpeed)
+        {
             if (!IsServer) return;
-            speed = initialSpeed;
+            _useTransition = false;
+            _targetSpeed = targetSpeed;
+            // _initialSpeed, _transitionDuration, _spawnTime are irrelevant
+        }
+
+        /// <summary>
+        /// **[Server Only]** Initializes the movement with a speed transition.
+        /// </summary>
+        /// <param name="initialSpeed">The speed the bullet starts with.</param>
+        /// <param name="targetSpeed">The speed the bullet transitions towards.</param>
+        /// <param name="transitionDuration">The duration of the speed transition in seconds.</param>
+        public void Initialize(float initialSpeed, float targetSpeed, float transitionDuration)
+        {
+            if (!IsServer) return;
+
+            if (transitionDuration <= 0f)
+            {
+                // If duration is zero or negative, just use the target speed instantly
+                Initialize(targetSpeed);
+            }
+            else
+            {
+                _useTransition = true;
+                _initialSpeed = initialSpeed;
+                _targetSpeed = targetSpeed;
+                _transitionDuration = transitionDuration;
+                _spawnTime = Time.time; // Record the time transition starts
+            }
         }
     }
 }

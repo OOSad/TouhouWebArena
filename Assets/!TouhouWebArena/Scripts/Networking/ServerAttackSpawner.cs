@@ -3,6 +3,7 @@ using Unity.Netcode;
 using System.Collections;
 using TouhouWebArena.Spellcards;
 using TouhouWebArena.Spellcards.Behaviors;
+using System.Collections.Generic;
 
 /// <summary>
 /// **[Server Only]** Server-authoritative singleton service responsible for spawning all player-related projectiles
@@ -13,6 +14,11 @@ public class ServerAttackSpawner : NetworkBehaviour
 {
     /// <summary>Singleton instance of the ServerAttackSpawner.</summary>
     public static ServerAttackSpawner Instance { get; private set; }
+
+    // --- Active Illusion Tracking (Server Only) ---
+    private Dictionary<ulong, NetworkObject> _activeIllusionsTargetingPlayer = new Dictionary<ulong, NetworkObject>();
+    private Dictionary<ulong, NetworkObject> _activeIllusionsCastByPlayer = new Dictionary<ulong, NetworkObject>();
+    // ---------------------------------------------
 
     // Constant vertical offset from player center for spawning basic shot pairs.
     private const float firePointVerticalOffset = 0.5f;
@@ -42,9 +48,78 @@ public class ServerAttackSpawner : NetworkBehaviour
         if (Instance == this)
         {
             Instance = null;
+            if (NetworkManager.Singleton != null)
+            {
+                NetworkManager.Singleton.OnClientDisconnectCallback -= HandleClientDisconnect;
+            }
         }
         base.OnDestroy();
     }
+
+    // --- Network Spawn/Disconnect Handling ---
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        if (IsServer)
+        {
+            if (NetworkManager.Singleton != null)
+            {
+                 NetworkManager.Singleton.OnClientDisconnectCallback += HandleClientDisconnect;
+            }
+        }
+    }
+
+    private void HandleClientDisconnect(ulong disconnectedClientId)
+    {
+        if (!IsServer) return;
+        // Clean up illusions related to the disconnected client
+        if (_activeIllusionsTargetingPlayer.TryGetValue(disconnectedClientId, out NetworkObject illusionTargeting)) 
+        {
+            ServerForceDespawnIllusion(illusionTargeting);
+        }
+        if (_activeIllusionsCastByPlayer.TryGetValue(disconnectedClientId, out NetworkObject illusionCastBy)) 
+        {
+            ServerForceDespawnIllusion(illusionCastBy);
+        }
+    }
+    // -----------------------------------------
+
+    // --- Illusion Tracking Management (Server Only) ---
+    public void ServerNotifyIllusionDespawned(NetworkObject illusionNO)
+    {
+        if (!IsServer || illusionNO == null) return;
+        // Remove from targeting dictionary
+        ulong? targetKeyToRemove = null;
+        foreach(var kvp in _activeIllusionsTargetingPlayer)
+        {
+            if (kvp.Value == illusionNO) { targetKeyToRemove = kvp.Key; break; }
+        }
+        if (targetKeyToRemove.HasValue) _activeIllusionsTargetingPlayer.Remove(targetKeyToRemove.Value);
+        // Remove from caster dictionary
+        ulong? casterKeyToRemove = null;
+        foreach(var kvp in _activeIllusionsCastByPlayer)
+        {
+             if (kvp.Value == illusionNO) { casterKeyToRemove = kvp.Key; break; }
+        }
+        if (casterKeyToRemove.HasValue) _activeIllusionsCastByPlayer.Remove(casterKeyToRemove.Value);
+    }
+
+    private void ServerForceDespawnIllusion(NetworkObject illusionNO)
+    {
+        if (!IsServer || illusionNO == null || !illusionNO.IsSpawned) return;
+        IllusionHealth health = illusionNO.GetComponent<IllusionHealth>();
+        if (health != null)
+        {
+            health.TakeDamageServerSide(float.MaxValue, PlayerRole.None);
+        }
+        else
+        {   
+            Debug.LogWarning($"[ServerAttackSpawner] Illusion {illusionNO.name} missing IllusionHealth, attempting direct despawn.");
+            illusionNO.Despawn(true);
+            ServerNotifyIllusionDespawned(illusionNO); // Manual notify
+        }
+    }
+    // ---------------------------------------------------
 
     // --- Public Methods Called by PlayerShootingController RPCs ---
 
@@ -166,6 +241,8 @@ public class ServerAttackSpawner : NetworkBehaviour
         // --- Find Opponent ---
         ulong opponentClientId = ulong.MaxValue;
         NetworkObject opponentPlayerObject = null;
+        PlayerRole opponentRole = PlayerRole.None;
+        Rect opponentBounds = new Rect();
         foreach (var connectedClient in NetworkManager.Singleton.ConnectedClientsList)
         {
             if (connectedClient.ClientId != senderClientId)
@@ -178,12 +255,9 @@ public class ServerAttackSpawner : NetworkBehaviour
         if (opponentPlayerObject == null)
         {
             Debug.LogWarning($"[ServerAttackSpawner.ExecuteSpellcard] Could not find opponent for client {senderClientId} to execute spellcard.");
-            return;
+            return; // Cannot execute spellcard without an opponent
         }
-
         // --- Determine Opponent Role and Bounds ---
-        PlayerRole opponentRole = PlayerRole.None;
-        Rect opponentBounds = new Rect();
         if (PlayerDataManager.Instance != null)
         {
             PlayerData? opponentData = PlayerDataManager.Instance.GetPlayerData(opponentClientId);
@@ -192,94 +266,240 @@ public class ServerAttackSpawner : NetworkBehaviour
                 opponentRole = opponentData.Value.Role;
                 opponentBounds = (opponentRole == PlayerRole.Player1) ? PlayerMovement.player1Bounds : PlayerMovement.player2Bounds;
             }
-            else
-            {
-                Debug.LogError($"[ServerAttackSpawner.ExecuteSpellcard] Could not get PlayerData for opponent {opponentClientId}. Cannot determine spellcard origin bounds.");
-                return; // Cannot proceed without bounds
-            }
+            else { /* Error handling needed */ return; }
         }
-        else
+        else { /* Error handling needed */ return; }
+        // -------------------------------------------
+        
+        Vector3 capturedOpponentPositionForHoming = opponentPlayerObject.transform.position;
+
+        // --- Load Spellcard Resource based on Level ---
+        string resourcePath = $"Spellcards/{senderCharacterName}Level{spellLevel}Spellcard";
+
+        // --- Handle Level 4 --- 
+        if (spellLevel == 4)
         {
-             Debug.LogError("[ServerAttackSpawner.ExecuteSpellcard] PlayerDataManager instance not found. Cannot determine spellcard origin bounds.");
-             return; // Cannot proceed without bounds
+            // Cancellation Logic
+            if (_activeIllusionsTargetingPlayer.TryGetValue(senderClientId, out NetworkObject illusionTargetingSender)) 
+            { ServerForceDespawnIllusion(illusionTargetingSender); }
+            if (_activeIllusionsCastByPlayer.TryGetValue(senderClientId, out NetworkObject illusionCastBySender)) 
+            { ServerForceDespawnIllusion(illusionCastBySender); }
+            
+            Level4SpellcardData level4Data = Resources.Load<Level4SpellcardData>(resourcePath);
+            if (level4Data == null)
+            {
+                Debug.LogError($"[ServerAttackSpawner.ExecuteSpellcard] Failed to load Level4SpellcardData at path: {resourcePath}.");
+                return;
+            }
+            // Pass opponentClientId needed for tracking
+            ServerSpawnLevel4Illusion(level4Data, senderClientId, opponentClientId, opponentPlayerObject, opponentRole);
+            return; // Level 4 handled
         }
 
-        // --- Load SpellcardData Resource ---
-        string resourcePath = $"Spellcards/{senderCharacterName}Level{spellLevel}Spellcard";
+        // --- Handle Levels 2 & 3 (Existing Logic) ---
         SpellcardData spellcardData = Resources.Load<SpellcardData>(resourcePath);
         if (spellcardData == null)
         {
-            Debug.LogError($"[ServerAttackSpawner.ExecuteSpellcard] Failed to load SpellcardData at path: {resourcePath}");
+            Debug.LogError($"[ServerAttackSpawner.ExecuteSpellcard] Failed to load SpellcardData for Level {spellLevel} at path: {resourcePath}");
             return;
         }
 
-        // --- Calculate Spellcard Origin Position based on Character ---
-        // Vector3 opponentCurrentPos = opponentPlayerObject.transform.position; // We use bounds now
-        Vector3 originPosition = Vector3.zero;
-        Quaternion originRotation = Quaternion.identity; // Usually identity for spellcards
+        // Calculate Lv2/3 Origin Position based on Character & Opponent Bounds
+        Vector3 originPosition = CalculateSpellcardOrigin(senderCharacterName, spellLevel, opponentBounds);
+        Quaternion originRotation = Quaternion.identity;
 
-        if (senderCharacterName == "HakureiReimu")
-        {
-            // Reimu Lv2/3: Random X position near the top of opponent's bounds
-            float randomX = Random.Range(opponentBounds.xMin + 0.5f, opponentBounds.xMax - 0.5f); // Add some padding
-            originPosition = new Vector3(randomX, opponentBounds.yMax - 1.0f, 0);
-            Debug.Log($"[ServerAttackSpawner] Reimu Spellcard Origin: RandomX={randomX:F2}, TargetY={originPosition.y:F2}, Bounds=({opponentBounds.xMin:F1},{opponentBounds.xMax:F1})");
-        }
-        else if (senderCharacterName == "KirisameMarisa")
-        {
-            // Marisa Lv2/3: Fixed positions based on level
-            if (spellLevel == 2)
-            {
-                // Level 2: Farthest edge from center (use sign of bounds center)
-                float edgeX = opponentBounds.center.x > 0 ? opponentBounds.xMax - 0.5f : opponentBounds.xMin + 0.5f; // Farthest edge
-                originPosition = new Vector3(edgeX, opponentBounds.yMax - 1.0f, 0);
-                Debug.Log($"[ServerAttackSpawner] Marisa Lv2 Spellcard Origin: EdgeX={edgeX:F2}, TargetY={originPosition.y:F2}");
-            }
-            else if (spellLevel == 3)
-            {
-                // Level 3: Should spawn from BOTH edges simultaneously.
-                // TEMP FIX: Spawn from the edge closest to the SENDER.
-                // TODO: Refactor Marisa Lv3 to spawn patterns from both sides.
-                float edgeX;
-                // opponentRole was determined earlier
-                if (opponentRole == PlayerRole.Player1) // Opponent is P1 (Sender is P2)
-                {
-                    edgeX = opponentBounds.xMax - 0.5f; // Spawn near P1's Right Edge
-                    Debug.Log($"[ServerAttackSpawner] Marisa Lv3 Spellcard Origin (TEMP - Closer Edge): Opponent=P1, Using Right EdgeX={edgeX:F2}");
-                }
-                else // Opponent is P2 (Sender is P1)
-                {
-                    edgeX = opponentBounds.xMin + 0.5f; // Spawn near P2's Left Edge
-                     Debug.Log($"[ServerAttackSpawner] Marisa Lv3 Spellcard Origin (TEMP - Closer Edge): Opponent=P2, Using Left EdgeX={edgeX:F2}");
-                }
-                originPosition = new Vector3(edgeX, opponentBounds.yMax - 1.0f, 0);
-                
-                // --- Original TEMP logic --- 
-                // float leftEdgeX = opponentBounds.xMin + 0.5f;
-                // originPosition = new Vector3(leftEdgeX, opponentBounds.yMax - 1.0f, 0);
-                // Debug.Log($"[ServerAttackSpawner] Marisa Lv3 Spellcard Origin (TEMP - Left Only): EdgeX={leftEdgeX:F2}, TargetY={originPosition.y:F2}");
-                // --------------------------
-            }
-            else // Fallback for unknown Marisa level?
-            {
-                 Debug.LogWarning($"[ServerAttackSpawner.ExecuteSpellcard] Unknown spell level {spellLevel} for Marisa origin calculation. Defaulting...");
-                 Vector3 opponentCurrentPos = opponentPlayerObject.transform.position;
-                 originPosition = opponentCurrentPos + new Vector3(0, 5f, 0); 
-            }
-        }
-        else
-        {
-            // Default fallback: Use simple offset above opponent's current position (old behavior)
-            Debug.LogWarning($"[ServerAttackSpawner.ExecuteSpellcard] Unknown character '{senderCharacterName}' for spellcard origin calculation. Defaulting to offset above opponent.");
-            Vector3 opponentCurrentPos = opponentPlayerObject.transform.position;
-            originPosition = opponentCurrentPos + new Vector3(0, 5f, 0); 
-        }
-
-        // --- Start Spawning Coroutine ---
-        Vector3 capturedOpponentPositionForHoming = opponentPlayerObject.transform.position; // Still capture this for homing behaviors
+        // Start Spawning Coroutine for Levels 2/3
         StartCoroutine(ServerExecuteSpellcardActions(spellcardData, originPosition, originRotation, opponentClientId, capturedOpponentPositionForHoming));
     }
 
+    /// <summary>
+    /// **[Server Only]** Executes a single SpellcardAction, spawning projectiles.
+    /// Applies base rotation for pattern aiming and handles target-side flipping.
+    /// </summary>
+    public void ExecuteSingleSpellcardActionFromServer(TouhouWebArena.Spellcards.SpellcardAction action, Vector3 originPosition, Quaternion baseRotation, ulong targetClientId, Vector3 capturedTargetPosition, bool isTargetOnPositiveSide)
+    {
+        if (!IsServer) return;
+        if (action.bulletPrefabs == null || action.bulletPrefabs.Count == 0) return; 
+
+        Vector2 currentOffset = action.positionOffset;
+        float relativeAngle = action.angle;
+        bool isPatternOriented = !Mathf.Approximately(Quaternion.Angle(baseRotation, Quaternion.identity), 0f);
+
+        if (!isPatternOriented && !isTargetOnPositiveSide)
+        {
+            relativeAngle *= -1f; 
+            currentOffset.x *= -1f; 
+        }
+
+        int prefabIndex = 0;
+        Vector3 spawnPositionBase = originPosition + baseRotation * (Vector3)currentOffset;
+
+        for (int i = 0; i < action.count; i++)
+        {
+            GameObject prefabToSpawn = action.bulletPrefabs[prefabIndex % action.bulletPrefabs.Count];
+            if (prefabToSpawn == null) continue;
+
+            PoolableObjectIdentity identity = prefabToSpawn.GetComponent<PoolableObjectIdentity>();
+            bool usePool = (identity != null && !string.IsNullOrEmpty(identity.PrefabID) && NetworkObjectPool.Instance != null);
+
+            Vector3 spawnPos = spawnPositionBase;
+            Quaternion spawnRot = baseRotation;
+
+            switch (action.formation)
+            {
+                case FormationType.Point:
+                    spawnRot = baseRotation * Quaternion.Euler(0, 0, relativeAngle);
+                    break;
+                case FormationType.Circle:
+                    if (action.count > 0)
+                    {
+                        float angleDegrees = i * (360f / action.count) + relativeAngle;
+                        spawnPos = spawnPositionBase + baseRotation * (Quaternion.Euler(0, 0, angleDegrees) * Vector3.right * action.radius);
+                        spawnRot = baseRotation * Quaternion.Euler(0, 0, angleDegrees - 90f);
+                    }
+                    break;
+                case FormationType.Line:
+                    float lineAngleRad = relativeAngle * Mathf.Deg2Rad;
+                    Vector3 lineDirection = baseRotation * (Quaternion.Euler(0, 0, relativeAngle) * Vector3.right);
+                    float totalLength = action.spacing * (action.count - 1);
+                    float startOffset = -totalLength / 2f;
+                    spawnPos = spawnPositionBase + lineDirection * (startOffset + i * action.spacing);
+                    spawnRot = baseRotation * Quaternion.Euler(0, 0, relativeAngle);
+                    break;
+            }
+
+            GameObject bulletInstance = null;
+            NetworkObject bulletInstanceNO = null;
+
+            if (usePool)
+            {
+                bulletInstanceNO = NetworkObjectPool.Instance.GetNetworkObject(identity.PrefabID);
+                if (bulletInstanceNO != null)
+                {
+                    bulletInstance = bulletInstanceNO.gameObject;
+                    bulletInstance.transform.position = spawnPos;
+                    bulletInstance.transform.rotation = spawnRot;
+                    bulletInstance.SetActive(true);
+                }
+                else { /* Log Error */ continue; }
+            }
+            else
+            {
+                bulletInstance = Instantiate(prefabToSpawn, spawnPos, spawnRot);
+                bulletInstanceNO = bulletInstance.GetComponent<NetworkObject>();
+                if (bulletInstanceNO == null) { /* Log Error */ Destroy(bulletInstance); continue; }
+            }
+
+            bulletInstanceNO.Spawn(true); // Spawn server-owned
+
+            float currentBulletSpeed = action.speed;
+            if (action.formation == FormationType.Line && action.speedIncrementPerBullet != 0f)
+            {
+                currentBulletSpeed += (i * action.speedIncrementPerBullet);
+            }
+
+            ConfigureBulletBehavior(bulletInstance, action, currentBulletSpeed, targetClientId, capturedTargetPosition, isTargetOnPositiveSide, originPosition); 
+
+            if (usePool)
+            {
+                bulletInstanceNO.transform.SetParent(NetworkObjectPool.Instance.transform, worldPositionStays: true);
+            }
+
+            prefabIndex++;
+        }
+    }
+
+    /// <summary>
+    /// [Server Only] Calculates the origin position for Level 2/3 spellcards based on character and opponent bounds.
+    /// </summary>
+    private Vector3 CalculateSpellcardOrigin(string senderCharacterName, int spellLevel, Rect opponentBounds)
+    {
+         Vector3 origin = Vector3.zero;
+         if (senderCharacterName == "HakureiReimu")
+         {
+             float randomX = Random.Range(opponentBounds.xMin + 0.5f, opponentBounds.xMax - 0.5f);
+             origin = new Vector3(randomX, opponentBounds.yMax - 1.0f, 0);
+         }
+         else if (senderCharacterName == "KirisameMarisa")
+         {
+             if (spellLevel == 2)
+             {
+                 float edgeX = opponentBounds.center.x > 0 ? opponentBounds.xMax - 0.5f : opponentBounds.xMin + 0.5f;
+                 origin = new Vector3(edgeX, opponentBounds.yMax - 1.0f, 0);
+             }
+             else if (spellLevel == 3)
+             {
+                 // Level 3: Spawn from the edge closest to the SENDER.
+                 // Note: Original design might have intended simultaneous spawn from both edges,
+                 // but current single-edge spawn works with configured offsets.
+                 float edgeX;
+                 // opponentRole was determined earlier
+                 edgeX = opponentBounds.center.x < 0 ? opponentBounds.xMax - 0.5f : opponentBounds.xMin + 0.5f; // Closer edge
+                 origin = new Vector3(edgeX, opponentBounds.yMax - 1.0f, 0);
+             }
+             else
+             {   // Fallback for unknown Marisa level
+                 origin = new Vector3(opponentBounds.center.x, opponentBounds.yMax - 1.0f, 0);
+             }
+         }
+         else
+         {   // Fallback for unknown character
+             Debug.LogWarning($"Unknown character '{senderCharacterName}' for spellcard origin. Defaulting to top-center.");
+             origin = new Vector3(opponentBounds.center.x, opponentBounds.yMax - 1.0f, 0);
+         }
+         return origin;
+    }
+
+    /// <summary>
+    /// **[Server Only]** Spawns the persistent illusion for a Level 4 spellcard.
+    /// </summary>
+    private void ServerSpawnLevel4Illusion(Level4SpellcardData spellData, ulong senderClientId, ulong opponentClientId, NetworkObject opponentPlayerObject, PlayerRole opponentRole)
+    {
+        if (spellData.IllusionPrefab == null) { /* Error Log */ return; }
+        NetworkObject prefabNO = spellData.IllusionPrefab.GetComponent<NetworkObject>();
+        if (prefabNO == null) { /* Error Log */ return; }
+
+        // Determine Spawn Position (Top-center of opponent's bounds)
+        Rect opponentBounds = (opponentRole == PlayerRole.Player1) ? PlayerMovement.player1Bounds : PlayerMovement.player2Bounds;
+        float spawnX = opponentBounds.center.x;
+        float spawnY = opponentBounds.yMax - 1.0f; 
+        Vector3 spawnPosition = new Vector3(spawnX, spawnY, 0);
+        Quaternion spawnRotation = Quaternion.identity;
+
+        GameObject illusionInstance = Instantiate(spellData.IllusionPrefab, spawnPosition, spawnRotation);
+        NetworkObject illusionNO = illusionInstance.GetComponent<NetworkObject>();
+
+        // Spawn NetworkObject FIRST
+        illusionNO.Spawn(true);
+
+        // Update Trackers
+        _activeIllusionsTargetingPlayer[opponentClientId] = illusionNO;
+        _activeIllusionsCastByPlayer[senderClientId] = illusionNO;
+
+        // Initialize Controller
+        Level4IllusionController controller = illusionInstance.GetComponent<Level4IllusionController>();
+        if (controller != null) { controller.ServerInitialize(opponentRole, spellData); }
+        else { /* Error Log */ }
+
+        // Initialize Health
+        IllusionHealth healthComponent = illusionInstance.GetComponent<IllusionHealth>();
+        if (healthComponent != null) { healthComponent.ServerInitialize(spellData.Health, opponentRole); }
+        else { /* Error Log */ }
+
+        // Start Lifetime Management
+        StartCoroutine(ServerManageIllusionLifetime(illusionNO, spellData.Duration));
+    }
+
+    /// <summary>
+    /// **[Server Only Coroutine]** Manages the timed duration of a spawned Level 4 illusion.
+    /// </summary>
+    private IEnumerator ServerManageIllusionLifetime(NetworkObject illusionNO, float duration)
+    {
+        if (duration <= 0) duration = 0.1f; // Prevent zero/negative wait
+        yield return new WaitForSeconds(duration);
+        // Use force despawn which calls Die() -> Notify for cleanup
+        ServerForceDespawnIllusion(illusionNO); 
+    }
 
     // --- Private Spawning Helpers ---
 
@@ -451,7 +671,7 @@ public class ServerAttackSpawner : NetworkBehaviour
 
         bool isTargetOnPositiveSide = (capturedOpponentPosition.x >= 0.0f); // Determine target side for boundary checks
 
-        foreach (SpellcardAction action in spellcardData.actions)
+        foreach (TouhouWebArena.Spellcards.SpellcardAction action in spellcardData.actions)
         {
             // Handle delay before this action starts
             if (action.startDelay > 0) yield return new WaitForSeconds(action.startDelay);
@@ -560,7 +780,7 @@ public class ServerAttackSpawner : NetworkBehaviour
                 }
 
                 // --- Configure Behavior AFTER Spawning (using original action data for behavior type etc) ---
-                ConfigureBulletBehavior(bulletInstance, action, currentBulletSpeed, opponentId, capturedOpponentPosition, isTargetOnPositiveSide);
+                ConfigureBulletBehavior(bulletInstance, action, currentBulletSpeed, opponentId, capturedOpponentPosition, isTargetOnPositiveSide, originPosition);
 
                 // --- Parent (if pooled) ---
                 if (usePool)
@@ -585,18 +805,21 @@ public class ServerAttackSpawner : NetworkBehaviour
     /// <param name="opponentId">The ClientId of the opponent player (target for homing).</param>
     /// <param name="capturedOpponentPosition">The captured position of the opponent (initial target for homing).</param>
     /// <param name="isTargetOnPositiveSide">Whether the target is on the right side (for boundary checks).</param>
-    private void ConfigureBulletBehavior(GameObject bulletInstance, SpellcardAction action, float currentSpeed, ulong opponentId, Vector3 capturedOpponentPosition, bool isTargetOnPositiveSide)
+    /// <param name="spawnOrigin">The origin position used for calculating relative positions.</param>
+    private void ConfigureBulletBehavior(GameObject bulletInstance, TouhouWebArena.Spellcards.SpellcardAction action, float currentSpeed, ulong opponentId, Vector3 capturedOpponentPosition, bool isTargetOnPositiveSide, Vector3 spawnOrigin)
     {
-        // Disable all potential behaviors first to ensure clean state
-        var linear = bulletInstance.GetComponent<LinearMovement>();
-        var delayedHoming = bulletInstance.GetComponent<DelayedHoming>();
         // Get DoubleHoming component
         var doubleHoming = bulletInstance.GetComponent<DoubleHoming>(); 
         var lifetime = bulletInstance.GetComponent<NetworkBulletLifetime>();
+        var spiral = bulletInstance.GetComponent<SpiralMovement>(); // Get SpiralMovement
+
+        // Disable all potential behaviors first to ensure clean state
+        var linear = bulletInstance.GetComponent<LinearMovement>();
+        var delayedHoming = bulletInstance.GetComponent<DelayedHoming>();
         if (linear) linear.enabled = false;
         if (delayedHoming) delayedHoming.enabled = false;
-        // Disable DoubleHoming initially
         if (doubleHoming) doubleHoming.enabled = false; 
+        if (spiral) spiral.enabled = false; // Disable spiral initially
 
         // Configure Lifetime Boundary Check
         if (lifetime != null) {
@@ -632,7 +855,7 @@ public class ServerAttackSpawner : NetworkBehaviour
                 }
                  else { Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to DelayedHoming but missing DelayedHoming component."); }
                 break;
-            // --- Add case for DoubleHoming ---    
+            // --- ADDED BACK: DoubleHoming Case ---    
             case BehaviorType.DoubleHoming:
                 if (doubleHoming != null)
                 {
@@ -665,6 +888,19 @@ public class ServerAttackSpawner : NetworkBehaviour
                     }
                 }
                 else { Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to DoubleHoming but missing DoubleHoming component."); }
+                break;
+            // --- ADDED BACK: Spiral Case --- 
+            case BehaviorType.Spiral:
+                if (spiral != null)
+                {
+                    spiral.enabled = true;
+                    // Pass spawnOrigin as the spawnCenter
+                    spiral.Initialize(currentSpeed, action.tangentialSpeed, spawnOrigin); 
+                }
+                else
+                {
+                    Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to Spiral but missing SpiralMovement component.");
+                }
                 break;
             // TODO: Add other cases like Homing if implemented
             default:
