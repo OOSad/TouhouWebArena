@@ -18,7 +18,7 @@ MonoBehaviour:
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
     formation: 2
-    positionOffset: {x: 3, y: 1.5}
+    positionOffset: {x: 0.5, y: 1}
     count: 8
     radius: 0
     spacing: 0
@@ -28,13 +28,15 @@ MonoBehaviour:
     speedIncrementPerBullet: 0.5
     homingSpeed: 0
     homingDelay: 0
-    isClearableByBomb: 0
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
     lifetime: 20
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: bbf6c41255a933e4fa06d4dc01a93369, type: 3}
     formation: 2
-    positionOffset: {x: 3, y: 0.5}
+    positionOffset: {x: 0.5, y: 0}
     count: 8
     radius: 0
     spacing: 0
@@ -44,13 +46,15 @@ MonoBehaviour:
     speedIncrementPerBullet: 0.5
     homingSpeed: 0
     homingDelay: 0
-    isClearableByBomb: 1
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
     lifetime: 20
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
     formation: 2
-    positionOffset: {x: 3, y: -0.5}
+    positionOffset: {x: 0.5, y: -1}
     count: 8
     radius: 0
     spacing: 0
@@ -60,13 +64,15 @@ MonoBehaviour:
     speedIncrementPerBullet: 0.5
     homingSpeed: 0
     homingDelay: 0
-    isClearableByBomb: 0
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
     lifetime: 20
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: bbf6c41255a933e4fa06d4dc01a93369, type: 3}
     formation: 2
-    positionOffset: {x: 3, y: -1.5}
+    positionOffset: {x: 0.5, y: -2}
     count: 8
     radius: 0
     spacing: 0
@@ -76,13 +82,15 @@ MonoBehaviour:
     speedIncrementPerBullet: 0.5
     homingSpeed: 0
     homingDelay: 0
-    isClearableByBomb: 1
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
     lifetime: 20
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
     formation: 2
-    positionOffset: {x: 3, y: -2.5}
+    positionOffset: {x: 0.5, y: -3}
     count: 8
     radius: 0
     spacing: 0
@@ -92,13 +100,15 @@ MonoBehaviour:
     speedIncrementPerBullet: 0.5
     homingSpeed: 0
     homingDelay: 0
-    isClearableByBomb: 0
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
     lifetime: 20
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: bbf6c41255a933e4fa06d4dc01a93369, type: 3}
     formation: 2
-    positionOffset: {x: 3, y: -3.5}
+    positionOffset: {x: 0.5, y: -4}
     count: 8
     radius: 0
     spacing: 0
@@ -108,5 +118,7 @@ MonoBehaviour:
     speedIncrementPerBullet: 0.5
     homingSpeed: 0
     homingDelay: 0
-    isClearableByBomb: 1
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
     lifetime: 20

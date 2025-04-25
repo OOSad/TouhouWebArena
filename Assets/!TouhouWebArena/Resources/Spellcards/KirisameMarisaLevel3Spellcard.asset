@@ -18,7 +18,7 @@ MonoBehaviour:
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
     formation: 2
-    positionOffset: {x: 3, y: 1.5}
+    positionOffset: {x: 0.5, y: 0}
     count: 8
     radius: 0
     spacing: 0
@@ -36,7 +36,7 @@ MonoBehaviour:
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 352bd47918805104da288ef0e3d913e8, type: 3}
     formation: 2
-    positionOffset: {x: -3, y: 1.5}
+    positionOffset: {x: -6.5, y: 0}
     count: 8
     radius: 0
     spacing: 0
@@ -54,7 +54,7 @@ MonoBehaviour:
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
     formation: 2
-    positionOffset: {x: 3, y: -0.5}
+    positionOffset: {x: 0.5, y: -2}
     count: 8
     radius: 0
     spacing: 0
@@ -72,7 +72,7 @@ MonoBehaviour:
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 352bd47918805104da288ef0e3d913e8, type: 3}
     formation: 2
-    positionOffset: {x: -3, y: -0.5}
+    positionOffset: {x: -6.5, y: -2}
     count: 8
     radius: 0
     spacing: 0
@@ -90,7 +90,7 @@ MonoBehaviour:
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
     formation: 2
-    positionOffset: {x: 3, y: -2.5}
+    positionOffset: {x: 0.5, y: -4}
     count: 8
     radius: 0
     spacing: 0
@@ -108,7 +108,7 @@ MonoBehaviour:
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 352bd47918805104da288ef0e3d913e8, type: 3}
     formation: 2
-    positionOffset: {x: -3, y: -2.5}
+    positionOffset: {x: -6.5, y: -4}
     count: 8
     radius: 0
     spacing: 0

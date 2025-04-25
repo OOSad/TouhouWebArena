@@ -181,6 +181,29 @@ public class ServerAttackSpawner : NetworkBehaviour
             return;
         }
 
+        // --- Determine Opponent Role and Bounds ---
+        PlayerRole opponentRole = PlayerRole.None;
+        Rect opponentBounds = new Rect();
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerData? opponentData = PlayerDataManager.Instance.GetPlayerData(opponentClientId);
+            if (opponentData.HasValue)
+            {
+                opponentRole = opponentData.Value.Role;
+                opponentBounds = (opponentRole == PlayerRole.Player1) ? PlayerMovement.player1Bounds : PlayerMovement.player2Bounds;
+            }
+            else
+            {
+                Debug.LogError($"[ServerAttackSpawner.ExecuteSpellcard] Could not get PlayerData for opponent {opponentClientId}. Cannot determine spellcard origin bounds.");
+                return; // Cannot proceed without bounds
+            }
+        }
+        else
+        {
+             Debug.LogError("[ServerAttackSpawner.ExecuteSpellcard] PlayerDataManager instance not found. Cannot determine spellcard origin bounds.");
+             return; // Cannot proceed without bounds
+        }
+
         // --- Load SpellcardData Resource ---
         string resourcePath = $"Spellcards/{senderCharacterName}Level{spellLevel}Spellcard";
         SpellcardData spellcardData = Resources.Load<SpellcardData>(resourcePath);
@@ -190,12 +213,71 @@ public class ServerAttackSpawner : NetworkBehaviour
             return;
         }
 
-        // --- Calculate Origin & Start Spawning Coroutine ---
-        Vector3 opponentCurrentPos = opponentPlayerObject.transform.position;
-        Vector3 originPosition = opponentCurrentPos + new Vector3(0, 5f, 0); // Example origin above opponent
-        Quaternion originRotation = Quaternion.identity;
+        // --- Calculate Spellcard Origin Position based on Character ---
+        // Vector3 opponentCurrentPos = opponentPlayerObject.transform.position; // We use bounds now
+        Vector3 originPosition = Vector3.zero;
+        Quaternion originRotation = Quaternion.identity; // Usually identity for spellcards
 
-        StartCoroutine(ServerExecuteSpellcardActions(spellcardData, originPosition, originRotation, opponentClientId, opponentCurrentPos));
+        if (senderCharacterName == "HakureiReimu")
+        {
+            // Reimu Lv2/3: Random X position near the top of opponent's bounds
+            float randomX = Random.Range(opponentBounds.xMin + 0.5f, opponentBounds.xMax - 0.5f); // Add some padding
+            originPosition = new Vector3(randomX, opponentBounds.yMax - 1.0f, 0);
+            Debug.Log($"[ServerAttackSpawner] Reimu Spellcard Origin: RandomX={randomX:F2}, TargetY={originPosition.y:F2}, Bounds=({opponentBounds.xMin:F1},{opponentBounds.xMax:F1})");
+        }
+        else if (senderCharacterName == "KirisameMarisa")
+        {
+            // Marisa Lv2/3: Fixed positions based on level
+            if (spellLevel == 2)
+            {
+                // Level 2: Farthest edge from center (use sign of bounds center)
+                float edgeX = opponentBounds.center.x > 0 ? opponentBounds.xMax - 0.5f : opponentBounds.xMin + 0.5f; // Farthest edge
+                originPosition = new Vector3(edgeX, opponentBounds.yMax - 1.0f, 0);
+                Debug.Log($"[ServerAttackSpawner] Marisa Lv2 Spellcard Origin: EdgeX={edgeX:F2}, TargetY={originPosition.y:F2}");
+            }
+            else if (spellLevel == 3)
+            {
+                // Level 3: Should spawn from BOTH edges simultaneously.
+                // TEMP FIX: Spawn from the edge closest to the SENDER.
+                // TODO: Refactor Marisa Lv3 to spawn patterns from both sides.
+                float edgeX;
+                // opponentRole was determined earlier
+                if (opponentRole == PlayerRole.Player1) // Opponent is P1 (Sender is P2)
+                {
+                    edgeX = opponentBounds.xMax - 0.5f; // Spawn near P1's Right Edge
+                    Debug.Log($"[ServerAttackSpawner] Marisa Lv3 Spellcard Origin (TEMP - Closer Edge): Opponent=P1, Using Right EdgeX={edgeX:F2}");
+                }
+                else // Opponent is P2 (Sender is P1)
+                {
+                    edgeX = opponentBounds.xMin + 0.5f; // Spawn near P2's Left Edge
+                     Debug.Log($"[ServerAttackSpawner] Marisa Lv3 Spellcard Origin (TEMP - Closer Edge): Opponent=P2, Using Left EdgeX={edgeX:F2}");
+                }
+                originPosition = new Vector3(edgeX, opponentBounds.yMax - 1.0f, 0);
+                
+                // --- Original TEMP logic --- 
+                // float leftEdgeX = opponentBounds.xMin + 0.5f;
+                // originPosition = new Vector3(leftEdgeX, opponentBounds.yMax - 1.0f, 0);
+                // Debug.Log($"[ServerAttackSpawner] Marisa Lv3 Spellcard Origin (TEMP - Left Only): EdgeX={leftEdgeX:F2}, TargetY={originPosition.y:F2}");
+                // --------------------------
+            }
+            else // Fallback for unknown Marisa level?
+            {
+                 Debug.LogWarning($"[ServerAttackSpawner.ExecuteSpellcard] Unknown spell level {spellLevel} for Marisa origin calculation. Defaulting...");
+                 Vector3 opponentCurrentPos = opponentPlayerObject.transform.position;
+                 originPosition = opponentCurrentPos + new Vector3(0, 5f, 0); 
+            }
+        }
+        else
+        {
+            // Default fallback: Use simple offset above opponent's current position (old behavior)
+            Debug.LogWarning($"[ServerAttackSpawner.ExecuteSpellcard] Unknown character '{senderCharacterName}' for spellcard origin calculation. Defaulting to offset above opponent.");
+            Vector3 opponentCurrentPos = opponentPlayerObject.transform.position;
+            originPosition = opponentCurrentPos + new Vector3(0, 5f, 0); 
+        }
+
+        // --- Start Spawning Coroutine ---
+        Vector3 capturedOpponentPositionForHoming = opponentPlayerObject.transform.position; // Still capture this for homing behaviors
+        StartCoroutine(ServerExecuteSpellcardActions(spellcardData, originPosition, originRotation, opponentClientId, capturedOpponentPositionForHoming));
     }
 
 
