@@ -255,28 +255,32 @@ public class PlayerShootingController : NetworkBehaviour
     }
 
     /// <summary>
-    /// **[ServerRpc]** Called by the owner client when releasing the fire key after charging to Level 2 or higher.
+    /// **[ServerRpc(RequireOwnership = false)]** Called by the owner client when releasing the fire key after charging to Level 2 or higher.
     /// Requests the <see cref="SpellBarManager"/> to check and consume the cost.
     /// If successful, requests the <see cref="ServerAttackSpawner"/> to execute the spellcard.
     /// </summary>
     /// <param name="spellLevel">The spellcard level (2, 3, or 4) determined by the client based on charge.</param>
     /// <param name="rpcParams">Standard RPC parameters, used by server to get SenderClientId.</param>
-    [ServerRpc]
-    private void RequestSpellcardServerRpc(int spellLevel, ServerRpcParams rpcParams = default)
+    [ServerRpc(RequireOwnership = false)] // Allow calls from non-owners (server host)
+    public void RequestSpellcardServerRpc(int spellLevel, ServerRpcParams rpcParams = default)
     {
          ulong senderClientId = rpcParams.Receive.SenderClientId;
 
         // Server-side check: Can the player afford this spell?
         if (SpellBarManager.Instance != null && SpellBarManager.Instance.ConsumeSpellCost(senderClientId, spellLevel))
         {
-             // Cost was paid, now request the spellcard execution
+             // Cost was paid.
+             // Trigger the clearing effect around the caster FIRST.
              if (ServerAttackSpawner.Instance != null)
              {
+                 ServerAttackSpawner.Instance.TriggerSpellcardClear(senderClientId, spellLevel);
+
+                 // Now request the spellcard execution (illusion/bullets)
                  ServerAttackSpawner.Instance.ExecuteSpellcard(senderClientId, spellLevel);
              }
              else
              {
-                  Debug.LogError($"[ServerRpc RequestSpellcard] ServerAttackSpawner instance not found! Cost consumed but cannot execute spellcard level {spellLevel}.");
+                  Debug.LogError($"[ServerRpc RequestSpellcard] ServerAttackSpawner instance not found! Cost consumed but cannot execute spellcard level {spellLevel} or clear effect.");
              }
         }
         else

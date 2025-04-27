@@ -30,7 +30,8 @@ namespace TouhouWebArena.Spellcards
         /// <summary>Bullet performs DelayedHoming, pauses, then homes again after <see cref="SpellcardAction.secondHomingDelay"/>.</summary>
         DoubleHoming, // Added for Fantasy Seal
         /// <summary>Bullet moves radially outwards while also moving tangentially.</summary>
-        Spiral // Added for Level 4
+        Spiral, // Added for Level 4
+        DelayedRandomTurn // Added for Illusion Star
         // Add more complex behaviors here later (e.g., Wavy, Orbit, Accelerate)
     }
 

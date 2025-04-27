@@ -2,7 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic; // For List
-using System.Linq; // For FirstOrDefault
+using System.Linq; // For FirstOrDefault, LastOrDefault, Max
 using Unity.Netcode.Components; // For NetworkTransform
 
 namespace TouhouWebArena.Spellcards
@@ -22,24 +22,36 @@ namespace TouhouWebArena.Spellcards
         private Level4SpellcardData _spellData;
         private ulong _targetPlayerClientId = ulong.MaxValue;
         private Rect _movementBounds;
+        private Coroutine _mainMovementLoopCoroutine;
+        private bool _isExecutingAttack = false; // Flag to pause random movement
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
             if (IsServer)
             {
-                StartCoroutine(InitializeAndStartMovement());
+                // Delay initialization slightly to ensure PlayerDataManager is ready
+                StartCoroutine(InitializeAndStartBehavior());
             }
         }
 
-        private IEnumerator InitializeAndStartMovement()
+        public override void OnNetworkDespawn()
         {
-            yield return new WaitUntil(() => TargetPlayerRole.Value != PlayerRole.None && _spellData != null);
-
-            // Find Target Client ID
-            if (PlayerDataManager.Instance != null && NetworkManager.Singleton != null)
+            if (IsServer && _mainMovementLoopCoroutine != null)
             {
-                foreach(var client in NetworkManager.Singleton.ConnectedClientsList)
+                StopCoroutine(_mainMovementLoopCoroutine);
+                _mainMovementLoopCoroutine = null;
+            }
+            base.OnNetworkDespawn();
+        }
+
+        private IEnumerator InitializeAndStartBehavior()
+        {
+            // Wait until essential data is available
+            yield return new WaitUntil(() => TargetPlayerRole.Value != PlayerRole.None && _spellData != null && PlayerDataManager.Instance != null && NetworkManager.Singleton != null);
+
+            // Find Target Client ID based on Role
+            foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
                 {
                     PlayerData? data = PlayerDataManager.Instance.GetPlayerData(client.ClientId);
                     if (data.HasValue && data.Value.Role == TargetPlayerRole.Value)
@@ -48,14 +60,16 @@ namespace TouhouWebArena.Spellcards
                         break;
                     }
                 }
-            }
+
             if (_targetPlayerClientId == ulong.MaxValue)
             {
                 Debug.LogError($"[Level4IllusionController] Could not find Client ID for Target Role {TargetPlayerRole.Value}! Attacks cannot be targeted.", gameObject);
+                yield break; // Stop if no target
             }
 
             CalculateMovementBounds();
-            StartCoroutine(ServerMoveRandomly());
+            // Start the main behavior loop
+            _mainMovementLoopCoroutine = StartCoroutine(ServerBehaviorLoop());
         }
 
         private void CalculateMovementBounds()
@@ -66,44 +80,98 @@ namespace TouhouWebArena.Spellcards
                               ? PlayerMovement.player1Bounds
                               : PlayerMovement.player2Bounds;
 
+            // Clamp movement area height to prevent invalid rects
+            float actualMovementHeight = Mathf.Min(_spellData.MovementAreaHeight, baseBounds.height);
+
             float topY = baseBounds.yMax;
-            float bottomY = baseBounds.yMax - _spellData.MovementAreaHeight;
+            float bottomY = baseBounds.yMax - actualMovementHeight;
             float leftX = baseBounds.xMin;
             float rightX = baseBounds.xMax;
 
             _movementBounds = new Rect(leftX, bottomY, rightX - leftX, topY - bottomY);
+
+            // Ensure starting position is within bounds
             transform.position = ClampPositionToBounds(transform.position);
-        }
-
-        private IEnumerator ServerMoveRandomly()
-        {
-            if (!IsServer || _spellData == null) yield break;
-
-            while (true)
+            if (_movementBounds.width <= 0 || _movementBounds.height <= 0)
             {
-                float delay = Random.Range(_spellData.MinMoveDelay, _spellData.MaxMoveDelay);
-                yield return new WaitForSeconds(delay);
-
-                float targetX = Random.Range(_movementBounds.xMin, _movementBounds.xMax);
-                float targetY = Random.Range(_movementBounds.yMin, _movementBounds.yMax);
-                Vector3 targetPosition = new Vector3(targetX, targetY, transform.position.z);
-
-                transform.position = targetPosition;
-                TryExecuteAttacks(targetPosition);
+                 Debug.LogWarning($"[Level4IllusionController] Calculated movement bounds have zero width or height for {TargetPlayerRole.Value}. Clamping position only.", gameObject);
             }
         }
 
-        private void TryExecuteAttacks(Vector3 currentIllusionPosition)
+        private IEnumerator ServerBehaviorLoop()
         {
-            if (!IsServer) return;
-            if (_spellData == null || _spellData.AttackPool == null || _spellData.AttackPool.Count == 0 || _spellData.AttacksPerMove <= 0) return;
-            if (_targetPlayerClientId == ulong.MaxValue) return;
-            if (ServerAttackSpawner.Instance == null) return;
+            if (!IsServer || _spellData == null) yield break;
+            // Initial wait before first move/attack
+            yield return new WaitForSeconds(Random.Range(_spellData.MinMoveDelay, _spellData.MaxMoveDelay));
 
-            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(_targetPlayerClientId, out NetworkClient targetClient) || targetClient.PlayerObject == null) return;
+            while (true)
+            {
+                 if (_isExecutingAttack) // Wait if an attack is already in progress
+                 {
+                     yield return null;
+                     continue;
+                 }
+
+                // 1. Move to a new random position
+                Vector3 targetPosition = CalculateRandomTargetPosition();
+                // TODO: Implement smooth movement over time instead of instant teleport
+                transform.position = targetPosition;
+
+                // 2. Execute Attacks
+                if (_spellData.AttackPool != null && _spellData.AttackPool.Count > 0 && _spellData.AttacksPerMove > 0)
+                {
+                     _isExecutingAttack = true;
+                     yield return StartCoroutine(ServerExecuteAttackSequence(targetPosition));
+                     _isExecutingAttack = false;
+                }
+
+                // 3. Wait for the next cycle
+                float delay = Random.Range(_spellData.MinMoveDelay, _spellData.MaxMoveDelay);
+                yield return new WaitForSeconds(delay);
+            }
+        }
+
+        private Vector3 CalculateRandomTargetPosition()
+        {
+            if (_movementBounds.width <= 0 || _movementBounds.height <= 0)
+            {
+                // Fallback if bounds are invalid, stay near top center
+                Rect baseBounds = (TargetPlayerRole.Value == PlayerRole.Player1) ? PlayerMovement.player1Bounds : PlayerMovement.player2Bounds;
+                 return new Vector3(baseBounds.center.x, baseBounds.yMax - 0.5f, transform.position.z);
+            }
+
+            float targetX = Random.Range(_movementBounds.xMin, _movementBounds.xMax);
+                float targetY = Random.Range(_movementBounds.yMin, _movementBounds.yMax);
+            return new Vector3(targetX, targetY, transform.position.z);
+        }
+
+        // Renamed from TryExecuteAttacks for clarity
+        private IEnumerator ServerExecuteAttackSequence(Vector3 illusionPositionAtAttackStart)
+        {
+            if (!IsServer) yield break;
+            if (_spellData == null || _spellData.AttackPool == null || _spellData.AttackPool.Count == 0 || _spellData.AttacksPerMove <= 0) yield break;
+            if (_targetPlayerClientId == ulong.MaxValue || ServerAttackSpawner.Instance == null) yield break;
+            if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(_targetPlayerClientId, out NetworkClient targetClient) || targetClient.PlayerObject == null) yield break;
+
+            // Capture target state at the beginning of the sequence
             Vector3 targetPosition = targetClient.PlayerObject.transform.position;
             bool isTargetOnPositiveSide = (TargetPlayerRole.Value == PlayerRole.Player2);
 
+            // Select patterns to execute for this sequence
+            List<CompositeAttackPattern> selectedPatterns = SelectAttackPatterns();
+
+            // Execute selected patterns sequentially
+            foreach (CompositeAttackPattern pattern in selectedPatterns)
+            {
+                // Wait for the pattern (and its potential movement) to complete
+                yield return StartCoroutine(ServerExecuteSingleCompositePattern(pattern, illusionPositionAtAttackStart, targetPosition, isTargetOnPositiveSide));
+                // Update illusion position if the pattern involved movement, for the next pattern (if any)
+                illusionPositionAtAttackStart = transform.position;
+            }
+        }
+
+        private List<CompositeAttackPattern> SelectAttackPatterns()
+        {
             List<CompositeAttackPattern> selectedPatterns = new List<CompositeAttackPattern>();
             List<int> availableIndices = Enumerable.Range(0, _spellData.AttackPool.Count).ToList();
             int patternsToSelect = Mathf.Min(_spellData.AttacksPerMove, _spellData.AttackPool.Count);
@@ -116,17 +184,35 @@ namespace TouhouWebArena.Spellcards
                 selectedPatterns.Add(_spellData.AttackPool[selectedPoolIndex]);
                 availableIndices.RemoveAt(randomIndex);
             }
-
-            foreach (CompositeAttackPattern pattern in selectedPatterns)
-            {
-                StartCoroutine(ServerExecuteCompositePattern(pattern, currentIllusionPosition, targetPosition, isTargetOnPositiveSide));
-            }
+            return selectedPatterns;
         }
 
-        private IEnumerator ServerExecuteCompositePattern(CompositeAttackPattern pattern, Vector3 originPosition, Vector3 capturedTargetPosition, bool isTargetOnPositiveSide)
+        // Renamed from ServerExecuteCompositePattern
+        private IEnumerator ServerExecuteSingleCompositePattern(CompositeAttackPattern pattern, Vector3 originPosition, Vector3 capturedTargetPosition, bool isTargetOnPositiveSide)
         {
             if (!IsServer || pattern == null || pattern.actions == null) yield break;
             if (_targetPlayerClientId == ulong.MaxValue || ServerAttackSpawner.Instance == null) yield break;
+
+            // --- Handle Movement During Attack --- 
+            Coroutine attackMovementCoroutine = null;
+            float actualAttackDuration = 0f;
+            if (pattern.performMovementDuringAttack && pattern.attackMovementDuration > 0)
+            {
+                // --- Determine Dynamic Direction ---
+                float boundsCenterX = _movementBounds.center.x;
+                float currentX = originPosition.x;
+                float horizontalDirection = (currentX < boundsCenterX) ? 1f : -1f; // Move right if left of center, left if right of center
+                
+                // Use magnitude of X from pattern data for distance, apply dynamic direction.
+                // Assume horizontal movement only for now.
+                float moveDistance = Mathf.Abs(pattern.attackMovementVector.x);
+                Vector2 dynamicMoveVector = new Vector2(horizontalDirection * moveDistance, 0f);
+                // --------------------------------
+
+                attackMovementCoroutine = StartCoroutine(ServerPerformAttackMovement(originPosition, dynamicMoveVector, pattern.attackMovementDuration));
+                actualAttackDuration = pattern.attackMovementDuration;
+            }
+            // ------------------------------------
 
             Quaternion patternRotation = Quaternion.identity;
             if (pattern.orientPatternTowardsTarget)
@@ -135,32 +221,105 @@ namespace TouhouWebArena.Spellcards
                 if (directionToTarget != Vector2.zero)
                 {
                     float angleToTarget = Mathf.Atan2(directionToTarget.y, directionToTarget.x) * Mathf.Rad2Deg;
-                    patternRotation = Quaternion.Euler(0, 0, angleToTarget);
+                    // Adjust angle if needed based on sprite orientation (e.g., -90 for up)
+                    patternRotation = Quaternion.Euler(0, 0, angleToTarget - 90f); // Assuming -90 aims correctly
                 }
             }
 
+            // --- Execute Bullet Actions --- 
+            float lastActionEndTime = 0f;
             foreach (SpellcardAction action in pattern.actions)
             {
-                if (action.startDelay > 0.0f)
+                 // Calculate the time this action is supposed to start
+                float actionStartTime = action.startDelay;
+
+                 // Wait until it's time for this action to start
+                float waitTime = actionStartTime - lastActionEndTime;
+                if (waitTime > 0.001f) // Add tolerance for float comparisons
                 {
-                    yield return new WaitForSeconds(action.startDelay);
+                    yield return new WaitForSeconds(waitTime);
+                    lastActionEndTime = actionStartTime;
                 }
+                // If waitTime is <= 0, it means this action starts immediately after the previous one ended (or at the same time)
+
+                // Check if object is still valid before spawning
                 if (this == null || !this.gameObject.activeInHierarchy || !NetworkObject.IsSpawned) yield break;
 
-                ServerAttackSpawner.Instance.ExecuteSingleSpellcardActionFromServer(
+                // Use the *current* illusion position for spawning if movement is happening
+                Vector3 currentOrigin = pattern.performMovementDuringAttack ? transform.position : originPosition;
+
+                // Start the spawning coroutine for this action
+                Coroutine spawnCoroutine = StartCoroutine(ServerAttackSpawner.Instance.ExecuteSingleSpellcardActionFromServerCoroutine(
                     action,
-                    originPosition,
+                    this.transform,
                     patternRotation,
                     _targetPlayerClientId,
                     capturedTargetPosition,
                     isTargetOnPositiveSide
-                );
+                ));
+
+                // Calculate the time this action will finish spawning its last bullet
+                float actionSpawnDuration = Mathf.Max(0, action.count - 1) * action.intraActionDelay;
+                lastActionEndTime = actionStartTime + actionSpawnDuration;
+
+                // IMPORTANT: We DON'T yield return the spawnCoroutine here.
+                // This allows the *next* action's startDelay timer to begin immediately
+                // while this action is still spawning its bullets over time.
+                // The final wait at the end of the composite pattern handles the total duration.
             }
+            // ----------------------------
+
+            // --- Wait for Attack Completion --- 
+            // Calculate total duration based on the END time of the last action started.
+            float actionsDuration = lastActionEndTime;
+            // If the pattern involved movement, ensure we wait at least that long.
+            float waitDuration = Mathf.Max(actualAttackDuration, actionsDuration);
+
+            // Wait for the remaining time for the entire composite pattern to finish.
+            // This ensures movement finishes and all bullets from the last action have spawned.
+            float elapsedTimeSincePatternStart = Time.time - (Time.time - lastActionEndTime); // A bit redundant, effectively just lastActionEndTime relative to start?
+            // Let's rethink the wait: We need to wait until the calculated waitDuration has passed since the pattern START.
+            // We already tracked lastActionEndTime relative to the pattern start.
+            float timeAlreadyPassed = lastActionEndTime; // Time until the last bullet of the last action *starts* spawning.
+            
+            // Wait for the longest required duration (movement or the end of the final action's spawning sequence)
+             if (timeAlreadyPassed < waitDuration)
+            {
+                 yield return new WaitForSeconds(waitDuration - timeAlreadyPassed);
+            }
+
+             // Ensure movement coroutine is stopped if it exists (though it should finish naturally)
+            if (attackMovementCoroutine != null)
+            {
+                // Don't stop it here, let it finish naturally based on its duration.
+                // StopCoroutine(attackMovementCoroutine);
+            }
+            // ----------------------------------
         }
+
+        private IEnumerator ServerPerformAttackMovement(Vector3 startPos, Vector2 moveVector, float duration)
+        {
+            if (duration <= 0) yield break;
+            Vector3 endPos = startPos + (Vector3)moveVector;
+            float timer = 0f;
+            while (timer < duration)
+            {
+                 // Check if object is still valid
+                if (this == null || !this.gameObject.activeInHierarchy || !NetworkObject.IsSpawned) yield break;
+
+                transform.position = Vector3.Lerp(startPos, endPos, timer / duration);
+                timer += Time.deltaTime;
+                yield return null; // Wait for next frame
+            }
+            // Ensure final position is set accurately
+            transform.position = endPos;
+        }
+
 
         private Vector3 ClampPositionToBounds(Vector3 position)
         {
-             if (_movementBounds.width <= 0 || _movementBounds.height <= 0) return position;
+            if (_movementBounds.width <= 0 || _movementBounds.height <= 0) return position; // Cannot clamp if bounds are invalid
+
             return new Vector3(
                 Mathf.Clamp(position.x, _movementBounds.xMin, _movementBounds.xMax),
                 Mathf.Clamp(position.y, _movementBounds.yMin, _movementBounds.yMax),
@@ -168,11 +327,13 @@ namespace TouhouWebArena.Spellcards
             );
         }
 
+        // Called by ServerAttackSpawner to inject necessary data
         public void ServerInitialize(PlayerRole role, Level4SpellcardData data)
         {
             if (!IsServer) return;
             TargetPlayerRole.Value = role;
             _spellData = data;
+            // Initialization logic moved to InitializeAndStartBehavior coroutine
         }
     }
 } 

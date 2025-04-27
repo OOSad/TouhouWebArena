@@ -57,17 +57,29 @@ namespace TouhouWebArena.Spellcards
         public float speedTransitionDuration = 0.5f;
 
         [Header("Behavior Timing & Parameters")]
-        [Tooltip("(Delayed/Double Homing) Delay before homing starts or first linear phase ends.")]
+        [Tooltip("(Delayed/Double Homing/Delayed Turn) Delay before homing/turning starts.")]
         public float homingDelay = 0.5f;
         [Tooltip("(Double Homing Only) Duration of the pause between first and second homing phases.")]
         public float secondHomingDelay = 0.2f;
         [Tooltip("(Double Homing Only) Duration of the first homing phase.")]
         public float firstHomingDuration = 1.0f;
         [Tooltip("(Double Homing Only) Look-ahead distance used for the second homing phase target calculation.")]
-        public float secondHomingLookAheadDistance = 2.0f;
+        public float secondHomingLookAheadDistance = 5.0f;
+        [Tooltip("(Delayed Random Turn Only) Max angle offset (degrees) from base rotation for initial random spread.")]
+        public float spreadAngle = 45f;
+        [Tooltip("(Delayed Random Turn Only) Minimum angular speed (degrees/sec) for the random turn.")]
+        public float minTurnSpeed = 90f;
+        [Tooltip("(Delayed Random Turn Only) Maximum angular speed (degrees/sec) for the random turn.")]
+        public float maxTurnSpeed = 270f;
 
-        [Header("Interaction / Lifetime")]
-        [Tooltip("Overrides the default lifetime of the spawned bullet prefab (seconds). <= 0 uses default.")]
+        [Header("Spawning & Formation Modifiers")]
+        [Tooltip("If > 0, skips spawning every Nth bullet in a formation (e.g., set to 4 to skip every 4th bullet).")]
+        public int skipEveryNth = 0;
+
+        [Header("Timing & Lifetime")]
+        [Tooltip("Seconds to wait between spawning each individual bullet within this action. Set to 0 for simultaneous spawn.")]
+        public float intraActionDelay = 0f;
+        [Tooltip("Overrides the default lifetime of the spawned bullet prefab (seconds). <= 0 uses prefab default.")]
         public float lifetime = 0f;
     }
 } 

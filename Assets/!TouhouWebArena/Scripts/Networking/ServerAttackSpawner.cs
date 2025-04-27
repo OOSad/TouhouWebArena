@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
+using TouhouWebArena;
 using TouhouWebArena.Spellcards;
 using TouhouWebArena.Spellcards.Behaviors;
 using System.Collections.Generic;
@@ -313,29 +314,54 @@ public class ServerAttackSpawner : NetworkBehaviour
     }
 
     /// <summary>
-    /// **[Server Only]** Executes a single SpellcardAction, spawning projectiles.
+    /// **[Server Only Coroutine]** Executes a single SpellcardAction, spawning projectiles potentially over time.
+    /// Uses the provided illusion's transform to get the up-to-date origin for each bullet if movement occurs during the action.
     /// Applies base rotation for pattern aiming and handles target-side flipping.
     /// </summary>
-    public void ExecuteSingleSpellcardActionFromServer(TouhouWebArena.Spellcards.SpellcardAction action, Vector3 originPosition, Quaternion baseRotation, ulong targetClientId, Vector3 capturedTargetPosition, bool isTargetOnPositiveSide)
+    public IEnumerator ExecuteSingleSpellcardActionFromServerCoroutine(TouhouWebArena.Spellcards.SpellcardAction action, Transform illusionTransform, Quaternion baseRotation, ulong targetClientId, Vector3 capturedTargetPosition, bool isTargetOnPositiveSide)
     {
-        if (!IsServer) return;
-        if (action.bulletPrefabs == null || action.bulletPrefabs.Count == 0) return; 
+        if (!IsServer) yield break;
+        if (illusionTransform == null) { Debug.LogError("[ExecuteSingleSpellcardActionFromServerCoroutine] Illusion Transform is null!"); yield break; }
+        if (action.bulletPrefabs == null || action.bulletPrefabs.Count == 0) yield break; 
 
-        Vector2 currentOffset = action.positionOffset;
+        // Relative offset and angle from the action data
+        Vector2 relativeOffset = action.positionOffset;
         float relativeAngle = action.angle;
         bool isPatternOriented = !Mathf.Approximately(Quaternion.Angle(baseRotation, Quaternion.identity), 0f);
 
+        // Flip angle/offset if pattern isn't aimed AND target is on the left (-x) side.
         if (!isPatternOriented && !isTargetOnPositiveSide)
         {
             relativeAngle *= -1f; 
-            currentOffset.x *= -1f; 
+            relativeOffset.x *= -1f; 
         }
 
         int prefabIndex = 0;
-        Vector3 spawnPositionBase = originPosition + baseRotation * (Vector3)currentOffset;
+        // Base position calculation is now deferred into the loop to use live illusion position
+
+        WaitForSeconds intraActionWait = (action.intraActionDelay > 0f) ? new WaitForSeconds(action.intraActionDelay) : null;
 
         for (int i = 0; i < action.count; i++)
         {
+            // Add delay BEFORE spawning the bullet (except the very first one)
+            if (i > 0 && intraActionWait != null)
+            {
+                yield return intraActionWait;
+            }
+            
+            // --- Skip Nth Bullet Check ---
+            if (action.skipEveryNth > 0 && (i + 1) % action.skipEveryNth == 0) // Use i+1 for 1-based counting (skip 4th, 8th etc.)
+            {
+                prefabIndex++; // Still increment prefab index if cycling
+                continue; // Skip spawning this bullet
+            }
+            // ---------------------------
+
+            // --- Get CURRENT illusion position and calculate base spawn point for THIS bullet ---
+            Vector3 currentIllusionPos = illusionTransform.position;
+            Vector3 spawnPositionBase = currentIllusionPos + baseRotation * (Vector3)relativeOffset;
+            // --------------------------------------------------------------------------------
+
             GameObject prefabToSpawn = action.bulletPrefabs[prefabIndex % action.bulletPrefabs.Count];
             if (prefabToSpawn == null) continue;
 
@@ -354,17 +380,19 @@ public class ServerAttackSpawner : NetworkBehaviour
                     if (action.count > 0)
                     {
                         float angleDegrees = i * (360f / action.count) + relativeAngle;
+                        // Use current spawnPositionBase (derived from live illusion pos) for the center
                         spawnPos = spawnPositionBase + baseRotation * (Quaternion.Euler(0, 0, angleDegrees) * Vector3.right * action.radius);
                         spawnRot = baseRotation * Quaternion.Euler(0, 0, angleDegrees - 90f);
                     }
                     break;
                 case FormationType.Line:
-                    float lineAngleRad = relativeAngle * Mathf.Deg2Rad;
-                    Vector3 lineDirection = baseRotation * (Quaternion.Euler(0, 0, relativeAngle) * Vector3.right);
+                    Vector3 directionRelativeToPattern = Quaternion.Euler(0, 0, relativeAngle) * Vector3.right;
+                    Vector3 lineDirection = baseRotation * directionRelativeToPattern;
                     float totalLength = action.spacing * (action.count - 1);
                     float startOffset = -totalLength / 2f;
+                    // Use current spawnPositionBase (derived from live illusion pos)
                     spawnPos = spawnPositionBase + lineDirection * (startOffset + i * action.spacing);
-                    spawnRot = baseRotation * Quaternion.Euler(0, 0, relativeAngle);
+                    spawnRot = baseRotation;
                     break;
             }
 
@@ -398,7 +426,8 @@ public class ServerAttackSpawner : NetworkBehaviour
                 currentBulletSpeed += (i * action.speedIncrementPerBullet);
             }
 
-            ConfigureBulletBehavior(bulletInstance, action, currentBulletSpeed, targetClientId, capturedTargetPosition, isTargetOnPositiveSide, originPosition); 
+            // Pass the SPAWN position base for behavior configuration if needed
+            ConfigureBulletBehavior(bulletInstance, action, currentBulletSpeed, targetClientId, capturedTargetPosition, isTargetOnPositiveSide, spawnPositionBase); 
 
             if (usePool)
             {
@@ -812,6 +841,7 @@ public class ServerAttackSpawner : NetworkBehaviour
         var doubleHoming = bulletInstance.GetComponent<DoubleHoming>(); 
         var lifetime = bulletInstance.GetComponent<NetworkBulletLifetime>();
         var spiral = bulletInstance.GetComponent<SpiralMovement>(); // Get SpiralMovement
+        var delayedRandomTurn = bulletInstance.GetComponent<DelayedRandomTurn>(); // Get new component
 
         // Disable all potential behaviors first to ensure clean state
         var linear = bulletInstance.GetComponent<LinearMovement>();
@@ -820,6 +850,7 @@ public class ServerAttackSpawner : NetworkBehaviour
         if (delayedHoming) delayedHoming.enabled = false;
         if (doubleHoming) doubleHoming.enabled = false; 
         if (spiral) spiral.enabled = false; // Disable spiral initially
+        if (delayedRandomTurn) delayedRandomTurn.enabled = false; // Disable new one initially
 
         // Configure Lifetime Boundary Check and Target Role
         if (lifetime != null) {
@@ -916,11 +947,91 @@ public class ServerAttackSpawner : NetworkBehaviour
                     Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to Spiral but missing SpiralMovement component.");
                 }
                 break;
+            case BehaviorType.DelayedRandomTurn:
+                if (delayedRandomTurn != null) 
+                {
+                    delayedRandomTurn.enabled = true;
+                    delayedRandomTurn.Initialize(
+                        currentSpeed, 
+                        action.homingDelay, // Reuse homing delay for turn delay
+                        action.minTurnSpeed, 
+                        action.maxTurnSpeed, 
+                        action.spreadAngle
+                    );
+                }
+                 else { Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to DelayedRandomTurn but missing DelayedRandomTurn component."); }
+                break;
             // TODO: Add other cases like Homing if implemented
             default:
                  Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' has unhandled BehaviorType: {action.behavior}. Defaulting to Linear if possible.");
                  if (linear != null) { linear.enabled = true; linear.Initialize(currentSpeed); } // Default fallback with currentSpeed
                  break;
         }
+    }
+
+    /// <summary>
+    /// **[Server Only]** Triggers a bullet-clearing effect around the player who activated a spellcard.
+    /// The radius scales with the spell level.
+    /// </summary>
+    /// <param name="castingPlayerClientId">The ClientId of the player who cast the spellcard.</param>
+    /// <param name="spellLevel">The level (2, 3, or 4) of the spellcard cast.</param>
+    public void TriggerSpellcardClear(ulong castingPlayerClientId, int spellLevel)
+    {
+        if (!IsServer) return;
+
+        // Get caster's player object
+        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(castingPlayerClientId, out NetworkClient networkClient) || networkClient.PlayerObject == null)
+        {
+            Debug.LogError($"[ServerAttackSpawner.TriggerSpellcardClear] Could not find player object for client {castingPlayerClientId}");
+            return;
+        }
+        Transform playerTransform = networkClient.PlayerObject.transform;
+        Vector3 playerPosition = playerTransform.position;
+
+        // Determine radius based on spell level
+        float clearRadius = 0f;
+        switch (spellLevel)
+        {
+            case 2: clearRadius = 3.0f; break; // Tune these values
+            case 3: clearRadius = 5.0f; break;
+            case 4: clearRadius = 10.0f; break; // Large radius for Lv 4
+            default: 
+                Debug.LogWarning($"[ServerAttackSpawner.TriggerSpellcardClear] Invalid spell level {spellLevel} for clear effect.");
+                return;
+        }
+
+        // Determine the role of the player casting the spell
+        PlayerRole castingPlayerRole = PlayerRole.None;
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerData? data = PlayerDataManager.Instance.GetPlayerData(castingPlayerClientId);
+            if (data.HasValue) { castingPlayerRole = data.Value.Role; }
+        }
+        if (castingPlayerRole == PlayerRole.None)
+        {
+            Debug.LogWarning($"[ServerAttackSpawner.TriggerSpellcardClear] Could not determine PlayerRole for ClientId {castingPlayerClientId}.");
+            // Decide if we should proceed with PlayerRole.None or return
+        }
+
+        // Find colliders in radius
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(playerPosition, clearRadius);
+        // Debug.Log($"[ServerAttackSpawner.TriggerSpellcardClear] Level {spellLevel} clear triggered by {castingPlayerClientId}. Found {colliders.Length} colliders in radius {clearRadius}.");
+
+        foreach (Collider2D col in colliders)
+        {
+            // Check if the collider belongs to a NetworkObject with IClearable
+            NetworkObject netObj = col.GetComponentInParent<NetworkObject>(); // Use GetComponentInParent for flexibility
+            if (netObj != null)
+            {
+                IClearable[] clearables = netObj.GetComponentsInChildren<IClearable>(true); // Include inactive components
+                foreach (IClearable clearable in clearables)
+                {
+                    // Use forced = true for spellcard clear, similar to deathbomb
+                    clearable.Clear(true, castingPlayerRole); 
+                    // Debug.Log($"    Cleared {netObj.name} via IClearable component.");
+                }
+            }
+        }
+        // TODO: Trigger visual effect via ClientRpc?
     }
 } 
