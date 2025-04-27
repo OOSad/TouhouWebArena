@@ -140,7 +140,7 @@ namespace TouhouWebArena.Spellcards
                  return new Vector3(baseBounds.center.x, baseBounds.yMax - 0.5f, transform.position.z);
             }
 
-            float targetX = Random.Range(_movementBounds.xMin, _movementBounds.xMax);
+                float targetX = Random.Range(_movementBounds.xMin, _movementBounds.xMax);
                 float targetY = Random.Range(_movementBounds.yMin, _movementBounds.yMax);
             return new Vector3(targetX, targetY, transform.position.z);
         }

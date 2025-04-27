@@ -392,7 +392,12 @@ public class ServerAttackSpawner : NetworkBehaviour
                     float startOffset = -totalLength / 2f;
                     // Use current spawnPositionBase (derived from live illusion pos)
                     spawnPos = spawnPositionBase + lineDirection * (startOffset + i * action.spacing);
-                    spawnRot = baseRotation;
+                    // Use adjusted angle for rotation
+                    spawnRot = baseRotation * Quaternion.Euler(0, 0, relativeAngle);
+                    
+                    // Optional: If bullet prefabs point right by default, uncomment the next line
+                    // spawnRot *= Quaternion.Euler(0, 0, -90f); 
+
                     break;
             }
 
@@ -420,11 +425,13 @@ public class ServerAttackSpawner : NetworkBehaviour
 
             bulletInstanceNO.Spawn(true); // Spawn server-owned
 
+            // --- Calculate Speed (Apply increment universally if set) ---
             float currentBulletSpeed = action.speed;
-            if (action.formation == FormationType.Line && action.speedIncrementPerBullet != 0f)
+            if (action.speedIncrementPerBullet != 0f)
             {
                 currentBulletSpeed += (i * action.speedIncrementPerBullet);
             }
+            // ----------------------------------------------------------
 
             // Pass the SPAWN position base for behavior configuration if needed
             ConfigureBulletBehavior(bulletInstance, action, currentBulletSpeed, targetClientId, capturedTargetPosition, isTargetOnPositiveSide, spawnPositionBase); 
@@ -801,12 +808,13 @@ public class ServerAttackSpawner : NetworkBehaviour
                 // Spellcard bullets are typically environment hazards, spawn as server-owned.
                 bulletInstanceNO.Spawn(true); // Spawn server-owned (or use SpawnWithOwnership if needed)
 
-                // --- Calculate Speed (using original action data) ---
+                // --- Calculate Speed (Apply increment universally if set) ---
                 float currentBulletSpeed = action.speed;
-                if (action.formation == FormationType.Line && action.speedIncrementPerBullet != 0f)
+                if (action.speedIncrementPerBullet != 0f)
                 {
                     currentBulletSpeed += (i * action.speedIncrementPerBullet);
                 }
+                // ----------------------------------------------------------
 
                 // --- Configure Behavior AFTER Spawning (using original action data for behavior type etc) ---
                 ConfigureBulletBehavior(bulletInstance, action, currentBulletSpeed, opponentId, capturedOpponentPosition, isTargetOnPositiveSide, originPosition);
@@ -842,12 +850,14 @@ public class ServerAttackSpawner : NetworkBehaviour
         var lifetime = bulletInstance.GetComponent<NetworkBulletLifetime>();
         var spiral = bulletInstance.GetComponent<SpiralMovement>(); // Get SpiralMovement
         var delayedRandomTurn = bulletInstance.GetComponent<DelayedRandomTurn>(); // Get new component
+        var homing = bulletInstance.GetComponent<Homing>(); // Get new component
 
         // Disable all potential behaviors first to ensure clean state
         var linear = bulletInstance.GetComponent<LinearMovement>();
         var delayedHoming = bulletInstance.GetComponent<DelayedHoming>();
         if (linear) linear.enabled = false;
         if (delayedHoming) delayedHoming.enabled = false;
+        if (homing) homing.enabled = false; // Disable new one initially
         if (doubleHoming) doubleHoming.enabled = false; 
         if (spiral) spiral.enabled = false; // Disable spiral initially
         if (delayedRandomTurn) delayedRandomTurn.enabled = false; // Disable new one initially
@@ -881,8 +891,28 @@ public class ServerAttackSpawner : NetworkBehaviour
         switch (action.behavior)
         {
             case BehaviorType.Linear:
-                if (linear != null) { linear.enabled = true; linear.Initialize(currentSpeed); } // Use currentSpeed
+                if (linear != null) { linear.enabled = true; linear.Initialize(currentSpeed); }
                 else { Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to Linear but missing LinearMovement component."); }
+                break;
+            case BehaviorType.Homing:
+                if (homing != null) 
+                {
+                    if (opponentId != ulong.MaxValue)
+                    {
+                        homing.enabled = true;
+                        // Initialize with homingSpeed for both move speed and turn speed for simplicity?
+                        // Or use currentSpeed for moveSpeed and action.homingSpeed for turnSpeed?
+                        // Let's try using action.homingSpeed for turnSpeed and currentSpeed for moveSpeed.
+                        homing.Initialize(currentSpeed, action.homingSpeed, opponentId, capturedOpponentPosition);
+                    }
+                    else 
+                    {
+                        // Fallback to linear if no opponent
+                        Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to Homing but no opponent found. Falling back to Linear.");
+                        if (linear != null) { linear.enabled = true; linear.Initialize(currentSpeed); }
+                    }
+                }
+                 else { Debug.LogWarning($"[ServerAttackSpawner.ConfigureBulletBehavior] Spellcard bullet '{bulletInstance.name}' set to Homing but missing Homing component."); }
                 break;
             case BehaviorType.DelayedHoming:
                 if (delayedHoming != null)

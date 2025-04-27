@@ -23,7 +23,7 @@ namespace TouhouWebArena.Spellcards
     {
         /// <summary>Bullet travels in a straight line based on initial rotation.</summary>
         Linear,
-        /// <summary>Bullet attempts to home towards the opponent player.</summary>
+        /// <summary>Bullet continuously attempts to rotate towards the target player.</summary>
         Homing,
         /// <summary>Bullet travels linearly for a duration (<see cref="SpellcardAction.homingDelay"/>) before starting to home.</summary>
         DelayedHoming,

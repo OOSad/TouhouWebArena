@@ -46,6 +46,11 @@ MonoBehaviour:
       secondHomingDelay: 0
       firstHomingDuration: 0
       secondHomingLookAheadDistance: 0
+      spreadAngle: 0
+      minTurnSpeed: 0
+      maxTurnSpeed: 0
+      skipEveryNth: 0
+      intraActionDelay: 0
       lifetime: 20
     - startDelay: 0
       bulletPrefabs:
@@ -68,6 +73,11 @@ MonoBehaviour:
       secondHomingDelay: 0
       firstHomingDuration: 0
       secondHomingLookAheadDistance: 0
+      spreadAngle: 0
+      minTurnSpeed: 0
+      maxTurnSpeed: 0
+      skipEveryNth: 0
+      intraActionDelay: 0
       lifetime: 20
     - startDelay: 0
       bulletPrefabs:
@@ -90,6 +100,11 @@ MonoBehaviour:
       secondHomingDelay: 0
       firstHomingDuration: 0
       secondHomingLookAheadDistance: 0
+      spreadAngle: 0
+      minTurnSpeed: 0
+      maxTurnSpeed: 0
+      skipEveryNth: 0
+      intraActionDelay: 0
       lifetime: 20
     - startDelay: 0
       bulletPrefabs:
@@ -112,6 +127,11 @@ MonoBehaviour:
       secondHomingDelay: 0
       firstHomingDuration: 0
       secondHomingLookAheadDistance: 0
+      spreadAngle: 45
+      minTurnSpeed: 90
+      maxTurnSpeed: 270
+      skipEveryNth: 0
+      intraActionDelay: 0
       lifetime: 20
   - patternName: Criss-Cross Circles
     orientPatternTowardsTarget: 0
@@ -140,7 +160,12 @@ MonoBehaviour:
       secondHomingDelay: 0
       firstHomingDuration: 0
       secondHomingLookAheadDistance: 0
-      lifetime: 20
+      spreadAngle: 45
+      minTurnSpeed: 90
+      maxTurnSpeed: 270
+      skipEveryNth: 0
+      intraActionDelay: 0
+      lifetime: 10
     - startDelay: 0
       bulletPrefabs:
       - {fileID: 3753940637100796060, guid: f2a3a3efbdf65af4d9c5bbad7ca3e4a6, type: 3}
@@ -162,7 +187,12 @@ MonoBehaviour:
       secondHomingDelay: 0
       firstHomingDuration: 0
       secondHomingLookAheadDistance: 0
-      lifetime: 20
+      spreadAngle: 45
+      minTurnSpeed: 90
+      maxTurnSpeed: 270
+      skipEveryNth: 0
+      intraActionDelay: 0
+      lifetime: 10
   - patternName: Three Circles of Talismans
     orientPatternTowardsTarget: 0
     performMovementDuringAttack: 0
@@ -190,7 +220,12 @@ MonoBehaviour:
       secondHomingDelay: 0
       firstHomingDuration: 0
       secondHomingLookAheadDistance: 0
-      lifetime: 20
+      spreadAngle: 45
+      minTurnSpeed: 90
+      maxTurnSpeed: 270
+      skipEveryNth: 0
+      intraActionDelay: 0
+      lifetime: 10
     - startDelay: 0.4
       bulletPrefabs:
       - {fileID: 2173492373472071295, guid: 3f2279f364f549a459822741608eda89, type: 3}
@@ -212,7 +247,12 @@ MonoBehaviour:
       secondHomingDelay: 0
       firstHomingDuration: 0
       secondHomingLookAheadDistance: 0
-      lifetime: 20
+      spreadAngle: 45
+      minTurnSpeed: 90
+      maxTurnSpeed: 270
+      skipEveryNth: 0
+      intraActionDelay: 0
+      lifetime: 10
     - startDelay: 0.4
       bulletPrefabs:
       - {fileID: 2173492373472071295, guid: 3f2279f364f549a459822741608eda89, type: 3}
@@ -234,7 +274,12 @@ MonoBehaviour:
       secondHomingDelay: 0
       firstHomingDuration: 0
       secondHomingLookAheadDistance: 0
-      lifetime: 20
+      spreadAngle: 45
+      minTurnSpeed: 90
+      maxTurnSpeed: 270
+      skipEveryNth: 0
+      intraActionDelay: 0
+      lifetime: 10
   - patternName: Two Homing Circles of Talismans
     orientPatternTowardsTarget: 0
     performMovementDuringAttack: 0
@@ -251,9 +296,9 @@ MonoBehaviour:
       spacing: 0
       angle: 0
       behavior: 2
-      speed: 1
+      speed: 3
       speedIncrementPerBullet: 0
-      homingSpeed: 1
+      homingSpeed: 3
       tangentialSpeed: 0
       useInitialSpeed: 0
       initialSpeed: 0
@@ -262,7 +307,12 @@ MonoBehaviour:
       secondHomingDelay: 0
       firstHomingDuration: 0
       secondHomingLookAheadDistance: 0
-      lifetime: 20
+      spreadAngle: 45
+      minTurnSpeed: 90
+      maxTurnSpeed: 270
+      skipEveryNth: 0
+      intraActionDelay: 0
+      lifetime: 10
     - startDelay: 0
       bulletPrefabs:
       - {fileID: 3623579197644259766, guid: 044aacc1cd040ac4db9cb9b9b57acf82, type: 3}
@@ -273,9 +323,9 @@ MonoBehaviour:
       spacing: 0
       angle: 0
       behavior: 2
-      speed: 0.5
+      speed: 1.5
       speedIncrementPerBullet: 0
-      homingSpeed: 1
+      homingSpeed: 3
       tangentialSpeed: 0
       useInitialSpeed: 0
       initialSpeed: 0
@@ -284,5 +334,10 @@ MonoBehaviour:
       secondHomingDelay: 0
       firstHomingDuration: 0
       secondHomingLookAheadDistance: 0
-      lifetime: 20
+      spreadAngle: 45
+      minTurnSpeed: 90
+      maxTurnSpeed: 270
+      skipEveryNth: 0
+      intraActionDelay: 0
+      lifetime: 10
   attacksPerMove: 1

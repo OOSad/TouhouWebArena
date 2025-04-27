@@ -53,7 +53,7 @@ Spellcards are typically activated when a player releases the fire key with suff
     *   Located in: `Assets/!TouhouWebArena/Scripts/Spellcards/` (Likely)
     *   Purpose: Attached to the Level 4 illusion prefab. Manages the illusion's health and handles its destruction when health reaches zero.
 
-*   **Bullet Behavior Scripts (e.g., `LinearMovement.cs`, `DelayedHoming.cs`, `DelayedRandomTurn.cs`):**
+*   **Bullet Behavior Scripts (e.g., `LinearMovement.cs`, `Homing.cs`, `DelayedHoming.cs`, `DelayedRandomTurn.cs`):**
     *   Located in: `Assets/!TouhouWebArena/Scripts/Spellcards/Behaviors/`
     *   Purpose: Components attached to bullet prefabs defining movement. `DelayedRandomTurn` was added for Illusion Star.
 
@@ -168,9 +168,9 @@ For detailed examples of how specific characters' spellcards are configured usin
 *   **Header: Bullet Behavior**
     *   **`Behavior` (Enum - `BehaviorType`):** `Linear`, `Homing`, `DelayedHoming`, `DoubleHoming`, `Spiral`, `DelayedRandomTurn`. Selects the movement script to activate.
 *   **Header: Behavior Speeds**
-    *   **`Speed` (Float):** Primary speed used by the behavior (linear speed, initial homing speed, etc.).
+    *   **`Speed` (Float):** Primary speed used by the behavior (linear speed, initial homing speed, forward speed for `Homing`, etc.).
     *   **`Speed Increment Per Bullet` (Float):** (Line Only) Amount speed increases for each subsequent bullet in the line.
-    *   **`Homing Speed` (Float):** Speed used when actively homing.
+    *   **`Homing Speed` (Float):** Speed used when actively homing in `DelayedHoming`/`DoubleHoming`, or the turning rate (degrees/sec) for `Homing`.
     *   **`Tangential Speed` (Float):** (Spiral Only) Speed moving tangentially.
 *   **Header: Initial Speed Transition (Optional)**
     *   **`Use Initial Speed` (Bool):** If true, bullet smoothly transitions from `initialSpeed` to `speed`.
