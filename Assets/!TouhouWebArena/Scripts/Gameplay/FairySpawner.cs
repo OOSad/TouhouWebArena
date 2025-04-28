@@ -46,6 +46,8 @@ public class FairySpawner : MonoBehaviour
     private Coroutine spawnCoroutine;
     /// <summary>Counter tracking the number of waves (lines) spawned.</summary>
     private int waveCounter = 0; // Counter for waves spawned
+    /// <summary>If false, the spawning coroutine will pause.</summary>
+    public bool isDebugSpawningEnabled = true;
 
     /// <summary>
     /// [Server Only] Initializes the spawner and starts the spawning loop.
@@ -89,6 +91,12 @@ public class FairySpawner : MonoBehaviour
 
         while (true)
         {
+            // Pause spawning if debug flag is false
+            while (!isDebugSpawningEnabled)
+            {
+                yield return null; 
+            }
+
             yield return new WaitForSeconds(spawnInterval);
             if (paths.Count == 0) continue;
 
@@ -194,6 +202,18 @@ public class FairySpawner : MonoBehaviour
             StopCoroutine(spawnCoroutine);
             spawnCoroutine = null;
         }
+    }
+
+    /// <summary>
+    /// [Server Only] Sets the debug flag to enable/disable fairy spawning.
+    /// </summary>
+    /// <param name="enabled">True to enable spawning, false to disable.</param>
+    public void SetSpawningEnabledServer(bool enabled)
+    {
+        // Although this script should only exist on server, check anyway
+        if (!NetworkManager.Singleton.IsServer) return;
+        isDebugSpawningEnabled = enabled;
+        UnityEngine.Debug.Log($"Fairy Spawner (Player {playerIndex}) spawning set to: {enabled}");
     }
 
     // TODO: Add logic to associate spawner/fairies with a specific player area if needed (using layers, tags, or parent transforms)

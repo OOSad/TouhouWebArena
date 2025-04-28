@@ -26,6 +26,9 @@ public class SpiritSpawner : NetworkBehaviour
     [Tooltip("Probability (0-1) that a newly spawned Spirit will initially move towards the corresponding player.")]
     [SerializeField, Range(0f, 1f)] private float aimAtPlayerChance = 0.25f;
 
+    /// <summary>If false, the spawning coroutine will pause.</summary>
+    public bool isDebugSpawningEnabled = true;
+
     /// <summary>
     /// Called on the frame when a script is enabled just before any of the Update methods are called the first time.
     /// Validates required references and starts the <see cref="SpawnSpirits"/> coroutine if validation passes.
@@ -93,7 +96,20 @@ public class SpiritSpawner : NetworkBehaviour
 
         while (true)
         {
+            // Pause spawning if debug flag is false
+            while (!isDebugSpawningEnabled)
+            {
+                yield return null; 
+            }
+
             yield return new WaitForSeconds(spawnInterval);
+
+            // ADDED CHECK: Re-check flag immediately after waiting, before spawning
+            if (!isDebugSpawningEnabled) 
+            {
+                continue; // Skip the rest of this loop iteration if spawning was disabled during the wait
+            }
+
             SpawnSpiritInZone(spawnZone1);
             SpawnSpiritInZone(spawnZone2);
         }
@@ -203,5 +219,16 @@ public class SpiritSpawner : NetworkBehaviour
         {
             Gizmos.DrawWireCube(spawnZone2.position, new Vector3(spawnZoneSize.x, spawnZoneSize.y, 0f));
         }
+    }
+
+    /// <summary>
+    /// [Server Only] Sets the debug flag to enable/disable spirit spawning.
+    /// </summary>
+    /// <param name="enabled">True to enable spawning, false to disable.</param>
+    public void SetSpawningEnabledServer(bool enabled)
+    {
+        if (!IsServer) return;
+        isDebugSpawningEnabled = enabled;
+        UnityEngine.Debug.Log($"Spirit Spawner spawning set to: {enabled}");
     }
 } 

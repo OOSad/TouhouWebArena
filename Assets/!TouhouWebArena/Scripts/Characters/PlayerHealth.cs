@@ -42,6 +42,7 @@ public class PlayerHealth : NetworkBehaviour
 
     private PlayerDeathBomb playerDeathBomb; // Reference to the bomb component
     private CharacterStats characterStats; // Added reference
+    private bool isHpLocked = false; // Server-side flag for debug health lock
 
     // Added Awake to get components
     private void Awake()
@@ -89,20 +90,35 @@ public class PlayerHealth : NetworkBehaviour
     /// <param name="amount">The amount of damage to apply.</param>
     public void TakeDamage(int amount)
     {
-        if (!IsServer) return;
-        if (IsInvincible.Value) return;
-        if (CurrentHealth.Value <= 0) return;
+        // Basic checks: Only server, not already invincible, not already dead.
+        if (!IsServer || IsInvincible.Value || CurrentHealth.Value <= 0)
+        {
+            return;
+        }
 
+        bool applyHealthChange = !isHpLocked; // Decide if health should actually change
+
+        if (isHpLocked)
+        {
+             UnityEngine.Debug.Log($"Player {OwnerClientId} took a hit, but HP is locked. Damage calculation skipped.");
+        }
+
+        if (applyHealthChange)
+        {
+            // Apply health change only if not locked
         int previousHealth = CurrentHealth.Value; 
         int newHealth = CurrentHealth.Value - amount;
         CurrentHealth.Value = Mathf.Max(newHealth, 0);
+        }
 
-        if (CurrentHealth.Value <= 0)
+        // Check for death AFTER potential health change OR if HP was already 0 but lock prevented death logic
+        if (CurrentHealth.Value <= 0 && applyHealthChange) // Only trigger death if health was actually changed to 0
         {
             HandleDeathServer();
         }
         else
         {
+            // Always trigger invincibility if a valid hit occurred (locked or not), unless death was triggered
             TriggerInvincibilityServer(); 
         }
     }
@@ -157,6 +173,47 @@ public class PlayerHealth : NetworkBehaviour
             
             // Optionally set to a default value here if needed
             // CurrentHealth.Value = 5; 
+        }
+    }
+
+    /// <summary>
+    /// [Server Only] Sets the debug lock state for player health.
+    /// If true, the player will not take damage via the TakeDamage method.
+    /// </summary>
+    /// <param name="locked">Whether health should be locked.</param>
+    public void SetHpLockStateServer(bool locked)
+    {
+        if (!IsServer) return;
+        isHpLocked = locked;
+        UnityEngine.Debug.Log($"Player {OwnerClientId} HP lock state set to: {isHpLocked}");
+    }
+
+    /// <summary>
+    /// [Server Only] Directly sets the player's current health to a specific value, bypassing locks and invincibility.
+    /// Clamps the value between 0 and the character's starting health.
+    /// </summary>
+    /// <param name="value">The target health value.</param>
+    public void SetHealthDirectlyServer(int value)
+    {
+        if (!IsServer) return;
+
+        if (characterStats != null)
+        {
+            int maxHealth = characterStats.GetStartingHealth();
+            CurrentHealth.Value = Mathf.Clamp(value, 0, maxHealth);
+            UnityEngine.Debug.Log($"Player {OwnerClientId} HP set directly to: {CurrentHealth.Value}");
+        }
+        else
+        {
+            // Fallback if stats are missing? Clamp to a reasonable range.
+            CurrentHealth.Value = Mathf.Clamp(value, 0, 999);
+            UnityEngine.Debug.LogWarning($"Player {OwnerClientId} CharacterStats missing, HP set directly to: {CurrentHealth.Value} (clamped 0-999)");
+        }
+
+        // Manually check for death AFTER setting, in case we set it to 0
+        if (CurrentHealth.Value <= 0)
+        { 
+            HandleDeathServer();
         }
     }
 } 

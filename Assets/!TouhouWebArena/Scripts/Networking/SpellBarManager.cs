@@ -307,4 +307,28 @@ public class SpellBarManager : NetworkBehaviour
              return false;
         }
     }
+
+    // --- Debug Method ---
+    /// <summary>
+    /// [Server Only] Debug method to instantly set a player's spell bar charge to maximum.
+    /// Finds the player's bar by role and sets both passive and active fill NetworkVariables to max.
+    /// </summary>
+    /// <param name="role">The PlayerRole of the player whose bar to maximize.</param>
+    public void SetPlayerChargeToMaxServer(PlayerRole role)
+    {
+        if (!IsServer) return;
+
+        if (playerSpellBars.TryGetValue(role, out SpellBarController targetBar))
+        {
+            // Assuming SpellBarController has a constant or property for the max value.
+            // If not, replace SpellBarController.MaxFillAmount with 4.0f or the correct max value.
+            targetBar.currentPassiveFill.Value = SpellBarController.MaxFillAmount;
+            targetBar.currentActiveFill.Value = SpellBarController.MaxFillAmount; // Setting both ensures max regardless of current state
+            UnityEngine.Debug.Log($"[SpellBarManager] Debug: Set Player {role} spell bar charge to MAX.");
+        }
+        else
+        {
+            UnityEngine.Debug.LogWarning($"[SpellBarManager] Could not find SpellBarController for Role {role} to set charge to max.");
+        }
+    }
 }

@@ -421,7 +421,7 @@ MonoBehaviour:
   characterName: KirisameMarisa
   bulletPrefab: {fileID: 5656050771762241772, guid: 59097a917c5931a43aea9a9a3a22fbe2, type: 3}
   chargeAttackPrefab: {fileID: 4280080153862268507, guid: 27caa464793fc9e4fb8ecdaac521476a, type: 3}
-  passiveFillRate: 15
+  passiveFillRate: 0.06
   activeChargeRate: 15
   bulletSpread: 0.2
   burstCount: 3

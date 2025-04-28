@@ -8,13 +8,15 @@ using UnityEngine;
 /// </summary>
 [RequireComponent(typeof(PlayerMovement))] // Dependency
 [RequireComponent(typeof(PlayerShootingController))] // Dependency
-public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it sends RPCs directly, but relies on other components for now
+public class PlayerAIController : NetworkBehaviour
 {
-    [Header("AI Settings")]
-    [SerializeField] private KeyCode activationKey = KeyCode.I;
     // Make aiActive private and expose via getter
     private bool aiActive = false;
     public bool IsAIActive() => aiActive; // Public getter for PlayerMovement
+
+    // ADDED: NetworkVariable for server control
+    /// <summary>[Server Controlled] NetworkVariable to enable/disable AI via debug menu.</summary>
+    private NetworkVariable<bool> IsAIDebugEnabled = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     [Header("References")]
     [Tooltip("The child Hitbox object used for collision detection.")]
@@ -77,7 +79,7 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
     private void Update()
     {
         // AI logic should only run on the owner's machine
-        if (networkObject == null || !networkObject.IsOwner) return;
+        if (!IsOwner) return;
 
         // Role Check: Attempt to get role if not already set
         if (playerRole == PlayerRole.None && playerMovement != null)
@@ -88,8 +90,23 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
             }
         }
 
-        // Handle activation input regardless of role being known yet
-        HandleActivationInput();
+        // ADDED: Read NetworkVariable to control internal state
+        bool serverRequestedState = IsAIDebugEnabled.Value;
+        if (serverRequestedState != aiActive) // State change detected
+        {
+            aiActive = serverRequestedState;
+            if (!aiActive) // If AI was just turned off
+            {
+                StopAIControl();
+            }
+            else
+            { 
+                // Optional: Reset dodge state when activating?
+                isDodging = false;
+            }
+            // Debug.Log($"Owner client: AI active state set to {aiActive} based on NetworkVariable");
+        }
+        // ---------------------------------------------
 
         if (!aiActive)
         {
@@ -108,7 +125,7 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
     private void FixedUpdate()
     {
         // AI logic should only run on the owner's machine
-        if (networkObject == null || !networkObject.IsOwner || !aiActive || playerRole == PlayerRole.None)
+        if (!IsOwner || !aiActive || playerRole == PlayerRole.None)
         {
             // Do nothing if not owner, AI inactive, or role unknown
             return;
@@ -119,26 +136,6 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
         if (!isDodging)
         {
             AlignWithTarget(); // Call the targeting logic
-        }
-    }
-
-    private void HandleActivationInput()
-    {
-        // Input reading is owner-only anyway, but check networkObject for safety
-        if (networkObject == null || !networkObject.IsOwner) return; 
-
-        if (Input.GetKeyDown(activationKey))
-        {
-            aiActive = !aiActive;
-            if (!aiActive)
-            {
-                StopAIControl();
-            }
-            else
-            {
-                // Optional: Reset dodge state when activating?
-                isDodging = false;
-            }
         }
     }
 
@@ -293,6 +290,18 @@ public class PlayerAIController : MonoBehaviour // Needs NetworkBehaviour if it 
             playerMovement.SetAIHorizontalInput(0f);
             isDodging = false;
         }
+    }
+
+    /// <summary>
+    /// [Server Only] Sets the networked state variable to enable/disable the AI.
+    /// Called by the DebugMenuController.
+    /// </summary>
+    /// <param name="enabled">Whether the AI should be enabled.</param>
+    public void SetAIEnabledServer(bool enabled)
+    {
+        if (!IsServer) return;
+        IsAIDebugEnabled.Value = enabled;
+        UnityEngine.Debug.Log($"Server setting AI enabled to {enabled} for client {OwnerClientId}");
     }
 
     // Draw Gizmos for the detection box in the Scene view for easier debugging
