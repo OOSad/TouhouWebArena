@@ -6,10 +6,11 @@ using System.Collections; // Added explicitly for IEnumerator
 
 /// <summary>
 /// Manages the UI display of a player's health using individual icons (e.g., hearts).
-/// Finds the target player's <see cref="PlayerHealth"/> component based on the <see cref="targetPlayerId"/>,
-/// subscribes to its health changes, and updates the number of active icons accordingly.
+/// Finds the target player's <see cref="PlayerHealth"/> component based on the assigned <see cref="targetPlayerRole"/> (Player1 or Player2),
+/// by querying the <see cref="PlayerDataManager"/> to match the role with the correct client ID.
+/// Subscribes to the found player's health changes and updates the number of active icons accordingly.
 /// Requires references to the icon prefab and the container where icons will be placed.
-/// It uses a coroutine with retry logic to find the target player component, accommodating network initialization delays.
+/// Uses a coroutine with retry logic to find the target player component, accommodating network initialization delays.
 /// </summary>
 public class PlayerHealthUI : MonoBehaviour
 {
@@ -20,8 +21,8 @@ public class PlayerHealthUI : MonoBehaviour
     [SerializeField] private Transform iconContainer;
 
     [Header("Target Player")] // Grouped target settings
-    [Tooltip("The OwnerClientId of the player this health UI represents (1 for Player 1, 2 for Player 2). Must be set correctly in the Inspector.")]
-    [SerializeField] private int targetPlayerId = 1;
+    [Tooltip("The role (Player1 or Player2) this health UI represents. Must be set correctly in the Inspector.")]
+    [SerializeField] private PlayerRole targetPlayerRole = PlayerRole.Player1;
 
     [Header("Target Search Settings")]
     [Tooltip("Maximum number of attempts the script will make to find the target PlayerHealth component on Start.")]
@@ -53,8 +54,9 @@ public class PlayerHealthUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Coroutine that repeatedly attempts to find the <see cref="PlayerHealth"/> component associated with the specified <see cref="targetPlayerId"/>.
-    /// Waits until the <see cref="NetworkManager"/> is available, then searches through all <see cref="PlayerHealth"/> instances.
+    /// Coroutine that repeatedly attempts to find the <see cref="PlayerHealth"/> component associated with the specified <see cref="targetPlayerRole"/>.
+    /// Waits until the <see cref="NetworkManager"/> and <see cref="PlayerDataManager"/> are available, then searches through all <see cref="PlayerHealth"/> instances.
+    /// For each instance, it retrieves the owner's <see cref="PlayerData"/> from the <see cref="PlayerDataManager"/> and checks if the <see cref="PlayerData.Role"/> matches the <see cref="targetPlayerRole"/>.
     /// Upon finding the correct component, it caches references to <see cref="PlayerHealth"/> and <see cref="CharacterStats"/>,
     /// calls <see cref="InitializeUI"/>, subscribes to <see cref="PlayerHealth.OnHealthChanged"/>, and updates the UI immediately.
     /// Includes retry logic with delays (<see cref="searchRetryDelay"/>) up to <see cref="maxSearchAttempts"/>.
@@ -74,34 +76,49 @@ public class PlayerHealthUI : MonoBehaviour
 
             foreach (PlayerHealth ph in allPlayerHealths)
             {
-                // Check the OwnerClientId 
-                if (ph.OwnerClientId == (ulong)targetPlayerId)
+                // Check the PlayerRole via PlayerDataManager
+                if (PlayerDataManager.Instance == null)
                 {
+                    // Wait if PlayerDataManager isn't ready yet
+                    Debug.LogWarning($"[PlayerHealthUI-{targetPlayerRole}] Waiting for PlayerDataManager..."); // Added waiting log
+                    break; // Break inner loop, wait for next attempt
+                }
+
+                PlayerData? playerData = PlayerDataManager.Instance.GetPlayerData(ph.OwnerClientId);
+                if (playerData.HasValue && playerData.Value.Role == targetPlayerRole)
+                {
+                    // Check the OwnerClientId // REMOVED - Check Role instead
+                    // if (ph.OwnerClientId == (ulong)targetPlayerId) // REMOVED
+                    // {
                     _targetPlayerHealth = ph;
-                    _characterStats = ph.GetComponent<CharacterStats>(); 
+                    _characterStats = ph.GetComponent<CharacterStats>(); // Get associated CharacterStats
                     if (_characterStats == null)
                     {
-                        yield break; 
+                        Debug.LogError($"PlayerHealthUI for Target Role {targetPlayerRole}: Found PlayerHealth but CharacterStats component is missing on GameObject {ph.gameObject.name}!", this);
+                        _targetPlayerHealth = null; // Reset target if stats are missing
+                        yield break; // Stop searching, critical setup error
                     }
 
-                    InitializeUI(_characterStats.GetStartingHealth()); 
+                    // Successfully found and validated
+                    InitializeUI(_characterStats.GetStartingHealth()); // Use stats for max health
                     _targetPlayerHealth.OnHealthChanged += UpdateUI;
                     UpdateUI(_targetPlayerHealth.CurrentHealth.Value);
                     yield break; // Exit coroutine once found
+                    // }
                 }
             }
 
             // If not found after checking all, wait before retrying
             if (_targetPlayerHealth == null)
             {
-                yield return new WaitForSeconds(searchRetryDelay); 
+                yield return new WaitForSeconds(searchRetryDelay);
             }
         }
 
         // Only log warning if loop finished without finding the target
         if (_targetPlayerHealth == null)
         {
-            Debug.LogWarning($"PlayerHealthUI for Target ID {targetPlayerId}: Failed to find PlayerHealth component after {maxSearchAttempts} attempts.", this); // Added informative log
+            Debug.LogWarning($"PlayerHealthUI for Target Role {targetPlayerRole}: Failed to find PlayerHealth component after {maxSearchAttempts} attempts.", this);
         }
     }
 
@@ -137,7 +154,7 @@ public class PlayerHealthUI : MonoBehaviour
         // Ensure container and prefab are assigned
         if (iconContainer == null || healthIconPrefab == null)
         {
-            Debug.LogError($"PlayerHealthUI for Target ID {targetPlayerId}: Icon Container or Health Icon Prefab is not assigned in the Inspector.", this); // Added log
+            Debug.LogError($"PlayerHealthUI for Target Role {targetPlayerRole}: Icon Container or Health Icon Prefab is not assigned in the Inspector.", this); // Updated log
             return;
         }
 
@@ -164,7 +181,7 @@ public class PlayerHealthUI : MonoBehaviour
         if (_characterStats == null)
         {
              // Add a log to indicate potential issue if stats become null after initialization
-             Debug.LogWarning($"PlayerHealthUI for Target ID {targetPlayerId}: CharacterStats reference lost. Cannot update UI correctly.", this);
+             Debug.LogWarning($"PlayerHealthUI for Target Role {targetPlayerRole}: CharacterStats reference lost. Cannot update UI correctly.", this); // Updated log
              return;
         }
 
@@ -175,7 +192,7 @@ public class PlayerHealthUI : MonoBehaviour
         {
              // If the icon count doesn't match max health (e.g., after a stats change or initialization issue)
              // Re-initialize based on the correct max health. This is a fallback.
-             Debug.LogWarning($"PlayerHealthUI for Target ID {targetPlayerId}: Icon count ({healthIcons.Count}) mismatch with Max Health ({maxHealth}). Re-initializing UI.", this); // Added log
+             Debug.LogWarning($"PlayerHealthUI for Target Role {targetPlayerRole}: Icon count ({healthIcons.Count}) mismatch with Max Health ({maxHealth}). Re-initializing UI.", this); // Updated log
              InitializeUI(maxHealth);
              // Re-check count after re-initialization to avoid errors in the loop below if InitializeUI failed
              if(healthIcons.Count != maxHealth) return;

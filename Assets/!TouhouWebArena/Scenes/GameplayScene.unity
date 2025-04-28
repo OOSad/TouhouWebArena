@@ -8796,7 +8796,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   healthIconPrefab: {fileID: 8423565467663231166, guid: 1c811432102a4fb478742852cf3d678c, type: 3}
   iconContainer: {fileID: 1834446248}
-  targetPlayerId: 1
+  targetPlayerRole: 1
   maxSearchAttempts: 20
   searchRetryDelay: 0.5
 --- !u!114 &1834446250
@@ -8876,7 +8876,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   healthIconPrefab: {fileID: 8423565467663231166, guid: 1c811432102a4fb478742852cf3d678c, type: 3}
   iconContainer: {fileID: 1851775296}
-  targetPlayerId: 2
+  targetPlayerRole: 2
   maxSearchAttempts: 20
   searchRetryDelay: 0.5
 --- !u!114 &1851775298

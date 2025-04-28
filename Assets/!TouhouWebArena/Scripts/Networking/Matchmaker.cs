@@ -69,6 +69,10 @@ public struct PlayerInfo : INetworkSerializable, IEquatable<PlayerInfo>
 /// </summary>
 public class Matchmaker : NetworkBehaviour
 {
+    [Header("Scene Management")]
+    [Tooltip("The name of the character select scene to load when a match is found.")]
+    [SerializeField] private string characterSelectSceneName = "CharacterSelectScene"; // Ensure this name is correct
+
     [Header("UI Handler Reference")]
     /// <summary>
     /// Reference to the MatchmakerUI component that displays queue status and messages.
@@ -106,6 +110,7 @@ public class Matchmaker : NetworkBehaviour
         // Singleton setup
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+
         queuedPlayers = new NetworkList<PlayerInfo>();
         if (matchmakerUI == null) matchmakerUI = FindObjectOfType<MatchmakerUI>();
     }
@@ -291,9 +296,10 @@ public class Matchmaker : NetworkBehaviour
         ulong player1ClientId = queuedPlayers[0].ClientId;
         ulong player2ClientId = queuedPlayers[1].ClientId;
 
-        // --- NEW: Invoke Match Found Event ---
+        // --- REINSTATED: Invoke Match Found Event --- 
         OnMatchFoundServer?.Invoke(player1ClientId, player2ClientId);
-        // -----------------------------------
+        Debug.Log($"[Matchmaker] Match found! Invoked OnMatchFoundServer for clients {player1ClientId} & {player2ClientId}");
+        // ------------------------------------------
 
         // Notify clients match is starting (UI update)
         StartMatchClientRpc(player1ClientId, player2ClientId);
@@ -301,6 +307,14 @@ public class Matchmaker : NetworkBehaviour
         // Remove matched players AFTER invoking event and notifying clients
         queuedPlayers.RemoveAt(1); // P2
         queuedPlayers.RemoveAt(0); // P1
+
+        // --- RE-ADDED: Load Character Select Scene ---
+        // Load the character select scene for the matched players.
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
+        {
+            NetworkManager.Singleton.SceneManager.LoadScene(characterSelectSceneName, LoadSceneMode.Single);
+        }
+        // -----------------------------------------
     }
 
     /// <summary>

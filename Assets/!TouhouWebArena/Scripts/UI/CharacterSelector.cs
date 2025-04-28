@@ -29,46 +29,36 @@ public class CharacterSelector : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        // Find the PlayerDataManager instance
+        base.OnNetworkSpawn();
+
+        // Initialization logic MOVED BACK to OnNetworkSpawn AGAIN.
+        // This ensures it runs on clients after the scene and NetworkObjects are loaded.
+        
+        Debug.Log("[CharacterSelector] OnNetworkSpawn: Finding PlayerDataManager...");
+        // Directly find the spawned instance in the scene.
+        // REVERTED: Use Singleton Instance for persistent manager
+        // playerDataManager = FindObjectOfType<PlayerDataManager>();
         playerDataManager = PlayerDataManager.Instance;
 
-        // --- Fallback if Instance is null (Timing issue during scene load?) ---
-        // REVERTED: Fallback no longer needed with persistent manager + execution order.
-        /* 
         if (playerDataManager == null)
         {
-            Debug.LogWarning("[CharacterSelector] PlayerDataManager.Instance was NULL on NetworkSpawn. Attempting FindObjectOfType...");
-            playerDataManager = FindObjectOfType<PlayerDataManager>();
-        }
-        */
-        // ------------------------------------------------------------------
-
-        if (playerDataManager == null)
-        {
-            Debug.LogError("[CharacterSelector] PlayerDataManager could NOT be found via Instance!");
-            this.enabled = false; // Disable script if manager is missing
+            Debug.LogError("[CharacterSelector] OnNetworkSpawn: Could not find PlayerDataManager instance via Singleton! Disabling.");
+            this.enabled = false; 
             return;
         }
-        Debug.Log("[CharacterSelector] PlayerDataManager instance acquired.");
+
+        Debug.Log("[CharacterSelector] OnNetworkSpawn: PlayerDataManager instance found via Singleton. Completing initialization.");
 
         // Setup button listeners
         SetupButtonListeners();
 
-        // Initial UI update is now triggered by the event subscription
-        // UpdateUI();
-
         // Subscribe to PlayerDataManager updates
-        if (PlayerDataManager.Instance != null)
-        {
-            Debug.Log("[CharacterSelector] Subscribing to OnPlayerDataUpdated.");
-            PlayerDataManager.Instance.OnPlayerDataUpdated += HandlePlayerDataUpdated;
-            // Trigger an initial update in case the event fired before we subscribed
-            // HandlePlayerDataUpdated(); // REMOVED: Let the event handle the initial update.
-        }
-        else
-        {
-            Debug.LogError("[CharacterSelector] PlayerDataManager.Instance was NULL when trying to subscribe to event!");
-        }
+        Debug.Log("[CharacterSelector] OnNetworkSpawn: Subscribing to OnPlayerDataUpdated.");
+        playerDataManager.OnPlayerDataUpdated += HandlePlayerDataUpdated;
+        
+        // Trigger an initial update now that we know the manager exists
+        // This is important for clients joining/loading the scene.
+        HandlePlayerDataUpdated(); 
     }
 
     private void SetupButtonListeners()
@@ -77,13 +67,8 @@ public class CharacterSelector : NetworkBehaviour
         {
             if (mapping.button != null && !string.IsNullOrEmpty(mapping.characterName))
             {
-                // Capture the character name for the listener
                 string name = mapping.characterName;
                 mapping.button.onClick.AddListener(() => OnCharacterButtonClicked(name));
-            }
-            else
-            {
-                
             }
         }
     }
@@ -91,46 +76,33 @@ public class CharacterSelector : NetworkBehaviour
     private void OnCharacterButtonClicked(string characterName)
     {
         Debug.Log($"[CharacterSelector] Button clicked for character: {characterName}");
-        // Send the selection to the server
         RequestSetCharacterServerRpc(characterName);
     }
 
-    // Method called by UI Buttons is removed as listeners are now added programmatically
-    // public void SelectCharacter(string characterName) { ... }
-
-    [ServerRpc(RequireOwnership = false)] // Allow any client to call this RPC
+    [ServerRpc(RequireOwnership = false)]
     private void RequestSetCharacterServerRpc(string characterName, ServerRpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
         
-
+        // Use the locally cached reference
         if (playerDataManager != null)
         {
             playerDataManager.SetPlayerCharacter(clientId, characterName);
-
-            // Tell all clients to refresh their UI -- THIS IS NO LONGER NEEDED
-            // UpdateClientUIsClientRpc();
-
             // Check if both players are ready AFTER updating
             if (playerDataManager.AreBothPlayersReady())
             {
-                // Don't load immediately, start the delayed load coroutine
                 StartCoroutine(DelayedSceneLoad());
             }
         }
-        else
-        {
-             
-        }
     }
 
-    // Renamed UpdateUI to HandlePlayerDataUpdated to clarify it's an event handler
     private void HandlePlayerDataUpdated()
     {
         Debug.Log("[CharacterSelector] HandlePlayerDataUpdated called.");
-        if (PlayerDataManager.Instance == null)
+        // Use the locally cached reference
+        if (playerDataManager == null)
         {
-            Debug.LogError("[CharacterSelector] HandlePlayerDataUpdated: PlayerDataManager.Instance is NULL!");
+            Debug.LogError("[CharacterSelector] HandlePlayerDataUpdated: PlayerDataManager reference is NULL!");
             return;
         }
 
@@ -141,15 +113,12 @@ public class CharacterSelector : NetworkBehaviour
         }
         Debug.Log("[CharacterSelector] HandlePlayerDataUpdated: Updating UI text...");
 
-        // Get data for Player 1 (usually index 0)
-        // Use top-level PlayerData
         PlayerData? p1Data = playerDataManager.GetPlayer1Data();
         if (p1Data.HasValue)
         {
             string p1Character = p1Data.Value.SelectedCharacter.ToString();
             string p1Name = p1Data.Value.PlayerName.ToString();
             string p1Text = string.IsNullOrEmpty(p1Character) ? "Choosing..." : p1Character;
-            // Corrected string formatting
             player1SelectionText.text = $"Player 1 ({p1Name}):\n{p1Text}";
         }
         else
@@ -157,15 +126,12 @@ public class CharacterSelector : NetworkBehaviour
             player1SelectionText.text = "Player 1: Waiting...";
         }
 
-        // Get data for Player 2 (usually index 1)
-        // Use top-level PlayerData
         PlayerData? p2Data = playerDataManager.GetPlayer2Data();
          if (p2Data.HasValue)
         {
             string p2Character = p2Data.Value.SelectedCharacter.ToString();
             string p2Name = p2Data.Value.PlayerName.ToString();
             string p2Text = string.IsNullOrEmpty(p2Character) ? "Choosing..." : p2Character;
-            // Corrected string formatting
             player2SelectionText.text = $"Player 2 ({p2Name}):\n{p2Text}";
         }
         else
@@ -176,39 +142,27 @@ public class CharacterSelector : NetworkBehaviour
 
     private IEnumerator DelayedSceneLoad()
     {
-        // Ensure this only runs on the server
         if (!IsServer) yield break;
-
-        // Wait a fraction of a second to allow client UI updates
         yield return new WaitForSeconds(0.1f); 
-
-        
-        // Ensure NetworkManager is still valid before loading
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
         {
              NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
-        }
-        else
-        {
-            
         }
     }
 
     public override void OnNetworkDespawn()
     {
-        // Clean up listeners
         foreach (var mapping in characterButtons)
         {
             if (mapping.button != null)
             {
-                mapping.button.onClick.RemoveAllListeners(); // Simple cleanup
+                mapping.button.onClick.RemoveAllListeners();
             }
         }
 
-        // Unsubscribe from PlayerDataManager events
-        if (PlayerDataManager.Instance != null)
+        if (playerDataManager != null)
         {
-            PlayerDataManager.Instance.OnPlayerDataUpdated -= HandlePlayerDataUpdated;
+            playerDataManager.OnPlayerDataUpdated -= HandlePlayerDataUpdated;
         }
 
         base.OnNetworkDespawn();

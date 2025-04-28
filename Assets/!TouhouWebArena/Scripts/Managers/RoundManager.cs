@@ -567,6 +567,20 @@ namespace TouhouWebArena.Managers
                         Debug.LogWarning("[RoundManager] NetworkManager was already null before shutdown.");
                     }
 
+                    // --- ADDED: Despawn session-specific PlayerDataManager ---
+                    PlayerDataManager pdmInstance = FindObjectOfType<PlayerDataManager>();
+                    if (pdmInstance != null && pdmInstance.TryGetComponent<NetworkObject>(out var pdmNetObj))
+                    {
+                        if (pdmNetObj.IsSpawned)
+                        {
+                             Debug.Log("[RoundManager] Despawning PlayerDataManager instance...");
+                             pdmNetObj.Despawn(true); // true = destroy object after despawn
+                        }
+                        else { Debug.LogWarning("[RoundManager] Found PlayerDataManager but it wasn't spawned?"); }
+                    }
+                    else { Debug.LogWarning("[RoundManager] Could not find PlayerDataManager instance to despawn."); }
+                    // --------------------------------------------------------
+
                     // --- ADD BACK: Load the main menu scene on the server instance. ---
                     Debug.Log("[RoundManager] Loading MainMenuScene...");
                     UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenuScene");

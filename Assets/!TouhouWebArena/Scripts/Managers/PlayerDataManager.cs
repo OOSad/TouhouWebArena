@@ -109,45 +109,52 @@ public class PlayerDataManager : NetworkBehaviour
         }
         
         Instance = this;
-        DontDestroyOnLoad(gameObject); // RESTORED: Needs to persist for rematch loop.
+        DontDestroyOnLoad(gameObject); // RESTORED: Persistent manager
         
-        // Initialize network list only once in Awake for persistent object.
-        if (players == null) // Initialize only if it hasn't been (e.g., first Awake call)
-        {
-            players = new NetworkList<PlayerData>();
-            Debug.Log("[PlayerDataManager] NetworkList initialized in Awake.");
-        }
+        // NetworkList initialization moved to network event handlers
+        DisposeNetworkList(); // Safety check
+        players = new NetworkList<PlayerData>(); // Initialize immediately
+        Debug.Log("[PlayerDataManager] NetworkList initialized in Awake.");
     }
     
     /// <summary>
     /// Called when the network object is spawned.
-    /// Subscribes to the <see cref="players"/> list changes.
-    /// Subscribes to necessary server-side events.
+    /// Subscribes to list changes and network events.
     /// </summary>
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        if (players == null) 
-        {
-            Debug.LogError("[PlayerDataManager] NetworkList (players) is null in OnNetworkSpawn! Initializing fallback.");
-            players = new NetworkList<PlayerData>();
-        }
+        // NetworkList initialization happens in HandleServerStarted
         players.OnListChanged += HandlePlayerDataListChanged;
         
-        // --- Subscribe to NetworkManager disconnect event on Server --- 
-        if (IsServer)
+        // --- Subscribe to NetworkManager session events --- 
+        if (NetworkManager.Singleton != null)
         {
-            if (NetworkManager.Singleton != null)
+            NetworkManager.Singleton.OnServerStarted += HandleServerStarted;
+            NetworkManager.Singleton.OnServerStopped += HandleServerStopped; 
+            if (IsServer) // Only server needs disconnect for player removal
             {
                 NetworkManager.Singleton.OnClientDisconnectCallback += HandleClientDisconnect;
             }
-            // Subscribe to Matchmaker event (Original logic)
+
+            // If server is already running when this spawns, initialize immediately
+            if (NetworkManager.Singleton.IsServer)
+            {
+                 // HandleServerStarted(); // Initialize list if starting as server // REMOVED - Handled by Awake
+            }
+        }
+        else { Debug.LogError("[PlayerDataManager] NetworkManager Singleton is null in OnNetworkSpawn!"); }
+        // -------------------------------------------------
+        
+        // --- Subscribe to Matchmaker event on Server --- 
+        if (IsServer)
+        {
             StartCoroutine(SubscribeToMatchmakerEventsDelayed()); 
         }
-        // -----------------------------------------------------------
+        // --------------------------------------------
         
-        // Trigger initial UI update
-        OnPlayerDataUpdated?.Invoke(); 
+        // Initial UI update triggered by InitializeNetworkList
+        // OnPlayerDataUpdated?.Invoke(); 
     }
     
     /// <summary>
@@ -156,26 +163,24 @@ public class PlayerDataManager : NetworkBehaviour
     /// </summary>
     public override void OnNetworkDespawn()
     { 
-        if (players != null)
+        // --- Unsubscribe from NetworkManager/Matchmaker events --- 
+        if (NetworkManager.Singleton != null)
         {
-            players.OnListChanged -= HandlePlayerDataListChanged; 
-        }
-        
-        // --- Unsubscribe from NetworkManager/Matchmaker events on Server --- 
-        if (IsServer)
-        { 
-            if (NetworkManager.Singleton != null)
+            NetworkManager.Singleton.OnServerStarted -= HandleServerStarted;
+            NetworkManager.Singleton.OnServerStopped -= HandleServerStopped;
+             if (IsServer) // Only server subscribed
             {
                 NetworkManager.Singleton.OnClientDisconnectCallback -= HandleClientDisconnect;
             }
-            if (Matchmaker.Instance != null) 
-            { 
-                 Matchmaker.Instance.OnPlayerQueuedServer -= HandlePlayerQueued;
-            }
+        }
+        if (IsServer && Matchmaker.Instance != null) 
+        { 
+             Matchmaker.Instance.OnPlayerQueuedServer -= HandlePlayerQueued;
         }
         // ---------------------------------------------------------
         
-        // Do not dispose list here for persistent manager
+        // List is disposed by HandleServerStopped or OnDestroy
+        // DisposeNetworkList(); 
 
         base.OnNetworkDespawn();
     }
@@ -198,7 +203,8 @@ public class PlayerDataManager : NetworkBehaviour
     /// </summary>
     public override void OnDestroy()
     {
-        // DisposeNetworkList(); // Don't dispose for persistent object unless app quits
+        // Ensure list is disposed if object is destroyed
+        DisposeNetworkList(); 
         
         if (Instance == this)
         {
@@ -208,15 +214,38 @@ public class PlayerDataManager : NetworkBehaviour
         base.OnDestroy();
     }
 
-    // --- REMOVED: NetworkList Lifecycle Management / ClearPlayerListServer ---
-    /*
-    public void ClearPlayerListServer() { ... } 
-    private void DisposeNetworkList() { ... } 
-    private void HandleServerStarted() { ... } 
-    private void HandleServerStopped(bool wasServer) { ... }
-    private void InitializeNetworkList() { ... }
-    */
-    // ---------------------------------------------------------------------------
+    // --- NetworkList Lifecycle Management ---
+
+    private void HandleServerStarted()
+    {
+        if (!IsServer) return; // Should not happen if subscribed correctly, but safety check
+        Debug.Log("[PlayerDataManager] Server Started event received. Initializing NetworkList.");
+        // InitializeNetworkList(); // REMOVED - Initialization moved back to Awake
+    }
+
+    private void HandleServerStopped(bool wasServer)
+    {
+        // wasServer is true if NetworkManager was running as server when Shutdown was called
+        // We want to dispose if we *were* the server
+        if (wasServer) 
+        {
+             Debug.Log("[PlayerDataManager] Server Stopped event received. Disposing NetworkList.");
+             DisposeNetworkList();
+        }
+    }
+
+    private void DisposeNetworkList()
+    {
+        if (players != null)
+        {
+            Debug.Log("[PlayerDataManager] Disposing existing NetworkList.");
+            players.OnListChanged -= HandlePlayerDataListChanged;
+            players.Dispose();
+            players = null;
+        }
+    }
+
+    // --------------------------------------
 
     #region Public Methods
     
