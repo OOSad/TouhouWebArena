@@ -81,9 +81,23 @@ public class ServerStarterStopper : MonoBehaviour
     {
         if (!isServerRunning)
         {
+            // --- REVERTED: Ensure previous session is stopped --- 
+            /*
+            if (NetworkManager.Singleton != null && 
+               (NetworkManager.Singleton.IsClient || NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer))
+            { ... }
+            */
+            // ----------------------------------------------------
+
+            Debug.Log("[ServerStarterStopper] Attempting StartServer...");
             if (NetworkManager.Singleton.StartServer())
             {
+                Debug.Log("[ServerStarterStopper] StartServer successful.");
                 isServerRunning = true;
+            }
+            else
+            {
+                Debug.LogError("[ServerStarterStopper] StartServer failed!");
             }
         }
     }

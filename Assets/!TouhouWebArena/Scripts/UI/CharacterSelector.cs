@@ -31,11 +31,25 @@ public class CharacterSelector : NetworkBehaviour
     {
         // Find the PlayerDataManager instance
         playerDataManager = PlayerDataManager.Instance;
+
+        // --- Fallback if Instance is null (Timing issue during scene load?) ---
+        // REVERTED: Fallback no longer needed with persistent manager + execution order.
+        /* 
         if (playerDataManager == null)
         {
+            Debug.LogWarning("[CharacterSelector] PlayerDataManager.Instance was NULL on NetworkSpawn. Attempting FindObjectOfType...");
+            playerDataManager = FindObjectOfType<PlayerDataManager>();
+        }
+        */
+        // ------------------------------------------------------------------
+
+        if (playerDataManager == null)
+        {
+            Debug.LogError("[CharacterSelector] PlayerDataManager could NOT be found via Instance!");
             this.enabled = false; // Disable script if manager is missing
             return;
         }
+        Debug.Log("[CharacterSelector] PlayerDataManager instance acquired.");
 
         // Setup button listeners
         SetupButtonListeners();
@@ -46,9 +60,14 @@ public class CharacterSelector : NetworkBehaviour
         // Subscribe to PlayerDataManager updates
         if (PlayerDataManager.Instance != null)
         {
+            Debug.Log("[CharacterSelector] Subscribing to OnPlayerDataUpdated.");
             PlayerDataManager.Instance.OnPlayerDataUpdated += HandlePlayerDataUpdated;
             // Trigger an initial update in case the event fired before we subscribed
-            HandlePlayerDataUpdated();
+            // HandlePlayerDataUpdated(); // REMOVED: Let the event handle the initial update.
+        }
+        else
+        {
+            Debug.LogError("[CharacterSelector] PlayerDataManager.Instance was NULL when trying to subscribe to event!");
         }
     }
 
@@ -71,6 +90,7 @@ public class CharacterSelector : NetworkBehaviour
 
     private void OnCharacterButtonClicked(string characterName)
     {
+        Debug.Log($"[CharacterSelector] Button clicked for character: {characterName}");
         // Send the selection to the server
         RequestSetCharacterServerRpc(characterName);
     }
@@ -107,10 +127,19 @@ public class CharacterSelector : NetworkBehaviour
     // Renamed UpdateUI to HandlePlayerDataUpdated to clarify it's an event handler
     private void HandlePlayerDataUpdated()
     {
+        Debug.Log("[CharacterSelector] HandlePlayerDataUpdated called.");
         if (PlayerDataManager.Instance == null)
         {
+            Debug.LogError("[CharacterSelector] HandlePlayerDataUpdated: PlayerDataManager.Instance is NULL!");
             return;
         }
+
+        if (player1SelectionText == null || player2SelectionText == null)
+        {
+            Debug.LogError("[CharacterSelector] HandlePlayerDataUpdated: UI Text references are NULL!");
+            return;
+        }
+        Debug.Log("[CharacterSelector] HandlePlayerDataUpdated: Updating UI text...");
 
         // Get data for Player 1 (usually index 0)
         // Use top-level PlayerData

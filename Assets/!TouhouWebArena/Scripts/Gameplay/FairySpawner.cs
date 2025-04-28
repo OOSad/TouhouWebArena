@@ -131,6 +131,9 @@ public class FairySpawner : MonoBehaviour
 
             for (int i = 0; i < fairyCount; i++)
             {
+                // ADDED CHECK: Stop spawning line immediately if disabled mid-spawn
+                if (!isDebugSpawningEnabled) break;
+
                 bool makeGreat = false;
                 if (i == 0 && firstIsGreat) { makeGreat = true; }
                 else if (i == fairyCount - 1 && i != 0 && lastIsGreat) { makeGreat = true; }

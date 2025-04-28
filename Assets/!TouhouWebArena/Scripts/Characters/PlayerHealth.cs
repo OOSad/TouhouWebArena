@@ -167,10 +167,11 @@ public class PlayerHealth : NetworkBehaviour
         if (characterStats != null) 
         {
              CurrentHealth.Value = characterStats.GetStartingHealth();
+             Debug.Log($"[PlayerHealth:{OwnerClientId}] ResetHealthServerRpc called. Setting health to {CurrentHealth.Value}");
         }
         else
         {
-            
+             Debug.LogError($"[PlayerHealth:{OwnerClientId}] ResetHealthServerRpc FAILED: CharacterStats component is null!");
             // Optionally set to a default value here if needed
             // CurrentHealth.Value = 5; 
         }

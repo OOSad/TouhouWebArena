@@ -48,3 +48,15 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Characters
+    uniqueID: 558797947
+    locked: 0
+  - name: Bullets and Enemies
+    uniqueID: 4284331711
+    locked: 0
+  - name: Stage Boundaries
+    uniqueID: 311664665
+    locked: 0
+  - name: UI
+    uniqueID: 4189591143
+    locked: 0

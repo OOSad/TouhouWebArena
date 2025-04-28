@@ -98,7 +98,6 @@ public class PlayerDataManager : NetworkBehaviour
     /// <summary>
     /// Called when the script instance is being loaded.
     /// Implements the singleton pattern and initializes the <see cref="players"/> NetworkList.
-    /// Ensures the manager persists across scene loads.
     /// </summary>
     private void Awake()
     {
@@ -110,67 +109,74 @@ public class PlayerDataManager : NetworkBehaviour
         }
         
         Instance = this;
-        DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(gameObject); // RESTORED: Needs to persist for rematch loop.
         
-        // Initialize network list
-        players = new NetworkList<PlayerData>();
+        // Initialize network list only once in Awake for persistent object.
+        if (players == null) // Initialize only if it hasn't been (e.g., first Awake call)
+        {
+            players = new NetworkList<PlayerData>();
+            Debug.Log("[PlayerDataManager] NetworkList initialized in Awake.");
+        }
     }
     
     /// <summary>
     /// Called when the network object is spawned.
-    /// Subscribes to the <see cref="players"/> list changes and, if on the server,
-    /// subscribes to NetworkManager disconnect events and Matchmaker queuing events.
-    /// Invokes <see cref="OnPlayerDataUpdated"/> to ensure initial state synchronization.
+    /// Subscribes to the <see cref="players"/> list changes.
+    /// Subscribes to necessary server-side events.
     /// </summary>
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        if (players == null) 
+        {
+            Debug.LogError("[PlayerDataManager] NetworkList (players) is null in OnNetworkSpawn! Initializing fallback.");
+            players = new NetworkList<PlayerData>();
+        }
         players.OnListChanged += HandlePlayerDataListChanged;
         
-        // --- Subscribe to NetworkManager events on Server ---
+        // --- Subscribe to NetworkManager disconnect event on Server --- 
         if (IsServer)
         {
-            // Subscribe to disconnect event to handle cleanup
             if (NetworkManager.Singleton != null)
             {
                 NetworkManager.Singleton.OnClientDisconnectCallback += HandleClientDisconnect;
             }
-
-            // Subscribe to Matchmaker event (existing logic)
+            // Subscribe to Matchmaker event (Original logic)
             StartCoroutine(SubscribeToMatchmakerEventsDelayed()); 
         }
-        // ----------------------------------------------------
+        // -----------------------------------------------------------
         
-        OnPlayerDataUpdated?.Invoke(); // Trigger initial UI update
+        // Trigger initial UI update
+        OnPlayerDataUpdated?.Invoke(); 
     }
     
     /// <summary>
     /// Called when the network object is despawned.
-    /// Unsubscribes from all previously subscribed events (<see cref="NetworkList{T}.OnListChanged"/>,
-    /// NetworkManager events, Matchmaker events) to prevent memory leaks.
+    /// Unsubscribes from events.
     /// </summary>
     public override void OnNetworkDespawn()
-    {
+    { 
         if (players != null)
         {
-            players.OnListChanged -= HandlePlayerDataListChanged; // Unsubscribe
+            players.OnListChanged -= HandlePlayerDataListChanged; 
         }
         
-        // --- Unsubscribe from NetworkManager/Matchmaker events on Server ---
-        // Check IsServer AND Instance existence because this might be called during shutdown
+        // --- Unsubscribe from NetworkManager/Matchmaker events on Server --- 
         if (IsServer)
-        {
+        { 
             if (NetworkManager.Singleton != null)
             {
                 NetworkManager.Singleton.OnClientDisconnectCallback -= HandleClientDisconnect;
             }
             if (Matchmaker.Instance != null) 
             { 
-                Matchmaker.Instance.OnPlayerQueuedServer -= HandlePlayerQueued;
+                 Matchmaker.Instance.OnPlayerQueuedServer -= HandlePlayerQueued;
             }
         }
-        // -----------------------------------------------------
+        // ---------------------------------------------------------
         
+        // Do not dispose list here for persistent manager
+
         base.OnNetworkDespawn();
     }
     
@@ -181,19 +187,18 @@ public class PlayerDataManager : NetworkBehaviour
     /// <param name="changeEvent">Details about the change in the NetworkList.</param>
     private void HandlePlayerDataListChanged(NetworkListEvent<PlayerData> changeEvent)
     {
+        // Debug.Log($"[PlayerDataManager] NetworkList changed: Type={changeEvent.Type}, Index={changeEvent.Index}, Value={changeEvent.Value}"); // Optional: Keep if needed
         OnPlayerDataUpdated?.Invoke();
     }
     
     /// <summary>
     /// Called when the MonoBehaviour will be destroyed.
-    /// Disposes the <see cref="players"/> NetworkList and clears the singleton instance if this is the active instance.
+    /// Cleans up instance reference. List disposal is not strictly needed for DDOL objects
+    /// unless explicitly shutting down the application.
     /// </summary>
     public override void OnDestroy()
     {
-        if (players != null)
-        {
-            players.Dispose();
-        }
+        // DisposeNetworkList(); // Don't dispose for persistent object unless app quits
         
         if (Instance == this)
         {
@@ -202,7 +207,17 @@ public class PlayerDataManager : NetworkBehaviour
         
         base.OnDestroy();
     }
-    
+
+    // --- REMOVED: NetworkList Lifecycle Management / ClearPlayerListServer ---
+    /*
+    public void ClearPlayerListServer() { ... } 
+    private void DisposeNetworkList() { ... } 
+    private void HandleServerStarted() { ... } 
+    private void HandleServerStopped(bool wasServer) { ... }
+    private void InitializeNetworkList() { ... }
+    */
+    // ---------------------------------------------------------------------------
+
     #region Public Methods
     
     /// <summary>

@@ -70,6 +70,19 @@ public class ClientConnectorDisconnector : MonoBehaviour
     /// </summary>
     void Start()
     {
+        // --- REVERTED: Ensure clean state on menu load ---
+        /*
+        if (NetworkManager.Singleton != null && 
+           (NetworkManager.Singleton.IsClient || NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsHost))
+        {
+            Debug.Log("[ClientConnectorDisconnector] Found active NetworkManager on menu load. Shutting down connection.");
+            NetworkManager.Singleton.Shutdown();
+            // Reset local tracking state as well, as the disconnect callback might not fire immediately
+            isClientConnected = false; 
+        }
+        */
+        // ----------------------------------------------------
+
         if (clientToggleButton != null)
         {
             clientToggleButton.onClick.AddListener(ToggleClientConnection);
@@ -166,9 +179,23 @@ public class ClientConnectorDisconnector : MonoBehaviour
     {
         if (!isClientConnected)
         {
+            // --- REVERTED: Ensure previous session is stopped --- 
+            /*
+            if (NetworkManager.Singleton != null && 
+               (NetworkManager.Singleton.IsClient || NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer))
+            { ... }
+            */
+            // ----------------------------------------------------
+
+            Debug.Log("[ClientConnectorDisconnector] Attempting StartClient...");
             if (NetworkManager.Singleton.StartClient())
             {
+                Debug.Log("[ClientConnectorDisconnector] StartClient successful (Callbacks will handle state).");
                 // Note: We'll let the callbacks handle the state change
+            }
+            else
+            {
+                 Debug.LogError("[ClientConnectorDisconnector] StartClient failed!");
             }
         }
     }
