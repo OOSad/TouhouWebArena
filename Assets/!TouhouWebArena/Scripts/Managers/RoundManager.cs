@@ -287,6 +287,27 @@ namespace TouhouWebArena.Managers
                 }
             }
 
+            // --- ADDED: Clear Extra Attacks --- 
+            GameObject[] extraAttacks = GameObject.FindGameObjectsWithTag("ExtraAttack"); // Use the tag
+            Debug.Log($"[RoundManager] Clearing {extraAttacks.Length} Extra Attack objects.");
+            foreach (GameObject extraAttack in extraAttacks)
+            {
+                if (extraAttack.TryGetComponent<NetworkObject>(out var netObj))
+                {
+                    if (netObj.IsSpawned)
+                    {
+                        netObj.Despawn(true);
+                    }
+                }
+                else
+                {
+                    // If it has the tag but no NetworkObject, destroy it directly (shouldn't happen ideally)
+                    Debug.LogWarning($"[RoundManager] Found ExtraAttack tagged object '{extraAttack.name}' without a NetworkObject. Destroying directly.");
+                    Destroy(extraAttack);
+                }
+            }
+            // ---------------------------------
+
             // --- 3. Reset Players ---
             Debug.Log("[RoundManager] Resetting player states...");
 
