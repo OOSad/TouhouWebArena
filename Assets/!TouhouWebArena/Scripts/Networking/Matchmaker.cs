@@ -84,6 +84,8 @@ public class Matchmaker : NetworkBehaviour
     private NetworkList<PlayerInfo> queuedPlayers;
     /// <summary>Cached ClientId of the local player.</summary>
     private ulong localClientId = ulong.MaxValue;
+    /// <summary>Flag to prevent UI updates after a match is found but before scene load.</summary>
+    private bool matchInProgress = false;
 
     /// <summary>Singleton instance of the Matchmaker.</summary>
     public static Matchmaker Instance { get; private set; }
@@ -113,6 +115,7 @@ public class Matchmaker : NetworkBehaviour
 
         queuedPlayers = new NetworkList<PlayerInfo>();
         if (matchmakerUI == null) matchmakerUI = FindObjectOfType<MatchmakerUI>();
+        if (matchmakerUI == null) Debug.LogError("MatchmakerUI reference not set and not found in scene!", this);
     }
 
     /// <summary>
@@ -139,8 +142,16 @@ public class Matchmaker : NetworkBehaviour
     /// </summary>
     private void Start()
     {
-        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        matchInProgress = false;
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+        }
+        else
+        {
+             Debug.LogError("NetworkManager Singleton not available in Start!", this);
+        }
         HandleQueueChanged(default);
     }
 
@@ -169,11 +180,12 @@ public class Matchmaker : NetworkBehaviour
     /// <param name="clientId">The ClientId of the client that connected.</param>
     private void OnClientConnected(ulong clientId)
     {
-        if (clientId == NetworkManager.Singleton.LocalClientId)
+        if (NetworkManager.Singleton != null && clientId == NetworkManager.Singleton.LocalClientId)
         {
             localClientId = clientId;
-            HandleQueueChanged(default);
         }
+        // Always update queue display on any connection for consistency
+        HandleQueueChanged(default);
     }
 
     /// <summary>
@@ -194,22 +206,30 @@ public class Matchmaker : NetworkBehaviour
                 }
             }
         }
-         if (clientId == localClientId) localClientId = ulong.MaxValue;
+         if (clientId == localClientId) {
+            localClientId = ulong.MaxValue;
+            // If local client disconnects, also ensure match flag is reset
+            matchInProgress = false;
+         }
+        // Update queue display after potential removal or if local client left
+        HandleQueueChanged(default);
     }
 
     /// <summary>
     /// Client-side method to initiate joining the matchmaking queue.
-    /// Appends a random suffix to the player name for uniqueness demonstration.
-    /// Invokes the <see cref="JoinQueueServerRpc"/>.
+    /// Takes the player name provided by the UI and invokes the <see cref="JoinQueueServerRpc"/>.
     /// </summary>
-    /// <param name="playerName">The base name the player wants to use.</param>
+    /// <param name="playerName">The name the player wants to use (potentially already made unique by UI).</param>
     public void RequestJoinQueue(string playerName)
     {
-         if (NetworkManager.Singleton.IsConnectedClient)
+         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient)
          {
-            int uniqueId = UnityEngine.Random.Range(1000, 10000);
-            string uniquePlayerName = $"{playerName}#{uniqueId}";
-            JoinQueueServerRpc(uniquePlayerName, NetworkManager.Singleton.LocalClientId);
+            // Directly use the name provided by the UI.
+            JoinQueueServerRpc(playerName, NetworkManager.Singleton.LocalClientId);
+         }
+         else
+         {
+              Debug.LogWarning("RequestJoinQueue called but client is not connected.");
          }
     }
      /// <summary>
@@ -218,9 +238,13 @@ public class Matchmaker : NetworkBehaviour
      /// </summary>
      public void RequestLeaveQueue()
      {
-         if (NetworkManager.Singleton.IsConnectedClient)
+         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient)
          {
              LeaveQueueServerRpc(NetworkManager.Singleton.LocalClientId);
+         }
+         else
+         {
+              Debug.LogWarning("RequestLeaveQueue called but client is not connected.");
          }
      }
 
@@ -239,13 +263,15 @@ public class Matchmaker : NetworkBehaviour
         if (!IsServer) return;
 
         // Check if player already in queue
-        for (int i = 0; i < queuedPlayers.Count; i++) if (queuedPlayers[i].ClientId == clientId) return;
+        for (int i = 0; i < queuedPlayers.Count; i++) if (queuedPlayers[i].ClientId == clientId) {
+            Debug.LogWarning($"Client {clientId} ({playerName}) tried to join queue but is already in it.");
+            return;
+        }
 
+        Debug.Log($"Client {clientId} ({playerName}) joining queue.");
         queuedPlayers.Add(new PlayerInfo { PlayerName = new FixedString32Bytes(playerName), ClientId = clientId });
 
-        // --- NEW: Invoke Queued Event --- Pass name
-        OnPlayerQueuedServer?.Invoke(clientId, playerName); // Pass name
-        // -----------------------------
+        OnPlayerQueuedServer?.Invoke(clientId, playerName);
 
         // Update specific client about their queue status
         ClientRpcParams clientRpcParams = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new ulong[]{ clientId } } };
@@ -267,13 +293,14 @@ public class Matchmaker : NetworkBehaviour
         if (!IsServer) return;
 
         bool removed = false;
-        for (int i = 0; i < queuedPlayers.Count; i++)
+        for (int i = queuedPlayers.Count - 1; i >= 0; i--) // Iterate backwards when removing
         {
             if (queuedPlayers[i].ClientId == clientId)
             {
+                Debug.Log($"Client {clientId} ({queuedPlayers[i].PlayerName}) leaving queue.");
                 queuedPlayers.RemoveAt(i);
                 removed = true;
-                break;
+                break; // Assuming player can only be in queue once
             }
         }
 
@@ -281,6 +308,10 @@ public class Matchmaker : NetworkBehaviour
         {
             ClientRpcParams clientRpcParams = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new ulong[]{ clientId } } };
             SetPlayerQueueStatusClientRpc(false, clientRpcParams);
+        }
+        else
+        {
+             Debug.LogWarning($"Client {clientId} tried to leave queue but was not found.");
         }
     }
 
@@ -293,28 +324,40 @@ public class Matchmaker : NetworkBehaviour
     {
         if (!IsServer || queuedPlayers.Count < 2) return;
 
+        // Prevent processing match if already loading scene
+        if (matchInProgress) {
+            Debug.LogWarning("CheckForMatch called but matchInProgress is already true.");
+            return;
+        }
+
         ulong player1ClientId = queuedPlayers[0].ClientId;
         ulong player2ClientId = queuedPlayers[1].ClientId;
 
-        // --- REINSTATED: Invoke Match Found Event --- 
         OnMatchFoundServer?.Invoke(player1ClientId, player2ClientId);
         Debug.Log($"[Matchmaker] Match found! Invoked OnMatchFoundServer for clients {player1ClientId} & {player2ClientId}");
-        // ------------------------------------------
 
-        // Notify clients match is starting (UI update)
         StartMatchClientRpc(player1ClientId, player2ClientId);
 
-        // Remove matched players AFTER invoking event and notifying clients
-        queuedPlayers.RemoveAt(1); // P2
-        queuedPlayers.RemoveAt(0); // P1
+        matchInProgress = true; // Set flag *before* removing players
 
-        // --- RE-ADDED: Load Character Select Scene ---
+        // Remove matched players AFTER invoking event and notifying clients
+        // This order is important for the matchInProgress flag logic in HandleQueueChanged
+        queuedPlayers.RemoveAt(1); // Remove P2 first (index 1)
+        queuedPlayers.RemoveAt(0); // Then remove P1 (now at index 0)
+
         // Load the character select scene for the matched players.
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
         {
+            Debug.Log($"[Matchmaker] Loading scene: {characterSelectSceneName}");
             NetworkManager.Singleton.SceneManager.LoadScene(characterSelectSceneName, LoadSceneMode.Single);
+            // Note: matchInProgress will remain true until the Matchmaker script is destroyed/reloaded
+            // Or needs to be reset explicitly if scene loading fails or is cancelled
         }
-        // -----------------------------------------
+         else
+         {
+             Debug.LogError("[Matchmaker] Cannot load scene - NetworkManager or SceneManager is null!");
+             matchInProgress = false; // Reset flag if scene load fails critically
+         }
     }
 
     /// <summary>
@@ -326,7 +369,17 @@ public class Matchmaker : NetworkBehaviour
     [ClientRpc]
     private void SetPlayerQueueStatusClientRpc(bool inQueue, ClientRpcParams clientRpcParams = default)
     {
-        if (matchmakerUI != null) matchmakerUI.UpdateQueueStatus(inQueue);
+        // Only update UI if this is the target client
+        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsClient) return;
+
+        if (matchmakerUI != null)
+        {
+            matchmakerUI.UpdateQueueStatus(inQueue);
+        }
+        else if(IsOwner) // Only log error on the actual client it was meant for
+        {
+             Debug.LogError("SetPlayerQueueStatusClientRpc: MatchmakerUI reference is null!", this);
+        }
     }
 
     /// <summary>
@@ -338,12 +391,20 @@ public class Matchmaker : NetworkBehaviour
     [ClientRpc]
     private void StartMatchClientRpc(ulong player1Id, ulong player2Id)
     {
+        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsClient) return;
+
+        // Only update UI if this client is one of the matched players
         if (NetworkManager.Singleton.LocalClientId == player1Id || NetworkManager.Singleton.LocalClientId == player2Id)
         {
             if(matchmakerUI != null)
             {
                 matchmakerUI.UpdateQueueDisplayText("Match found! Loading game...");
-                matchmakerUI.UpdateQueueStatus(false);
+                // The UI might also want to disable buttons here again
+                matchmakerUI.UpdateQueueStatus(false); // Treat as leaving queue UI-wise
+            }
+            else
+            {
+                 Debug.LogError("StartMatchClientRpc: MatchmakerUI reference is null!", this);
             }
         }
     }
@@ -356,6 +417,13 @@ public class Matchmaker : NetworkBehaviour
     /// <param name="changeEvent">Details about the change in the NetworkList (can be ignored for simple redraw).</param>
     private void HandleQueueChanged(NetworkListEvent<PlayerInfo> changeEvent)
     {
+        // Prevent UI update if a match is being loaded
+        if (matchInProgress)
+        {
+            // Debug.Log("HandleQueueChanged: matchInProgress is true, skipping UI update.");
+            return;
+        }
+
         if (matchmakerUI != null)
         {
             if (queuedPlayers.Count == 0)
@@ -369,5 +437,7 @@ public class Matchmaker : NetworkBehaviour
                  matchmakerUI.UpdateQueueDisplayText(queueDisplay);
             }
         }
+         // Don't log error if matchmakerUI is null here, as it might be null legitimately
+         // on server or non-UI clients.
     }
 } 

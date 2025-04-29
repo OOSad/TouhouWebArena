@@ -18,11 +18,18 @@ Netcode for GameObjects provides several building blocks for networked applicati
 
 When running the game locally for development or testing using the Unity editor and standalone builds (or multiple editor instances), follow this specific connection procedure:
 
-1.  **Start the Server:** Launch one instance of the game (editor or build) and click the "Start Server" button in the `NetworkManager` UI (or equivalent trigger). This instance becomes the dedicated server and will have `ClientId = 0`.
-2.  **Start Client 1:** Launch a second instance and click "Start Client". This client connects to the running server and should receive `ClientId = 1`.
-3.  **Start Client 2:** Launch a third instance and click "Start Client". This client connects to the running server and should receive `ClientId = 2`.
+1.  **Start the Server:**
+    *   **Default (Localhost):** Launch one instance of the game (editor or build). While the Main Menu is loaded, press **F9**. This instance becomes the dedicated server listening on the default address/port (likely 127.0.0.1:7777) and will have `ClientId = 0`. Pressing F9 again will stop the server.
+    *   **Custom IP/Port:** Launch one instance. Press **F10** to reveal the custom IP address and Port input fields. Enter the desired values and click the "Start Custom Server" button.
+2.  **Start Client(s):** Launch subsequent instances (editor or build).
+    *   Enter a desired player name (optional, defaults to "Anonymous#[Random]").
+    *   Click the **Queue** button. This will automatically attempt to connect the client to the server (using default transport settings) and, upon successful connection, immediately request to join the matchmaking queue.
+    *   The first client connected will receive `ClientId = 1`, the second `ClientId = 2`, and so on.
+3.  **Cancel:**
+    *   If connecting, clicking **Cancel** stops the connection attempt.
+    *   If connected (either waiting to queue or already queued), clicking **Cancel** will leave the queue (if applicable) and disconnect the client.
 
-**Important:** Do **not** use the "Start Host" button. The Host mode acts as both a server and a client simultaneously, which does not fit our intended dedicated server + two clients architecture for a standard 1v1 match.
+**Important:** Do **not** use the "Start Host" button if it still exists in the `NetworkManager` component's UI. The Host mode acts as both a server and a client simultaneously, which does not fit our intended dedicated server + two clients architecture for a standard 1v1 match. The primary methods for starting the server are now the F9 key or the F10 custom panel.
 
 ## Key Systems
 
