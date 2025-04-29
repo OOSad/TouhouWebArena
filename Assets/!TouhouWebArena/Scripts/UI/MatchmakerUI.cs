@@ -46,7 +46,7 @@ public class MatchmakerUI : MonoBehaviour
         if (matchmaker == null) matchmaker = FindObjectOfType<Matchmaker>();
 
         if (NetworkManager.Singleton != null)
-        {
+            {
              // Subscribe first
              NetworkManager.Singleton.OnClientConnectedCallback += HandleConnection;
              NetworkManager.Singleton.OnClientDisconnectCallback += HandleDisconnection; // Generic disconnect
@@ -80,7 +80,7 @@ public class MatchmakerUI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F9))
         {
             ToggleDefaultServer();
-        }
+         }
     }
 
     void OnDestroy()
@@ -126,7 +126,7 @@ public class MatchmakerUI : MonoBehaviour
 
      // Renamed and refined: Handles the LOCAL client disconnecting OR the server stopping.
      private void HandleLocalClientOrServerStop(ulong clientId)
-     {
+        {
          // Determine if the NetworkManager is now truly idle AFTER this callback
          // It's possible the state isn't updated immediately, so we might check in UpdateStatusTextBasedOnState too
          bool wasLocalClientDisconnect = (localClientId != ulong.MaxValue && clientId == localClientId);
@@ -134,8 +134,8 @@ public class MatchmakerUI : MonoBehaviour
          // Reset local client ID if it was us
          if (wasLocalClientDisconnect)
          {
-             localClientId = ulong.MaxValue;
-         }
+            localClientId = ulong.MaxValue;
+        }
 
          // Regardless of ID match, if we were connecting, stop the process
          if (isConnecting)
@@ -183,7 +183,7 @@ public class MatchmakerUI : MonoBehaviour
                 pendingUsername = null;
                 UpdateQueueDisplayText($"Connection Failed: {e.Message}");
                 UpdateStatusTextBasedOnState();
-            }
+        }
         }
         else if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient)
         { RequestJoinQueueInternal(username); }
@@ -194,7 +194,7 @@ public class MatchmakerUI : MonoBehaviour
          if (matchmaker == null) { UpdateQueueDisplayText("Error: Matchmaker not found!"); pendingUsername = null; return; }
          UpdateQueueDisplayText("Joining queue...");
          // Let UpdateQueueStatus handle button state changes after Matchmaker confirms queue status
-         matchmaker.RequestJoinQueue(username);
+        matchmaker.RequestJoinQueue(username);
     }
 
     private void OnCancelButtonClicked()
@@ -223,8 +223,8 @@ public class MatchmakerUI : MonoBehaviour
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient)
         {
             if (!isConnecting) // Don't interfere if connection is in progress
-            {
-                 SetButtonsInteractable(!isInQueue, isInQueue);
+    {
+        SetButtonsInteractable(!isInQueue, isInQueue);
                  if (isInQueue) UpdateQueueDisplayText("In queue... Waiting for match.");
                  else UpdateQueueDisplayText("Connected. Ready to queue.");
             }

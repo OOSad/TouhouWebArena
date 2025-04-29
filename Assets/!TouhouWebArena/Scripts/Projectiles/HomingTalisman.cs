@@ -19,56 +19,84 @@ public class HomingTalisman : NetworkBehaviour
     [SerializeField] private float minY = -5f; // Default, adjust in Inspector
     [SerializeField] private float maxY = 5f;  // Default, adjust in Inspector
 
-    private Transform target;
+    private Transform currentTarget; // Renamed for clarity
     private bool canSeek = false;
-    private float spawnTime;
+    private float timeSinceLastRetargetCheck = 0f; // Timer for periodic retargeting if needed
+    private const float RETARGET_CHECK_INTERVAL = 0.1f; // Check for new target every 0.1 seconds if current is null
 
     public override void OnNetworkSpawn()
     {
         if (!IsServer) return; // Server controls the talisman's logic
 
-        spawnTime = Time.time;
         StartCoroutine(InitialDelayCoroutine());
         // Start lifetime countdown
         StartCoroutine(LifetimeCoroutine());
     }
 
-    private void Update()
+    // Changed to FixedUpdate for physics-based movement consistency
+    private void FixedUpdate()
     {
         if (!IsServer || !canSeek) return;
 
-        if (target == null)
+        // --- Target Validity Check ---
+        if (currentTarget != null)
         {
-            FindTarget(); // Try to find target if null (e.g., opponent just spawned)
-            if (target == null) {
-                 // If still no target, maybe just destroy self or fly straight?
-                 // For now, let's destroy it to prevent errors.
-                 DespawnServerRpc();
-                 return;
+            // Check if target GameObject is inactive (destroyed or disabled) OR outside boundaries
+            if (!currentTarget.gameObject.activeInHierarchy || IsTargetOutOfBounds(currentTarget.position))
+            {
+                // Optionally check health component here if needed
+                currentTarget = null; // Invalidate target
             }
         }
+        // ---------------------------
 
-        // Move towards the target
-        Vector2 direction = (target.position - transform.position).normalized;
-        transform.position += (Vector3)direction * speed * Time.deltaTime;
+        // --- Find Target if Necessary ---
+        if (currentTarget == null)
+        {
+            // Optional: Limit how often we search to avoid constant checks if no targets exist
+            timeSinceLastRetargetCheck += Time.fixedDeltaTime;
+            if (timeSinceLastRetargetCheck >= RETARGET_CHECK_INTERVAL)
+            {
+                 FindTarget(); // Try to find a NEW target
+                 timeSinceLastRetargetCheck = 0f; // Reset timer
+            }
 
-        // Optional: Rotate to face the target
+            // If still no target after trying to find one, maybe just fly straight or despawn?
+            // For now, it will just stop moving until a target is found or lifetime ends.
+            // Consider adding behavior here if needed (e.g., continue straight)
+            // if(currentTarget == null) { /* Fly straight? */ }
+        }
+        // -----------------------------
+
+
+        // --- Move Towards Valid Target ---
+        if (currentTarget != null)
+        {
+            Vector2 direction = ((Vector3)currentTarget.position - transform.position).normalized; // Cast target position to Vector3
+            // Using transform.position directly is fine for kinematic movement
+            transform.position += (Vector3)direction * speed * Time.fixedDeltaTime;
+
+            // Optional rotation (ensure sprite is oriented correctly)
         // float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        // transform.rotation = Quaternion.AngleAxis(angle - 90, Vector3.forward); // Assuming sprite faces upwards
+            // transform.rotation = Quaternion.AngleAxis(angle - 90f, Vector3.forward); // Adjust -90 based on sprite orientation
+        }
+        // ----------------------------
     }
 
     private IEnumerator InitialDelayCoroutine()
     {
         yield return new WaitForSeconds(initialDelay);
-        FindTarget(); // Find target after delay
+        // Don't find target immediately, let FixedUpdate handle it
+        // FindTarget(); // Removed from here
         canSeek = true;
+        timeSinceLastRetargetCheck = RETARGET_CHECK_INTERVAL; // Allow immediate check on first seek frame
     }
 
      private IEnumerator LifetimeCoroutine()
     {
         yield return new WaitForSeconds(lifetime);
         // If the talisman hasn't hit anything by now, despawn it directly.
-        if (IsSpawned && IsServer) // Check IsServer as only server should despawn
+        if (this != null && IsSpawned && IsServer) // Check IsServer as only server should despawn
         {
            NetworkObject netObj = GetComponent<NetworkObject>();
            if (netObj != null) // Safety check
@@ -78,11 +106,20 @@ public class HomingTalisman : NetworkBehaviour
         }
     }
 
-    // Server finds the closest opponent player based on tags AND owner
+    // Helper function to check bounds
+    private bool IsTargetOutOfBounds(Vector3 position)
+    {
+        return position.x < minX || position.x > maxX || position.y < minY || position.y > maxY;
+    }
+
+    // Server finds the closest **VALID** enemy (owned by self) based on tags
     private void FindTarget()
     {
-        if (targetTags == null || targetTags.Count == 0)
+        Transform foundTarget = null;
+
+        if (!IsServer || targetTags == null || targetTags.Count == 0)
         {
+            currentTarget = null;
             return;
         }
 
@@ -91,175 +128,121 @@ public class HomingTalisman : NetworkBehaviour
         if (PlayerDataManager.Instance != null)
         {
              PlayerData? ownerData = PlayerDataManager.Instance.GetPlayerData(OwnerClientId);
-             if (ownerData.HasValue)
-             {
-                 talismanOwnerRole = ownerData.Value.Role;
-             }
+             if (ownerData.HasValue) { talismanOwnerRole = ownerData.Value.Role; }
         }
-        if (talismanOwnerRole == PlayerRole.None)
-        {
-            return; // Cannot target if owner role is unknown
-        }
+        if (talismanOwnerRole == PlayerRole.None) { currentTarget = null; return; } // Cannot target if owner role is unknown
         // ------------------------------
 
-        List<Transform> potentialTargets = new List<Transform>();
+
+        float closestDistSqr = float.MaxValue;
 
         foreach (string tag in targetTags)
         {
             GameObject[] taggedObjects = GameObject.FindGameObjectsWithTag(tag);
             foreach (GameObject obj in taggedObjects)
             {
-                // --- Check Ownership --- 
+                 if (!obj.activeInHierarchy) continue;
+
+                // --- Check Ownership: Target MUST belong to the SAME player who fired the talisman ---
                 bool isOwnedByCorrectPlayer = false;
+                PlayerRole enemyOwnerRole = PlayerRole.None;
+
                 if (obj.TryGetComponent<SpiritController>(out SpiritController spirit))
                 {
-                    // Spirit stores ownerRole internally, need a getter or public field
-                    // Assuming a public getter GetOwnerRole() exists for now
-                    if (spirit.GetOwnerRole() == talismanOwnerRole) 
-                    { 
-                        isOwnedByCorrectPlayer = true; 
-                    }
+                    enemyOwnerRole = spirit.GetOwnerRole(); // Assuming GetOwnerRole exists
                 }
                 else if (obj.TryGetComponent<Fairy>(out Fairy fairy))
                 {
-                    // Fairy needs a way to expose owner role
-                    // Assuming a public getter GetOwnerRole() exists for now
-                    if (fairy.GetOwnerRole() == talismanOwnerRole) 
+                    enemyOwnerRole = fairy.GetOwnerRole(); // Assuming GetOwnerRole exists
+                }
+
+                // Check if the found enemy belongs to the SAME player as the talisman owner
+                if (enemyOwnerRole != PlayerRole.None && enemyOwnerRole == talismanOwnerRole)
                     {
                         isOwnedByCorrectPlayer = true; 
                     }
-                }
-                else
-                {
-                    
-                }
+                // *****************************
 
-                // --- Add if Ownership Matches AND Within Boundaries --- 
                 if (isOwnedByCorrectPlayer)
                 {
-                    // --- Boundary Check --- 
                     Vector3 targetPos = obj.transform.position;
-                    bool isInBounds = targetPos.x >= minX && targetPos.x <= maxX &&
-                                       targetPos.y >= minY && targetPos.y <= maxY;
-
-                    if (isInBounds)
+                    if (!IsTargetOutOfBounds(targetPos)) // Check boundaries
                     {
-                        potentialTargets.Add(obj.transform);
+                        float distSqr = (targetPos - transform.position).sqrMagnitude;
+                        if (distSqr < closestDistSqr)
+                    {
+                            closestDistSqr = distSqr;
+                            foundTarget = obj.transform;
                     }
-                    // ---------------------
+                    }
                 }
-                // ---------------------------------------------------
             }
         }
 
-        if (potentialTargets.Count == 0)
-        {
-            // Log adjusted to reflect ownership check
-            
-            target = null;
-            return;
-        }
-
-        // Find the closest target among all VALID potential targets
-        target = potentialTargets
-            .OrderBy(t => Vector3.Distance(transform.position, t.position))
-            .FirstOrDefault();
-
-        if (target != null)
-        {
-            
-        }
-        else
-        {
-            
-        }
+        currentTarget = foundTarget; // Assign the closest valid target found (null if none)
     }
 
+    // --- ALSO NEED TO FIX COLLISION ---
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // --- DIAGNOSTIC LOG 1: Method Entry --- 
-        
-
-        // --- MODIFIED: Only check IsServer, allow collisions even if !canSeek --- 
         if (!IsServer) return;
-        // --- END MODIFIED ---
-
-        // --- DIAGNOSTIC LOG 2: Server Check Passed --- 
-        // Log updated slightly to reflect change
-        
 
         if (targetTags.Contains(other.gameObject.tag))
         {
-            // --- DIAGNOSTIC LOG 3: Tag Match --- 
-            
-
-            // --- Determine Killer Role --- 
-            PlayerRole killerRole = PlayerRole.None;
+            // --- Determine Owner Role (who fired this) ---
+            PlayerRole ownerRole = PlayerRole.None; // Renamed for clarity
             if (PlayerDataManager.Instance != null) 
             {
                 PlayerData? ownerData = PlayerDataManager.Instance.GetPlayerData(OwnerClientId);
-                if (ownerData.HasValue)
-                {
-                    killerRole = ownerData.Value.Role;
-                }
+                if (ownerData.HasValue) { ownerRole = ownerData.Value.Role; }
             }
-            // ---------------------------
+            // -------------------------------------------
 
+            // --- Check if the hit target belongs to the SAME player ---
+            PlayerRole hitTargetRole = PlayerRole.None;
             bool damageApplied = false;
 
-            // --- Try applying damage to Fairy --- 
             if (other.TryGetComponent<Fairy>(out Fairy fairy))
             {
-                // --- DIAGNOSTIC LOG 4: Fairy Component Found --- 
-                
-                fairy.ApplyDamageServer(damage, killerRole); 
+                hitTargetRole = fairy.GetOwnerRole();
+                // Check if SAME owner
+                if (hitTargetRole != PlayerRole.None && hitTargetRole == ownerRole) // Check if SAME owner
+                {
+                    fairy.ApplyDamageServer(damage, ownerRole); // Damage attributed to owner
                 damageApplied = true;
+                }
             }
-            // --- Try applying damage to Spirit --- 
             else if (other.TryGetComponent<SpiritController>(out SpiritController spirit))
             {
-                // --- DIAGNOSTIC LOG 5: Spirit Component Found --- 
-                 
-                spirit.ApplyDamageServer(damage, killerRole);
+                 hitTargetRole = spirit.GetOwnerRole();
+                 // Check if SAME owner
+                 if (hitTargetRole != PlayerRole.None && hitTargetRole == ownerRole) // Check if SAME owner
+                 {
+                    spirit.ApplyDamageServer(damage, ownerRole); // Damage attributed to owner
                 damageApplied = true;
             }
-            // ---------------------------------
-            
-            if (!damageApplied)
-            {
-                 // --- DIAGNOSTIC LOG 6: No Component Found --- 
-                
             }
 
-            // --- DIAGNOSTIC LOG 7: Despawning --- 
-            
-            NetworkObject netObj = GetComponent<NetworkObject>(); // Get NetworkObject
-            if (netObj != null && netObj.IsSpawned) // Check if it exists and is spawned
+            // Despawn only if we successfully damaged a valid target (owned by self)
+            if (damageApplied)
             {
-                netObj.Despawn(true); // Despawn using the reference
+                DespawnInternal();
             }
-            else
-            {
-                // --- DIAGNOSTIC LOG 8: NetworkObject Missing on Despawn --- 
-                
-            }
-            canSeek = false; // Immediately stop seeking/moving after despawn initiated
-        }
-        else
-        {
-             // --- DIAGNOSTIC LOG 9: Tag Mismatch --- 
-             
+             // Note: If it hits an enemy belonging to the opponent, it passes through harmlessly
         }
     }
 
-    // ServerRpc to despawn the object across the network
-    [ServerRpc(RequireOwnership = false)] // Allow server to call this even if it doesn't own it (though it should)
-    private void DespawnServerRpc()
+    // Helper for despawning
+    private void DespawnInternal()
     {
-        // --- DIAGNOSTIC LOG 9: RPC Executing --- 
-        if (IsSpawned)
-        {
-            GetComponent<NetworkObject>().Despawn(true);
+         if (this != null && IsSpawned && IsServer)
+         {
+             canSeek = false; // Stop seeking immediately
+             NetworkObject netObj = GetComponent<NetworkObject>();
+             if (netObj != null)
+             {
+                 netObj.Despawn(true);
+             }
         }
     }
 } 

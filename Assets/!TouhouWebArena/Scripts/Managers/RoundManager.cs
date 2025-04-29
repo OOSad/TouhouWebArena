@@ -344,14 +344,16 @@ namespace TouhouWebArena.Managers
             // Reset Spell Bars (by setting charge to 0)
             if (SpellBarManager.Instance != null)
             {
-                // Need a method to set charge directly, or reuse SetPlayerChargeToMaxServer with 0?
-                // Let's assume SetPlayerChargeToMaxServer can be used this way, if not, we need to add a dedicated Reset method.
-                // SpellBarManager.Instance.SetPlayerChargeToMaxServer(PlayerRole.Player1, 0f); // Assuming this method exists or can be adapted
-                // SpellBarManager.Instance.SetPlayerChargeToMaxServer(PlayerRole.Player2, 0f); // Assuming this method exists or can be adapted
-                // UPDATE: SpellBarManager already has SetPlayerChargeToMaxServer(PlayerRole), which sets passive/active to 0/Max. Let's use that.
-                SpellBarManager.Instance.SetPlayerChargeToMaxServer(PlayerRole.Player1); // Sets fill=0, active=Max? Check method.
-                SpellBarManager.Instance.SetPlayerChargeToMaxServer(PlayerRole.Player2); // Sets fill=0, active=Max? Check method.
-                Debug.Log("[RoundManager] Attempted to reset player spell bars.");
+                // Get PlayerData for both roles to reset their specific bars
+                PlayerData? p1Data = PlayerDataManager.Instance?.GetPlayerDataByRole(PlayerRole.Player1);
+                PlayerData? p2Data = PlayerDataManager.Instance?.GetPlayerDataByRole(PlayerRole.Player2);
+
+                if (p1Data.HasValue) SpellBarManager.Instance.ResetSpellBarServer(p1Data.Value.ClientId);
+                else Debug.LogWarning("[RoundManager][RoundReset] Could not find Player 1 data to reset spell bar.");
+
+                if (p2Data.HasValue) SpellBarManager.Instance.ResetSpellBarServer(p2Data.Value.ClientId);
+                else Debug.LogWarning("[RoundManager][RoundReset] Could not find Player 2 data to reset spell bar.");
+                Debug.Log("[RoundManager] Attempted to reset player spell bars using ResetSpellBarServer.");
             }
             else { Debug.LogWarning("[RoundManager] SpellBarManager instance not found, cannot reset spell bars."); }
 
@@ -484,6 +486,27 @@ namespace TouhouWebArena.Managers
                 player1WantsRematch = false;
                 player2WantsRematch = false;
                 matchHasEnded = false; // Reset flag before starting the new match sequence
+
+                // --- ADDED: Reset Spell Bars ---
+                SpellBarManager spellBarManager = SpellBarManager.Instance; // Assuming Singleton pattern
+                if (spellBarManager != null)
+                {
+                    Debug.Log("[RoundManager] Resetting spell bars for rematch...");
+                    // Get PlayerData for both roles to reset their specific bars
+                    PlayerData? p1Data = PlayerDataManager.Instance?.GetPlayerDataByRole(PlayerRole.Player1);
+                    PlayerData? p2Data = PlayerDataManager.Instance?.GetPlayerDataByRole(PlayerRole.Player2);
+
+                    if (p1Data.HasValue) spellBarManager.ResetSpellBarServer(p1Data.Value.ClientId);
+                    else Debug.LogWarning("[RoundManager] Could not find Player 1 data to reset spell bar.");
+
+                    if (p2Data.HasValue) spellBarManager.ResetSpellBarServer(p2Data.Value.ClientId);
+                    else Debug.LogWarning("[RoundManager] Could not find Player 2 data to reset spell bar.");
+                }
+                else
+                {
+                    Debug.LogError("[RoundManager] SpellBarManager instance not found! Cannot reset spell bars.");
+                }
+                // -----------------------------
 
                 // TODO: Reset any other persistent match stats if necessary
 

@@ -331,4 +331,45 @@ public class SpellBarManager : NetworkBehaviour
             UnityEngine.Debug.LogWarning($"[SpellBarManager] Could not find SpellBarController for Role {role} to set charge to max.");
         }
     }
+
+    // --- ADDED: Method to Reset Spell Bar --- 
+
+    /// <summary>
+    /// **[Server Only]** Resets the passive and active fill amounts for a specific player's spell bar.
+    /// Called by RoundManager during rematch reset.
+    /// </summary>
+    /// <param name="clientId">The ClientId of the player whose spell bar to reset.</param>
+    public void ResetSpellBarServer(ulong clientId)
+    {
+        if (!IsServer) return;
+
+        // --- Get PlayerRole from ClientId ---
+        PlayerRole clientRole = PlayerRole.None;
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerData? data = PlayerDataManager.Instance.GetPlayerData(clientId);
+            if (data.HasValue) 
+            {
+                clientRole = data.Value.Role;
+            }
+        }
+        if (clientRole == PlayerRole.None)
+        {
+            Debug.LogWarning($"[SpellBarManager] Could not determine PlayerRole for ClientId {clientId} in ResetSpellBarServer.");
+            return; 
+        }
+        // --------------------------------------
+
+        // Find the target spell bar using PlayerRole
+        if (playerSpellBars.TryGetValue(clientRole, out SpellBarController targetBar))
+        {
+            Debug.Log($"[SpellBarManager] Resetting spell bar for {clientRole} (ClientId: {clientId}) to base state (1 passive bar).");
+            targetBar.currentPassiveFill.Value = 1.0f; // Start with the first bar segment full
+            targetBar.currentActiveFill.Value = 0f;  // Active charge always starts at 0
+        }
+        else
+        {
+            Debug.LogWarning($"[SpellBarManager] Could not find SpellBarController for Role {clientRole} to reset.");
+        }
+    }
 }
