@@ -3983,9 +3983,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterPrefabs:
-  - characterName: Hakurei Reimu
+  - characterName: HakureiReimu
     characterPrefab: {fileID: 4454703587389584321, guid: 45e04721bed778b4983d926bad5972bc, type: 3}
-  - characterName: Kirisame Marisa
+  - characterName: KirisameMarisa
     characterPrefab: {fileID: 4454703587389584321, guid: abf3ea30e6ad7a841aa8f28cbba9e219, type: 3}
   player1SpawnPoint: {fileID: 1353753024}
   player2SpawnPoint: {fileID: 1318922055}

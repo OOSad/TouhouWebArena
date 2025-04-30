@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 313ead74894861f48922cd36f77b4fcb, type: 3}
+  m_Name: KirisameMarisaSynopsis
+  m_EditorClassIdentifier: 
+  displayName: Marisa Kirisame
+  characterTitle: Ordinary Magician
+  characterIllustration: {fileID: -1518090759, guid: 41ed55ef5d5893a40b0f77f5a1735c12, type: 3}
+  internalName: KirisameMarisa
+  normalSpeedStat: "\u2605\u2605\u2605\u2605\u2605"
+  chargeSpeedStat: "\u2605\u2605\u2605\u2606\u2606"
+  scopeStyleStat: Infinite Forward
+  focusedSpeedStat: "\u2605\u2605\u2605\u2605\u2606"
+  scopeSpeedStat: "\u2605\u2605\u2605\u2606\u2606"
+  specialAbilityStat: Gauge Fills Swiftly
+  extraAttackName: Earthlight Ray
+  extraAttackIcon: {fileID: 21300000, guid: 0a503eefcdd2c6c46b14e4d088fdf854, type: 3}
+  extraAttackDescription: Lasers That Butt In From Behind
+  chargeAttackName: Illusion Laser
+  chargeAttackIcon: {fileID: 21300000, guid: 5cd031a70b7bcb94181d98b16d78e1bb, type: 3}
+  chargeAttackDescription: A Piercing Attack
+  spellcard1Name: Spellcard Lvl 1 Name
+  spellcard2Name: Spellcard Lvl 2 Name
+  spellcard3Name: Spellcard Lvl 3 Name
+  spellcard4Name: Spellcard Lvl 4 Name
+  selectionQuote: {fileID: 0}
+  matchWinQuote: {fileID: 0}
+  matchLossQuote: {fileID: 0}

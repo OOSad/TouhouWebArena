@@ -310,7 +310,7 @@ public class PlayerDataManager : NetworkBehaviour
                 PlayerData updatedData = players[i];
                 updatedData.SelectedCharacter = new FixedString32Bytes(characterName);
                 players[i] = updatedData;
-                
+                Debug.Log($"[PlayerDataManager] Updated PlayerData: {players[i]}");
                 return;
             }
         }

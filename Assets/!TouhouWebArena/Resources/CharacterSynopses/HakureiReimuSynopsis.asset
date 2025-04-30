@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 313ead74894861f48922cd36f77b4fcb, type: 3}
+  m_Name: HakureiReimuSynopsis
+  m_EditorClassIdentifier: 
+  displayName: Reimu Hakurei
+  characterTitle: Wonderful Shrine Maiden of Paradise
+  characterIllustration: {fileID: -3364410, guid: 41ed55ef5d5893a40b0f77f5a1735c12, type: 3}
+  internalName: HakureiReimu
+  normalSpeedStat: "\u2605\u2605\u2605\u2606\u2606"
+  chargeSpeedStat: "\u2605\u2605\u2605\u2605\u2605"
+  scopeStyleStat: Large Circle
+  focusedSpeedStat: "\u2605\u2606\u2606\u2606\u2606"
+  scopeSpeedStat: "\u2605\u2605\u2605\u2606\u2606"
+  specialAbilityStat: Small Hitbox
+  extraAttackName: Yin-Yang Orbs
+  extraAttackIcon: {fileID: 21300000, guid: d0f27494745858a4f952871766743556, type: 3}
+  extraAttackDescription: 'Mysterious Orbs Bouncing Off Boundaries
+
+'
+  chargeAttackName: Hakurei Amulet
+  chargeAttackIcon: {fileID: 21300000, guid: 128b934f5f5eff74198e93039f185202, type: 3}
+  chargeAttackDescription: Homing Scatter Shots
+  spellcard1Name: Spellcard Lvl 1 Name
+  spellcard2Name: Spellcard Lvl 2 Name
+  spellcard3Name: Spellcard Lvl 3 Name
+  spellcard4Name: Spellcard Lvl 4 Name
+  selectionQuote: {fileID: 0}
+  matchWinQuote: {fileID: 0}
+  matchLossQuote: {fileID: 0}
