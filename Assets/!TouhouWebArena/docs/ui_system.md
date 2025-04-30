@@ -12,8 +12,13 @@ The UI system displays critical game information to the players, including healt
     *   **Round Counters (Assumed):** UI elements to display the current round wins for each player (likely updated based on `NetworkVariables` from a GameManager).
     *   **Timers (Assumed):** Potential UI for round timers or cooldowns.
 *   **Menus:**
-    *   **Main Menu:** Contains UI for connecting to the server (`ClientConnectorDisconnector.cs`) and joining the matchmaking queue (`MatchmakerUI.cs`).
-    *   **Character Select Screen:** Allows players to choose their character before the match starts (`CharacterSelector.cs`).
+    *   **Main Menu:** Contains UI for connecting to the server (`ClientConnectorDisconnector.cs`) and joining the matchmaking queue (`MatchmakerUI.cs`). Includes keyboard navigation support via `MainMenuNavigator.cs`.
+    *   **Character Select Screen:** 
+        *   Implemented by `CharacterSelector.cs`. Allows players assigned Player 1 or Player 2 roles to select their character via button clicks or keyboard navigation.
+        *   Displays detailed character information dynamically using **Synopsis Panels** (`SynopsisPanelController.cs`). There's one panel prefab configured for Player 1 and another for Player 2 (with a mirrored layout).
+        *   Each panel is populated with data from a corresponding **`CharacterSynopsisData` ScriptableObject**. These ScriptableObjects store character illustrations, names, titles, descriptions, stats (like speed and charge), and icons for Extra/Charge attacks. They are linked to characters via the `internalName` field, which must match the internal names used in `CharacterStats.cs` (e.g., "HakureiReimu").
+        *   `CharacterSelector.cs` listens for changes to `PlayerData` (specifically the `SelectedCharacter` NetworkVariable) and updates the appropriate synopsis panel when a character is selected by either player.
+        *   Supports keyboard navigation (left/right arrows, Z to confirm) handled within `CharacterSelector.cs`. It uses the `EventSystem` to manage selection and plays audio feedback on selection changes. It also handles regaining focus when the game window is clicked or tabbed back into.
     *   **Pause Menu (TBD):** Functionality not yet detailed.
     *   **Results Screen (TBD):** Displayed at the end of a match.
 
@@ -42,7 +47,9 @@ The UI needs to reflect the authoritative game state from the server.
 *   **`PlayerHealthUI.cs`:** Manages the health icon display for one player.
 *   **`SpellBarController.cs`:** Manages the visual fill for one player's spell bar, driven by NetworkVariables. Must have its `TargetPlayerRole` set in the Inspector.
 *   **`MatchmakerUI.cs`:** Handles UI interactions for joining the matchmaking queue.
-*   **`CharacterSelector.cs`:** Handles UI for selecting characters.
+*   **`CharacterSelector.cs`:** Handles UI for selecting characters, displaying synopsis panels, and managing keyboard navigation in the Character Select scene.
+*   **`SynopsisPanelController.cs`:** Controls the UI elements within a single character synopsis panel, populating them with data from a `CharacterSynopsisData` object.
 *   **`ClientConnectorDisconnector.cs`:** Handles UI button for connecting/disconnecting the client.
+*   **`MainMenuNavigator.cs`:** Handles keyboard navigation specifically for the Main Menu scene.
 *   **(Hypothetical) `UIManager.cs`:** A central manager might exist to coordinate showing/hiding different UI panels or managing overall UI state, though not found in the initial search.
 *   **(Hypothetical) `RoundCounterUI.cs`:** A script likely exists to display round wins based on networked game state data. 
