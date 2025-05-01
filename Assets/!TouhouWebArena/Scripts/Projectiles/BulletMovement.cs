@@ -94,6 +94,13 @@ public class BulletMovement : NetworkBehaviour
     }
 
     // Server-side collision detection
+    /// <summary>
+    /// [Server Only] Handles trigger enter events for the bullet.
+    /// Detects collisions with "Illusion", "Spirit", "FairyShockwave", and "Fairy" tags.
+    /// Applies damage/effects based on the tag and owner conditions.
+    /// Returns the bullet to the pool after most collisions.
+    /// </summary>
+    /// <param name="other">The Collider2D that the bullet collided with.</param>
     void OnTriggerEnter2D(Collider2D other)
     {
         if (!IsServer) return; // Only server should handle collision logic
@@ -170,8 +177,14 @@ public class BulletMovement : NetworkBehaviour
                  // Use the public GetOwnerRole() method
                  if (ownerData.HasValue && fairy.GetOwnerRole() != ownerData.Value.Role)
                  {
-                    fairy.ApplyLethalDamage(OwnerRole.Value); // Pass PlayerRole
-                    ReturnToPool(); 
+                    // Get the health component and apply lethal damage to it
+                    FairyHealth fairyHealth = fairy.GetComponent<FairyHealth>();
+                    if (fairyHealth != null)
+                    {
+                        // Apply lethal damage via the FairyHealth component
+                        fairyHealth.ApplyLethalDamage(OwnerRole.Value); // Pass PlayerRole
+                        ReturnToPool(); 
+                    }
                  }
             }
         }

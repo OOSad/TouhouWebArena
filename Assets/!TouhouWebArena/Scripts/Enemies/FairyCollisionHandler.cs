@@ -2,25 +2,38 @@ using UnityEngine;
 using Unity.Netcode;
 
 // Handles collision logic for the Fairy
-[RequireComponent(typeof(FairyController), typeof(Collider2D))] // Requires Fairy and its Collider
+/// <summary>
+/// [Server Only] Handles physics trigger events for the Fairy.
+/// Primarily detects collisions with "Player" and "PlayerShot" tags.
+/// Requires references to the associated <see cref="FairyController"/> and <see cref="FairyHealth"/>.
+/// Ensures collisions are only processed on the server and only if the fairy is alive (<see cref="FairyHealth.IsAlive"/>).
+/// </summary>
+[RequireComponent(typeof(FairyController), typeof(Collider2D), typeof(FairyHealth))] // Added FairyHealth
 public class FairyCollisionHandler : NetworkBehaviour // Inherit from NetworkBehaviour for IsServer check
 {
     private FairyController sourceFairy;
+    private FairyHealth fairyHealth; // Added reference
 
     void Awake()
     {
         sourceFairy = GetComponent<FairyController>();
-        if (sourceFairy == null)
+        fairyHealth = GetComponent<FairyHealth>(); // Get reference
+        if (sourceFairy == null || fairyHealth == null)
         {
-            Debug.LogError("[FairyCollisionHandler] Fairy component not found!");
+            Debug.LogError("[FairyCollisionHandler] FairyController or FairyHealth component not found!");
         }
     }
 
-    // Moved collision logic here
+    /// <summary>
+    /// [Server Only] Detects trigger enter events.
+    /// Checks if the source fairy is alive via <see cref="FairyHealth"/> before processing.
+    /// Calls specific handlers based on the collider's tag ("Player", "PlayerShot").
+    /// </summary>
+    /// <param name="other">The Collider2D that entered the trigger.</param>
     void OnTriggerEnter2D(Collider2D other)
     {
-        // Collision logic should only run on the server, and only if the source fairy is valid
-        if (!IsServer || sourceFairy == null || !sourceFairy.IsAlive()) return; // Also check if fairy is alive
+        // Collision logic should only run on the server, and only if the source fairy is valid and alive
+        if (!IsServer || sourceFairy == null || fairyHealth == null || !fairyHealth.IsAlive()) return; // Check fairyHealth.IsAlive()
 
         // Check collision with Player
         if (other.CompareTag("Player"))
@@ -35,6 +48,11 @@ public class FairyCollisionHandler : NetworkBehaviour // Inherit from NetworkBeh
         // --------------------------------------------
     }
 
+    /// <summary>
+    /// [Server Only] Handles collision with an object tagged "Player".
+    /// Attempts to deal damage to the player via <see cref="PlayerHealth.TakeDamage"/> if the player is not invincible.
+    /// </summary>
+    /// <param name="playerCollider">The collider of the player object.</param>
     private void HandlePlayerCollision(Collider2D playerCollider)
     {
         PlayerHealth playerHealth = playerCollider.GetComponentInParent<PlayerHealth>();
@@ -55,7 +73,12 @@ public class FairyCollisionHandler : NetworkBehaviour // Inherit from NetworkBeh
         }
     }
 
-    // --- NEW: Handler for Player Shot Collisions --- 
+    /// <summary>
+    /// [Server Only] Handles collision with an object tagged "PlayerShot".
+    /// Retrieves damage amount from <see cref="ProjectileDamager"/> and killer role from <see cref="BulletMovement"/>.
+    /// Applies damage to the fairy via <see cref="FairyController.ApplyDamageServer"/> (which delegates to <see cref="FairyHealth"/>).
+    /// </summary>
+    /// <param name="shotCollider">The collider of the player shot object.</param>
     private void HandlePlayerShotCollision(Collider2D shotCollider)
     {
         // Get damage amount from the projectile

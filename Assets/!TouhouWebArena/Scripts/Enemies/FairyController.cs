@@ -10,513 +10,302 @@ using TouhouWebArena; // Add namespace for IClearable and PlayerRole
 [RequireComponent(typeof(NetworkObject))]
 [RequireComponent(typeof(FairyCollisionHandler))]
 [RequireComponent(typeof(FairyDeathEffects))]
-[RequireComponent(typeof(FairyPathInitializer))] // Added path initializer
+[RequireComponent(typeof(FairyPathInitializer))]
+[RequireComponent(typeof(FairyExtraAttackTrigger))]
+[RequireComponent(typeof(FairyChainReactionHandler))]
+[RequireComponent(typeof(FairyHealth))] // Added health component
 /// <summary>
-/// Represents a Fairy enemy unit. Handles health, path following initialization, line formation tracking,
-/// damage taking, death effects triggering, and interactions with clearing effects via IClearable.
-/// Relies on several other components (SplineWalker, Collider2D, NetworkObject, FairyCollisionHandler,
-/// FairyDeathEffects, FairyPathInitializer) for its functionality.
+/// Represents a Fairy enemy unit. Acts as the central coordinator for various fairy components,
+/// managing path following initialization, line/owner information, pooling setup, and death sequence coordination.
+/// Relies on several sibling components for specific functionalities:
+/// <see cref="SplineWalker"/>, <see cref="Collider2D"/>, <see cref="NetworkObject"/>, <see cref="FairyCollisionHandler"/>,
+/// <see cref="FairyDeathEffects"/>, <see cref="FairyPathInitializer"/>, <see cref="FairyExtraAttackTrigger"/>, 
+/// <see cref="FairyChainReactionHandler"/>, <see cref="FairyHealth"/>.
+/// Implements <see cref="IClearable"/>, delegating the action to <see cref="FairyHealth"/>.
 /// Designed to be pooled and reused.
 /// </summary>
 public class FairyController : NetworkBehaviour, IClearable
 {
-    [Header("Stats")]
-    // Use NetworkVariable for synchronized health
-    private NetworkVariable<int> currentHealth = new NetworkVariable<int>(
-        default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    
-    [SerializeField] private int initialMaxHealth = 1; // Used for initialization
-    [SerializeField] private bool isGreatFairy = false; // Determines health and potentially score later
+    // --- REMOVED Health Stats ---
+    // [Header("Stats")]
+    // private NetworkVariable<int> currentHealth = ...
+    // [SerializeField] private int initialMaxHealth = 1;
+    // [SerializeField] private bool isGreatFairy = false;
+    // ----------------------------
 
-    [Header("Chain Reaction")] // New Header
-    [SerializeField] 
-    [Tooltip("Delay in seconds before the next fairy in line is destroyed.")]
-    private float chainReactionDelay = 0.08f; // Example delay, adjust as needed
-    [SerializeField] 
-    [Tooltip("The prefab for the DelayedActionProcessor utility.")]
-    private GameObject delayedActionProcessorPrefab;
-    [SerializeField] 
-    [Tooltip("The shockwave effect prefab triggered on death (passed to DelayedActionProcessor).")]
-    private GameObject deathShockwavePrefab; 
-
-    // --- NEW: Flag for Extra Attack Trigger ---
-    private bool isExtraAttackTrigger = false;
-    // ------------------------------------------
-
-    // --- RE-ADD: Flag to prevent Die() running multiple times ---
+    // --- Flag to prevent HandleDeath() running multiple times ---
     private bool isDying = false;
     // ----------------------------------------------------------
 
-    // --- NEW: Line Info ---
+    // --- Line Info ---
     private System.Guid lineId = System.Guid.Empty;
     private int indexInLine = -1;
     // ---------------------
 
-    // --- NEW: Owner Role --- 
+    // --- Owner Role --- 
     private PlayerRole ownerRole = PlayerRole.None;
     // -----------------------
 
-    // --- Reference Cleanup ---
-    [SerializeField] private FairyDeathEffects deathEffectsHandler;
-    [SerializeField] private FairyPathInitializer pathInitializer; // Added reference
-    // ---------------------------------------------
-
-    // References (no longer need playerToDamage here)
+    // --- Component References --- 
+    private FairyDeathEffects deathEffectsHandler;
+    private FairyPathInitializer pathInitializer;
+    private FairyExtraAttackTrigger extraAttackTriggerHandler;
+    private FairyChainReactionHandler chainReactionHandler;
+    private FairyHealth fairyHealth; // Added health reference
     private SplineWalker splineWalker;
-    private Collider2D fairyCollider; // Reference to this fairy's collider
+    private Collider2D fairyCollider;
+    // --------------------------
 
     void Awake()
     {
+        // Get all required components
         splineWalker = GetComponent<SplineWalker>();
-        fairyCollider = GetComponent<Collider2D>(); // Get reference to own collider
-        if (deathEffectsHandler == null)
-        {
-             deathEffectsHandler = GetComponent<FairyDeathEffects>();
-        }
-        if (pathInitializer == null) pathInitializer = GetComponent<FairyPathInitializer>();
+        fairyCollider = GetComponent<Collider2D>();
+        deathEffectsHandler = GetComponent<FairyDeathEffects>();
+        pathInitializer = GetComponent<FairyPathInitializer>();
+        extraAttackTriggerHandler = GetComponent<FairyExtraAttackTrigger>(); 
+        chainReactionHandler = GetComponent<FairyChainReactionHandler>();
+        fairyHealth = GetComponent<FairyHealth>(); // Get health component
     }
 
-    // Initialize health on the server when spawned
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        // Health initialization is handled by FairyHealth.OnNetworkSpawn
+
         if (IsServer)
         {
-            int maxHealth = isGreatFairy ? 3 : initialMaxHealth;
-            currentHealth.Value = maxHealth;
+            // Subscribe to the death event from the health component
+            if (fairyHealth != null) 
+            {
+                fairyHealth.OnDeath += HandleDeath;
+            }
+            else
+            {
+                Debug.LogError($"Fairy {NetworkObjectId} missing FairyHealth component in OnNetworkSpawn!", this);
+            }
         }
-        // Optionally, disable collider briefly on clients to prevent spawn collisions?
-
-        // --- NEW: Register with Registry ---
+        
         if (FairyRegistry.Instance != null)
-        {
+        {   
             FairyRegistry.Instance.Register(this);
         }
         else if (IsServer) // Only log error on server to avoid client spam
         {
-             
+            Debug.LogError("FairyRegistry instance is null during Fairy OnNetworkSpawn!", this);
         }
-        // ---------------------------------
+        
+        // Reset dying flag on spawn/respawn
+        isDying = false; 
     }
 
     public override void OnNetworkDespawn()
     {
-        // --- NEW: Deregister from Registry ---
+        // --- Deregister from Registry ---
         if (FairyRegistry.Instance != null)
         {
             FairyRegistry.Instance.Deregister(this);
         }
         // -----------------------------------
 
+        // --- Unsubscribe from Death Event --- 
+        if (IsServer && fairyHealth != null)
+        {
+            fairyHealth.OnDeath -= HandleDeath;
+        }
+        // ------------------------------------
+
         base.OnNetworkDespawn();
     }
 
-    // --- NEW: Consolidated Initialization for Pooling ---
-    // Called by the Spawner AFTER NetworkObject.Spawn()
+    // --- Consolidated Initialization for Pooling ---
     /// <summary>
-    /// [Server Only] Initializes or re-initializes the Fairy after being obtained from a pool.
-    /// Resets state, assigns line/owner/trigger info, and sets up the path using <see cref="FairyPathInitializer"/>.
+    /// [Server Only] Initializes or re-initializes the Fairy's state and components after being obtained from a pool.
+    /// Resets the dying flag, assigns line/owner info, initializes the extra attack trigger,
+    /// resets and sets up the path initializer, and ensures components like colliders/walkers are enabled.
+    /// Note: Health initialization is handled by <see cref="FairyHealth.OnNetworkSpawn"/>.
     /// </summary>
-    /// <param name="ownerIdx">The player index (0 or 1) associated with this fairy's path.</param>
-    /// <param name="pIdx">The specific path index within the owner's path list.</param>
-    /// <param name="startAtBegin">True if the fairy should start at the beginning of the path, false to start at the end.</param>
-    /// <param name="lineGuid">The unique ID for the line of fairies this instance belongs to.</param>
-    /// <param name="index">The index of this fairy within its line.</param>
-    /// <param name="isTrigger">True if this fairy should trigger an extra attack on death.</param>
-    /// <param name="owner">The <see cref="PlayerRole"/> who owns this fairy (whose side it spawns bullets on).</param>
+    /// <param name="ownerIdx">The player index (0 or 1) for path selection.</param>
+    /// <param name="pIdx">The specific path index.</param>
+    /// <param name="startAtBegin">Whether to start at the path beginning or end.</param>
+    /// <param name="lineGuid">The Guid identifying the fairy's line.</param>
+    /// <param name="index">The fairy's index within its line.</param>
+    /// <param name="isTrigger">Whether this fairy triggers an extra attack.</param>
+    /// <param name="owner">The <see cref="PlayerRole"/> owning this fairy.</param>
     public void InitializeForPooling(int ownerIdx, int pIdx, bool startAtBegin, 
                                        System.Guid lineGuid, int index, 
                                        bool isTrigger, PlayerRole owner)
     {
+        if (!IsServer) return;
+        
         // --- Reset State --- 
         isDying = false;
-        // Health is reset in OnNetworkSpawn based on isGreatFairy
-        // Flags:
-        isExtraAttackTrigger = isTrigger;
-        // isGreatFairy is part of the prefab, not reset here.
+        // Health is reset in FairyHealth.OnNetworkSpawn or InitializeHealth()
         
         // --- Assign Info --- 
         lineId = lineGuid;
         indexInLine = index;
         ownerRole = owner;
         
+        // --- Initialize Handlers/Components --- 
+        extraAttackTriggerHandler?.Initialize(isTrigger, owner);
+        // FairyHealth is initialized via its own OnNetworkSpawn
+        
         // --- Path --- 
-        if (pathInitializer != null)
-        {
-            // PathInitializer now needs to handle being called potentially multiple times
-            // or we assume it's safe to call SetPathInfoOnServer repeatedly.
-            // For now, we assume it's safe. If issues arise, PathInitializer needs adjustment.
-            pathInitializer.ResetInitializationFlag();
-            pathInitializer.SetPathInfoOnServer(ownerIdx, pIdx, startAtBegin); 
-        }
-        else if(IsServer)
-        {
-            Debug.LogError($"Fairy {NetworkObjectId} missing Path Initializer during pooled init!", this);
-        }
-
+        pathInitializer?.ResetInitializationFlag(); // Ensure path can be re-initialized
+        pathInitializer?.SetPathInfoOnServer(ownerIdx, pIdx, startAtBegin);
+        
         // --- Component States --- 
-        // Ensure components are enabled (they might be disabled by Die)
-        // if (splineWalker != null) splineWalker.enabled = true;
-        if (fairyCollider != null) fairyCollider.enabled = true;
+        if (splineWalker != null) splineWalker.enabled = true; // Re-enable walker
+        if (fairyCollider != null) fairyCollider.enabled = true; // Re-enable collider
     }
     // -------------------------------------------------
 
-    // Public method to set path info (delegates to initializer)
-    // --- OBSOLETE: Logic moved to InitializeForPooling ---
-    /*
-    public void SetPathInfo(int ownerIndex, int pIndex, bool startAtBegin)
-    {
-        // ... existing code ...
-    }
-    */
-    // -----------------------------------------------------
-
-    // --- NEW: Method to assign line info (called by spawner)
-    // --- OBSOLETE: Logic moved to InitializeForPooling ---
-    /*
-    public void AssignLineInfo(System.Guid lineGuid, int index)
-    {
-        // ... existing code ...
-    }
-    */
-    // -----------------------------------------------------------
-
-    // --- NEW: Getters for line info ---
-    /// <summary>
-    /// Gets the unique identifier for the line of fairies this instance belongs to.
-    /// </summary>
-    /// <returns>The line's Guid.</returns>
+    // --- Getters for line info and owner role ---
+    /// <summary>Gets the unique identifier for the line of fairies this instance belongs to.</summary>
     public System.Guid GetLineId() { return lineId; }
-    /// <summary>
-    /// Gets the index of this fairy within its line.
-    /// </summary>
-    /// <returns>The zero-based index in the line.</returns>
+    /// <summary>Gets the index of this fairy within its line.</summary>
     public int GetIndexInLine() { return indexInLine; }
-    // ---------------------------------
+    /// <summary>Gets the <see cref="PlayerRole"/> that owns this fairy.</summary>
+    public PlayerRole GetOwnerRole() { return ownerRole; }
+    // --------------------------------------------
 
-    // --- NEW: Getter for Owner Role --- 
+    // --- Damage Request Handling --- 
+
     /// <summary>
-    /// Gets the <see cref="PlayerRole"/> that owns this fairy.
-    /// This determines which player's side bullets spawn on when this fairy is destroyed.
+    /// [Client/Server] Requests that this fairy takes damage via ServerRpc.
+    /// Invokes <see cref="TakeDamageServerRpc"/> to forward the request to the server.
+    /// Includes a client-side check for <see cref="isDying"/> to prevent spamming requests.
     /// </summary>
-    /// <returns>The owning PlayerRole.</returns>
-    public PlayerRole GetOwnerRole() 
-    {
-        return ownerRole;
+    /// <param name="amount">The amount of damage to request.</param>
+    /// <param name="killerRole">The role potentially credited with the kill.</param>
+    public void RequestDamage(int amount, PlayerRole killerRole)
+    {   
+        // Prevent requests if already dying on the client
+        if (isDying) return; 
+        TakeDamageServerRpc(amount, killerRole);
     }
-    // ----------------------------------
-
-    // --- NEW: Method to mark this fairy as the trigger --- 
-    // --- OBSOLETE: Logic moved to InitializeForPooling ---
-    /*
-    public void MarkAsExtraAttackTrigger()
-    {
-       // ... existing code ...
-    }
-    */
-    // ------------------------------------------------------
-
-    // --- NEW: Method to assign owner role (called by spawner) --- 
-    // --- OBSOLETE: Logic moved to InitializeForPooling ---
-    /*
-    public void AssignOwnerRole(PlayerRole role)
-    {
-        // ... existing code ...
-    }
-    */
-    // ----------------------------------------------------------
-
-    void Update()
-    {
-        // Movement is now handled by SplineWalker attached to this GameObject
-
-        // TODO: Add logic to destroy fairy if it goes off-screen (SplineWalker might handle this if destroyOnComplete is true)
-    }
-
-    // Public method called locally (e.g., by shockwave) to request damage
+    
     /// <summary>
-    /// [Client/Server] Requests that this fairy takes damage.
-    /// This is typically called by local effects (like a shockwave) where the specific killer isn't known.
-    /// Invokes <see cref="TakeDamageServerRpc"/> with <see cref="PlayerRole.None"/> as the killer.
+    /// [Client Only] Convenience overload for <see cref="RequestDamage(int, PlayerRole)"/>, 
+    /// requesting damage with <see cref="PlayerRole.None"/> as the killer.
     /// </summary>
     /// <param name="amount">The amount of damage to request.</param>
     public void RequestDamage(int amount)
     {
-        // Default killer role if called without specific attribution (e.g., shockwave, collision with player)
         RequestDamage(amount, PlayerRole.None); 
-    }
-    
-    /// <summary>
-    /// [Client/Server] Requests that this fairy takes damage, attributing it to a specific player.
-    /// Invokes <see cref="TakeDamageServerRpc"/>.
-    /// </summary>
-    /// <param name="amount">The amount of damage to request.</param>
-    /// <param name="killerRole">The <see cref="PlayerRole"/> credited with the kill if the damage is lethal.</param>
-    public void RequestDamage(int amount, PlayerRole killerRole)
-    {
-        TakeDamageServerRpc(amount, killerRole);
     }
 
     // ServerRpc is called by a client, executed on the server
-    [ServerRpc(RequireOwnership = false)] // Allow any client to request damage
-    private void TakeDamageServerRpc(int amount, PlayerRole killerRole, ServerRpcParams rpcParams = default) 
-    {
-        // This RPC now simply calls the internal logic method
-        ApplyDamageInternal(amount, killerRole);
-    }
-
-    // --- NEW: Internal method containing the actual damage logic --- 
-    // Can be called by ServerRpc (from client) or ApplyDamageServer (from server)
-    private void ApplyDamageInternal(int amount, PlayerRole killerRole)
-    {
-         // --- DIAGNOSTIC LOG: Internal Logic Entry --- 
-        
-
-        // Check isDying flag FIRST
-        if (isDying) 
-        {   
-             
-             return; 
-        }
-        
-        // Ensure health is positive before applying damage
-        if (currentHealth.Value <= 0) 
-        {
-            
-            return;
-        }
-
-        int previousHealth = currentHealth.Value;
-        currentHealth.Value -= amount;
-        
-
-        // Check if health dropped to 0 or below
-        if (currentHealth.Value <= 0)
-        { 
-            
-            Die(killerRole); 
-        }
-    }
-    // --------------------------------------------------------------
-
-    // --- NEW: Public method for SERVER-SIDE damage application --- 
     /// <summary>
-    /// [Server Only] Directly applies damage to the fairy on the server.
-    /// Use this for server-authoritative damage sources (e.g., direct bullet hits processed on the server).
+    /// [ServerRpc] Receives a damage request from a client and delegates it to <see cref="FairyHealth.ApplyDamageFromRpc"/>.
+    /// </summary>
+    [ServerRpc(RequireOwnership = false)]
+    private void TakeDamageServerRpc(int amount, PlayerRole killerRole, ServerRpcParams rpcParams = default)
+    {   
+        // Delegate damage application to the health component
+        fairyHealth?.ApplyDamageFromRpc(amount, killerRole);
+    }
+
+    /// <summary>
+    /// [Server Only] Directly applies damage to the fairy by delegating to <see cref="FairyHealth.ApplyDamageFromServer"/>.
+    /// Use this for server-authoritative damage sources (e.g., direct collision checks on server).
     /// </summary>
     /// <param name="amount">The amount of damage to apply.</param>
-    /// <param name="killerRole">The <see cref="PlayerRole"/> credited with the kill if the damage is lethal.</param>
+    /// <param name="killerRole">The role potentially credited with the kill.</param>
     public void ApplyDamageServer(int amount, PlayerRole killerRole)
-    {
-        // Ensure this is only called on the server
-        if (!IsServer) 
-        {   
-            
-            return;
-        }
-        // Directly call the internal logic
-        ApplyDamageInternal(amount, killerRole);
+    {   
+        // Delegate damage application to the health component
+        fairyHealth?.ApplyDamageFromServer(amount, killerRole);
     }
-    // -----------------------------------------------------------
+    // ------------------------------------
 
-    // --- New method called by SplineWalker --- 
+    // --- Path Completion Handling ---
     /// <summary>
-    /// [Client/Server] Called by <see cref="SplineWalker"/> when the end of the path is reached.
-    /// If on the server, calls <see cref="HandleEndOfPathServer"/>. If on a client, does nothing.
+    /// [Server Only] Called by <see cref="SplineWalker"/> when the end of the path is reached.
+    /// Triggers lethal damage with no specific killer via <see cref="FairyHealth.ApplyLethalDamage"/>.
     /// </summary>
     public void ReportEndOfPath()
-    {
-        // Since SplineWalker Update runs only on server, this method is only called on server.
-        // We can directly call the server-side handling logic.
-        HandleEndOfPathServer();
+    {   
+        // HandleEndOfPathServer(); // Old direct call
+        // Path completion should trigger lethal damage without a specific killer
+        fairyHealth?.ApplyLethalDamage(PlayerRole.None); 
     }
+    // -------------------------------
+
+    // --- REMOVED: HandleEndOfPathServer() --- 
+    // Logic moved into ReportEndOfPath calling ApplyLethalDamage
+    // ----------------------------------------
+    
+    // --- REMOVED: IsAlive() --- 
+    // Now handled by FairyHealth.IsAlive()
+    // --------------------------
+    
+    // --- Death Handling --- 
 
     /// <summary>
-    /// [Server Only] Handles the logic when a fairy reaches the end of its path.
-    /// Calls Die without triggering chain reaction effects.
+    /// [Server Only] Handles the death sequence triggered by the <see cref="FairyHealth.OnDeath"/> event.
+    /// Sets the <see cref="isDying"/> flag, disables movement/collision components,
+    /// triggers effects via <see cref="FairyDeathEffects"/>, triggers potential extra attacks via <see cref="FairyExtraAttackTrigger"/>,
+    /// triggers potential chain reactions via <see cref="FairyChainReactionHandler"/>,
+    /// and returns the object to the pool.
     /// </summary>
-    public void HandleEndOfPathServer()
-    {
-        bool alive = IsAlive();
-        if (alive) 
-        {
-            Die(PlayerRole.None, triggerChainReaction: false); // Set flag to false
-        }
-    }
-    // -------------------------------------------
-
-    // --- NEW: Helper to check if alive (used by Chain Reaction) ---
-    /// <summary>
-    /// [Server/Client] Checks if the fairy is currently considered alive (health > 0 and not in the process of dying).
-    /// </summary>
-    /// <returns>True if the fairy is alive, false otherwise.</returns>
-    public bool IsAlive()
-    {
-        // Consider network readiness if necessary, but health is a good indicator server-side
-        return currentHealth.Value > 0;
-    }
-    // -------------------------------------------------------------
-
-    /// <summary>
-    /// [Server Only] Handles the death sequence of the fairy.
-    /// Disables components, optionally triggers chain reaction effects (shockwave, next fairy kill, bullet spawns, extra attacks)
-    /// based on the triggerChainReaction flag, and returns the object to the pool.
-    /// </summary>
-    /// <param name="killerRole">The role of the player who caused the death, or PlayerRole.None if no specific killer.</param>
-    /// <param name="triggerChainReaction">If true (default), triggers shockwaves, kills the next fairy, spawns opponent bullets, and checks for extra attacks. If false, only despawns the fairy.</param>
-    private void Die(PlayerRole killerRole = PlayerRole.None, bool triggerChainReaction = true)
-    {
-         // --- RE-ADD: Early exit if already dying --- 
+    /// <param name="killerRole">The role of the player who caused the death, passed from the OnDeath event.</param>
+    private void HandleDeath(PlayerRole killerRole)
+    {   
+        // Early exit if already processing death or not on server
         if (isDying || !IsServer) 
         {
             return;
         }
         isDying = true;
-        // --------------------------------------------
-
+        
         // Disable components immediately
         if (splineWalker != null) splineWalker.enabled = false;
         if (fairyCollider != null) fairyCollider.enabled = false;
 
-        // --- CHAIN REACTION EFFECTS (Conditional) --- 
-        if (triggerChainReaction)
-        {
-            // --- Create DelayedActionProcessor --- 
-            if (delayedActionProcessorPrefab != null)
-            {
-                GameObject processorGO = Instantiate(delayedActionProcessorPrefab, transform.position, Quaternion.identity);
-                DelayedActionProcessor processor = processorGO.GetComponent<DelayedActionProcessor>();
-                if (processor != null)
-                {
-                    processor.InitializeAndRun(
-                        transform.position, 
-                        killerRole, 
-                        chainReactionDelay, 
-                        deathShockwavePrefab, 
-                        lineId, 
-                        indexInLine
-                    );
-                }
-                else
-                {
-                    Debug.LogError($"DelayedActionProcessor prefab is missing the DelayedActionProcessor script!", delayedActionProcessorPrefab);
-                    Destroy(processorGO); 
-                }
-            }
-            else
-            {
-                Debug.LogError("DelayedActionProcessor prefab is not assigned on Fairy! Cannot run delayed actions.", this);
-            }
-            // --- End DelayedActionProcessor Creation ---
+        // Trigger visual/audio death effects
+        deathEffectsHandler?.TriggerEffects(transform.position);
 
-            // Effects below should only happen if killed BY A PLAYER during a chain reaction scenario
-            if (killerRole != PlayerRole.None)
-            {
-                // --- Spawn Regular Bullet on Opponent Side --- 
-                if (this.ownerRole != PlayerRole.None) // Check owner is valid
-                {
-                    if (StageSmallBulletSpawner.Instance != null)
-                    {
-                        StageSmallBulletSpawner.Instance.SpawnBulletForOpponent(this.ownerRole); 
-                    }
-                }
-
-                 // --- Restore Extra Attack Trigger Logic --- 
-                if (isExtraAttackTrigger) 
-                {
-                    if (IsServer)
-                    {
-                        ExtraAttackManager attackManager = ExtraAttackManager.Instance;
-                        PlayerDataManager dataManager = PlayerDataManager.Instance;
-
-                        if (attackManager != null && dataManager != null)
-                        {
-                            PlayerData? attackerData = dataManager.GetPlayerDataByRole(killerRole);
-
-                            if (attackerData.HasValue)
-                            {
-                                PlayerRole opponentRole = (killerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
-                                attackManager.TriggerExtraAttackInternal(attackerData.Value, opponentRole); 
-                            }
-                        }
-                    }
-                }
-                 // ------------------------------------------
-            } // End if (killerRole != PlayerRole.None)
-        } // --- END CHAIN REACTION EFFECTS ---
+        // Trigger functional death effects (chain reaction, extra attack)
+        // These components handle their own logic checks (e.g., isTrigger)
+        extraAttackTriggerHandler?.TriggerExtraAttackIfApplicable(killerRole);
+        chainReactionHandler?.ProcessChainReaction(killerRole, lineId, indexInLine, ownerRole);
         
-        // Return to Pool AFTER handling effects/triggers --- 
+        // Return to Pool AFTER handling effects/triggers
         if (NetworkObject != null && NetworkObjectPool.Instance != null)
         {
             NetworkObjectPool.Instance.ReturnNetworkObject(this.NetworkObject);
         }
-        else // Fallback if NetworkObject or Pool somehow null
+        else // Fallback
         {
              Debug.LogError($"Cannot return Fairy {NetworkObjectId} to pool. NetworkObject Null: {NetworkObject == null}, Pool Instance Null: {NetworkObjectPool.Instance == null}", this);
-             if (gameObject != null) 
-             {
-                 Destroy(gameObject);
-             }
+             if (gameObject != null) Destroy(gameObject);
         }
     }
-
-    // --- NEW: Server-side direct damage application method --- 
+    
+    // --- REMOVED: ApplyLethalDamage() --- 
+    // Now handled by FairyHealth.ApplyLethalDamage()
+    // ------------------------------------
+    
+    // --- REMOVED: DestroySelf() --- 
+    // Functionality replaced by calling ApplyLethalDamage on FairyHealth
+    // ------------------------------
+    
+    // --- Implementation of IClearable --- 
     /// <summary>
-    /// [Server Only] Applies lethal damage, bypassing normal health checks, and triggers the Die sequence.
-    /// Useful for effects that should instantly kill fairies (e.g., bomb clearing, chain reactions via DelayedActionProcessor).
+    /// [Server Only] Called by effects like bombs to clear this fairy.
+    /// Delegates the action to <see cref="FairyHealth.ApplyLethalDamage"/>.
     /// </summary>
-    /// <param name="killerRole">The <see cref="PlayerRole"/> attributed to the kill (used for bomb effect attribution or chain reaction propagation).</param>
-    public void ApplyLethalDamage(PlayerRole killerRole)
-    {
-        // Ensure this is only called on the server
-        if (!IsServer) 
-        {   
-            
-            return;
-        }
-
-        // Check isDying flag
-        if (isDying) 
-        {
-            
-            return; 
-        }
-
-        // Directly call Die(), bypassing normal health checks
-        Die(killerRole);
-    }
-    // --------------------------------------------------------
-
-    // Common method for destruction logic, run ONLY on server
-    // Made public so Chain Reaction handler can call it
-    /// <summary>
-    /// [Server Only] Handles the final destruction/despawning of the fairy GameObject.
-    /// Calls Die without triggering chain reaction effects.
-    /// </summary>
-    public void DestroySelf()
-    {
-        if (!IsServer || isDying) return; 
-        Die(PlayerRole.None, triggerChainReaction: false); // Set flag to false
-    }
-
-    // We might need a method to assign a path later
-    // public void SetPath(Path pathToFollow) { ... }
-
-    // --- Implementation of IClearable ---
-    /// <summary>
-    /// Called by effects like PlayerDeathBomb or Shockwave to clear this fairy.
-    /// On the server, triggers the fairy's death sequence.
-    /// </summary>
-    /// <param name="forceClear">Ignored by fairies, as they are always clearable.</param>
+    /// <param name="forceClear">Ignored by fairies, as they are always clearable by bomb-like effects.</param>
     /// <param name="sourceRole">The role of the player causing the clear (used for kill attribution).</param>
     public void Clear(bool forceClear, PlayerRole sourceRole)
-    {
+    {   
         // Clearing logic only runs on the server
         if (!IsServer) return;
 
-        // Fairies are always cleared, regardless of forceClear.
-        // Call the existing Die method, passing the sourceRole for attribution.
-        Die(sourceRole);
+        // Fairies are always cleared. Apply lethal damage via health component.
+        fairyHealth?.ApplyLethalDamage(sourceRole);
     }
     // ------------------------------------
 } 

@@ -7354,8 +7354,6 @@ MonoBehaviour:
     InitialSize: 50
   - Prefab: {fileID: 5741200759558388235, guid: aa590f6646383c649af0871c8341a62f, type: 3}
     InitialSize: 50
-  - Prefab: {fileID: 1241426470714071119, guid: ab6e43f2a705add4f8928d6b3a7393df, type: 3}
-    InitialSize: 30
   - Prefab: {fileID: 2265545678602581384, guid: 1088179f6c3b7204dbf8e29e4bdfe8bc, type: 3}
     InitialSize: 100
   - Prefab: {fileID: 2599006119773474308, guid: b9163c1d350c8c6489969e8df68532d9, type: 3}
@@ -7380,6 +7378,8 @@ MonoBehaviour:
     InitialSize: 300
   - Prefab: {fileID: 968588019201452436, guid: d55328e027b60974d97980e25f687443, type: 3}
     InitialSize: 300
+  - Prefab: {fileID: 1241426470714071119, guid: ab6e43f2a705add4f8928d6b3a7393df, type: 3}
+    InitialSize: 30
   allowPoolExpansion: 0
 --- !u!4 &1652915011
 Transform:
@@ -9439,7 +9439,9 @@ MonoBehaviour:
   spawnZone1: {fileID: 1559253378}
   spawnZone2: {fileID: 2008785425}
   spiritPrefab: {fileID: 1241426470714071119, guid: ab6e43f2a705add4f8928d6b3a7393df, type: 3}
+  maxSpiritsPerSide: 10
   spawnZoneSize: {x: 6, y: 1}
+  revengeSpawnZoneSize: {x: 7, y: 1}
   spawnInterval: 2
   aimAtPlayerChance: 0.25
   isDebugSpawningEnabled: 1

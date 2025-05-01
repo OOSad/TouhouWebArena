@@ -349,70 +349,116 @@ public class SpiritController : NetworkBehaviour, IClearable
     /// <param name="killerRole">The <see cref="PlayerRole"/> who caused the death, or <see cref="PlayerRole.None"/> if no specific killer (e.g., timeout).</param>
     private void Die(PlayerRole killerRole)
     {
-        if (!IsServer || isDying) return; // Only run on server and prevent multiple calls
-        isDying = true; // Set flag immediately
+        if (!IsServer || isDying) return;
+        isDying = true;
 
-        Debug.Log($"[SpiritController] Spirit owned by {ownerRole} died. Killed by {killerRole}. Activated: {isActivated.Value}");
-
-        // --- Call the dedicated component for visual effects ---
-        if (spiritDeathEffects != null)
-        {
-            spiritDeathEffects.PlayDeathEffect(isActivated.Value, transform.position);
-        }
-        else
-        {
-            Debug.LogError("[SpiritController] SpiritDeathEffects component reference is missing!", this);
-        }
-        // ------------------------------------------------------
-
-        // --- Spawn Revenge Spirit Logic (Corrected based on clarification) ---
-        // If a spirit is killed by *any* player (not timeout/None), spawn one on the opponent's side.
-        if (killerRole != PlayerRole.None)
-        {
-            // Determine the opponent of the KILLER
-            PlayerRole opponentRole = (killerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
-
-            // Call the centralized spawner to handle revenge spawn
-            if (SpiritSpawner.Instance != null)
-            {
-                // Spawn on the opponent's side
-                SpiritSpawner.Instance.SpawnRevengeSpirit(opponentRole);
-            }
-            else
-            {   
-                Debug.LogError("[SpiritController] SpiritSpawner instance not found! Cannot spawn revenge spirit.", this);
-            }
-        }
-        // ------------------------------------------------------
-
-        // --- Deregister and Despawn --- 
+        // --- Deregister from Registry FIRST ---
+        // Ensure it's removed before potential reuse via revenge spawn
         if (SpiritRegistry.Instance != null)
         {
             SpiritRegistry.Instance.Deregister(this, ownerRole);
         }
-        else
+        // -------------------------------------
+
+        // Trigger visual effects
+        spiritDeathEffects?.PlayDeathEffect(isActivated.Value, transform.position);
+
+        // --- Revenge Spawn Logic (Corrected based on Rule) ---
+        // Rule: If killed by *any* player, spawn one on the side OPPOSITE the spirit's owner.
+        if (killerRole != PlayerRole.None)
         {
-            Debug.LogWarning("[SpiritController] SpiritRegistry instance not found during Die.", this);
+            // Determine the opponent of the OWNER
+            PlayerRole opponentRole = (ownerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
+            
+            if (SpiritSpawner.Instance != null)
+            {
+                // Spawn FOR the opponent (meaning on their side)
+                SpiritSpawner.Instance.SpawnRevengeSpirit(opponentRole); 
+            }
+            else
+            {
+                Debug.LogError("[SpiritController] SpiritSpawner instance is null! Cannot spawn revenge spirit.", this);
+            }
         }
+        // ---------------------------------------------------
+
+        // --- Return to Pool --- 
+        // Call the existing method that handles despawn and pooling
+        ReturnToPool(); 
+        // ----------------------
+    }
+
+    /// <summary>
+    /// [Server Only] Handles timed despawning and returning the object to the pool.
+    /// Cancels pending invokes, deregisters, despawns the network object, and returns it to the pool.
+    /// </summary>
+    private void ReturnToPool()
+    {
+        // Existing check adjusted slightly for clarity 
+        if (!IsServer) return;
+        if (isDying && !gameObject.GetComponent<NetworkObject>().IsSpawned) 
+        {
+             // If Die() already called ReturnToPool implicitly via Despawn, 
+             // and the object is no longer spawned, we might be called by Invoke later.
+             // Avoid processing again if already dying AND despawned.
+             return;
+        }
+        // It's possible Die() calls this, then Invoke calls it later after Die() set isDying=true.
+        // If called by Invoke and isDying is already true, log it? For now, just proceed.
+        // Or, just rely on NetworkObjectPool handling duplicate returns gracefully.
+        if (isDying) {
+             // Already processing death, likely called by Die(). 
+             // The pool return happens below, let it proceed.
+             // We could potentially skip the CancelInvoke and Deregister here if called by Die,
+             // but doing them again is harmless.
+        }
+        
+        isDying = true; // Ensure flag is set if called by Invoke
+
+        // Cancel invoke in case this was called manually before timer expired
+        CancelInvoke(nameof(ReturnToPool));
+
+        // --- Deregister from Registry ---
+        if (SpiritRegistry.Instance != null)
+        {
+            SpiritRegistry.Instance.Deregister(this, ownerRole);
+        }
+        // ------------------------------
 
         // Despawn the NetworkObject (this handles disabling/returning to pool if applicable)
-        NetworkObject.Despawn(true);
-        // ----------------------------
+        if (NetworkObject != null && NetworkObject.IsSpawned)
+        {
+             NetworkObject.Despawn(false); // Don't destroy, allow pool reuse
+        }
+
+        // Return the GameObject's NetworkObject to the pool
+        if (NetworkObjectPool.Instance != null && NetworkObject != null) // Check NetworkObject again
+        {
+            NetworkObjectPool.Instance.ReturnNetworkObject(this.NetworkObject);
+        }
+        else if (NetworkObjectPool.Instance == null)
+        {
+            Debug.LogError("[SpiritController] NetworkObjectPool instance is null! Cannot return spirit to pool. Destroying instead.", this);
+            if (gameObject != null) Destroy(gameObject); // Fallback: destroy if pool missing
+        }
     }
 
     #endregion
 
     // --- Implementation of IClearable ---
     /// <summary>
-    /// [Server Only] Handles the spirit being cleared by effects like PlayerDeathBomb or Shockwave.
-    /// Always triggers the Die sequence regardless of the forceClear flag.
+    /// Called by effects like PlayerDeathBomb or Shockwave to clear this spirit.
+    /// Triggers the spirit's death sequence on the server.
     /// </summary>
-    /// <param name="forceClear">Flag indicating if the clear is forced (e.g., by a bomb). Ignored by this implementation; spirits always die when cleared.</param>
+    /// <param name="forceClear">If true, bypasses normal conditions and forces clearance (currently ignored by spirits).</param>
     /// <param name="sourceRole">The role of the player causing the clear (used for kill attribution).</param>
     public void Clear(bool forceClear, PlayerRole sourceRole)
     {
+        // Clearing logic only runs on the server
         if (!IsServer) return;
-        Die(sourceRole); // Pass the clearer's role as the killer
+
+        // Spirits are always cleared. Call Die, passing the sourceRole for attribution.
+        Die(sourceRole);
     }
     // ------------------------------------
 } 

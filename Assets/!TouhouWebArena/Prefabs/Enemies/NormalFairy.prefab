@@ -20,8 +20,10 @@ GameObject:
   - component: {fileID: 1168816684677053429}
   - component: {fileID: 2684784241713571634}
   - component: {fileID: 1824150346279509385}
+  - component: {fileID: 4148840641489377419}
+  - component: {fileID: 3913201284981249708}
+  - component: {fileID: 6768330670081929805}
   - component: {fileID: -6769370453135077556}
-  - component: {fileID: 8117227832879662607}
   m_Layer: 7
   m_Name: NormalFairy
   m_TagString: Fairy
@@ -170,7 +172,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2259338590
+  GlobalObjectIdHash: 1312260839
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
@@ -250,13 +252,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea020b8480a326740a6dfd274e0df120, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialMaxHealth: 1
-  isGreatFairy: 0
-  chainReactionDelay: 0.08
-  delayedActionProcessorPrefab: {fileID: 2265545678602581384}
-  deathShockwavePrefab: {fileID: 825958184812720138, guid: 76cfe1a5018d7d74fbbbd03cf0b269ff, type: 3}
-  deathEffectsHandler: {fileID: 2684784241713571634}
-  pathInitializer: {fileID: 1824150346279509385}
 --- !u!114 &1168816684677053429
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -294,6 +289,47 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e15e15ea4b959d4d9d160701f5ce427, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4148840641489377419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2265545678602581384}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e478729ad3438943856ffc444dbedd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3913201284981249708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2265545678602581384}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6589941d542b23489c2b9ecb0b9372e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chainReactionDelay: 0.08
+  delayedActionProcessorPrefab: {fileID: 3786465573955519138, guid: 70780ec6e7c1e3248a6cc285303c0ed4, type: 3}
+  deathShockwavePrefab: {fileID: 825958184812720138, guid: 76cfe1a5018d7d74fbbbd03cf0b269ff, type: 3}
+--- !u!114 &6768330670081929805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2265545678602581384}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b92763bda4938547b8aaf3eed41578a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  initialMaxHealth: 1
+  isGreatFairy: 0
 --- !u!114 &-6769370453135077556
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -308,15 +344,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PrefabID: NormalFairy
   OriginalPrefab: {fileID: 2265545678602581384}
---- !u!114 &8117227832879662607
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2265545678602581384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3751a8a561271043a4de271f9ea58ee, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
