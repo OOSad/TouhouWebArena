@@ -26,6 +26,7 @@ Adding a new playable character involves these main steps:
 1.  **Create Player Prefab:** Duplicate an existing character's prefab (e.g., `ReimuPlayerPrefab`) and rename it for the new character (e.g., `SakuyaPlayerPrefab`).
 2.  **Configure `CharacterStats`:** Select the new prefab and modify the `CharacterStats` component in the Inspector:
     *   Set the `Character Name` field to the new character's unique identifier (e.g., "Sakuya"). **This name is critical** as it's used to load the correct spellcards.
+    *   **Important Naming Convention:** When referencing characters in code (e.g., in `switch` statements, dictionary keys, or for loading resources), always use the exact `enum` name defined in `PlayerData.cs` (e.g., `HakureiReimu`, `KirisameMarisa`). Do **not** use names with spaces (like "Hakurei Reimu"). Use `PlayerData.SelectedCharacter.ToString()` to get the correct format reliably. This convention was crucial in fixing bugs related to Extra Attack triggering.
     *   Assign the correct `Bullet Prefab` for their basic shot.
     *   Assign the correct `Charge Attack Prefab` for their Level 1 charge attack.
     *   Adjust `Passive Fill Rate`, `Active Charge Rate`.

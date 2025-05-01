@@ -419,13 +419,9 @@ public class Fairy : NetworkBehaviour, IClearable
                     {
                         StageSmallBulletSpawner.Instance.SpawnBulletForOpponent(this.ownerRole); 
                     }
-                    else if (IsServer) 
-                    {
-                        Debug.LogWarning("StageSmallBulletSpawner instance is null, cannot spawn bullet.", this);
-                    }
                 }
 
-                // Extra Attack Trigger Logic --- 
+                 // --- Restore Extra Attack Trigger Logic --- 
                 if (isExtraAttackTrigger) 
                 {
                     if (IsServer)
@@ -445,6 +441,7 @@ public class Fairy : NetworkBehaviour, IClearable
                         }
                     }
                 }
+                 // ------------------------------------------
             } // End if (killerRole != PlayerRole.None)
         } // --- END CHAIN REACTION EFFECTS ---
         
