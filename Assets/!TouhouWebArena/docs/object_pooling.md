@@ -26,14 +26,18 @@ Any prefab intended for pooling **must** have the following components:
 All interactions with the `NetworkObjectPool` must occur on the **server**.
 
 *   **Getting Objects:**
-    1.  Obtain the unique `PrefabID` string for the desired object (defined in its `PoolableObjectIdentity` component).
-    2.  Call `NetworkObject networkObjectInstance = NetworkObjectPool.Instance.GetNetworkObject(prefabID);`.
-    3.  Check if `networkObjectInstance` is not null (it will be null if the pool is empty and expansion is disabled).
-    4.  Set the `transform.position` and `transform.rotation` of `networkObjectInstance.gameObject`.
-    5.  Activate the GameObject: `networkObjectInstance.gameObject.SetActive(true);`
-    6.  Spawn the object onto the network: `networkObjectInstance.Spawn(true);`
+    *   **Manual Method:**
+        1.  Obtain the unique `PrefabID` string for the desired object (defined in its `PoolableObjectIdentity` component).
+        2.  Call `NetworkObject networkObjectInstance = NetworkObjectPool.Instance.GetNetworkObject(prefabID);`.
+        3.  Check if `networkObjectInstance` is not null (it will be null if the pool is empty and expansion is disabled).
+        4.  Set the `transform.position` and `transform.rotation` of `networkObjectInstance.gameObject`.
+        5.  Initialize any necessary components on the instance **before** spawning.
+        6.  Spawn the object onto the network: `networkObjectInstance.Spawn(true);`
+    *   **Helper Method (`ServerPooledSpawner`):**
+        *   The static `ServerPooledSpawner.SpawnSinglePooledBullet` method provides a convenient wrapper for spawning bullet prefabs from the pool.
+        *   It handles getting the object by `PrefabID` from the `PoolableObjectIdentity` on the passed `prefab`, setting position/rotation, calling `Spawn(true)`, and assigning the `ownerRole` via `PlayerDataManager`.
 *   **Returning Objects:**
-    1.  The mechanism for returning objects needs confirmation. It's likely that pooled objects have a component (e.g., `NetworkBulletLifetime`) that automatically calls `NetworkObjectPool.Instance.ReturnNetworkObject(this.NetworkObject)` upon expiration or collision.
+    1.  Pooled objects typically have a component (e.g., `NetworkBulletLifetime`, `BulletMovement`, `StageSmallBulletMoverScript`) that automatically calls `NetworkObjectPool.Instance.ReturnNetworkObject(this.NetworkObject)` upon lifetime expiration, collision, or being cleared.
     2.  The `ReturnNetworkObject` method handles calling `networkObject.Despawn(false)`, deactivating the GameObject, and enqueuing it back into the pool based on its `PrefabID`.
     3.  **Important:** Directly calling `networkObject.Despawn(true)` will destroy the GameObject and bypass the pool.
 

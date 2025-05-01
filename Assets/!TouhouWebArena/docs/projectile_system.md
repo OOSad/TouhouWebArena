@@ -23,7 +23,7 @@ There isn't a single mandatory "BaseProjectile" script; behavior is primarily de
 
 ## Movement Behaviors
 
-These scripts define how projectiles move after being spawned. They reside in `/Scripts/Spellcards/Behaviors/` or `/Scripts/Projectiles/` and are typically controlled server-side.
+These scripts define how projectiles move after being spawned. They reside in `/Scripts/Spellcards/Behaviors/` or `/Scripts/Projectiles/` and are typically controlled server-side. **For spellcard projectiles, these components are attached to the prefab and configured/enabled by `ServerBulletConfigurer` based on `SpellcardAction` data.**
 
 *   **`LinearMovement.cs`:**
     *   Moves the GameObject forward along its `transform.up` direction at a constant speed.
