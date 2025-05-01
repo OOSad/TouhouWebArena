@@ -3,15 +3,15 @@ using Unity.Netcode;
 using TouhouWebArena; // For PlayerRole if needed for bullet config
 
 /// <summary>
-/// Handles the specific attack pattern executed when a Spirit times out in its activated state.
+/// [Server Only] Handles the specific attack pattern executed when a Spirit times out in its activated state.
 /// Spawns configured bullets in a spread pattern.
 /// Should be attached to the same GameObject as the SpiritController.
-/// Requires server execution context.
+/// Called by <see cref="SpiritController.FixedUpdate"/>.
 /// </summary>
 public class SpiritTimeoutAttack : MonoBehaviour
 {
     [Header("Timeout Attack Config")]
-    [Tooltip("Prefab for the large bullet spawned during the timeout attack. Must have NetworkObject and StageSmallBulletMoverScript.")]
+    [Tooltip("Prefab for the bullet spawned during the timeout attack. Must have NetworkObject and StageSmallBulletMoverScript components.")]
     [SerializeField] private GameObject spiritLargeBulletPrefab;
 
     [Tooltip("Spread angle (degrees) for the side bullets fired during timeout.")]
@@ -51,7 +51,8 @@ public class SpiritTimeoutAttack : MonoBehaviour
     }
 
     /// <summary>
-    /// [Server Only] Instantiates, configures, and spawns a single timeout bullet.
+    /// [Server Only] Instantiates, configures (via <see cref="StageSmallBulletMoverScript"/>), 
+    /// and spawns (via <see cref="NetworkObject"/>) a single timeout bullet.
     /// </summary>
     /// <param name="direction">The direction the bullet should travel.</param>
     /// <param name="spawnPosition">The world position where the bullet should spawn.</param>

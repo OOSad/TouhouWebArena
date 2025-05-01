@@ -3,11 +3,14 @@ using Unity.Netcode;
 using TouhouWebArena; // Add namespace for IClearable and PlayerRole
 
 /// <summary>
-/// Controls the behavior of a Spirit collectible/enemy.
+/// Acts as the main coordinator for a Spirit entity, handling its core state (health, activation), 
+/// basic movement, lifetime tracking, damage processing, and interactions with player scopes and clearing effects via IClearable.
+/// Delegates visual updates (<see cref="SpiritVisualController"/>), death effects (<see cref="SpiritDeathEffects"/>), 
+/// and timeout attacks (<see cref="SpiritTimeoutAttack"/>) to specialized components.
 /// Spirits have two states: normal (drifting) and activated (slowly moving up, vulnerable).
 /// Handles health, state transitions, movement, damage taking, death effects, timed despawning,
 /// and interactions with player scopes and clearing effects via IClearable.
-/// Designed to be pooled and requires several external references and prefabs.
+/// Designed to be pooled. Requires references to sibling components for delegated behaviors.
 /// </summary>
 public class SpiritController : NetworkBehaviour, IClearable
 {
@@ -16,8 +19,6 @@ public class SpiritController : NetworkBehaviour, IClearable
     [SerializeField] private Rigidbody2D rb;
     /// <summary>Reference to the main collider for the spirit body.</summary>
     [SerializeField] private CircleCollider2D bodyCollider; // Or other collider type
-    /// <summary>Reference to the Spirit prefab asset itself, used for revenge spawns.</summary>
-    [SerializeField] private GameObject spiritPrefabRef; // Assign Spirit prefab itself here
     /// <summary>Reference to the component responsible for spawning death visual effects.</summary>
     [Tooltip("Reference to the component responsible for spawning death visual effects.")]
     [SerializeField] private SpiritDeathEffects spiritDeathEffects;
@@ -56,12 +57,6 @@ public class SpiritController : NetworkBehaviour, IClearable
     /// <summary>Duration in seconds the spirit stays activated before timing out and firing bullets.</summary>
     [SerializeField] private float activatedTimeoutDuration = 3.0f;
 
-    [Header("Revenge Spawn (Server Only)")]
-    /// <summary>Maximum number of spirits allowed per player side (checked during revenge spawns).</summary>
-    [SerializeField] private int maxSpiritsPerSide = 10; // Max spirits allowed per side
-    /// <summary>The size of the zone used for placing revenge-spawned spirits.</summary>
-    [SerializeField] private Vector2 revengeSpawnZoneSize = new Vector2(7f, 1f); // How large is the spawn zone
-
     // --- Server-Side State ---
     /// <summary>[Server Only] Cached transform of the target player (if aiming).</summary>
     private Transform playerTransform; // Set by spawner (only needed on server)
@@ -73,10 +68,6 @@ public class SpiritController : NetworkBehaviour, IClearable
     private float currentLifetime; // Server-side timer
     /// <summary>[Server Only] Timer tracking how long the spirit has been in the activated state.</summary>
     private float activatedTimer = 0f; // Server-side timer for timeout
-    /// <summary>[Server Only] Cached reference to Player 1's spirit spawn zone transform.</summary>
-    private Transform player1SpawnZoneRef; // Passed in Initialize
-    /// <summary>[Server Only] Cached reference to Player 2's spirit spawn zone transform.</summary>
-    private Transform player2SpawnZoneRef; // Passed in Initialize
     // ------------------------
 
     // --- Add reference to the timeout attack component ---
@@ -135,39 +126,24 @@ public class SpiritController : NetworkBehaviour, IClearable
     // Called by the spawner ONLY ON SERVER after instantiation but before Spawn()
     /// <summary>
     /// [Server Only] Initializes the Spirit after being retrieved from a pool or instantiated.
-    /// Sets initial state, health, owner, target player (optional), spawn zone references, and initial velocity.
+    /// Sets initial state (health, owner, timers), target player for aiming (optional), and initial velocity.
     /// Registers the spirit with the <see cref="SpiritRegistry"/>.
     /// </summary>
     /// <param name="targetPlayer">The Transform of the player to initially aim at (can be null).</param>
     /// <param name="owner">The <see cref="PlayerRole"/> owning this spirit.</param>
     /// <param name="shouldAim">If true and targetPlayer is not null, the spirit will initially move towards the target player.</param>
-    /// <param name="p1Zone">Reference to Player 1's spawn zone Transform (used for revenge spawns).</param>
-    /// <param name="p2Zone">Reference to Player 2's spawn zone Transform (used for revenge spawns).</param>
-    public void Initialize(Transform targetPlayer, PlayerRole owner, bool shouldAim, 
-                         Transform p1Zone, Transform p2Zone) // Added spawn zone refs
+    public void Initialize(Transform targetPlayer, PlayerRole owner, bool shouldAim)
     {
         if (!IsServer) return; // Should only be called on Server
 
         playerTransform = targetPlayer; // Can be null if not aiming
         ownerRole = owner; // Store the owner role
         aimAtPlayerOnSpawn = shouldAim;
-        player1SpawnZoneRef = p1Zone;
-        player2SpawnZoneRef = p2Zone;
 
         // Validate essential references passed in
         if (ownerRole == PlayerRole.None)
         {
             Debug.LogWarning($"[SpiritController] Initialized with PlayerRole.None!", this);
-            // Consider warning or error
-        }
-        if (player1SpawnZoneRef == null || player2SpawnZoneRef == null)
-        {
-            Debug.LogError($"[SpiritController] Initialized with null spawn zone references!", this);
-            // Consider warning or error
-        }
-        if (spiritPrefabRef == null) // Check prefab needed for revenge spawn
-        {
-             Debug.LogError($"[SpiritController] Initialized without Spirit Prefab Reference!", this);
             // Consider warning or error
         }
 
@@ -366,7 +342,8 @@ public class SpiritController : NetworkBehaviour, IClearable
 
     /// <summary>
     /// [Server Only] Handles the death sequence of the spirit.
-    /// Sets the dying flag, spawns death effects, handles potential revenge spirit spawns (if killed by owner in normal state),
+    /// Sets the dying flag, calls the <see cref="SpiritDeathEffects"/> component for visuals, 
+    /// triggers a potential revenge spawn via <see cref="SpiritSpawner"/> if killed by a player,
     /// deregisters from the <see cref="SpiritRegistry"/>, and returns the object to the pool via <see cref="NetworkObjectPool"/>.
     /// </summary>
     /// <param name="killerRole">The <see cref="PlayerRole"/> who caused the death, or <see cref="PlayerRole.None"/> if no specific killer (e.g., timeout).</param>
@@ -388,12 +365,23 @@ public class SpiritController : NetworkBehaviour, IClearable
         }
         // ------------------------------------------------------
 
-        // --- Spawn Revenge Spirit Logic (Remains for now) ---
-        // Only spawn revenge spirit if killed by the OPPOSITE player
-        if (ownerRole != PlayerRole.None && killerRole != PlayerRole.None && ownerRole != killerRole)
+        // --- Spawn Revenge Spirit Logic (Corrected based on clarification) ---
+        // If a spirit is killed by *any* player (not timeout/None), spawn one on the opponent's side.
+        if (killerRole != PlayerRole.None)
         {
-            // Spawn on the killer's side (who is the opponent of the owner)
-            SpawnSpiritOnOpponentSide(killerRole);
+            // Determine the opponent of the KILLER
+            PlayerRole opponentRole = (killerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
+
+            // Call the centralized spawner to handle revenge spawn
+            if (SpiritSpawner.Instance != null)
+            {
+                // Spawn on the opponent's side
+                SpiritSpawner.Instance.SpawnRevengeSpirit(opponentRole);
+            }
+            else
+            {   
+                Debug.LogError("[SpiritController] SpiritSpawner instance not found! Cannot spawn revenge spirit.", this);
+            }
         }
         // ------------------------------------------------------
 
@@ -427,105 +415,4 @@ public class SpiritController : NetworkBehaviour, IClearable
         Die(sourceRole); // Pass the clearer's role as the killer
     }
     // ------------------------------------
-
-    #region Revenge Spawn Logic (Server Only)
-    // This section now only contains the revenge spawn logic.
-    // Timeout logic moved to SpiritTimeoutAttack component and triggered in FixedUpdate.
-    // --- RENAMED from SpawnRevengeSpirit         ---
-    /// <summary>
-    /// [Server Only] Handles the spawning of a spirit on the opponent's side.
-    /// Checks if the maximum spirit count for that side has been reached using <see cref="SpiritRegistry"/>.
-    /// Calculates a random spawn position within the opponent's designated zone (using cached references)
-    /// and obtains/initializes a spirit from the <see cref="NetworkObjectPool"/>.
-    /// </summary>
-    /// <param name="opponentRole">The role of the player who will own the newly spawned spirit.</param>
-    private void SpawnSpiritOnOpponentSide(PlayerRole opponentRole) 
-    {
-        if (!IsServer || opponentRole == PlayerRole.None) return;
-
-        if (spiritPrefabRef == null)
-        {
-            Debug.LogError("[SpiritController] SpawnOpponentSpirit: Spirit prefab reference is missing!", this);
-            return;
-        }
-        if (SpiritRegistry.Instance == null)
-        {
-             Debug.LogWarning("[SpiritController] SpawnOpponentSpirit: SpiritRegistry instance not found.", this);
-             return;
-        }
-        if (NetworkObjectPool.Instance == null)
-        {
-            Debug.LogError("[SpiritController] SpawnOpponentSpirit: NetworkObjectPool instance not found!", this);
-            return;
-        }
-
-
-        // The new spirit is owned by the OPPONENT (passed in as opponentRole).
-        PlayerRole newSpiritOwnerRole = opponentRole; 
-
-        // Check max spirit count for the OPPONENT's side.
-        int opponentSpiritCount = SpiritRegistry.Instance.GetSpiritCount(newSpiritOwnerRole);
-        if (opponentSpiritCount >= maxSpiritsPerSide)
-        {
-             // Debug.Log($"[SpiritController] SpawnOpponentSpirit: Opponent {newSpiritOwnerRole} at max spirit capacity ({opponentSpiritCount}/{maxSpiritsPerSide}).");
-             return; // Opponent is at max capacity
-        }
-
-        // Determine the OPPONENT's spawn zone.
-        Transform opponentSpawnZone = (newSpiritOwnerRole == PlayerRole.Player1) ? player1SpawnZoneRef : player2SpawnZoneRef;
-        if (opponentSpawnZone == null)
-        {
-            Debug.LogError($"[SpiritController] SpawnOpponentSpirit: Opponent ({newSpiritOwnerRole}) spawn zone reference is null!", this);
-            return;
-        }
-        
-        // Calculate random position within the OPPONENT's spawn zone.
-        float spawnX = Random.Range(-revengeSpawnZoneSize.x / 2f, revengeSpawnZoneSize.x / 2f);
-        float spawnY = Random.Range(-revengeSpawnZoneSize.y / 2f, revengeSpawnZoneSize.y / 2f);
-        Vector3 spawnPosition = opponentSpawnZone.position + new Vector3(spawnX, spawnY, 0);
-
-        // --- Pool Integration --- 
-        PoolableObjectIdentity identity = spiritPrefabRef.GetComponent<PoolableObjectIdentity>();
-        if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
-        {
-            Debug.LogError($"[SpiritController] SpawnOpponentSpirit: Spirit prefab ref '{spiritPrefabRef.name}' missing identity/ID!", this);
-            return;
-        }
-        string prefabID = identity.PrefabID;
-        NetworkObject pooledNetworkObject = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
-        if (pooledNetworkObject == null)
-        {
-            Debug.LogError($"[SpiritController] SpawnOpponentSpirit: Failed to get Spirit '{prefabID}' from pool.", this);
-            return;
-        }
-        // ----------------------
-
-        // Get required components from pooled object
-        SpiritController newSpiritController = pooledNetworkObject.GetComponent<SpiritController>();
-        // NetworkObject newNetworkObject = pooledNetworkObject; // Already have reference
-
-        if (newSpiritController == null)
-        {
-            Debug.LogError("[SpiritController] SpawnOpponentSpirit: Pooled object missing SpiritController! Returning to pool.", this);
-            NetworkObjectPool.Instance.ReturnNetworkObject(pooledNetworkObject); // Return broken object
-            return;
-        }
-
-        // Position and Activate pooled object
-        pooledNetworkObject.transform.position = spawnPosition;
-        pooledNetworkObject.transform.rotation = Quaternion.identity;
-        pooledNetworkObject.gameObject.SetActive(true);
-
-        // Find OPPONENT player transform (to potentially aim at, though we don't aim these spirits)
-        Transform opponentPlayerTransform = null; // We don't aim these spirits
-        
-        // Spawn the new spirit on the network FIRST
-        pooledNetworkObject.Spawn(false); // Spawn client-owned or server-owned based on pool config? Assume false for now.
-        
-        // Initialize the new spirit AFTER spawning
-        newSpiritController.Initialize(opponentPlayerTransform, newSpiritOwnerRole, false, player1SpawnZoneRef, player2SpawnZoneRef); // Don't aim initially
-    }
-    // -------------------------------------------------
-    
-    #endregion
 } 

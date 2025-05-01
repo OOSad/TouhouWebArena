@@ -223,7 +223,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rb: {fileID: 8395408942226847826}
   bodyCollider: {fileID: 4958202173044338490}
-  spiritPrefabRef: {fileID: 1241426470714071119}
+  spiritPrefabRef: {fileID: 0}
   spiritDeathEffects: {fileID: 5448013928719064153}
   visualController: {fileID: 4370567367628718381}
   normalMoveSpeed: 2
@@ -232,8 +232,6 @@ MonoBehaviour:
   activatedMaxHp: 1
   maxLifetime: 15
   activatedTimeoutDuration: 3
-  maxSpiritsPerSide: 10
-  revengeSpawnZoneSize: {x: 7, y: 1}
   spiritTimeoutAttack: {fileID: 8794130294973847301}
 --- !u!114 &5448013928719064153
 MonoBehaviour:

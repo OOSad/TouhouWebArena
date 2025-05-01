@@ -4,7 +4,8 @@ using Unity.Netcode;
 /// <summary>
 /// Handles the instantiation of visual effects when a Spirit dies.
 /// Should be attached to the same GameObject as the SpiritController.
-/// Assumes effects are instantiated on the server.
+/// Called by <see cref="SpiritController.Die"/> only on the server.
+/// Assumes effect prefabs have a <see cref="NetworkObject"/> component for network visibility.
 /// </summary>
 public class SpiritDeathEffects : MonoBehaviour // NetworkBehaviour might be needed if effects need pooling/syncing later
 {
@@ -17,7 +18,7 @@ public class SpiritDeathEffects : MonoBehaviour // NetworkBehaviour might be nee
 
     /// <summary>
     /// Instantiates the appropriate death visual effect based on the spirit's state at death.
-    /// Currently called only on the server by SpiritController.Die().
+    /// Spawns the effect over the network if it has a NetworkObject component.
     /// </summary>
     /// <param name="wasActivated">True if the spirit was activated when it died.</param>
     /// <param name="position">The world position where the effect should spawn.</param>
