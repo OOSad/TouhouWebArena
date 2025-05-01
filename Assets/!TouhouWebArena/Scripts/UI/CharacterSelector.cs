@@ -41,21 +41,13 @@ public class CharacterSelector : NetworkBehaviour
     [Tooltip("Reference to the SynopsisPanelController for Player 2's display area.")]
     [SerializeField] private SynopsisPanelController player2SynopsisPanel;
 
+    [Header("Input Controller")]
+    [Tooltip("Reference to the component handling keyboard/controller navigation.")]
+    [SerializeField] private CharacterSelectInputController inputController;
+
     [Header("Data References")]
     [Tooltip("List of all available CharacterSynopsisData ScriptableObjects. Used to populate the lookup dictionary.")]
     [SerializeField] private List<CharacterSynopsisData> allSynopsisData;
-
-    [Header("Navigation Settings")]
-    [Tooltip("The key used to confirm the currently highlighted character selection.")]
-    [SerializeField] private KeyCode confirmKey = KeyCode.Z;
-
-    [Header("Audio Feedback (Optional)")]
-    [Tooltip("AudioSource component to play UI sounds.")]
-    [SerializeField] private AudioSource uiAudioSource;
-    [Tooltip("Sound played when navigating between character buttons.")]
-    [SerializeField] private AudioClip navigateSound;
-    [Tooltip("Sound played when confirming a character selection.")]
-    [SerializeField] private AudioClip confirmSound;
 
     [Header("Scene Management")]
     [Tooltip("The exact name of the gameplay scene to load after selection is complete.")]
@@ -64,18 +56,18 @@ public class CharacterSelector : NetworkBehaviour
     // --- Private Variables ---
     /// <summary>Cached reference to the PlayerDataManager singleton.</summary>
     private PlayerDataManager playerDataManager;
-    /// <summary>The index of the currently highlighted character button in the characterButtons list (used for local navigation).</summary>
-    private int selectedIndex = 0;
-    /// <summary>Flag to enable/disable keyboard/controller navigation (e.g., during scene transitions).</summary>
-    private bool navigationActive = true;
-    /// <summary>Tracks the last GameObject selected by the EventSystem, used for focus handling.</summary>
-    private GameObject lastSelectedObject;
     /// <summary>Fast lookup dictionary mapping character internal names (string) to their CharacterSynopsisData.</summary>
     private Dictionary<string, CharacterSynopsisData> synopsisLookup = new Dictionary<string, CharacterSynopsisData>();
     /// <summary>Cached reference to the SynopsisPanelController associated with the *local* player.</summary>
     private SynopsisPanelController localSynopsisPanel;
     /// <summary>Cached reference to the SynopsisPanelController associated with the *opponent* player.</summary>
     private SynopsisPanelController opponentSynopsisPanel;
+
+    // --- Add reference to the audio component --- 
+    [Header("Component References (Optional)")]
+    [Tooltip("Optional reference to the component that handles audio feedback.")]
+    [SerializeField] private CharacterSelectAudio characterSelectAudio;
+    // -----------------------------------------
 
     /// <summary>
     /// Initializes the synopsisLookup dictionary from the allSynopsisData list.
@@ -156,13 +148,14 @@ public class CharacterSelector : NetworkBehaviour
         }
 
         // Check if panels are assigned before trying to use them
+        bool canNavigate = true; // Assume true unless panels are missing
         if (player1SynopsisPanel == null || player2SynopsisPanel == null)
         {
             Debug.LogError("[CharacterSelector] OnNetworkSpawn: Player 1 or Player 2 Synopsis Panel is not assigned in the Inspector! Disabling interaction.", this);
             // Maybe disable buttons or the whole component?
-            navigationActive = false;
-             // Don't return entirely, still might need to listen for opponent updates if observer?
-             // For now, just disable local nav
+            canNavigate = false;
+            // Don't return entirely, still might need to listen for opponent updates if observer?
+            // For now, just disable local nav
         }
 
         // --- Initial UI State & Button Setup ---
@@ -174,20 +167,31 @@ public class CharacterSelector : NetworkBehaviour
         {
              Debug.LogError("[CharacterSelector] OnNetworkSpawn: EventSystem.current is NULL! Cannot set initial selection.", this);
         }
-        else if (navigationActive && localSynopsisPanel != null && characterButtons.Count > 0 && characterButtons[0].button != null) 
+        else if (canNavigate && localSynopsisPanel != null && characterButtons.Count > 0 && characterButtons[0].button != null) 
         {
+            // Set initial EventSystem selection
             EventSystem.current.SetSelectedGameObject(characterButtons[0].button.gameObject);
-            selectedIndex = 0;
-            UpdateLocalHighlightSynopsis(selectedIndex); // Show initial highlight
-            lastSelectedObject = characterButtons[0].button.gameObject; // Store initial selection for focus handling
+            UpdateLocalHighlightSynopsis(0); // Show initial highlight
+            // inputController will pick up this selection in its LateUpdate
         }
         else if (characterButtons.Count == 0 || characterButtons[0].button == null)
         {
             Debug.LogWarning("[CharacterSelector] No character buttons assigned or first button is null. Navigation might not work.", this);
         }
-        else if (!navigationActive || localSynopsisPanel == null)
+        else if (!canNavigate || localSynopsisPanel == null)
         {
              Debug.LogWarning("[CharacterSelector] Initial button selection skipped (Navigation disabled or Local Panel invalid).", this);
+        }
+
+        // Initialize the input controller AFTER buttons are set up and initial selection might be done
+        if (inputController != null)
+        {
+            inputController.Initialize(characterButtons);
+            inputController.SetNavigationActive(canNavigate); // Pass initial navigation state
+        }
+        else
+        {
+            Debug.LogError("[CharacterSelector] CharacterSelectInputController reference is missing! Keyboard/Controller navigation will not work.", this);
         }
 
         // Trigger an initial update based on potentially already selected characters
@@ -239,9 +243,20 @@ public class CharacterSelector : NetworkBehaviour
             // Check if both players are ready AFTER updating
             if (playerDataManager.AreBothPlayersReady())
             {
-                navigationActive = false; // Disable navigation during transition
-                EventSystem.current.SetSelectedGameObject(null); // Deselect buttons
-                StartCoroutine(DelayedSceneLoad());
+                // Disable input navigation via the controller
+                inputController?.SetNavigationActive(false);
+
+                // Call the centralized SceneTransitionManager
+                if (SceneTransitionManager.Instance != null)
+                {
+                    SceneTransitionManager.Instance.LoadNetworkScene(gameplaySceneName, 1.0f); // Use 1.0f delay as before
+                }
+                else
+                {
+                    Debug.LogError("[CharacterSelector] SceneTransitionManager Instance is null! Cannot load gameplay scene.", this);
+                    // Fallback? Maybe try direct load if server? Or just log error.
+                    // if (IsServer) NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
+                }
             }
         }
     }
@@ -320,25 +335,6 @@ public class CharacterSelector : NetworkBehaviour
     }
 
     /// <summary>
-    /// Coroutine initiated by the server when both players are ready.
-    /// Waits for a short delay before loading the gameplay scene.
-    /// Ensures scene loading happens on the server (if this object is server-owned) 
-    /// or relies on the host/server initiating the network scene transition.
-    /// </summary>
-    private IEnumerator DelayedSceneLoad()
-    {
-        Debug.Log("[CharacterSelector] Both players ready! Starting scene load countdown...");
-        yield return new WaitForSeconds(1.0f); // Brief delay
-        Debug.Log("[CharacterSelector] Loading Gameplay Scene...");
-        // Scene loading should ideally be managed centrally, possibly triggered by the server/host.
-        // Assuming NetworkManager handles the transition.
-        if (IsServer) // Only server should initiate scene change for all clients
-        {
-             NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
-        }
-    }
-
-    /// <summary>
     /// Called when the NetworkObject is despawned. Unsubscribes from events.
     /// </summary>
     public override void OnNetworkDespawn()
@@ -363,98 +359,22 @@ public class CharacterSelector : NetworkBehaviour
     {
         // Initialization moved to OnNetworkSpawn for network readiness
         // Null check for audio source moved here as Awake/OnNetworkSpawn might be too early for components on other objects
-        if (uiAudioSource == null)
+        if (characterSelectAudio == null)
         {
-            Debug.LogWarning("[CharacterSelector] UI AudioSource not assigned. No sound effects will play.", this);
+            // Debug.LogWarning("[CharacterSelector] CharacterSelectAudio not assigned. No sound effects will play.", this); // Less noisy
         }
     }
-
-    /// <summary>
-    /// Standard Unity Update method. Checks for confirmation key press.
-    /// </summary>
-    private void Update()
-    {
-        // Only allow input if navigation is active
-        if (!navigationActive) return;
-
-        // Check for confirmation input
-        if (Input.GetKeyDown(confirmKey))
-        {
-            ConfirmSelection();
-        }
-    }
-
-    /// <summary>
-    /// Called after Update. Used to detect changes in the EventSystem's selected GameObject.
-    /// If the selection changed to a valid character button, updates the local synopsis highlight
-    /// and plays a navigation sound.
-    /// </summary>
-    private void LateUpdate()
-    {
-        if (!navigationActive) return; 
-
-        // --- Add Null Checks ---
-        if (EventSystem.current == null)
-            {
-            Debug.LogError("[CharacterSelector.LateUpdate] EventSystem.current is NULL!", this);
-            return; // Cannot proceed without EventSystem
-        }
-        GameObject currentSelected = EventSystem.current.currentSelectedGameObject;
-        
-        if (characterButtons == null)
-        {
-             Debug.LogError("[CharacterSelector.LateUpdate] characterButtons list is NULL! Check Inspector assignment.", this);
-             return; // Cannot proceed without the button list
-        }
-        // ------------------------
-
-        // Check if selection changed to a non-null object that is different from the last
-        if (currentSelected != null && currentSelected != lastSelectedObject)
-        {
-            // Find the index of the newly selected button
-            int newIndex = -1;
-            for (int i = 0; i < characterButtons.Count; i++)
-            {
-                if (characterButtons[i].button != null && characterButtons[i].button.gameObject == currentSelected)
-                {
-                    newIndex = i;
-                    break;
-                }
-            }
-
-            // If a valid button was selected, update highlight and sound
-            if (newIndex != -1)
-            {
-                 Debug.Log($"[CharacterSelector.LateUpdate] Selection changed to index {newIndex} ('{characterButtons[newIndex].characterInternalName}').", this);
-                selectedIndex = newIndex;
-                UpdateLocalHighlightSynopsis(selectedIndex);
-                PlaySound(navigateSound);
-            }
-            else {
-                 Debug.LogWarning($"[CharacterSelector.LateUpdate] Selected object '{currentSelected.name}' not found in characterButtons mapping.", this);
-            }
-            
-            lastSelectedObject = currentSelected; // Update the last selected object
-        }
-        // Handle deselection (e.g., clicking off buttons)
-        else if (currentSelected == null && lastSelectedObject != null)
-        {
-            // Potentially clear local synopsis or handle as needed.
-            // For now, just update the tracked object.
-             Debug.Log($"[CharacterSelector.LateUpdate] Selection became NULL.", this);
-            lastSelectedObject = null;
-            }
-        }
 
     /// <summary>
     /// Updates the *local* player's synopsis panel to show the character 
     /// corresponding to the given button index.
     /// Called when navigating with keyboard/controller before confirming.
+    /// Invoked by CharacterSelectInputController.OnNavigate event.
     /// </summary>
     /// <param name="index">The index in the characterButtons list to display.</param>
-    private void UpdateLocalHighlightSynopsis(int index)
+    public void UpdateLocalHighlightSynopsis(int index)
     {
-        if (!navigationActive) return;
+        // Navigation active check is handled by the InputController before invoking the event
         if (localSynopsisPanel == null) 
         { 
             // Debug.LogWarning("[CharacterSelector] UpdateLocalHighlightSynopsis: Local panel is null, cannot update highlight.");
@@ -485,91 +405,50 @@ public class CharacterSelector : NetworkBehaviour
     }
 
     /// <summary>
-    /// Called when the confirmation key is pressed. 
-    /// If a valid button is selected, plays the confirm sound and calls the ServerRpc 
-    /// to set the character choice for the local player.
+    /// Public method called by the CharacterSelectInputController.OnConfirm event.
+    /// Plays the confirm sound and executes the selection logic.
     /// </summary>
-    private void ConfirmSelection()
+    public void HandleConfirmInput()
     {
-        if (!navigationActive) return;
-        if (selectedIndex >= 0 && selectedIndex < characterButtons.Count)
+        characterSelectAudio?.PlayConfirmSound();
+        ExecuteConfirmSelection();
+    }
+
+    /// <summary>
+    /// Performs the actual logic for confirming a selection based on the 
+    /// current state tracked by the input controller (implicitly via EventSystem). 
+    /// Calls the ServerRpc to set the character choice for the local player.
+    /// </summary>
+    private void ExecuteConfirmSelection()
+    {
+        // Get the currently selected button index from the EventSystem directly
+        // This assumes the InputController keeps the EventSystem selection up-to-date.
+        GameObject currentSelectedObj = EventSystem.current?.currentSelectedGameObject;
+        if (currentSelectedObj == null)
         {
-            string selectedName = characterButtons[selectedIndex].characterInternalName;
-            Debug.Log($"[CharacterSelector] Confirming selection: {selectedName}");
-            PlaySound(confirmSound);
+            Debug.LogWarning("[CharacterSelector] ExecuteConfirmSelection called but nothing is selected.");
+            return;
+        }
+
+        int currentSelectedIndex = -1;
+        for (int i = 0; i < characterButtons.Count; i++)
+        {
+            if (characterButtons[i].button != null && characterButtons[i].button.gameObject == currentSelectedObj)
+            {   
+                currentSelectedIndex = i;
+                break;
+            }
+        }
+
+        if (currentSelectedIndex >= 0)
+        {
+            string selectedName = characterButtons[currentSelectedIndex].characterInternalName;
+            Debug.Log($"[CharacterSelector] Executing confirmation for: {selectedName}");
             RequestSetCharacterServerRpc(selectedName);
         }
         else
         {
-            Debug.LogWarning("[CharacterSelector] ConfirmSelection called with invalid selectedIndex: " + selectedIndex);
-        }
-    }
-
-    /// <summary>
-    /// Plays the provided AudioClip using the assigned UI AudioSource, if available.
-    /// </summary>
-    /// <param name="clip">The AudioClip to play.</param>
-    private void PlaySound(AudioClip clip)
-    {
-        if (uiAudioSource != null && clip != null)
-        {
-            uiAudioSource.PlayOneShot(clip);
-        }
-    }
-
-    /// <summary>
-    /// Called by Unity when the application gains or loses focus.
-    /// Used to re-select the last highlighted button when focus is regained,
-    /// preventing loss of keyboard navigation control.
-    /// </summary>
-    /// <param name="hasFocus">True if the application gained focus, false if lost.</param>
-    private void OnApplicationFocus(bool hasFocus)
-    {
-        // If the application regained focus AND navigation is supposed to be active
-        if (hasFocus && navigationActive)
-        {
-            // Start a coroutine to handle re-selection slightly delayed
-            StartCoroutine(ReselectAfterFocusRoutine());
-        }
-    }
-
-    /// <summary>
-    /// Coroutine that waits one frame after regaining focus before attempting
-    /// to re-select the last highlighted character button.
-    /// This delay prevents the click event (that caused focus) from immediately 
-    /// deselecting the re-selected button.
-    /// </summary>
-    private IEnumerator ReselectAfterFocusRoutine()
-    {
-        // Wait one frame to allow the click event (that caused focus) to potentially deselect
-        yield return null;
-
-        // Re-check conditions AFTER the frame delay
-        if (navigationActive && EventSystem.current != null && EventSystem.current.currentSelectedGameObject == null)
-        {
-             // Reselect the button based on the last known selected index
-            if (selectedIndex >= 0 && selectedIndex < characterButtons.Count && characterButtons[selectedIndex].button != null)
-            {
-                GameObject objectToSelect = characterButtons[selectedIndex].button.gameObject;
-                EventSystem.current.SetSelectedGameObject(objectToSelect);
-                lastSelectedObject = objectToSelect; // Update tracker
-                Debug.Log($"[CharacterSelector] Re-selected button at index {selectedIndex} ('{objectToSelect.name}') on regaining focus.", this);
-            }
-             else {
-                  Debug.LogWarning($"[CharacterSelector] ReselectAfterFocusRoutine: Could not re-select button at index {selectedIndex} (Invalid index or button is null).", this);
-             }
-        }
-        else if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null)
-        {
-            Debug.Log($"[CharacterSelector] ReselectAfterFocusRoutine: Something was already selected ('{EventSystem.current.currentSelectedGameObject.name}'), no need to re-select.", this);
-        }
-        else if (!navigationActive)
-        {
-            Debug.Log("[CharacterSelector] ReselectAfterFocusRoutine: Navigation became inactive, skipping re-selection.", this);
-        }
-        else if(EventSystem.current == null)
-        {
-            Debug.LogError("[CharacterSelector] ReselectAfterFocusRoutine: EventSystem.current is NULL! Cannot re-select.", this);
+            Debug.LogWarning($"[CharacterSelector] ExecuteConfirmSelection: Currently selected object '{currentSelectedObj.name}' not found in buttons.");
         }
     }
 } 

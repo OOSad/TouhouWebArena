@@ -2,13 +2,13 @@ using UnityEngine;
 using Unity.Netcode;
 
 // Add reference to Fairy script
-[RequireComponent(typeof(Fairy))] // Restored
+[RequireComponent(typeof(FairyController))] // Restored
 // --- NEW: Require the look forward component ---
 [RequireComponent(typeof(SplineLookForward))] 
 /// <summary>
 /// [Server Only] Moves a GameObject along a <see cref="BezierSpline"/> at a constant speed.
 /// Handles calculating progress along the spline based on desired speed and curve velocity.
-/// Can optionally destroy the GameObject or notify its owner (<see cref="Fairy"/>) upon reaching the end.
+/// Can optionally destroy the GameObject or notify its owner (<see cref="FairyController"/>) upon reaching the end.
 /// Requires initialization via <see cref="InitializeSplineInternal"/>.
 /// </summary>
 public class SplineWalker : NetworkBehaviour
@@ -19,7 +19,7 @@ public class SplineWalker : NetworkBehaviour
 
     private float progress; // Current position along the spline (0 to 1)
     private bool movingForward = true; // Direction of travel
-    private Fairy ownerFairy; // Reference to the controlling Fairy script
+    private FairyController ownerFairy; // Reference to the controlling Fairy script
 
     /// <summary>
     /// Gets the <see cref="BezierSpline"/> currently being followed.
@@ -29,7 +29,7 @@ public class SplineWalker : NetworkBehaviour
 
     void Awake()
     {
-        ownerFairy = GetComponentInParent<Fairy>();
+        ownerFairy = GetComponentInParent<FairyController>();
         if (ownerFairy == null)
         {
             
@@ -41,7 +41,7 @@ public class SplineWalker : NetworkBehaviour
 
     /// <summary>
     /// [Server Only] Initializes the walker with the spline to follow and the starting direction/progress.
-    /// Called internally by the owning <see cref="Fairy"/> after path data is synchronized.
+    /// Called internally by the owning <see cref="FairyController"/> after path data is synchronized.
     /// Enables the component to start movement.
     /// </summary>
     /// <param name="chosenPath">The <see cref="BezierSpline"/> to follow.</param>

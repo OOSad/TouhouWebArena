@@ -8,7 +8,7 @@ using System.Linq; // Required for LINQ
 /// [Server Only] Responsible for spawning waves (lines) of Fairy enemies along predefined paths for a specific player.
 /// This component is expected to be instantiated and initialized by <see cref="GameInitializer"/> on the server.
 /// It retrieves paths from <see cref="PathManager"/>, uses the <see cref="NetworkObjectPool"/> for fairy instances,
-/// and configures each spawned <see cref="Fairy"/> via its Initialize method.
+/// and configures each spawned <see cref="FairyController"/> via its Initialize method.
 /// Includes logic for randomizing wave size, path selection, great fairy chance, and optional extra attack triggers.
 /// </summary>
 public class FairySpawner : MonoBehaviour
@@ -166,7 +166,7 @@ public class FairySpawner : MonoBehaviour
                 pooledNetworkObject.Spawn(false);
 
                 // Get script and Initialize AFTER spawning
-                Fairy fairyScript = pooledNetworkObject.GetComponent<Fairy>();
+                FairyController fairyScript = pooledNetworkObject.GetComponent<FairyController>();
                 if (fairyScript != null)
                 {
                     // Determine necessary parameters for initialization

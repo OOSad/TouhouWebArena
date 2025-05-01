@@ -18,7 +18,7 @@ using TouhouWebArena; // Add namespace for IClearable and PlayerRole
 /// FairyDeathEffects, FairyPathInitializer) for its functionality.
 /// Designed to be pooled and reused.
 /// </summary>
-public class Fairy : NetworkBehaviour, IClearable
+public class FairyController : NetworkBehaviour, IClearable
 {
     [Header("Stats")]
     // Use NetworkVariable for synchronized health

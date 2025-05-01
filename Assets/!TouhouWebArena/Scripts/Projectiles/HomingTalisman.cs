@@ -151,7 +151,7 @@ public class HomingTalisman : NetworkBehaviour
                 {
                     enemyOwnerRole = spirit.GetOwnerRole(); // Assuming GetOwnerRole exists
                 }
-                else if (obj.TryGetComponent<Fairy>(out Fairy fairy))
+                else if (obj.TryGetComponent<FairyController>(out FairyController fairy))
                 {
                     enemyOwnerRole = fairy.GetOwnerRole(); // Assuming GetOwnerRole exists
                 }
@@ -202,7 +202,7 @@ public class HomingTalisman : NetworkBehaviour
             PlayerRole hitTargetRole = PlayerRole.None;
             bool damageApplied = false;
 
-            if (other.TryGetComponent<Fairy>(out Fairy fairy))
+            if (other.TryGetComponent<FairyController>(out FairyController fairy))
             {
                 hitTargetRole = fairy.GetOwnerRole();
                 // Check if SAME owner

@@ -90,7 +90,7 @@ public class PlayerDeathBomb : NetworkBehaviour
                     objectRole = spirit.GetOwnerRole();
                     roleFound = true;
                 }
-                else if (clearable is Fairy fairy)
+                else if (clearable is FairyController fairy)
                 {
                     objectRole = fairy.GetOwnerRole();
                     roleFound = true;

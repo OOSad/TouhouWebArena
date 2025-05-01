@@ -113,7 +113,7 @@ public class StageSmallBulletSpawner : NetworkBehaviour
 
     /// <summary>
     /// [Server Only] Spawns a stage bullet (small or large based on chance) in the opponent's spawn zone.
-    /// Called externally (e.g., by a <see cref="Fairy"/> script) when an enemy is defeated.
+    /// Called externally (e.g., by a <see cref="FairyController"/> script) when an enemy is defeated.
     /// Determines target zone, selects prefab, gets instance from <see cref="NetworkObjectPool"/>,
     /// positions it randomly within the zone, spawns the <see cref="NetworkObject"/>,
     /// and sets the target role on the bullet's <see cref="StageSmallBulletMoverScript"/>.

@@ -67,7 +67,7 @@ namespace TouhouWebArena.Helpers
             }
 
             // --- Fairies ---
-            Fairy[] activeFairies = Object.FindObjectsByType<Fairy>(FindObjectsSortMode.None);
+            FairyController[] activeFairies = Object.FindObjectsByType<FairyController>(FindObjectsSortMode.None);
             Debug.Log($"[ServerEntityCleanupHelper] Clearing {activeFairies.Length} fairies.");
             foreach(var fairy in activeFairies)
             {

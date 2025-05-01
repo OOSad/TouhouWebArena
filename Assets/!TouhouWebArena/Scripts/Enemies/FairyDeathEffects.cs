@@ -2,10 +2,10 @@ using UnityEngine;
 using Unity.Netcode;
 
 // Handles visual/audio effects upon Fairy death 
-[RequireComponent(typeof(Fairy))] // Requires the main Fairy script
+[RequireComponent(typeof(FairyController))] // Requires the main Fairy script
 /// <summary>
 /// [Server Only] Handles spawning visual/audio effects, specifically a shockwave,
-/// when the associated <see cref="Fairy"/> dies.
+/// when the associated <see cref="FairyController"/> dies.
 /// Relies on the <see cref="NetworkObjectPool"/> to instantiate and manage the shockwave effect prefab.
 /// </summary>
 public class FairyDeathEffects : NetworkBehaviour // Needs NetworkBehaviour for IsServer check 

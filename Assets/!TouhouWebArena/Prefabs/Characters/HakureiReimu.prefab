@@ -210,7 +210,7 @@ MonoBehaviour:
   scopeSpriteRenderer: {fileID: 486776013423623380}
   scopeCollider: {fileID: 3371982529944088037}
   initialScopeScale: 0.01
-  maxScopeScale: 0.25
+  maxScopeScale: 0.5
   scopeExpansionSpeed: 1
 --- !u!58 &3371982529944088037
 CircleCollider2D:
@@ -459,7 +459,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 216431824
+  GlobalObjectIdHash: 1271388089
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0

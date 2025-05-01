@@ -2,10 +2,10 @@ using UnityEngine;
 using Unity.Netcode;
 
 // Handles receiving path info and initializing the SplineWalker for a Fairy
-[RequireComponent(typeof(Fairy), typeof(SplineWalker))] // Requires Fairy and SplineWalker
+[RequireComponent(typeof(FairyController), typeof(SplineWalker))] // Requires Fairy and SplineWalker
 /// <summary>
 /// [Server Only] Handles receiving path information via NetworkVariables and initializing the
-/// associated <see cref="SplineWalker"/> component for a <see cref="Fairy"/>.
+/// associated <see cref="SplineWalker"/> component for a <see cref="FairyController"/>.
 /// Ensures the SplineWalker is set up with the correct path from <see cref="PathManager"/>
 /// based on owner index, path index, and starting direction.
 /// Designed to work with object pooling via <see cref="ResetInitializationFlag"/>.
@@ -118,7 +118,7 @@ public class FairyPathInitializer : NetworkBehaviour
     /// <summary>
     /// Resets the internal path initialization flag.
     /// This allows the path to be re-initialized when the Fairy is reused from a pool.
-    /// Called by <see cref="Fairy.InitializeForPooling"/>.
+    /// Called by <see cref="FairyController.InitializeForPooling"/>.
     /// </summary>
     public void ResetInitializationFlag()
     {

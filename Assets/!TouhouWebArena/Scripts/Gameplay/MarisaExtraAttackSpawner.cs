@@ -3,7 +3,7 @@ using Unity.Netcode;
 
 /// <summary>
 /// [Server Only] Handles spawning Marisa's extra attack projectiles (Master Sparks).
-/// Listens for events triggered by <see cref="Fairy"/> instances marked as extra attack triggers.
+/// Listens for events triggered by <see cref="FairyController"/> instances marked as extra attack triggers.
 /// Uses the <see cref="NetworkObjectPool"/> to spawn the projectiles.
 /// </summary>
 public class MarisaExtraAttackSpawner : NetworkBehaviour

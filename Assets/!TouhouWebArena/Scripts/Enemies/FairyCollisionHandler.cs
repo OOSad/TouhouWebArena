@@ -2,14 +2,14 @@ using UnityEngine;
 using Unity.Netcode;
 
 // Handles collision logic for the Fairy
-[RequireComponent(typeof(Fairy), typeof(Collider2D))] // Requires Fairy and its Collider
+[RequireComponent(typeof(FairyController), typeof(Collider2D))] // Requires Fairy and its Collider
 public class FairyCollisionHandler : NetworkBehaviour // Inherit from NetworkBehaviour for IsServer check
 {
-    private Fairy sourceFairy;
+    private FairyController sourceFairy;
 
     void Awake()
     {
-        sourceFairy = GetComponent<Fairy>();
+        sourceFairy = GetComponent<FairyController>();
         if (sourceFairy == null)
         {
             Debug.LogError("[FairyCollisionHandler] Fairy component not found!");

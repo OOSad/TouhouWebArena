@@ -4,7 +4,7 @@ using System.Collections.Generic; // For List
 using Unity.Netcode; // For NetworkObject spawning
 
 /// <summary>
-/// A temporary MonoBehaviour created by a <see cref="Fairy"/> upon its death
+/// A temporary MonoBehaviour created by a <see cref="FairyController"/> upon its death
 /// to handle actions that need to occur after a short delay (e.g., spawning effects,
 /// triggering the next fairy in a chain reaction) without keeping the original Fairy object alive.
 /// This processor holds the necessary data and destroys itself after executing the delayed actions.
@@ -115,7 +115,7 @@ public class DelayedActionProcessor : MonoBehaviour
     {
         if (FairyRegistry.Instance != null)
         {
-            Fairy nextFairy = FairyRegistry.Instance.FindNextInLine(_lineId, _indexInLine);
+            FairyController nextFairy = FairyRegistry.Instance.FindNextInLine(_lineId, _indexInLine);
             if (nextFairy != null)
             {
                 // Apply damage to the specific next fairy

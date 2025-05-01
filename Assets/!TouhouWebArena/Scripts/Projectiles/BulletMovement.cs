@@ -162,7 +162,7 @@ public class BulletMovement : NetworkBehaviour
         // Check if we hit a Fairy
         if (other.CompareTag("Fairy"))
         {
-            Fairy fairy = other.GetComponent<Fairy>();
+            FairyController fairy = other.GetComponent<FairyController>();
             if (fairy != null)
             {
                 // Ensure damage is only dealt by the opponent

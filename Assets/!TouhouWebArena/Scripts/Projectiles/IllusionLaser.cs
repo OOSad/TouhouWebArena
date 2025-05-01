@@ -128,7 +128,7 @@ public class IllusionLaser : NetworkBehaviour
         {
             ownershipMatches = true;
         }
-        else if (other.TryGetComponent<Fairy>(out var fairy) && fairy.GetOwnerRole() == ownerRole)
+        else if (other.TryGetComponent<FairyController>(out var fairy) && fairy.GetOwnerRole() == ownerRole)
         {
             ownershipMatches = true;
         }
@@ -170,7 +170,7 @@ public class IllusionLaser : NetworkBehaviour
     private void ApplyDamage(Collider2D target)
     {
         bool applied = false;
-        if (target.TryGetComponent<Fairy>(out Fairy fairy))
+        if (target.TryGetComponent<FairyController>(out FairyController fairy))
         {
             
             fairy.ApplyDamageServer(damageAmount, ownerRole); 
