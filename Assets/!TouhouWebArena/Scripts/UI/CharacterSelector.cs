@@ -293,8 +293,8 @@ public class CharacterSelector : NetworkBehaviour
         PlayerData? p2Data = playerDataManager.GetPlayer2Data();
         CharacterSynopsisData p2Synopsis = null;
         string p2SelectedChar = ""; // Initialize
-        if (p2Data.HasValue)
-        { 
+         if (p2Data.HasValue)
+        {
             p2SelectedChar = p2Data.Value.SelectedCharacter.ToString();
              Debug.Log($"[CharacterSelector] HandlePlayerDataUpdated: P2 Data found. SelectedCharacter = '{p2SelectedChar}'", this); // LOG Character Name
              if (!string.IsNullOrEmpty(p2SelectedChar))
@@ -315,7 +315,7 @@ public class CharacterSelector : NetworkBehaviour
             if (player2SynopsisPanel.gameObject.activeSelf)
             {
                 player2SynopsisPanel.UpdateDisplay(p2Synopsis);
-            }
+        }
         } else { Debug.LogError("[CharacterSelector] player2SynopsisPanel reference is NULL!", this); }
     }
 
@@ -395,7 +395,7 @@ public class CharacterSelector : NetworkBehaviour
 
         // --- Add Null Checks ---
         if (EventSystem.current == null)
-        {
+            {
             Debug.LogError("[CharacterSelector.LateUpdate] EventSystem.current is NULL!", this);
             return; // Cannot proceed without EventSystem
         }
@@ -443,8 +443,8 @@ public class CharacterSelector : NetworkBehaviour
             // For now, just update the tracked object.
              Debug.Log($"[CharacterSelector.LateUpdate] Selection became NULL.", this);
             lastSelectedObject = null;
+            }
         }
-    }
 
     /// <summary>
     /// Updates the *local* player's synopsis panel to show the character 

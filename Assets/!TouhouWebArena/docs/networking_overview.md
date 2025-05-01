@@ -36,16 +36,29 @@ When running the game locally for development or testing using the Unity editor 
 Here's how major game systems interact with the network under our server-authoritative model:
 
 *   **Player Movement:** *(Current implementation needs verification)* Likely uses client-side prediction: the client moves locally and sends input via `ServerRpc`. The server validates and reconciles.
-*   **Shooting / Charge Attacks:** The client (`PlayerShootingController`) detects input and sends a `RequestFireServerRpc` or `RequestChargeAttackServerRpc` to the server. The server-side singleton `ServerAttackSpawner` receives the request, validates it (implicitly by receiving the correct RPC), and authoritatively spawns the necessary projectiles using the `NetworkObject` spawning system (potentially via `NetworkObjectPool` for basic shots, direct instantiation for charge attacks).
-*   **Spellcard Activation:** The client (`PlayerShootingController`) detects input release at a spellcard charge level and sends `RequestSpellcardServerRpc`. The server-side `SpellBarManager` receives this, checks and consumes the spell cost. If successful, it calls the `ServerAttackSpawner`, which loads the appropriate `SpellcardData`, determines the target, and executes the spellcard pattern by spawning the bullets server-side. These `NetworkObject` bullets are then automatically synchronized to all clients.
+*   **Shooting / Charge Attacks:** The client (`PlayerShootingController`) detects input and sends a `RequestFireServerRpc` or `RequestChargeAttackServerRpc` to the server. The server-side singleton `ServerAttackSpawner` receives the request and delegates the spawning logic:
+    *   `ServerBasicShotSpawner` handles spawning pooled basic shots using `ServerPooledSpawner`.
+    *   `ServerChargeAttackSpawner` handles spawning non-pooled, character-specific charge attacks.
+*   **Spellcard Activation:** The client (`PlayerShootingController`) detects input release at a spellcard charge level and sends `RequestSpellcardServerRpc`. The server-side `SpellBarManager` receives this, checks and consumes the spell cost. If successful, it calls the `ServerAttackSpawner`.
+    *   `ServerAttackSpawner` determines the spell level and target.
+    *   For Level 4: Calls `ServerIllusionManager.Instance.ServerSpawnLevel4Illusion` to handle spawning and lifecycle.
+    *   For Level 2/3: Calls `ServerSpellcardExecutor.ExecuteLevel2or3Spellcard`. This loads `SpellcardData`, finds the target, calculates origin, and calls `ServerSpellcardActionRunner.RunSpellcardActions` (a coroutine).
+    *   The `ServerSpellcardActionRunner` then iterates through the `SpellcardAction`s, spawning bullets (using `ServerPooledSpawner` if applicable) and configuring their behavior via `ServerBulletConfigurer`. These `NetworkObject` bullets are then automatically synchronized to all clients.
 *   **Enemy Spawning & Behavior:** Fully server-controlled. A server-side system spawns enemy `NetworkObject`s. Enemy AI and movement run on the server, with state synchronized via `NetworkTransform` or similar.
 *   **Health & Damage:** Server-authoritative. Collision between server-controlled entities (bullets, enemies) and player `NetworkObject`s is detected on the server. The server updates the player's health `NetworkVariable` (e.g., in `CharacterStats`), which synchronizes to clients.
-*   **Game State (Score, Rounds):** Managed by a server-authoritative GameManager script using `NetworkVariables`.
+*   **Game State (Score, Rounds):** Managed by a server-authoritative `RoundManager` script using `NetworkVariables` and RPCs.
 
 ## Important Scripts (Examples)
 
 *   **`PlayerShootingController.cs`:** Attached to player prefab. Handles **client-side** input detection for shooting/charging/spellcards, manages local burst fire timing, and sends `ServerRpc` requests to server managers.
-*   **`ServerAttackSpawner.cs`:** Server-side singleton service. Handles requests for spawning basic shots, charge attacks, and executing spellcard patterns by spawning projectiles/effects authoritatively.
+*   **`ServerAttackSpawner.cs`:** Server-side singleton service. Acts as a facade, receiving requests for attacks and dispatching them to specialized helper classes/managers.
+*   **`ServerBasicShotSpawner.cs`:** (Non-MonoBehaviour) Handles spawning pooled basic shots.
+*   **`ServerChargeAttackSpawner.cs`:** (Non-MonoBehaviour) Handles spawning non-pooled charge attacks.
+*   **`ServerSpellcardExecutor.cs`:** (Non-MonoBehaviour) Handles setup for Level 2/3 spellcards.
+*   **`ServerSpellcardActionRunner.cs`:** (MonoBehaviour) Runs coroutines to execute Level 2/3 spellcard actions and single actions for Level 4 illusions.
+*   **`ServerIllusionManager.cs`:** (MonoBehaviour) Server-side singleton service. Manages Level 4 illusion spawning, tracking, and lifecycle.
+*   **`ServerBulletConfigurer.cs`:** (Static Class) Helper for configuring bullet behavior components.
+*   **`ServerPooledSpawner.cs`:** (Static Class) Helper for spawning pooled NetworkObjects (like bullets).
 *   **`SpellBarManager.cs`:** Server-side singleton service. Manages the state (`NetworkVariables`) of all player `SpellBarController`s, including passive fill, active charge updates based on client requests, and spell cost consumption.
 *   **`CharacterStats.cs`:** Holds core player stats like `Health` (likely `NetworkVariable`).
 *   **`PlayerMovement.cs` (or similar):** Handles player movement, likely using client-side prediction and server reconciliation.
@@ -53,4 +66,4 @@ Here's how major game systems interact with the network under our server-authori
 *   **`SpellBarController.cs`:** Attached to UI elements. Displays spell bar state based on its `NetworkVariables` (which are managed by `SpellBarManager`).
 *   **`NetworkObjectPool.cs` (if used):** Manages pooled network objects.
 *   **Enemy Scripts (e.g., `FairyMovement.cs`):** Server-side enemy logic.
-*   **GameManager.cs (or similar):** Server-authoritative game state manager. 
+*   **`RoundManager.cs` (or similar):** Server-authoritative game state manager. 

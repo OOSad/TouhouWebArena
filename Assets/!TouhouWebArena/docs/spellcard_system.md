@@ -36,22 +36,41 @@ Spellcards are typically activated when a player releases the fire key with suff
     *   Located in: `Assets/!TouhouWebArena/Scripts/Networking/`
     *   Purpose: Consumes spell cost upon receiving `RequestSpellcardServerRpc`.
 
-*   **`ServerAttackSpawner.cs` (Script - Server-Side Service):**
+*   **`ServerAttackSpawner.cs` (Script - Server-Side Service Facade):**
     *   Located in: `Assets/!TouhouWebArena/Scripts/Networking/`
     *   Purpose:
-        *   Receives forwarded `RequestSpellcardServerRpc`.
+        *   Receives forwarded `RequestSpellcardServerRpc` via `ExecuteSpellcard`.
         *   Triggers the spellcard clearing effect via `TriggerSpellcardClear`.
-        *   For Lv2/3, loads `SpellcardData` and runs `ServerExecuteSpellcardActions`.
-        *   For Lv4, loads `Level4SpellcardData` and spawns the Illusion prefab via `ServerSpawnLevel4Illusion`.
-        *   Provides `ExecuteSingleSpellcardActionFromServerCoroutine` used by the Level 4 illusion (and regular spellcards) to execute individual bullet patterns over time.
+        *   Dispatches execution to specialized helpers based on spell level.
+        *   Delegates Level 2/3 setup to `ServerSpellcardExecutor`.
+        *   Delegates Level 4 illusion spawning to `ServerIllusionManager`.
+
+*   **`ServerSpellcardExecutor.cs` (Script - Non-MonoBehaviour):**
+    *   Located in: `Assets/!TouhouWebArena/Scripts/Networking/`
+    *   Purpose: Handles Level 2/3 spellcard setup: loads data, finds opponent, calculates origin, and initiates action execution via `ServerSpellcardActionRunner`.
+
+*   **`ServerSpellcardActionRunner.cs` (Script - Server-Side Service MonoBehaviour):**
+    *   Located in: `Assets/!TouhouWebArena/Scripts/Networking/`
+    *   Purpose:
+        *   Runs the `RunSpellcardActions` coroutine for Level 2/3 spellcards, executing the sequence of `SpellcardAction`s.
+        *   Runs the `ExecuteSingleSpellcardActionFromServerCoroutine` for individual actions (used by Level 4 illusions and the Level 2/3 runner).
+        *   Handles delays, formations, and delegates bullet spawning (using `ServerPooledSpawner`) and configuration (using `ServerBulletConfigurer`).
+
+*   **`ServerIllusionManager.cs` (Script - Server-Side Service MonoBehaviour):**
+    *   Located in: `Assets/!TouhouWebArena/Scripts/Networking/`
+    *   Purpose: Handles Level 4 illusion lifecycle: Spawns illusion prefab, manages duration/health tracking, handles despawn notifications, and cleans up illusions on player disconnect or cancellation.
+
+*   **`ServerBulletConfigurer.cs` (Script - Static Helper Class):**
+    *   Located in: `Assets/!TouhouWebArena/Scripts/Networking/`
+    *   Purpose: Configures the behavior components (movement, homing, etc.) of newly spawned spellcard bullets based on `SpellcardAction` data.
 
 *   **`Level4IllusionController.cs` (Script - NetworkBehaviour):**
     *   Located in: `Assets/!TouhouWebArena/Scripts/Spellcards/`
-    *   Purpose: Attached to the Level 4 illusion prefab. **Server-side**, it handles the illusion's random movement, handles optional movement *during* specific attacks, and triggers attacks by randomly selecting `CompositeAttackPattern`s from the `Level4SpellcardData` and executing them via `ServerAttackSpawner`.
+    *   Purpose: Attached to the Level 4 illusion prefab. **Server-side**, it handles the illusion's random movement, handles optional movement *during* specific attacks, and triggers attacks by randomly selecting `CompositeAttackPattern`s from the `Level4SpellcardData` and executing them via `ServerSpellcardActionRunner.Instance.ExecuteSingleSpellcardActionFromServerCoroutine`.
 
 *   **`IllusionHealth.cs` (Script - NetworkBehaviour):**
-    *   Located in: `Assets/!TouhouWebArena/Scripts/Spellcards/` (Likely)
-    *   Purpose: Attached to the Level 4 illusion prefab. Manages the illusion's health and handles its destruction when health reaches zero.
+    *   Located in: `Assets/!TouhouWebArena/Scripts/Spellcards/`
+    *   Purpose: Attached to the Level 4 illusion prefab. Manages the illusion's health and handles its destruction when health reaches zero, notifying `ServerIllusionManager` upon despawn.
 
 *   **Bullet Behavior Scripts (e.g., `LinearMovement.cs`, `Homing.cs`, `DelayedHoming.cs`, `DelayedRandomTurn.cs`):**
     *   Located in: `Assets/!TouhouWebArena/Scripts/Spellcards/Behaviors/`
@@ -72,10 +91,14 @@ Spellcards are typically activated when a player releases the fire key with suff
     a.  Server calls `ServerAttackSpawner.TriggerSpellcardClear(senderClientId, spellLevel)`. This performs an overlap check around the caster and calls `Clear(true, casterRole)` on `IClearable` components found within a radius determined by `spellLevel`.
     b.  Server calls `ServerAttackSpawner.ExecuteSpellcard(senderClientId, spellLevel)`.
     c.  `ExecuteSpellcard` determines if it's Level 2/3 or Level 4.
-        *   **Level 2/3:** Loads `SpellcardData`, calculates origin, runs `ServerExecuteSpellcardActions` coroutine which calls `ExecuteSingleSpellcardActionFromServerCoroutine` for each action.
-        *   **Level 4:** Loads `Level4SpellcardData`, spawns the Illusion prefab via `ServerSpawnLevel4Illusion` (which initializes `Level4IllusionController` and `IllusionHealth`). The `Level4IllusionController` takes over, moving randomly and executing `CompositeAttackPattern`s, which call `ExecuteSingleSpellcardActionFromServerCoroutine` for their actions.
-6.  `ExecuteSingleSpellcardActionFromServerCoroutine` spawns `NetworkObject` bullets on the server over time (using `intraActionDelay`), respecting `skipEveryNth`, configuring behavior via `ConfigureBulletBehavior`.
-7.  Netcode handles synchronizing spawned illusions and bullets to clients.
+        *   **Level 2/3:** Delegates to `ServerSpellcardExecutor.ExecuteLevel2or3Spellcard`. This loads `SpellcardData`, calculates origin, and calls `ServerSpellcardActionRunner.Instance.RunSpellcardActions` coroutine.
+        *   **Level 4:** Delegates to `ServerIllusionManager.Instance.ServerSpawnLevel4Illusion`. This spawns the Illusion prefab (which initializes `Level4IllusionController` and `IllusionHealth`).
+    d.  The `Level4IllusionController` takes over, moving randomly and executing `CompositeAttackPattern`s, which call `ServerSpellcardActionRunner.Instance.ExecuteSingleSpellcardActionFromServerCoroutine` for their actions.
+    e.  The `ServerSpellcardActionRunner` (running either `RunSpellcardActions` or `ExecuteSingleSpellcardActionFromServerCoroutine`) executes individual `SpellcardAction`s:
+        *   Handles delays (`startDelay`, `intraActionDelay`).
+        *   Spawns `NetworkObject` bullets on the server over time (using `ServerPooledSpawner` if applicable), respecting `skipEveryNth`.
+        *   Configures bullet behavior via `ServerBulletConfigurer.ConfigureBulletBehavior`.
+6.  Netcode handles synchronizing spawned illusions and bullets to clients.
 
 ## Level 4 Spellcards (Illusion System)
 
