@@ -248,26 +248,19 @@ namespace TouhouWebArena.Spellcards
                 // Use the *current* illusion position for spawning if movement is happening
                 Vector3 currentOrigin = pattern.performMovementDuringAttack ? transform.position : originPosition;
 
-                // Start the action coroutine using the ServerSpellcardActionRunner instance
-                if (ServerSpellcardActionRunner.Instance != null)
-                {
-                    StartCoroutine(ServerSpellcardActionRunner.Instance.ExecuteSingleSpellcardActionFromServerCoroutine(
-                        action,
-                        transform, // Use live transform of the illusion
-                        patternRotation,
-                        _targetPlayerClientId,
-                        capturedTargetPosition,
-                        isTargetOnPositiveSide
-                    ));
-                }
-                else
-                {
-                    Debug.LogError("[Level4IllusionController] ServerSpellcardActionRunner instance is null!");
-                }
+                // Start the spawning coroutine for this action
+                Coroutine spawnCoroutine = StartCoroutine(ServerAttackSpawner.Instance.ExecuteSingleSpellcardActionFromServerCoroutine(
+                    action,
+                    this.transform,
+                    patternRotation,
+                    _targetPlayerClientId,
+                    capturedTargetPosition,
+                    isTargetOnPositiveSide
+                ));
 
-                // Calculate the time this action is expected to END based on its properties
-                float actionDuration = (action.count * action.intraActionDelay); // Rough estimate, could be more precise
-                lastActionEndTime = Mathf.Max(lastActionEndTime, actionStartTime + actionDuration);
+                // Calculate the time this action will finish spawning its last bullet
+                float actionSpawnDuration = Mathf.Max(0, action.count - 1) * action.intraActionDelay;
+                lastActionEndTime = actionStartTime + actionSpawnDuration;
 
                 // IMPORTANT: We DON'T yield return the spawnCoroutine here.
                 // This allows the *next* action's startDelay timer to begin immediately

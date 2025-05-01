@@ -84,14 +84,14 @@ namespace TouhouWebArena.Spellcards
             if (!IsServer || _isDead) return;
             _isDead = true;
             
-            // Notify Illusion Manager BEFORE Despawning
-            if (ServerIllusionManager.Instance != null)
+            // Notify Spawner BEFORE Despawning
+            if (ServerAttackSpawner.Instance != null)
             {
-                ServerIllusionManager.Instance.ServerNotifyIllusionDespawned(this.NetworkObject);
+                ServerAttackSpawner.Instance.ServerNotifyIllusionDespawned(this.NetworkObject);
             }
             else
             {
-                Debug.LogError("[IllusionHealth] ServerIllusionManager instance is null! Cannot notify about despawn.", gameObject);
+                Debug.LogError("[IllusionHealth] ServerAttackSpawner instance is null! Cannot notify about despawn.", gameObject);
             }
 
             // Stop attacks/movement (optional, despawn might handle it)
