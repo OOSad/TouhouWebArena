@@ -18,33 +18,55 @@ MonoBehaviour:
     bulletPrefabs:
     - {fileID: 3753940637100796060, guid: 2ca255f0a3b4acc49ac43f9a6cb19d51, type: 3}
     - {fileID: 3753940637100796060, guid: 86b0cd61b3d7bb3469bba1e830d59d37, type: 3}
-    formation: 1
     positionOffset: {x: 0, y: 0}
     count: 40
-    radius: 3
+    formation: 1
+    radius: 0
     spacing: 0
     angle: 0
     behavior: 0
     speed: 2
     speedIncrementPerBullet: 0
     homingSpeed: 4
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
     homingDelay: 0
-    isClearableByBomb: 0
+    secondHomingDelay: 0.2
+    firstHomingDuration: 1
+    secondHomingLookAheadDistance: 5
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
     lifetime: 20
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 3753940637100796060, guid: f2a3a3efbdf65af4d9c5bbad7ca3e4a6, type: 3}
     - {fileID: 3753940637100796060, guid: b9dbc2fdf801f60469638948c951540b, type: 3}
-    formation: 1
     positionOffset: {x: 0, y: 0}
     count: 40
-    radius: 2
+    formation: 1
+    radius: 0
     spacing: 0
     angle: 0
     behavior: 2
     speed: 1
     speedIncrementPerBullet: 0
     homingSpeed: 4
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
     homingDelay: 1
-    isClearableByBomb: 1
+    secondHomingDelay: 0.2
+    firstHomingDuration: 1
+    secondHomingLookAheadDistance: 5
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
     lifetime: 20

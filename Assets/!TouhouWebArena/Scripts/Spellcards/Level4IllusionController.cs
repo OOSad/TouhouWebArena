@@ -252,13 +252,13 @@ namespace TouhouWebArena.Spellcards
                 if (ServerSpellcardActionRunner.Instance != null)
                 {
                     StartCoroutine(ServerSpellcardActionRunner.Instance.ExecuteSingleSpellcardActionFromServerCoroutine(
-                        action,
+                    action,
                         transform, // Use live transform of the illusion
-                        patternRotation,
-                        _targetPlayerClientId,
-                        capturedTargetPosition,
-                        isTargetOnPositiveSide
-                    ));
+                    patternRotation,
+                    _targetPlayerClientId,
+                    capturedTargetPosition,
+                    isTargetOnPositiveSide
+                ));
                 }
                 else
                 {

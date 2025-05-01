@@ -17,36 +17,54 @@ MonoBehaviour:
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 2173492373472071295, guid: 3f2279f364f549a459822741608eda89, type: 3}
-    formation: 1
     positionOffset: {x: 0, y: 0}
     count: 40
-    radius: 3
+    formation: 1
+    radius: 0
     spacing: 0
     angle: 0
     behavior: 0
     speed: 2
     speedIncrementPerBullet: 0
     homingSpeed: 4
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
     homingDelay: 0
     secondHomingDelay: 0.3
     firstHomingDuration: 0.5
     secondHomingLookAheadDistance: 10
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
     lifetime: 20
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 3623579197644259766, guid: 044aacc1cd040ac4db9cb9b9b57acf82, type: 3}
-    formation: 1
     positionOffset: {x: 0, y: 0}
     count: 40
-    radius: 2
+    formation: 1
+    radius: 0
     spacing: 0
     angle: 0
     behavior: 3
     speed: 1
     speedIncrementPerBullet: 0
     homingSpeed: 4
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
     homingDelay: 1
     secondHomingDelay: 0.1
     firstHomingDuration: 1
     secondHomingLookAheadDistance: 10
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
     lifetime: 20

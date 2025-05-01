@@ -15,6 +15,9 @@ GameObject:
   - component: {fileID: 6174320784361019030}
   - component: {fileID: 4521425342996325113}
   - component: {fileID: 9076496188357396682}
+  - component: {fileID: 5448013928719064153}
+  - component: {fileID: 4370567367628718381}
+  - component: {fileID: 8794130294973847301}
   - component: {fileID: -6013622834526804853}
   m_Layer: 8
   m_Name: Spirit
@@ -166,7 +169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 4176723456
+  GlobalObjectIdHash: 2332357840
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
@@ -221,20 +224,59 @@ MonoBehaviour:
   rb: {fileID: 8395408942226847826}
   bodyCollider: {fileID: 4958202173044338490}
   spiritPrefabRef: {fileID: 1241426470714071119}
-  normalVisualObject: {fileID: 4571694567519712325}
-  activatedVisualObject: {fileID: 6674051260961072387}
+  spiritDeathEffects: {fileID: 5448013928719064153}
+  visualController: {fileID: 4370567367628718381}
   normalMoveSpeed: 2
   activatedMoveSpeed: 1
   normalMaxHp: 5
   activatedMaxHp: 1
-  normalDeathEffectPrefab: {fileID: 5741200759558388235, guid: aa590f6646383c649af0871c8341a62f, type: 3}
-  activatedDeathEffectPrefab: {fileID: 825958184812720138, guid: 76cfe1a5018d7d74fbbbd03cf0b269ff, type: 3}
   maxLifetime: 15
-  spiritLargeBulletPrefab: {fileID: 603824684173821203, guid: 160679763d648fe4a84680603d35f329, type: 3}
   activatedTimeoutDuration: 3
-  bulletSpreadAngle: 15
   maxSpiritsPerSide: 10
   revengeSpawnZoneSize: {x: 7, y: 1}
+  spiritTimeoutAttack: {fileID: 8794130294973847301}
+--- !u!114 &5448013928719064153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1241426470714071119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de87c43a997579a45a67456bb9184a20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  normalDeathEffectPrefab: {fileID: 5741200759558388235, guid: aa590f6646383c649af0871c8341a62f, type: 3}
+  activatedDeathEffectPrefab: {fileID: 825958184812720138, guid: 76cfe1a5018d7d74fbbbd03cf0b269ff, type: 3}
+--- !u!114 &4370567367628718381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1241426470714071119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42e0f509d7c156545bf47d9c3cc2b22b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  normalVisualObject: {fileID: 4571694567519712325}
+  activatedVisualObject: {fileID: 6674051260961072387}
+--- !u!114 &8794130294973847301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1241426470714071119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c22c6258fe3ab645a01059f29887349, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spiritLargeBulletPrefab: {fileID: 603824684173821203, guid: 160679763d648fe4a84680603d35f329, type: 3}
+  bulletSpreadAngle: 15
 --- !u!114 &-6013622834526804853
 MonoBehaviour:
   m_ObjectHideFlags: 0

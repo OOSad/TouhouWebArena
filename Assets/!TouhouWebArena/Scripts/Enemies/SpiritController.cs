@@ -18,18 +18,15 @@ public class SpiritController : NetworkBehaviour, IClearable
     [SerializeField] private CircleCollider2D bodyCollider; // Or other collider type
     /// <summary>Reference to the Spirit prefab asset itself, used for revenge spawns.</summary>
     [SerializeField] private GameObject spiritPrefabRef; // Assign Spirit prefab itself here
+    /// <summary>Reference to the component responsible for spawning death visual effects.</summary>
+    [Tooltip("Reference to the component responsible for spawning death visual effects.")]
+    [SerializeField] private SpiritDeathEffects spiritDeathEffects;
     // Potential reference to a bullet clearing component
     // [SerializeField] private BulletClearer bulletClearer;
-
-    [Header("Visuals (Assign Children)")]
-    /// <summary>The child GameObject holding visuals for the normal (unactivated) state.</summary>
-    [SerializeField]
-    [Tooltip("The child GameObject holding visuals for the normal state.")]
-    private GameObject normalVisualObject;
-    /// <summary>The child GameObject holding visuals for the activated state.</summary>
-    [SerializeField]
-    [Tooltip("The child GameObject holding visuals for the activated state.")]
-    private GameObject activatedVisualObject;
+    // --- Add reference to the visual controller ---
+    [Tooltip("Reference to the component that manages visual state changes.")]
+    [SerializeField] private SpiritVisualController visualController;
+    // ---------------------------------------------
 
     [Header("Movement")]
     /// <summary>The movement speed when in the normal (unactivated) state.</summary>
@@ -52,23 +49,12 @@ public class SpiritController : NetworkBehaviour, IClearable
     private NetworkVariable<bool> isActivated = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     // -----------------------
 
-    [Header("Death Effects")]
-    /// <summary>Prefab for the visual effect spawned when the spirit dies in the normal state.</summary>
-    [SerializeField] private GameObject normalDeathEffectPrefab;
-    /// <summary>Prefab for the visual effect spawned when the spirit dies in the activated state.</summary>
-    [SerializeField] private GameObject activatedDeathEffectPrefab;
-
     [Header("Lifetime")]
     /// <summary>Maximum duration in seconds the spirit can exist before being automatically despawned by the server.</summary>
     [SerializeField] private float maxLifetime = 15f; // Time in seconds before auto-despawn
 
-    [Header("Timeout Behavior (Server Only)")]
-    /// <summary>Prefab for the large bullet spawned when the spirit times out while activated.</summary>
-    [SerializeField] private GameObject spiritLargeBulletPrefab; // Prefab to spawn on timeout (should have StageSmallBulletMoverScript)
     /// <summary>Duration in seconds the spirit stays activated before timing out and firing bullets.</summary>
     [SerializeField] private float activatedTimeoutDuration = 3.0f;
-    /// <summary>Spread angle (degrees) for the side bullets fired during timeout.</summary>
-    [SerializeField] private float bulletSpreadAngle = 15f; // Angle for side bullets
 
     [Header("Revenge Spawn (Server Only)")]
     /// <summary>Maximum number of spirits allowed per player side (checked during revenge spawns).</summary>
@@ -93,6 +79,12 @@ public class SpiritController : NetworkBehaviour, IClearable
     private Transform player2SpawnZoneRef; // Passed in Initialize
     // ------------------------
 
+    // --- Add reference to the timeout attack component ---
+    [Header("Component References")] // Add a header for component refs if desired
+    [Tooltip("Reference to the component that executes the timeout attack pattern.")]
+    [SerializeField] private SpiritTimeoutAttack spiritTimeoutAttack;
+    // ---------------------------------------------------
+
     // --- NEW: Public Getter for Owner Role ---
     /// <summary>
     /// Gets the <see cref="PlayerRole"/> indicating which player's side this spirit belongs to.
@@ -113,8 +105,15 @@ public class SpiritController : NetworkBehaviour, IClearable
         // Subscribe to state changes to update visuals
         isActivated.OnValueChanged += OnActivationStateChanged;
 
-        // Immediately update visuals on spawn based on the synchronized initial state
-        UpdateVisuals(isActivated.Value);
+        // Immediately update visuals via the controller based on the synchronized initial state
+        if (visualController != null)
+        {
+            visualController.SetVisualState(isActivated.Value);
+        }
+        else
+        {
+            Debug.LogError("[SpiritController] VisualController reference is missing on NetworkSpawn!", this);
+        }
     }
 
     public override void OnNetworkDespawn()
@@ -238,26 +237,13 @@ public class SpiritController : NetworkBehaviour, IClearable
     /// <param name="newValue">The new activation state.</param>
     private void OnActivationStateChanged(bool previousValue, bool newValue)
     {
-        UpdateVisuals(newValue);
-    }
-
-    /// <summary>
-    /// Updates the visibility of the child GameObjects (<see cref="normalVisualObject"/>, <see cref="activatedVisualObject"/>)
-    /// based on the current activation state.
-    /// </summary>
-    /// <param name="activated">The current activation state.</param>
-    private void UpdateVisuals(bool activated)
-    {
-        if (normalVisualObject == null || activatedVisualObject == null)
+        // Delegate visual update to the visual controller
+        if (visualController != null)
         {
-            Debug.LogError($"[SpiritController] Visual objects not assigned!", this);
-            // Consider warning
-            return;
+            visualController.SetVisualState(newValue);
         }
-
-        // Activate/Deactivate based on state
-        normalVisualObject.SetActive(!activated); 
-        activatedVisualObject.SetActive(activated);
+        // No else log here to prevent spam on state change if reference is missing
+        // The error on spawn should be sufficient.
     }
 
     /// <summary>
@@ -305,7 +291,19 @@ public class SpiritController : NetworkBehaviour, IClearable
             activatedTimer += Time.fixedDeltaTime;
             if (activatedTimer >= activatedTimeoutDuration)
             {
-                 HandleActivatedTimeout(); // Handle timeout logic
+                // --- Delegate timeout attack execution --- 
+                if (spiritTimeoutAttack != null)
+                {
+                    spiritTimeoutAttack.ExecuteAttack(transform.position);
+                }
+                else
+                {
+                    Debug.LogError("[SpiritController] SpiritTimeoutAttack component reference is missing! Cannot execute timeout attack.", this);
+                }
+                // ---------------------------------------
+                
+                // After the attack executes, the spirit dies.
+                Die(PlayerRole.None); 
                 return; // Prevent further processing after handling timeout (which calls Die)
             }
         }
@@ -374,80 +372,44 @@ public class SpiritController : NetworkBehaviour, IClearable
     /// <param name="killerRole">The <see cref="PlayerRole"/> who caused the death, or <see cref="PlayerRole.None"/> if no specific killer (e.g., timeout).</param>
     private void Die(PlayerRole killerRole)
     {
-        if (!IsServer || isDying) return;
-        isDying = true; // Prevent multiple calls
+        if (!IsServer || isDying) return; // Only run on server and prevent multiple calls
+        isDying = true; // Set flag immediately
 
-        // --- Handle Death Effect Spawning --- 
-        GameObject effectPrefab = isActivated.Value ? activatedDeathEffectPrefab : normalDeathEffectPrefab;
-        if (effectPrefab != null)
+        Debug.Log($"[SpiritController] Spirit owned by {ownerRole} died. Killed by {killerRole}. Activated: {isActivated.Value}");
+
+        // --- Call the dedicated component for visual effects ---
+        if (spiritDeathEffects != null)
         {
-            // Instantiate and spawn the effect
-            GameObject deathEffectInstance = Instantiate(effectPrefab, transform.position, Quaternion.identity);
-            NetworkObject effectNetworkObject = deathEffectInstance.GetComponent<NetworkObject>();
-            if (effectNetworkObject != null)
-            {
-                effectNetworkObject.Spawn(true); // Spawn server-owned, destroy with scene
-            }
-            else
-            {
-                Debug.LogWarning($"[SpiritController] Death effect prefab '{effectPrefab.name}' is missing a NetworkObject component.", this);
-                Destroy(deathEffectInstance); // Cleanup unspawnable effect
-            }
+            spiritDeathEffects.PlayDeathEffect(isActivated.Value, transform.position);
         }
         else
         {
-             Debug.LogWarning($"[SpiritController] Death effect prefab is null for state (Activated: {isActivated.Value}).", this);
+            Debug.LogError("[SpiritController] SpiritDeathEffects component reference is missing!", this);
         }
+        // ------------------------------------------------------
 
-
-        // --- Simplified Spawn Logic: Always spawn a spirit on the opponent's side on death ---
-        if (ownerRole != PlayerRole.None) // Ensure the dying spirit has a valid owner
+        // --- Spawn Revenge Spirit Logic (Remains for now) ---
+        // Only spawn revenge spirit if killed by the OPPOSITE player
+        if (ownerRole != PlayerRole.None && killerRole != PlayerRole.None && ownerRole != killerRole)
         {
-            PlayerRole opponentRole = (ownerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
-            SpawnSpiritOnOpponentSide(opponentRole); // Pass OPPONENT's role
+            // Spawn on the killer's side (who is the opponent of the owner)
+            SpawnSpiritOnOpponentSide(killerRole);
         }
-        else
-        {
-            Debug.LogWarning($"[SpiritController] Spirit died with OwnerRole.None, cannot determine opponent to spawn spirit for.", this);
-        }
-        // -------------------------------------------------------------------------------------
+        // ------------------------------------------------------
 
-        // --- Deregister from Registry --- 
+        // --- Deregister and Despawn --- 
         if (SpiritRegistry.Instance != null)
         {
-            SpiritRegistry.Instance.Deregister(this, ownerRole); 
+            SpiritRegistry.Instance.Deregister(this, ownerRole);
         }
         else
         {
-            Debug.LogWarning("[SpiritController] SpiritRegistry instance not found during death.", this);
+            Debug.LogWarning("[SpiritController] SpiritRegistry instance not found during Die.", this);
         }
-        // --------------------------------
 
-        // --- Despawn/Return to Pool --- 
-        if (NetworkObject != null && NetworkObject.IsSpawned)
-        {
-            // Despawn the object without destroying it
-            NetworkObject.Despawn(false); 
-
-            // Return the object to the pool
-            if (NetworkObjectPool.Instance != null)
-            {
-                NetworkObjectPool.Instance.ReturnNetworkObject(NetworkObject);
-            }
-            else
-            {
-                Debug.LogWarning("[SpiritController] NetworkObjectPool instance not found when trying to return spirit. Destroying instead.", this);
-                Destroy(gameObject); 
-            }
-        }
-        else
-        {
-            // If not spawned or null, maybe just destroy?
-            // Or maybe it was already being handled?
-            // This case might indicate an issue if reached frequently.
-            // If the object is already inactive/pooled, this is fine.
-        }
-        // -----------------------------
+        // Despawn the NetworkObject (this handles disabling/returning to pool if applicable)
+        NetworkObject.Despawn(true);
+        // ----------------------------
     }
 
     #endregion
@@ -466,101 +428,9 @@ public class SpiritController : NetworkBehaviour, IClearable
     }
     // ------------------------------------
 
-    #region Timeout and Revenge Logic (Server Only)
-
-    /// <summary>
-    /// [Server Only] Handles the logic when an activated spirit times out.
-    /// Spawns three large bullets (one straight down, two angled) and then calls <see cref="Die"/>.
-    /// </summary>
-    private void HandleActivatedTimeout()
-    {
-        if (!IsServer) return;
-
-        // Spawn 3 bullets: one down, two angled
-        Vector3 spawnPos = transform.position; // Use spirit's current position
-
-        // 1. Straight down
-        SpawnTimeoutBullet(Vector3.down, spawnPos);
-
-        // 2. Angled left
-        Quaternion leftRotation = Quaternion.Euler(0, 0, bulletSpreadAngle);
-        Vector3 leftDirection = leftRotation * Vector3.down;
-        SpawnTimeoutBullet(leftDirection, spawnPos);
-
-        // 3. Angled right
-        Quaternion rightRotation = Quaternion.Euler(0, 0, -bulletSpreadAngle);
-        Vector3 rightDirection = rightRotation * Vector3.down;
-        SpawnTimeoutBullet(rightDirection, spawnPos);
-
-        // After firing, the spirit dies (without a killer)
-        Die(PlayerRole.None);
-    }
-
-    // Helper to spawn a bullet from the pool (assuming StageSmallBulletMoverScript is used)
-    // --- REPLACED: Updated SpawnTimeoutBullet to use Instantiate directly ---
-    /*
-    private void SpawnTimeoutBulletFromPool(Vector3 direction, Vector3 spawnPosition)
-    {
-        // ... (Pool logic) ...
-    }
-    */
-    // ----------------------------------------------------------------------
-
-    // --- RENAMED and Updated for Clarity ---
-    /// <summary>
-    /// [Server Only] Instantiates and spawns a single timeout bullet (typically a large stage bullet)
-    /// with a specified initial velocity and position. This method now directly instantiates the prefab.
-    /// </summary>
-    /// <param name="direction">The direction the bullet should travel.</param>
-    /// <param name="spawnPosition">The world position where the bullet should spawn.</param>
-    private void SpawnTimeoutBullet(Vector3 direction, Vector3 spawnPosition)
-    {
-        if (!IsServer) return;
-
-        if (spiritLargeBulletPrefab == null)
-        {
-            Debug.LogError("[SpiritController] spiritLargeBulletPrefab is not assigned!", this);
-            return;
-        }
-
-        // Calculate rotation to face the direction
-        Quaternion bulletRotation = Quaternion.LookRotation(Vector3.forward, direction); // Use LookRotation for 2D up direction
-
-        // Instantiate the bullet prefab
-        GameObject bulletInstance = Instantiate(spiritLargeBulletPrefab, spawnPosition, bulletRotation);
-
-        // Get the NetworkObject
-        NetworkObject bulletNetworkObject = bulletInstance.GetComponent<NetworkObject>();
-        if (bulletNetworkObject == null)
-        {
-            Debug.LogError($"[SpiritController] Timeout bullet prefab '{spiritLargeBulletPrefab.name}' is missing a NetworkObject component.", this);
-            Destroy(bulletInstance);
-            return;
-        }
-
-        // --- Configure Bullet (If needed) ---
-        // Get the bullet script (assuming StageSmallBulletMoverScript)
-        StageSmallBulletMoverScript bulletMover = bulletInstance.GetComponent<StageSmallBulletMoverScript>();
-        if (bulletMover != null)
-        {
-            // Spawn the bullet on the network FIRST
-            bulletNetworkObject.Spawn(true); // Spawn server-owned
-
-            // THEN set NetworkVariables *after* spawning
-            bulletMover.UseInitialVelocity.Value = true;
-            bulletMover.InitialVelocity.Value = direction * bulletMover.GetMinSpeed(); // Use min speed for consistency? Or add a field?
-            bulletMover.TargetPlayerRole.Value = PlayerRole.None; // Timeout bullets aren't targeted? Or should they target owner? Check design.
-        }
-        else
-        {
-             Debug.LogWarning($"[SpiritController] Timeout bullet prefab '{spiritLargeBulletPrefab.name}' is missing StageSmallBulletMoverScript.", this);
-            // Still spawn the object if it has a NetworkObject, but warn about missing script
-            bulletNetworkObject.Spawn(true);
-        }
-        // --------------------------------------
-    }
-    // -------------------------------------------------
-
+    #region Revenge Spawn Logic (Server Only)
+    // This section now only contains the revenge spawn logic.
+    // Timeout logic moved to SpiritTimeoutAttack component and triggered in FixedUpdate.
     // --- RENAMED from SpawnRevengeSpirit         ---
     /// <summary>
     /// [Server Only] Handles the spawning of a spirit on the opponent's side.

@@ -2035,6 +2035,8 @@ GameObject:
   - component: {fileID: 394317611}
   - component: {fileID: 394317612}
   - component: {fileID: 394317614}
+  - component: {fileID: 394317615}
+  - component: {fileID: 394317616}
   - component: {fileID: 394317613}
   m_Layer: 0
   m_Name: GameplayManagers
@@ -2072,7 +2074,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   reimuExtraAttackPrefab: {fileID: 916272378052303310, guid: 9323d805ec3d7ab4cb582c51d6f02265, type: 3}
   marisaExtraAttackPrefab: {fileID: 2089556739134321075, guid: a7448fa3f730c494c917eae3278c48a1, type: 3}
-  extraAttackInterval: 2
 --- !u!114 &394317613
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2115,6 +2116,31 @@ MonoBehaviour:
   roundResetDelay: 3
   player1SpawnPoint: {fileID: 1353753024}
   player2SpawnPoint: {fileID: 1318922055}
+--- !u!114 &394317615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 394317610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8dd768d44bd91fb42a5e286e72090b5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  roundManager: {fileID: 394317614}
+--- !u!114 &394317616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 394317610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1766fe8a246be5a488b700d845b58c0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &422618548
 GameObject:
   m_ObjectHideFlags: 0
