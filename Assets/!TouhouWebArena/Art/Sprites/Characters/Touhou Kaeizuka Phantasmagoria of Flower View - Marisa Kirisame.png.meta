@@ -118,7 +118,7 @@ TextureImporter:
         width: 59
         height: 67
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -126,6 +126,27 @@ TextureImporter:
       bones: []
       spriteID: 735b09748277b184dbe6157713214f6f
       internalID: 80847811
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Touhou Kaeizuka Phantasmagoria of Flower View - Marisa Kirisame_1
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 99
+        width: 288
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8f0f3e0b66596df4e9aab71c313a42ba
+      internalID: 1954175243
       vertices: []
       indices: 
       edges: []
@@ -142,6 +163,7 @@ TextureImporter:
     secondaryTextures: []
     nameFileIdTable:
       Touhou Kaeizuka Phantasmagoria of Flower View - Marisa Kirisame_0: 80847811
+      Touhou Kaeizuka Phantasmagoria of Flower View - Marisa Kirisame_1: 1954175243
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

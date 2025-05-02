@@ -165,6 +165,25 @@ public class ServerAttackSpawner : NetworkBehaviour
         }
         string senderCharacterName = senderStats.GetCharacterName();
 
+        // --- ADDED: Trigger Spellcard Banner --- 
+        PlayerData? casterData = PlayerDataManager.Instance?.GetPlayerData(senderClientId);
+        if (casterData.HasValue && !string.IsNullOrEmpty(casterData.Value.SelectedCharacter.ToString()))
+        {
+            if (SpellcardBannerDisplay.Instance != null)
+            {
+                 // Send RPC to all clients
+                 ClientRpcParams clientRpcParams = new ClientRpcParams
+                 {
+                      Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds }
+                 };
+                SpellcardBannerDisplay.Instance.ShowBannerClientRpc(casterData.Value.Role, casterData.Value.SelectedCharacter.ToString(), clientRpcParams);
+                Debug.Log($"[ServerAttackSpawner] Sent ShowBannerClientRpc for {casterData.Value.Role} ({casterData.Value.SelectedCharacter})");
+            }
+            else { Debug.LogWarning("[ServerAttackSpawner] SpellcardBannerDisplay Instance is null. Cannot show banner."); }
+        }
+        else { Debug.LogWarning($"[ServerAttackSpawner] Could not get valid caster data or character name for ClientId {senderClientId}. Cannot show banner."); }
+        // ----------------------------------------
+
         // --- Find Opponent ---
         ulong opponentClientId = ulong.MaxValue;
         NetworkObject opponentPlayerObject = null;

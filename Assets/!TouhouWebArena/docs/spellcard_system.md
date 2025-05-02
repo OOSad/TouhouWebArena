@@ -90,11 +90,12 @@ Spellcards are typically activated when a player releases the fire key with suff
 5.  If cost is paid:
     a.  Server calls `ServerAttackSpawner.TriggerSpellcardClear(senderClientId, spellLevel)`. This performs an overlap check around the caster and calls `Clear(true, casterRole)` on `IClearable` components found within a radius determined by `spellLevel`.
     b.  Server calls `ServerAttackSpawner.ExecuteSpellcard(senderClientId, spellLevel)`.
-    c.  `ExecuteSpellcard` determines if it's Level 2/3 or Level 4.
-        *   **Level 2/3:** Delegates to `ServerSpellcardExecutor.ExecuteLevel2or3Spellcard`. This loads `SpellcardData`, calculates origin, and calls `ServerSpellcardActionRunner.Instance.RunSpellcardActions` coroutine.
-        *   **Level 4:** Delegates to `ServerIllusionManager.Instance.ServerSpawnLevel4Illusion`. This spawns the Illusion prefab (which initializes `Level4IllusionController` and `IllusionHealth`).
-    d.  The `Level4IllusionController` takes over, moving randomly and executing `CompositeAttackPattern`s, which call `ServerSpellcardActionRunner.Instance.ExecuteSingleSpellcardActionFromServerCoroutine` for their actions.
-    e.  The `ServerSpellcardActionRunner` (running either `RunSpellcardActions` or `ExecuteSingleSpellcardActionFromServerCoroutine`) executes individual `SpellcardAction`s:
+        *   This method first triggers the UI banner display via `SpellcardBannerDisplay.Instance.ShowBannerClientRpc`, sending the caster's role and character name to all clients.
+        *   Then, it determines if it's Level 2/3 or Level 4.
+            *   **Level 2/3:** Delegates to `ServerSpellcardExecutor.ExecuteLevel2or3Spellcard`. This loads `SpellcardData`, calculates origin, and calls `ServerSpellcardActionRunner.Instance.RunSpellcardActions` coroutine.
+            *   **Level 4:** Delegates to `ServerIllusionManager.Instance.ServerSpawnLevel4Illusion`. This spawns the Illusion prefab (which initializes `Level4IllusionController` and `IllusionHealth`).
+    c.  The `Level4IllusionController` takes over, moving randomly and executing `CompositeAttackPattern`s, which call `ServerSpellcardActionRunner.Instance.ExecuteSingleSpellcardActionFromServerCoroutine` for their actions.
+    d.  The `ServerSpellcardActionRunner` (running either `RunSpellcardActions` or `ExecuteSingleSpellcardActionFromServerCoroutine`) executes individual `SpellcardAction`s:
         *   Handles delays (`startDelay`, `intraActionDelay`).
         *   Spawns `NetworkObject` bullets on the server over time (using `ServerPooledSpawner` if applicable), respecting `skipEveryNth`.
         *   Configures bullet behavior via `ServerBulletConfigurer.ConfigureBulletBehavior`.

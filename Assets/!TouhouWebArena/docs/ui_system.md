@@ -12,6 +12,7 @@ The UI system displays critical game information to the players, including healt
     *   **Round Timer:** Implemented by `RoundTimerDisplay.cs`. Displays the elapsed time for the current round in MM:SS format, driven by the `RoundTime` NetworkVariable from `RoundManager.cs`. Typically located at the top-center of the screen.
     *   **Round Indicators:** Implemented by `RoundIndicatorDisplay.cs`. Displays sakura petal icons (typically two per player, near the top-right of their respective play areas) to represent rounds won. Driven by the `Player1Score` and `Player2Score` NetworkVariables from `RoundManager.cs`.
     *   **Latency Counter:** Implemented by `LatencyDisplay.cs`. Displays the current network round-trip time (RTT) in milliseconds for the client connection. Typically located at the bottom-center of the screen.
+    *   **Spellcard Banner:** Implemented by `SpellcardBannerDisplay.cs` (a NetworkBehaviour Singleton). Displays a character-specific banner image when a player activates a spellcard. Triggered via `ShowBannerClientRpc` from the server (`ServerAttackSpawner.cs`), which sends the caster's role and character name. Uses a list of `CharacterBannerInfo` (mapping internal names to Sprites) configured in the Inspector.
 *   **Menus:**
     *   **Main Menu:** Contains UI for connecting to the server (`ClientConnectorDisconnector.cs`) and joining the matchmaking queue (`MatchmakerUI.cs`). Includes keyboard navigation support via `MainMenuNavigator.cs`.
     *   **Character Select Screen:** 
