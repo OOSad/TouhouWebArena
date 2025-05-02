@@ -8,6 +8,7 @@ using TouhouWebArena; // For PoolableObjectIdentity, PlayerRole etc.
 using TouhouWebArena.Spellcards.Behaviors; // For NetworkBulletLifetime
 using TouhouWebArena.Spellcards; // Added for IllusionHealth
 using TouhouWebArena.Helpers; // Added
+using TMPro; // Added for potential UI references if needed later
 
 namespace TouhouWebArena.Managers
 {
@@ -27,6 +28,8 @@ namespace TouhouWebArena.Managers
         public NetworkVariable<int> Player2Score = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         /// <summary>NetworkVariable indicating if a round is currently in active gameplay (true) or transition (false).</summary>
         public NetworkVariable<bool> IsRoundActive = new NetworkVariable<bool>(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        /// <summary>NetworkVariable tracking the elapsed time in the current round. Server authoritative.</summary>
+        public NetworkVariable<float> RoundTime = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         [Header("Round Settings")]
         [SerializeField]
@@ -43,6 +46,25 @@ namespace TouhouWebArena.Managers
         private bool player1WantsRematch = false;
         private bool player2WantsRematch = false;
         private bool matchHasEnded = false; // Track if the match conclusion has been reached
+
+        // --- Add Update method for timer ---
+        void Update()
+        {
+            if (!IsServer) return; // Only server updates the time
+
+            if (IsRoundActive.Value)
+            {
+                RoundTime.Value += Time.deltaTime;
+                // --- Add Log ---
+                // Log roughly once per second to avoid spam
+                // if (Time.frameCount % 60 == 0) 
+                // {
+                //     Debug.Log($"[RoundManager Server] IsRoundActive: {IsRoundActive.Value}, RoundTime: {RoundTime.Value}");
+                // }
+                // ---------------
+            }
+        }
+        // ----------------------------------
 
         public override void OnNetworkSpawn()
         {
@@ -206,6 +228,9 @@ namespace TouhouWebArena.Managers
             }
 
             // TODO: Re-enable player input? (Ensure input is disabled when match ends / round resets)
+
+            // Reset timer before activating round
+            RoundTime.Value = 0f;
 
             IsRoundActive.Value = true;
             Debug.Log("[RoundManager] Round Reset Complete. New round active.");

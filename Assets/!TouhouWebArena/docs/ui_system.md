@@ -9,8 +9,9 @@ The UI system displays critical game information to the players, including healt
 *   **HUD (Heads-Up Display):**
     *   **Health Bars:** Implemented by `PlayerHealthUI.cs`. Uses individual icons (prefabs) instantiated within a container. Displays the current health for a specific player (Player 1 or Player 2, configured via `targetPlayerId`).
     *   **Spellbar:** Implemented by `SpellBarController.cs`. Uses two `UnityEngine.UI.Image` components (`passiveFillImage`, `activeFillImage`) whose `fillAmount` property is updated to represent the passive and active charge levels. Each instance is assigned a `TargetPlayerRole` (Player1 or Player2) in the Inspector to determine which player it represents.
-    *   **Round Counters (Assumed):** UI elements to display the current round wins for each player (likely updated based on `NetworkVariables` from a GameManager).
-    *   **Timers (Assumed):** Potential UI for round timers or cooldowns.
+    *   **Round Timer:** Implemented by `RoundTimerDisplay.cs`. Displays the elapsed time for the current round in MM:SS format, driven by the `RoundTime` NetworkVariable from `RoundManager.cs`. Typically located at the top-center of the screen.
+    *   **Round Indicators:** Implemented by `RoundIndicatorDisplay.cs`. Displays sakura petal icons (typically two per player, near the top-right of their respective play areas) to represent rounds won. Driven by the `Player1Score` and `Player2Score` NetworkVariables from `RoundManager.cs`.
+    *   **Latency Counter:** Implemented by `LatencyDisplay.cs`. Displays the current network round-trip time (RTT) in milliseconds for the client connection. Typically located at the bottom-center of the screen.
 *   **Menus:**
     *   **Main Menu:** Contains UI for connecting to the server (`ClientConnectorDisconnector.cs`) and joining the matchmaking queue (`MatchmakerUI.cs`). Includes keyboard navigation support via `MainMenuNavigator.cs`.
     *   **Character Select Screen:** 

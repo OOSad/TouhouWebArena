@@ -39,20 +39,21 @@ namespace TouhouWebArena.Helpers
             Debug.Log("[ServerPlayerResetHelper] Attempting to reset Player 2 health...");
             ResetPlayerHealth(player2NetObj, PlayerRole.Player2);
 
-            // --- Reset Spell Bars ---
-            Debug.Log("[ServerPlayerResetHelper] Attempting to reset spell bars...");
-            if (SpellBarManager.Instance != null)
-            {
-                PlayerData? p1Data = PlayerDataManager.Instance?.GetPlayerDataByRole(PlayerRole.Player1);
-                PlayerData? p2Data = PlayerDataManager.Instance?.GetPlayerDataByRole(PlayerRole.Player2);
-
-                if (p1Data.HasValue) SpellBarManager.Instance.ResetSpellBarServer(p1Data.Value.ClientId);
-                else Debug.LogWarning("[ServerPlayerResetHelper] Could not find Player 1 data to reset spell bar.");
-
-                if (p2Data.HasValue) SpellBarManager.Instance.ResetSpellBarServer(p2Data.Value.ClientId);
-                else Debug.LogWarning("[ServerPlayerResetHelper] Could not find Player 2 data to reset spell bar.");
-            }
-            else { Debug.LogWarning("[ServerPlayerResetHelper] SpellBarManager instance not found, cannot reset spell bars."); }
+            // --- Reset Spell Bars (COMMENTED OUT) ---
+            // Debug.Log("[ServerPlayerResetHelper] Attempting to reset spell bars...");
+            // if (SpellBarManager.Instance != null)
+            // {
+            //     PlayerData? p1Data = PlayerDataManager.Instance?.GetPlayerDataByRole(PlayerRole.Player1);
+            //     PlayerData? p2Data = PlayerDataManager.Instance?.GetPlayerDataByRole(PlayerRole.Player2);
+            // 
+            //     if (p1Data.HasValue) SpellBarManager.Instance.ResetSpellBarServer(p1Data.Value.ClientId);
+            //     else Debug.LogWarning("[ServerPlayerResetHelper] Could not find P1 data to reset spell bar.");
+            // 
+            //     if (p2Data.HasValue) SpellBarManager.Instance.ResetSpellBarServer(p2Data.Value.ClientId);
+            //     else Debug.LogWarning("[ServerPlayerResetHelper] Could not find P2 data to reset spell bar.");
+            // }
+            // else { Debug.LogWarning("[ServerPlayerResetHelper] SpellBarManager instance not found, cannot reset spell bars."); }
+            // -------------------------------------
 
             // --- Reset Position ---
             Debug.Log("[ServerPlayerResetHelper] Attempting to reset Player 1 position...");

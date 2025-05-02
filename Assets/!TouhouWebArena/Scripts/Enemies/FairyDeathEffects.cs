@@ -78,8 +78,8 @@ public class FairyDeathEffects : NetworkBehaviour // Needs NetworkBehaviour for 
         // Get the PrefabID from the identity component
         string prefabID = shockwaveIdentity.PrefabID;
 
-        // --- DEBUG LOG --- 
-        // Debug.Log($"[FairyDeathEffects] Requesting object from pool with PrefabID: '{prefabID ?? "NULL"}'"); // Keep this commented for now
+        // --- DEBUG LOG ---
+        // Debug.Log($"[FairyDeathEffects {GetInstanceID()}] Triggering shockwave (PrefabID: {prefabID}) at position {position}", this);
         // -----------------
 
         // Get the shockwave instance from the pool using the PrefabID
