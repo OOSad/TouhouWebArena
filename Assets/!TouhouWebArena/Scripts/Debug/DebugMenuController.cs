@@ -175,12 +175,53 @@ namespace TouhouWebArena.DevTools
 
             if (hitboxTransform != null)
             {
+                // 1. Server sets its local state
                 hitboxTransform.gameObject.SetActive(enabled);
-                UnityEngine.Debug.Log($"Set Player {role} Hitbox GameObject active state to: {enabled}");
+                UnityEngine.Debug.Log($"[Server] Set Player {role} Hitbox GameObject active state to: {enabled}");
+
+                // 2. Server tells all clients to do the same
+                TogglePlayerHitboxClientRpc(role, enabled);
             }
             else
             {
-                UnityEngine.Debug.LogError($"Could not find 'Hitbox' child GameObject on player {playerData.Value.ClientId} (Role: {role}).");
+                UnityEngine.Debug.LogError($"[Server] Could not find 'Hitbox' child GameObject on player {playerData.Value.ClientId} (Role: {role}).");
+            }
+        }
+
+        [ClientRpc]
+        private void TogglePlayerHitboxClientRpc(PlayerRole role, bool enabled)
+        {
+            // This code runs on all clients
+            UnityEngine.Debug.Log($"[Client] Received TogglePlayerHitboxClientRpc for Role: {role}, Enabled: {enabled}");
+
+            // Find the correct player object locally based on role
+            PlayerMovement targetPlayer = null;
+            PlayerMovement[] allPlayers = FindObjectsOfType<PlayerMovement>(); // Find all player movement scripts in the scene
+            foreach (PlayerMovement pm in allPlayers)
+            {
+                if (pm.GetPlayerRole() == role)
+                {
+                    targetPlayer = pm;
+                    break;
+                }
+            }
+
+            if (targetPlayer != null)
+            {
+                Transform hitboxTransform = targetPlayer.transform.Find("Hitbox");
+                if (hitboxTransform != null)
+                {
+                    hitboxTransform.gameObject.SetActive(enabled);
+                    UnityEngine.Debug.Log($"[Client] Set Player {role} local Hitbox GameObject active state to: {enabled}");
+                }
+                else
+                {
+                    UnityEngine.Debug.LogError($"[Client] Could not find local 'Hitbox' child GameObject for player role {role}.");
+                }
+            }
+            else
+            {
+                 UnityEngine.Debug.LogWarning($"[Client] Could not find local PlayerMovement script for role {role} to toggle hitbox.");
             }
         }
 

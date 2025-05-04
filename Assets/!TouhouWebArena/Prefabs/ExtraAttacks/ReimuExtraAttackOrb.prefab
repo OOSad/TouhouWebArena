@@ -219,7 +219,7 @@ MonoBehaviour:
   initialUpwardForce: 5
   initialHorizontalForce: 3
   orbLifetime: 5
-  damageAmount: 10
+  damageAmount: 1
 --- !u!114 &4117584299654022461
 MonoBehaviour:
   m_ObjectHideFlags: 0

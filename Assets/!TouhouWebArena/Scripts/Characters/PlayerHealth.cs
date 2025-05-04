@@ -91,8 +91,10 @@ public class PlayerHealth : NetworkBehaviour
     public void TakeDamage(int amount)
     {
         // Basic checks: Only server, not already invincible, not already dead.
+        Debug.Log($"[PlayerHealth:{OwnerClientId}] [Server] TakeDamage({amount}) called. IsInvincible: {IsInvincible.Value}, CurrentHealth: {CurrentHealth.Value}");
         if (!IsServer || IsInvincible.Value || CurrentHealth.Value <= 0)
         {
+            Debug.Log($"[PlayerHealth:{OwnerClientId}] [Server] TakeDamage aborted (IsServer: {IsServer}, IsInvincible: {IsInvincible.Value}, Health <= 0: {CurrentHealth.Value <= 0})");
             return;
         }
 
@@ -100,25 +102,25 @@ public class PlayerHealth : NetworkBehaviour
 
         if (isHpLocked)
         {
-             UnityEngine.Debug.Log($"Player {OwnerClientId} took a hit, but HP is locked. Damage calculation skipped.");
+             UnityEngine.Debug.Log($"[PlayerHealth:{OwnerClientId}] [Server] HP is locked. Damage amount {amount} will not change health, but invincibility may trigger.");
         }
 
         if (applyHealthChange)
         {
-            // Apply health change only if not locked
-        int previousHealth = CurrentHealth.Value; 
-        int newHealth = CurrentHealth.Value - amount;
-        CurrentHealth.Value = Mathf.Max(newHealth, 0);
+            int previousHealth = CurrentHealth.Value; 
+            int newHealth = CurrentHealth.Value - amount;
+            CurrentHealth.Value = Mathf.Max(newHealth, 0);
+            Debug.Log($"[PlayerHealth:{OwnerClientId}] [Server] Health changed from {previousHealth} to {CurrentHealth.Value} (Damage: {amount})");
         }
 
-        // Check for death AFTER potential health change OR if HP was already 0 but lock prevented death logic
-        if (CurrentHealth.Value <= 0 && applyHealthChange) // Only trigger death if health was actually changed to 0
+        if (CurrentHealth.Value <= 0 && applyHealthChange) 
         {
+            Debug.Log($"[PlayerHealth:{OwnerClientId}] [Server] Health reached 0. Calling HandleDeathServer().");
             HandleDeathServer();
         }
         else
         {
-            // Always trigger invincibility if a valid hit occurred (locked or not), unless death was triggered
+            Debug.Log($"[PlayerHealth:{OwnerClientId}] [Server] Health > 0 or HP locked. Triggering invincibility.");
             TriggerInvincibilityServer(); 
         }
     }
@@ -132,16 +134,19 @@ public class PlayerHealth : NetworkBehaviour
 
     private IEnumerator ServerInvincibilityTimerCoroutine()
     {
+        Debug.Log($"[PlayerHealth:{OwnerClientId}] [Server] Starting invincibility.");
         IsInvincible.Value = true; 
-        // Use duration from CharacterStats
         yield return new WaitForSeconds(characterStats.GetInvincibilityDuration()); 
         
-        if (playerDeathBomb != null)
+        // Trigger the bomb/shockwave effect after the invincibility duration
+        if (playerDeathBomb != null) 
         {
-            playerDeathBomb.ExecuteBomb(); 
+             playerDeathBomb.ExecuteBomb(); 
         }
+        // else: Log if the component is missing?
+        // { Debug.LogWarning($"[PlayerHealth:{OwnerClientId}] PlayerDeathBomb component missing, cannot execute post-invincibility bomb."); }
         
-        // This should run regardless of whether the bomb component exists/executed
+        Debug.Log($"[PlayerHealth:{OwnerClientId}] [Server] Invincibility ended.");
         IsInvincible.Value = false; 
     }
 

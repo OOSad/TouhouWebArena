@@ -17,8 +17,8 @@ Extra Attacks are character-specific special attacks that are triggered automati
 *   **Character Specificity:** Inside `TriggerExtraAttackInternal()`, the `ExtraAttackManager` checks the character name of the *attacker* (passed in via `PlayerData`).
 *   **Prefab Selection:** Based on the attacker's character, it selects the corresponding Extra Attack prefab (`reimuExtraAttackPrefab` or `marisaExtraAttackPrefab`) assigned in its Inspector fields.
 *   **Spawning:** The `ExtraAttackManager` instantiates the selected prefab on the server.
-*   **Targeting & Behavior:** The spawned prefab likely targets the opponent's play area, potentially using helper spawner scripts for positioning. The attack's behavior is contained within the scripts attached to the spawned Extra Attack prefab itself.
-*   **Networking:** Extra Attack prefabs are NetworkObjects, ensuring synchronization.
+*   **Targeting & Behavior:** The spawned prefab likely targets the opponent's play area, potentially using helper spawner scripts for positioning. The attack's specific behavior, including **server-authoritative collision detection and damage application**, is contained within the scripts attached to the spawned Extra Attack prefab itself (e.g., `ReimuExtraAttackOrb.cs`, `EarthlightRay.cs`).
+*   **Networking:** Extra Attack prefabs are NetworkObjects, ensuring their state is synchronized. The core interaction logic (collision/damage) should execute on the server.
 
 ## Definition
 
