@@ -223,13 +223,36 @@ public class FairyController : NetworkBehaviour, IClearable
     // --- Path Completion Handling ---
     /// <summary>
     /// [Server Only] Called by <see cref="SplineWalker"/> when the end of the path is reached.
-    /// Triggers lethal damage with no specific killer via <see cref="FairyHealth.ApplyLethalDamage"/>.
+    /// Silently returns the fairy to the object pool without triggering death effects or chain reactions.
     /// </summary>
     public void ReportEndOfPath()
     {   
-        // HandleEndOfPathServer(); // Old direct call
-        // Path completion should trigger lethal damage without a specific killer
-        fairyHealth?.ApplyLethalDamage(PlayerRole.None); 
+        if (!IsServer) return; // Ensure this only runs on server
+
+        // Log the event
+        Debug.Log($"[FairyController] Fairy {NetworkObjectId} reached end of path. Returning to pool silently.");
+
+        // --- Silent Despawn Logic ---
+        // 1. Disable components that might interfere (optional but good practice)
+        if (splineWalker != null) splineWalker.enabled = false;
+        if (fairyCollider != null) fairyCollider.enabled = false;
+        gameObject.SetActive(false); // Deactivate the object visually immediately
+
+        // 2. Return to pool (assuming NetworkObjectPool handles despawning)
+        if (NetworkObjectPool.Instance != null)
+        {
+            NetworkObjectPool.Instance.ReturnNetworkObject(this.NetworkObject); 
+        }
+        else
+        {
+            Debug.LogError($"[FairyController] NetworkObjectPool instance is null! Cannot return {NetworkObjectId} to pool on path end.", this);
+            // Fallback: Destroy if pooling fails?
+            // NetworkObject.Despawn(true); // Or just despawn
+        }
+        // -----------------------------
+
+        // OLD LOGIC: Triggered full death sequence
+        // fairyHealth?.ApplyLethalDamage(PlayerRole.None); 
     }
     // -------------------------------
 

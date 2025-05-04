@@ -38,7 +38,7 @@ Enemy spawning is controlled entirely by the server.
         *   Death effects triggered by `FairyDeathEffects`.
         *   Chain reactions triggered by `FairyChainReactionHandler`.
         *   Extra Attacks triggered by `FairyExtraAttackTrigger`.
-    *   **Path End:** When a fairy reaches the end of its path (`SplineWalker` reports to `FairyController`), `FairyHealth.ApplyLethalDamage` is called, initiating the death sequence but without a player `killerRole` (thus typically not triggering chain reaction bullets or Extra Attacks, unless specifically configured otherwise).
+    *   **Path End:** When a fairy reaches the end of its path (`SplineWalker` reports to `FairyController`), the `FairyController.ReportEndOfPath` method is called **on the server**. This method now **silently returns the fairy's NetworkObject to the pool** using `NetworkObjectPool.Instance.ReturnNetworkObject`. It **no longer triggers death effects or chain reactions**.
 
 *   **Spirits (`Spirit` prefab, coordinated by `SpiritController.cs`):**
     *   Structure: Uses a component-based approach similar to Fairies (e.g., `SpiritVisualController`, `SpiritDeathEffects`, `SpiritTimeoutAttack`).
