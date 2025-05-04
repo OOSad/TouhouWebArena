@@ -806,7 +806,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Original Concept by Team Shanghai Alice
+  m_text: Original Concept, Art and Game Design by Team Shanghai Alice
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 3b080f502f48a1b40aa1955cf4f70145, type: 2}
   m_sharedMaterial: {fileID: 644525160657917886, guid: 3b080f502f48a1b40aa1955cf4f70145, type: 2}

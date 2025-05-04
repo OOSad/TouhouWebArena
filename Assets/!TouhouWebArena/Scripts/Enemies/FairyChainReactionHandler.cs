@@ -64,7 +64,7 @@ public class FairyChainReactionHandler : NetworkBehaviour
                     transform.position,
                     killerRole,
                     chainReactionDelay,
-                    deathShockwavePrefab,
+                    null,
                     lineId,
                     indexInLine
                 );

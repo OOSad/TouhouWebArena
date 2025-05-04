@@ -66,4 +66,22 @@ Here's how major game systems interact with the network under our server-authori
 *   **`SpellBarController.cs`:** Attached to UI elements. Displays spell bar state based on its `NetworkVariables` (which are managed by `SpellBarManager`).
 *   **`NetworkObjectPool.cs` (if used):** Manages pooled network objects.
 *   **Enemy Scripts (e.g., `FairyMovement.cs`):** Server-side enemy logic.
-*   **`RoundManager.cs` (or similar):** Server-authoritative game state manager. 
+*   **`RoundManager.cs` (or similar):** Server-authoritative game state manager.
+
+## Networked Systems Overview
+
+This document provides a high-level overview of the key networked systems in Touhou Web Arena, built using Unity's Netcode for GameObjects package.
+
+### Player Movement
+
+Player movement synchronization is crucial for a responsive and fair gameplay experience.
+
+**Current Approach: Server-Authoritative**
+
+*   **Input:** The owning client reads local player inputs (horizontal, vertical, focus) each `FixedUpdate`.
+*   **Transmission:** The collected `PlayerInputData` (including tick number, inputs, and focus state) is sent to the server via a `ServerRpc`.
+*   **Server Processing:** The server receives inputs, queues them, and processes them in its `FixedUpdate`. It uses the `PlayerMovement.ProcessMovement` method to calculate the authoritative position based on the received input and the character's stats (`CharacterStats`). The server directly applies this calculated position to the `transform.position` of the corresponding player's `NetworkObject` on the server.
+*   **Synchronization:** The standard `NetworkTransform` component, attached to the player prefab and **enabled for all clients (including the owner)**, observes the position changes made by the server. It automatically synchronizes the authoritative `transform.position` from the server to all connected clients.
+*   **Client Update:** Both the owning client and remote clients receive the updated position via the `NetworkTransform` synchronization. This means the owning client's visual movement is driven by the server's state updates, not local input application.
+*   **Input Lag:** This approach ensures consistency and prevents desynchronization issues like "ghost hits". However, it introduces input lag for the controlling player, roughly equivalent to half their Round Trip Time (RTT) plus server processing and synchronization time. Visual movement will lag behind the physical input press.
+*   **Previous Attempts:** An implementation using client-side prediction and server reconciliation was attempted to mitigate input lag. However, due to complexities and debugging challenges in visually verifying the reconciliation process, this approach was reverted in favor of the simpler, more robust pure server-authoritative model. 

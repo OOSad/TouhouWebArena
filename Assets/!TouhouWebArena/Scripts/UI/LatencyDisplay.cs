@@ -74,18 +74,25 @@ public class LatencyDisplay : MonoBehaviour
             {
                 // For a client, get RTT to the server
                 ulong rtt = networkManager.NetworkConfig.NetworkTransport.GetCurrentRtt(NetworkManager.ServerClientId);
-                latencyText.text = $"{rtt} ms";
+
+                // Calculate estimated one-way latency
+                float oneWayLatency = rtt / 2.0f;
+
+                // Estimate frame delay (assuming target 60 FPS)
+                const float targetFrameTimeMs = 1000.0f / 60.0f;
+                float rttFrames = targetFrameTimeMs > 0 ? rtt / targetFrameTimeMs : 0; // Avoid division by zero
+                float oneWayFrames = targetFrameTimeMs > 0 ? oneWayLatency / targetFrameTimeMs : 0;
+
+                // Format the text to show all values
+                latencyText.text = $"{rtt}ms RTT ({rttFrames:F1}f) / {oneWayLatency:F1}ms Est ({oneWayFrames:F1}f)";
             }
             else if (networkManager.IsHost)
             {
                 // Host has no latency to itself
-                 latencyText.text = "0 ms (Host)";
+                 latencyText.text = "0ms RTT (0.0f) / 0.0ms Est (0.0f) (Host)"; // Show zero values for host
             }
             // Add cases for Server-only if needed
             // else if (networkManager.IsServer)
-            // {
-            //    latencyText.text = "Latency: N/A (Server)"; 
-            // }
             else
             {
                 latencyText.text = "-- ms"; // Show default if not connected

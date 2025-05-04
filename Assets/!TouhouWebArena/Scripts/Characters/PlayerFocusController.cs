@@ -26,6 +26,9 @@ public class PlayerFocusController : NetworkBehaviour
     /// </summary>
     private NetworkVariable<bool> NetworkedIsFocusing = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
+    /// <summary>Public getter for the networked focus state.</summary>
+    public bool IsFocusingNetworked => NetworkedIsFocusing.Value;
+
     /// <summary>Local tracking of the focus input state, only used by the owning client.</summary>
     private bool localIsFocusing = false;
 
@@ -103,10 +106,6 @@ public class PlayerFocusController : NetworkBehaviour
     /// <param name="isFocusingNow">The new focus state.</param>
     private void UpdateFocusState(bool isFocusingNow)
     {
-        if (playerMovement != null)
-        {   
-            playerMovement.IsFocused = isFocusingNow;
-        }
         NetworkedIsFocusing.Value = isFocusingNow;
     }
 

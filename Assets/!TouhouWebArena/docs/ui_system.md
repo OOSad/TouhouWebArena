@@ -23,6 +23,17 @@ The UI system displays critical game information to the players, including healt
         *   Supports keyboard navigation (left/right arrows, Z to confirm) handled within `CharacterSelector.cs`. It uses the `EventSystem` to manage selection and plays audio feedback on selection changes. It also handles regaining focus when the game window is clicked or tabbed back into.
     *   **Pause Menu (TBD):** Functionality not yet detailed.
     *   **Results Screen (TBD):** Displayed at the end of a match.
+*   **Synopsis Panels (`SynopsisPanelController.cs`, Prefabs):** Display character details during selection. Updated by `CharacterSelector.cs` based on `PlayerDataManager`.
+*   **Score Display (`ScoreDisplay.cs`, Prefabs):** Shows current player scores. Subscribes to `RoundManager` score NetworkVariables.
+*   **Round Timer (`RoundTimerDisplay.cs`, Prefabs):** Shows the current round time. Subscribes to `RoundManager` time NetworkVariable.
+*   **Latency/Ping Display (`LatencyDisplay.cs`, Prefab):** Shows network latency information for the connected client. Updates periodically.
+    *   Fetches Round Trip Time (RTT) from the `NetworkTransport`.
+    *   Displays RTT (ms), estimated RTT frame delay (f), estimated one-way latency (RTT/2 ms), and estimated one-way frame delay (f).
+    *   Example format: `180ms RTT (10.8f) | 90.0ms Est (5.4f)`
+    *   Frame delay estimation assumes a target of 60 FPS.
+    *   Displays `0ms` values if running as Host.
+*   **Rematch Prompt (`RematchPromptController.cs`, Prefab):** Handles the UI for rematch requests and confirmations at the end of a match. Interacts with `RoundManager`.
+*   **Match End Screen (`MatchEndUIController.cs`, Prefab):** Displays the winner and loser at the end of the match. Controlled by `RoundManager`.
 
 ## Data Binding & Updates
 
