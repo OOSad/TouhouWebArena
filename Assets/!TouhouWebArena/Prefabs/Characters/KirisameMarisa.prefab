@@ -185,6 +185,7 @@ GameObject:
   - component: {fileID: 3961734924531103382}
   - component: {fileID: 3185901584900274323}
   - component: {fileID: 6848750692035792943}
+  - component: {fileID: -2061277542332727035}
   m_Layer: 0
   m_Name: KirisameMarisa
   m_TagString: Player
@@ -317,7 +318,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   fireKey: 122
-  debugMarkerPrefab: {fileID: 3007841959978551384, guid: af84f3ad4fa1dda47bbde13f54ec3461, type: 3}
 --- !u!114 &-6644605225323382049
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -507,6 +507,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 632f084283192d54eab2b8752b8fa333, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &-2061277542332727035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4454703587389584321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe25cff30c713c24cbca3a716b8c8ee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  largeBulletChance: 0.2
+  minStageBulletSpeed: 0.5
+  maxStageBulletSpeed: 1.5
+  maxStageBulletAngleOffset: 15
 --- !u!1 &6177183962902356688
 GameObject:
   m_ObjectHideFlags: 0

@@ -12,18 +12,11 @@ GameObject:
   - component: {fileID: 6034274715411896427}
   - component: {fileID: 2035649198380965782}
   - component: {fileID: 4590436765378767479}
-  - component: {fileID: 7287490373349859149}
-  - component: {fileID: 742971883284874623}
   - component: {fileID: 8728772790930421793}
   - component: {fileID: 4542182296280416629}
-  - component: {fileID: 6099391969504295475}
-  - component: {fileID: 1168816684677053429}
-  - component: {fileID: 2684784241713571634}
-  - component: {fileID: 1824150346279509385}
-  - component: {fileID: 4148840641489377419}
-  - component: {fileID: 3913201284981249708}
-  - component: {fileID: 6768330670081929805}
-  - component: {fileID: -6769370453135077556}
+  - component: {fileID: 6553033574822387129}
+  - component: {fileID: 4977659653457853399}
+  - component: {fileID: 8310365685952986446}
   m_Layer: 7
   m_Name: NormalFairy
   m_TagString: Fairy
@@ -63,6 +56,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -106,6 +102,7 @@ CircleCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2265545678602581384}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -129,13 +126,13 @@ CircleCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 1
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
   m_Radius: 0.195
 --- !u!50 &4590436765378767479
 Rigidbody2D:
-  serializedVersion: 4
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -146,8 +143,8 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_GravityScale: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -160,58 +157,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &7287490373349859149
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2265545678602581384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2259338590
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 0
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
---- !u!114 &742971883284874623
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2265545678602581384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  UseUnreliableDeltas: 0
-  SyncPositionX: 1
-  SyncPositionY: 1
-  SyncPositionZ: 1
-  SyncRotAngleX: 1
-  SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
-  PositionThreshold: 0.001
-  RotAngleThreshold: 0.01
-  ScaleThreshold: 0.01
-  UseQuaternionSynchronization: 0
-  UseQuaternionCompression: 0
-  UseHalfFloatPrecision: 0
-  InLocalSpace: 0
-  Interpolate: 0
-  SlerpPosition: 0
 --- !u!114 &8728772790930421793
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -224,9 +169,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad5a5522341291944acacef835f36516, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spline: {fileID: 0}
+  _spline: {fileID: 0}
   moveSpeed: 2
-  destroyOnComplete: 1
+  OnPathCompleted:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &4542182296280416629
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -240,7 +187,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lookForwardEnabled: 0
---- !u!114 &6099391969504295475
+--- !u!114 &6553033574822387129
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -249,98 +196,36 @@ MonoBehaviour:
   m_GameObject: {fileID: 2265545678602581384}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ea020b8480a326740a6dfd274e0df120, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1168816684677053429
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2265545678602581384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59c397f496d267d49bb8e32f5022a6af, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &2684784241713571634
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2265545678602581384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69fd85b46e2bc69438649a08357443f9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  shockwavePrefab: {fileID: 825958184812720138, guid: 76cfe1a5018d7d74fbbbd03cf0b269ff, type: 3}
---- !u!114 &1824150346279509385
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2265545678602581384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e15e15ea4b959d4d9d160701f5ce427, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &4148840641489377419
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2265545678602581384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e478729ad3438943856ffc444dbedd4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &3913201284981249708
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2265545678602581384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6589941d542b23489c2b9ecb0b9372e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  chainReactionDelay: 0.08
-  delayedActionProcessorPrefab: {fileID: 3786465573955519138, guid: 70780ec6e7c1e3248a6cc285303c0ed4, type: 3}
-  deathShockwavePrefab: {fileID: 825958184812720138, guid: 76cfe1a5018d7d74fbbbd03cf0b269ff, type: 3}
---- !u!114 &6768330670081929805
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2265545678602581384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b92763bda4938547b8aaf3eed41578a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  initialMaxHealth: 1
-  isGreatFairy: 0
---- !u!114 &-6769370453135077556
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2265545678602581384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d9f797e066b44644ac93b2d3c1dde91, type: 3}
+  m_Script: {fileID: 11500000, guid: 2c4da763b6c45f642832cb9228d6fbb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PrefabID: NormalFairy
-  OriginalPrefab: {fileID: 2265545678602581384}
+--- !u!114 &4977659653457853399
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2265545678602581384}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 639fe219197b174438e9e3a088632979, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8310365685952986446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2265545678602581384}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32b750eb55895a343a623b3f36dd8d7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 1
+  deathShockwavePrefabId: FairyShockwave
+  deathShockwaveMaxRadius: 1
+  deathShockwaveDuration: 1
+  deathShockwaveDamage: 1

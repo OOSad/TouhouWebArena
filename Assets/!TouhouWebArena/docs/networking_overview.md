@@ -1,24 +1,36 @@
 # Networking Overview
 
-This document provides an overview of the networking architecture for Touhou Web Arena, which uses Unity's Netcode for GameObjects package. The project has transitioned to a primarily **client-authoritative** model for core gameplay elements like player movement and basic projectile attacks to enhance responsiveness and reduce server load. Certain aspects like spellcard execution and enemy spawning may still retain server authority or use a mixed model.
+This document provides an overview of the networking architecture for Touhou Web Arena, which uses Unity's Netcode for GameObjects package. The project utilizes a hybrid approach:
+
+*   **Client-Authoritative Movement:** Player movement is handled entirely client-side (`ClientAuthMovement.cs`) for maximum responsiveness, with the owner synchronizing its position via a `NetworkVariable`.
+*   **Server-Authoritative Spawning:** The server decides *what* and *when* to spawn for key gameplay events (enemy waves, retaliation bullets, complex attacks). It then sends targeted `ClientRpc` calls to instruct clients.
+*   **Client-Side Simulation:** Clients, upon receiving spawn commands via RPC, instantiate and simulate the relevant objects locally. This includes enemy movement (`SplineWalker.cs`), projectile movement (`BulletMovement.cs`, `StageSmallBulletMoverScript.cs`), object lifetimes (`ClientProjectileLifetime.cs`), and visual effects (`ClientFairyShockwave.cs`). These simulated objects are typically managed by `ClientGameObjectPool.cs` and do not have `NetworkObject` components.
+*   **Client Reporting:** Clients report significant events (like dealing the killing blow to a fairy) back to the server via `ServerRpc` (`PlayerAttackRelay.ReportFairyKillServerRpc`).
+*   **Server Orchestration:** The server processes these reports and orchestrates subsequent actions (e.g., instructing all clients via `ClientRpc` to spawn a retaliation bullet on the opponent's field).
+
+This model aims for responsiveness in player control and basic actions while retaining server control over critical game flow and preventing simple cheats related to spawning.
 
 ## Core Concepts
 
 Netcode for GameObjects provides several building blocks for networked applications:
 
-*   **Server Authority (for some systems):** While player movement and basic shots are client-authoritative, the server remains the authority for aspects like match state, score, and potentially complex spellcard logic or enemy AI that requires undisputed state. For client-authoritative systems, the server acts more as a relay and a point of synchronization for late-joining clients or for resolving major discrepancies if needed (though this is not the primary model for those systems).
-*   **`NetworkObject`:** Key game entities that need to be synchronized across the network (like Players) must have a `NetworkObject` component attached. This component gives the object a unique network identity. Client-side pooled objects (like basic projectiles) do *not* have `NetworkObject` components.
-*   **`NetworkBehaviour`:** Scripts that contain networking logic (RPCs, NetworkVariables) on networked objects must inherit from `NetworkBehaviour` instead of `MonoBehaviour`.
+*   **`NetworkObject`:** Key game entities that need their state *continuously synchronized* or require server-authoritative control (like Players, potentially complex boss entities) must have a `NetworkObject` component attached. Objects spawned and simulated purely client-side based on RPC commands (basic projectiles, fairies, shockwaves) generally do *not* have `NetworkObject` components.
+*   **`NetworkBehaviour`:** Scripts that contain networking logic (RPCs, NetworkVariables) must inherit from `NetworkBehaviour`. These typically reside on `NetworkObject`s (like the Player prefab or singleton network handlers).
 *   **RPCs (Remote Procedure Calls):** Allow specific functions to be called across the network.
-    *   **`ServerRpc`:** Used by a client (typically the owner of a `NetworkObject`) to request an action from the server, or to report an event that the server needs to know about or relay. The function name typically ends with `ServerRpc`.
-    *   **`ClientRpc`:** Used by the server to command one or more clients to execute a function. The function name typically ends with `ClientRpc`. This is often used for triggering visual effects, playing sounds, or instructing clients to perform actions based on a server decision or a relayed client action.
-    *   **Common Flow for Client-Initiated Actions:** When an owning client performs an action that other clients need to see (e.g., firing a basic shot), the typical flow is:
-        1.  Owner Client: Executes the action locally (e.g., spawns a visual bullet).
-        2.  Owner Client: Calls a `[ServerRpc]` method on one of its `NetworkBehaviour`s, sending relevant data to the server.
-        3.  Server: The `[ServerRpc]` method executes on the server.
-        4.  Server: Inside the `[ServerRpc]`, the server then calls a `[ClientRpc]` method, passing along the necessary data.
-        5.  Clients: The `[ClientRpc]` method executes on all (or targeted) clients. Non-owning clients will then perform the visual action (e.g., spawn their own visual representation of the bullet). The owning client might ignore this RPC for that specific action if it already handled it locally.
-*   **`NetworkVariable`:** Used to automatically synchronize simple data types from the server to all clients, or from an owner client to the server and then to other clients. Player position (`NetworkedPosition` in `ClientAuthMovement.cs`) is an example where the owner writes, and the server/other clients read. Health and score are likely still server-authoritative `NetworkVariables`.
+    *   **`ServerRpc`:** Used by a client (typically the owner of a `NetworkObject`, like `PlayerAttackRelay` on the Player) to report an event to the server (e.g., `ReportFairyKillServerRpc`).
+    *   **`ClientRpc`:** Used by the server (often from a singleton `NetworkBehaviour` like `EffectNetworkHandler` or `FairySpawnNetworkHandler`) to command one or more clients to execute a function (e.g., `SpawnStageBulletClientRpc`, `SpawnFairyWaveClientRpc`).
+    *   **Common Flow for Client-Initiated Actions (e.g., Basic Shot):
+        1.  Owner Client (`PlayerShootingController`): Detects input, spawns projectile locally from `ClientGameObjectPool`, initializes `BulletMovement` with `OwnerClientId`.
+        2.  Owner Client: Calls `FireShotServerRpc` on its `PlayerShootingController`.
+        3.  Server: Receives `FireShotServerRpc`.
+        4.  Server: Calls `FireShotClientRpc` on the same `PlayerShootingController` instance on the server, targeting all clients.
+        5.  Remote Clients: Receive `FireShotClientRpc`, spawn the projectile from their `ClientGameObjectPool`, initialize `BulletMovement` with firer's `OwnerClientId`.
+        6.  Owner Client: Also receives `FireShotClientRpc` but typically ignores it (or could use it to confirm server acknowledgement).
+    *   **Common Flow for Server-Initiated Actions (e.g., Fairy Wave Spawn):
+        1.  Server (`FairySpawner`): Determines wave parameters.
+        2.  Server: Calls `SpawnFairyWaveClientRpc` on a singleton (`FairySpawnNetworkHandler.Instance`), targeting all clients.
+        3.  All Clients: Receive `SpawnFairyWaveClientRpc`, get prefab from `ClientGameObjectPool`, initialize position/path (`SplineWalker`), activate the enemy.
+*   **`NetworkVariable`:** Used to automatically synchronize simple data types. Mainly used for player position (`ClientAuthMovement.NetworkedPosition`, owner-write) and potentially server-managed states like score or player metadata (`PlayerDataManager`). Health is now primarily client-side (`ClientFairyHealth`) with kills reported to the server, rather than being a directly synchronized variable.
 
 ## Starting a Session / Connection Flow
 
@@ -41,59 +53,62 @@ When running the game locally for development or testing using the Unity editor 
 
 Here's how major game systems interact with the network:
 
-*   **Player Movement:** Player movement is **client-authoritative**. The owning client (`ClientAuthMovement.cs`) reads local inputs and directly applies movement to its character's `Rigidbody2D`. The owner's position is then synchronized to the server and other clients using a `NetworkVariable<Vector2>` named `NetworkedPosition` (owner writes, others read). Remote clients observe this `NetworkVariable` and update their local representation of the character accordingly. `NetworkTransform` is not used for player-controlled movement.
-*   **Shooting / Basic Attacks (Client-Authoritative):**
-    *   The owning client's `PlayerShootingController.cs` detects input.
-    *   It spawns projectiles locally from `ClientGameObjectPool.cs` (these are non-`NetworkObject` GameObjects).
-    *   It initializes client-side scripts on the projectile like `BulletMovement.cs` (for movement) and `ClientProjectileLifetime.cs` (for despawning).
-    *   It then calls a `FireShotServerRpc` (example name) on itself, sending necessary parameters (bullet type, position, velocity, etc.) to the server.
-    *   The server, upon receiving the `FireShotServerRpc`, calls a corresponding `FireShotClientRpc`.
-    *   All clients (including the owner, though it may ignore it for this specific shot) receive the `FireShotClientRpc`. Remote (non-owning) clients will then use the received parameters to spawn their own visual-only representation of the bullet from their local `ClientGameObjectPool` and initialize its client-side behavior scripts.
-    *   Bullet movement, lifetime, and basic visual collision (e.g., with "Fairy" or "Spirit" tagged objects for visual feedback) are handled client-side by `BulletMovement.cs` and `ClientProjectileLifetime.cs`.
-*   **Charge Attacks & Spellcard Activation:** This is likely a mixed model. The client (`PlayerShootingController`) detects input and sends a `RequestChargeAttackServerRpc` or `RequestSpellcardServerRpc`.
-    *   The server-side `SpellBarManager` might still manage charge levels and spell costs authoritatively.
-    *   `ServerAttackSpawner` likely still handles the *logic* of these more complex attacks.
-    *   How these attacks are *visualized* on clients might adopt the client-authoritative projectile pattern (server tells clients to spawn specific sequences/effects) or use server-spawned `NetworkObject` projectiles if their state needs to be more robustly synchronized. This part needs to be detailed as it's refactored.
-*   **Enemy Spawning & Behavior:** Currently assumed to be server-controlled. A server-side system spawns enemy `NetworkObject`s. Enemy AI and movement run on the server, with state synchronized via `NetworkTransform` or similar. (This may be a candidate for future refactoring towards client-side spawning with server commands).
-*   **Health & Damage:** Remains server-authoritative. If client-side bullets detect hits for visual purposes (e.g., hitting a "Fairy"), they might send an RPC to the server to register the hit. The server then authoritatively applies damage and updates health `NetworkVariables`.
-*   **Game State (Score, Rounds):** Managed by a server-authoritative `RoundManager` script using `NetworkVariables` and RPCs.
+*   **Player Movement:** Player movement is **client-authoritative** (`ClientAuthMovement.cs`). Owner writes position to `NetworkedPosition` (`NetworkVariable<Vector2>`), remotes read and apply. `NetworkTransform` is not used.
+*   **Shooting / Basic Attacks (Client-Side Simulation):**
+    *   Owning `PlayerShootingController.cs` detects input.
+    *   Spawns projectile locally from `ClientGameObjectPool.cs`, initializes `BulletMovement` (passing `OwnerClientId`).
+    *   Sends `FireShotServerRpc` to server.
+    *   Server relays via `FireShotClientRpc` to all clients.
+    *   Remote clients receive RPC, spawn visual projectile from their pool, initialize `BulletMovement` with firer's `OwnerClientId`.
+    *   `BulletMovement` handles movement. `ClientProjectileLifetime` handles despawn via pool.
+*   **Retaliation Bullets (Server-Initiated, Client-Simulated):**
+    *   `ClientFairyHealth.TakeDamage` checks if killer is local player (`attackerOwnerClientId == LocalClientId`).
+    *   If local kill, `ClientFairyHealth` calls `PlayerAttackRelay.LocalInstance.ReportFairyKillServerRpc()`.
+    *   Server (`PlayerAttackRelay.ReportFairyKillServerRpc`) receives report, determines opponent, calculates bullet parameters (prefabId, position, speed, angle).
+    *   Server calls `EffectNetworkHandler.Instance.SpawnStageBulletClientRpc(opponentClientId, params...)` targeting *all* clients.
+    *   All clients receive RPC, use `opponentClientId` to find the correct player's spawn area via `SpawnAreaManager`, get bullet from `ClientGameObjectPool`, set position, initialize `StageSmallBulletMoverScript` with parameters, activate.
+*   **Charge Attacks & Spellcard Activation:** Client (`PlayerShootingController`) sends `ServerRpc` requests (`RequestChargeAttackServerRpc`, `RequestSpellcardServerRpc`). Server (`SpellBarManager`, `ServerAttackSpawner`) validates, consumes costs, and orchestrates effects. Visualization likely involves server sending `ClientRpc`s to instruct clients to spawn specific effects/projectiles locally via `ClientGameObjectPool`, similar to retaliation bullets.
+*   **Enemy Spawning & Behavior (Server-Initiated, Client-Simulated):**
+    *   Server (`FairySpawner.cs`) determines wave data.
+    *   Server calls `FairySpawnNetworkHandler.SpawnFairyWaveClientRpc` targeting all clients, passing wave data.
+    *   Clients receive RPC, iterate wave data, get enemy prefabs (e.g., "NormalFairy") from `ClientGameObjectPool`.
+    *   Clients initialize enemy position and path using `SplineWalker.InitializePath`.
+    *   Enemy movement is handled client-side by `SplineWalker`. Enemy health by `ClientFairyHealth`.
+*   **Enemy Death & Chain Reactions (Client-Side):**
+    *   `BulletMovement` collision calls `ClientFairyHealth.TakeDamage(damage, bulletOwnerId)`.
+    *   If health <= 0, `ClientFairyHealth` spawns a `ClientFairyShockwave` from `ClientGameObjectPool`, initializing it with damage parameters and `bulletOwnerId`.
+    *   `ClientFairyShockwave` uses an expanding `CircleCollider2D` and `OnTriggerStay2D` with a tick rate limit (`damageTickRate`) to:
+        *   Damage other nearby fairies/spirits (`otherHealth.TakeDamage(shockwaveDamage, originalKillerId)`).
+        *   Clear certain bullets (e.g., `StageSmallBulletMoverScript.ForceReturnToPoolByBomb()`).
+    *   If the kill was by the local player (`bulletOwnerId == LocalClientId`), `ClientFairyHealth` also calls `PlayerAttackRelay.LocalInstance.ReportFairyKillServerRpc()`.
+*   **Health & Damage:** Player bullet collision is detected client-side (`BulletMovement` or `ClientFairyController`). Damage is applied locally to `ClientFairyHealth`. If this results in a kill, and the killer is the local player, the kill is reported to the server. Server handles consequences (retaliation bullets, score). Direct player health (`PlayerHealth`) might still be server-authoritative (TBD based on its implementation).
+*   **Game State (Score, Rounds):** Managed by a server-authoritative `RoundManager`.
 *   **Object Pooling:**
-    *   **Client-Side:** `ClientGameObjectPool.cs` is used by clients to pool purely visual GameObjects like basic projectiles. These objects do not have `NetworkObject` components. `PooledObjectInfo.cs` helps identify prefabs for this pool.
-    *   **Server-Side:** The old `NetworkObjectPool.cs` (if still present) would be used for pooling `NetworkObject`s that are server-authoritatively spawned (e.g., some spellcard bullets, enemies). Its usage for basic player projectiles has been replaced.
+    *   **`ClientGameObjectPool.cs`:** Primary pool used by all clients for non-NetworkObject entities spawned via RPC commands or local actions (player bullets, enemy bullets, fairies, spirits, shockwaves, VFX).
+    *   **`NetworkObjectPool.cs`:** Likely **DEPRECATED/UNUSED** unless specific server-authoritative `NetworkObject`s (e.g., a complex boss segment) require pooling.
 
-## Important Scripts (Examples)
+## Important Scripts (Updated List)
 
-*   **`PlayerShootingController.cs`:** Attached to player prefab. Handles **client-side** input detection. For basic shots, it spawns projectiles locally for the owner using `ClientGameObjectPool`, initializes their client-side behaviors, and then uses a ServerRpc -> ClientRpc flow to instruct other clients to spawn corresponding visual projectiles. For charge attacks/spellcards, it sends `ServerRpc` requests to server managers.
-*   **`ClientAuthMovement.cs`:** Attached to player prefab. Handles **client-authoritative** movement. Reads local input, applies movement directly to its `Rigidbody2D`, and updates a `NetworkVariable<Vector2>` (`NetworkedPosition`) for synchronization. Non-owning instances read `NetworkedPosition`.
-*   **`BulletMovement.cs`:** A `MonoBehaviour` attached to client-side projectile prefabs. Handles visual movement (`transform.Translate`) and basic collision detection (e.g., against "Fairy", "Spirit" tags) to trigger despawning via `ClientProjectileLifetime`.
-*   **`ClientProjectileLifetime.cs`:** A `MonoBehaviour` attached to client-side projectile prefabs. Manages returning the projectile to the `ClientGameObjectPool` after a set duration or on collision.
-*   **`ClientGameObjectPool.cs`:** Manages pools of non-NetworkObject GameObjects on the client-side, used for visual projectiles.
-*   **`PooledObjectInfo.cs`:** Stores a prefab ID string for use with `ClientGameObjectPool`.
-*   **`ServerAttackSpawner.cs`:** Server-side singleton. Likely still central for orchestrating server-authoritative attacks like complex spellcards or charge attacks if they are not fully client-visualized.
-*   **`SpellBarManager.cs`:** Server-side singleton service. Manages `NetworkVariables` for spell bar states and handles spell cost consumption.
-*   **`CharacterStats.cs`:** Holds core player stats like `Health` (`NetworkVariable`, server-authoritative).
-*   **`ServerBasicShotSpawner.cs`:** DEPRECATED for player basic shots. May still be used if enemies or spellcards fire similar "basic" shots that are server-authoritative.
-*   **`ServerPooledSpawner.cs`:** Helper for spawning server-authoritative pooled NetworkObjects.
-*   **`NetworkObjectPool.cs`:** Manages server-authoritative pooled `NetworkObject`s. Its direct use for player projectiles is replaced by `ClientGameObjectPool`.
-*   **`RoundManager.cs` (or similar):** Server-authoritative game state manager.
-
-## Networked Systems Overview
-
-This document provides a high-level overview of the key networked systems in Touhou Web Arena, built using Unity's Netcode for GameObjects package.
-
-### Player Movement
-
-Player movement is handled with a **client-authoritative** approach to prioritize responsiveness and reduce server load. The core script responsible is `ClientAuthMovement.cs`.
-
-*   **Input:** The owning client's `ClientAuthMovement` script reads local player inputs (horizontal, vertical, focus) each frame in its `Update()` method.
-*   **Local Movement Application:** The owning client directly calculates and applies the movement to its `Rigidbody2D` component in `FixedUpdate()` using `rb.MovePosition()`. This ensures immediate responsiveness to player input. Movement speed is determined by `CharacterStats` and the focus state from `PlayerFocusController`.
-*   **State Synchronization:**
-    *   After the owner applies movement locally, it updates a `NetworkVariable<Vector2> NetworkedPosition` with its new `rb.position`.
-    *   This `NetworkVariable` is configured with `NetworkVariableWritePermission.Owner`, so only the owning client can change its value.
-    *   The change to `NetworkedPosition` is automatically sent from the owner to the server, which then relays it to all other (remote) clients.
-*   **Remote Client Update:**
-    *   Remote clients (where `IsOwner` is false for the player character) have their `ClientAuthMovement` script's `Update()` method observe `NetworkedPosition.Value`.
-    *   Currently, remote clients directly set their local `Rigidbody2D`'s position to this `NetworkedPosition.Value`, resulting in a direct snap to the synchronized position. (Interpolation is planned for future implementation to smooth this visual update).
-*   **`NetworkTransform` Not Used for Player Position/Rotation:** The built-in `NetworkTransform` component is *not* used for synchronizing the authoritative position or rotation of player characters to avoid previous issues with authority conflicts and snapping.
-*   **Benefits:** This client-authoritative approach significantly reduces input lag for the controlling player and offloads the processing of movement updates from the server.
-*   **Considerations:** Cheating (e.g., speed hacks, teleportation) is not actively prevented with this model for movement, as the client has full control over its position. Visual discrepancies for remote clients due to latency are expected but managed by the `NetworkVariable` updates.
+*   **`ClientAuthMovement.cs`:** Client-authoritative player movement, updates `NetworkedPosition`.
+*   **`PlayerShootingController.cs`:** Owner client input handler. Spawns local basic shots, sends RPCs for basic shots and requests for charge/spell attacks.
+*   **`PlayerAttackRelay.cs`:** On Player prefab. Receives kill reports from `ClientFairyHealth` via `ReportFairyKillServerRpc`. Server-side logic determines retaliation bullet parameters and calls `EffectNetworkHandler`.
+*   **`EffectNetworkHandler.cs`:** Server singleton. Receives requests from `PlayerAttackRelay` and sends `SpawnStageBulletClientRpc` to all clients.
+*   **`FairySpawnNetworkHandler.cs`:** Server singleton. Receives requests from `FairySpawner` and sends `SpawnFairyWaveClientRpc` to all clients.
+*   **`ClientGameObjectPool.cs`:** **Primary** client-side object pool for non-NetworkObjects.
+*   **`PooledObjectInfo.cs`:** Attached to prefabs used by `ClientGameObjectPool`, stores string `PrefabID`.
+*   **`BulletMovement.cs`:** `MonoBehaviour` on player basic shot prefabs. Handles client-side movement, passes `FiredByOwnerClientId` on collision, calls `ClientProjectileLifetime`.
+*   **`StageSmallBulletMoverScript.cs`:** `MonoBehaviour` on stage bullet prefabs. Handles client-side movement, initialized by `EffectNetworkHandler` RPC, includes `ForceReturnToPoolByBomb`.
+*   **`ClientProjectileLifetime.cs`:** `MonoBehaviour` for client-side pooled objects. Returns object to pool on timer/collision.
+*   **`ClientFairyHealth.cs`:** `MonoBehaviour` on enemy prefabs. Manages health, spawns `ClientFairyShockwave` on death, conditionally calls `PlayerAttackRelay.ReportFairyKillServerRpc`.
+*   **`ClientFairyController.cs`:** `MonoBehaviour` on enemy prefabs. Handles path completion pooling.
+*   **`SplineWalker.cs`:** `MonoBehaviour` on enemy prefabs. Handles client-side path following.
+*   **`ClientFairyShockwave.cs`:** `MonoBehaviour` on shockwave prefab. Handles collider expansion, periodic damage/clearing via `OnTriggerStay2D`, returns self to pool.
+*   **`ClientShockwaveVisuals.cs`:** `MonoBehaviour` on shockwave prefab. Handles visual scaling/fading based on data from `ClientFairyShockwave`.
+*   **`SpawnAreaManager.cs`:** Singleton providing spawn area positions based on `PlayerRole`.
+*   **`PlayerDataManager.cs`:** Manages `PlayerData` structs containing `ClientId` and `PlayerRole`.
+*   **`PlayerDeathBomb.cs`:** Server-side script on player(?). Sends `ClearBulletsInRadiusClientRpc` (likely via `EffectNetworkHandler` or similar).
+*   **`ServerAttackSpawner.cs`:** Server-side. Still needed for orchestrating server-verified charge/spell attacks.
+*   **`SpellBarManager.cs`:** Server-side. Still needed for managing spell costs.
+*   **`FairySpawner.cs`:** Server-side. Calculates waves, calls `FairySpawnNetworkHandler`.
+*   **~~`NetworkObjectPool.cs`~~:** Likely Deprecated/Unused.
+*   **~~`ServerBasicShotSpawner.cs`~~:** Deprecated for player shots.

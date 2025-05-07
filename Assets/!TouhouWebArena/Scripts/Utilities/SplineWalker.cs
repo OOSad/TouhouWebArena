@@ -1,160 +1,161 @@
 using UnityEngine;
-using Unity.Netcode;
+using UnityEngine.Events; // Added for OnPathCompleted event
 
-// Add reference to Fairy script
-[RequireComponent(typeof(FairyController))] // Restored
-// --- NEW: Require the look forward component ---
+// Keeping SplineLookForward for now, assuming it will also be client-side.
 [RequireComponent(typeof(SplineLookForward))] 
 /// <summary>
-/// [Server Only] Moves a GameObject along a <see cref="BezierSpline"/> at a constant speed.
+/// [Client-Side] Moves a GameObject along a <see cref="BezierSpline"/> at a constant speed.
 /// Handles calculating progress along the spline based on desired speed and curve velocity.
-/// Can optionally destroy the GameObject or notify its owner (<see cref="FairyController"/>) upon reaching the end.
-/// Requires initialization via <see cref="InitializeSplineInternal"/>.
+/// Can optionally invoke an event or notify a controller upon reaching the end.
+/// Requires initialization via <see cref="InitializePath"/>.
 /// </summary>
-public class SplineWalker : NetworkBehaviour
+public class SplineWalker : MonoBehaviour // Changed from NetworkBehaviour
 {
-    [SerializeField] private BezierSpline spline; // The spline to follow
-    [SerializeField] private float moveSpeed = 5f; // Constant speed along the spline
-    [SerializeField] private bool destroyOnComplete = true; // Destroy the object when it reaches the end?
+    [SerializeField] private BezierSpline _spline; // Renamed for clarity
+    [SerializeField] private float moveSpeed = 5f;
+    // Removed: [SerializeField] private bool destroyOnComplete = true; 
+    // End-of-path action will be handled by listeners or a controller
 
-    private float progress; // Current position along the spline (0 to 1)
-    private bool movingForward = true; // Direction of travel
-    private FairyController ownerFairy; // Reference to the controlling Fairy script
+    [Tooltip("Event triggered when the walker reaches the end of the spline.")]
+    public UnityEvent OnPathCompleted;
+
+    private float _progress; // Current position along the spline (0 to 1) - Renamed
+    private bool _movingForward = true; // Direction of travel - Renamed
+    
+    // Removed: private FairyController ownerFairy; 
+    // If a controller is needed, it can subscribe to OnPathCompleted or be set via a different mechanism.
 
     /// <summary>
     /// Gets the <see cref="BezierSpline"/> currently being followed.
     /// </summary>
-    public BezierSpline Spline => spline;
-    // ----------------------------------------
+    public BezierSpline CurrentSpline => _spline; // Use renamed field
+
+    /// <summary>
+    /// Gets or sets the current progress along the spline (0 to 1).
+    /// Setting this will also update the object's position.
+    /// </summary>
+    public float NormalizedProgress
+    {
+        get => _progress;
+        set
+        {
+            _progress = Mathf.Clamp01(value);
+            UpdateTransformPosition(_progress);
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets whether the walker is moving towards the end (true) or beginning (false) of the spline.
+    /// </summary>
+    public bool IsMovingForward
+    {
+        get => _movingForward;
+        set => _movingForward = value;
+    }
+
 
     void Awake()
     {
-        ownerFairy = GetComponentInParent<FairyController>();
-        if (ownerFairy == null)
-        {
-            
-            enabled = false;
-        }
-        // Disable self initially, wait for Fairy script to initialize path
+        // Removed: ownerFairy related logic
+        // Initial state is disabled. Movement starts after InitializePath is called.
         enabled = false; 
     }
 
     /// <summary>
-    /// [Server Only] Initializes the walker with the spline to follow and the starting direction/progress.
-    /// Called internally by the owning <see cref="FairyController"/> after path data is synchronized.
+    /// [Client-Side] Initializes the walker with the spline to follow and the starting direction/progress.
     /// Enables the component to start movement.
     /// </summary>
-    /// <param name="chosenPath">The <see cref="BezierSpline"/> to follow.</param>
+    /// <param name="newPath">The <see cref="BezierSpline"/> to follow.</param>
     /// <param name="startAtBeginning">True to start at progress 0 and move forward, false to start at progress 1 and move backward.</param>
-    public void InitializeSplineInternal(BezierSpline chosenPath, bool startAtBeginning)
+    public void InitializePath(BezierSpline newPath, bool startAtBeginning)
     {
-        this.spline = chosenPath;
-        this.movingForward = startAtBeginning;
-        this.progress = startAtBeginning ? 0f : 1f; // Set initial progress based on direction
+        this._spline = newPath;
+        this._movingForward = startAtBeginning;
+        this._progress = startAtBeginning ? 0f : 1f;
 
-        // Immediately set initial position and rotation - REMOVED POSITION SET
-        if (spline != null)
+        if (_spline != null)
         {
-            // Set initial position NOW - REMOVED
-            // UpdatePosition(this.progress);
-            // Enable the component to start the Update loop
-            this.enabled = true;
+            UpdateTransformPosition(this._progress); // Set initial position
+            this.enabled = true; // Enable the component to start the Update loop
         }
         else
         {
-            
-            this.enabled = false; // Ensure it stays disabled
+            Debug.LogError("[SplineWalker] InitializePath called with a null spline. Disabling.", this);
+            this.enabled = false;
         }
     }
 
     void Update()
     {
-        if (!IsServer) return;
-        if (spline == null || ownerFairy == null || !this.enabled) return; // Need spline and fairy
+        // Removed: if (!IsServer) return;
+        if (_spline == null || !this.enabled) return;
 
-        // Calculate current velocity magnitude on the spline
-        float currentSpeed = spline.GetVelocity(progress).magnitude;
+        float currentCurveSpeed = _spline.GetVelocity(_progress).magnitude;
 
-        // Avoid division by zero or extremely small speeds
-        if (currentSpeed <= 0.001f)
+        if (currentCurveSpeed <= 0.001f)
         {
-            // If speed is near zero, we can't calculate progress accurately based on it.
-            // We could potentially just nudge progress slightly in the correct direction,
-            // or handle this as an edge case depending on desired behavior.
-            // For now, let's just advance a tiny fixed amount to prevent getting stuck.
-            currentSpeed = 0.01f;
+            // If at a cusp or very slow part of the curve, avoid division by zero.
+            // A small fixed step or alternative logic might be needed if paths often have zero-velocity points.
+            // For now, advancing a tiny bit to try and move past it.
+            currentCurveSpeed = 0.01f; 
         }
 
-        // Calculate progress delta for this frame based on desired moveSpeed and current speed along curve
-        float delta = (moveSpeed * Time.deltaTime) / currentSpeed;
+        float delta = (moveSpeed * Time.deltaTime) / currentCurveSpeed;
 
         bool reachedEnd = false;
-        if (movingForward)
+        if (_movingForward)
         {
-            if (progress < 1f)
+            if (_progress < 1f)
             {
-                progress += delta;
-                if (progress >= 1f)
+                _progress += delta;
+                if (_progress >= 1f)
                 {
-                    progress = 1f;
+                    _progress = 1f;
                     reachedEnd = true;
                 }
             }
-            // Handle edge case where progress starts >= 1
-            else { reachedEnd = true; }
+            else { reachedEnd = true; } // Already at or past the end
         }
         else // Moving backward
         {
-            if (progress > 0f)
+            if (_progress > 0f)
             {
-                progress -= delta;
-                if (progress <= 0f)
+                _progress -= delta;
+                if (_progress <= 0f)
                 {
-                    progress = 0f;
+                    _progress = 0f;
                     reachedEnd = true;
                 }
             }
-            // Handle edge case where progress starts <= 0
-            else { reachedEnd = true; }
+            else { reachedEnd = true; } // Already at or past the beginning
         }
 
-        // Always update position, even on the frame it reaches the end
-        UpdatePosition(progress);
+        UpdateTransformPosition(_progress);
 
-        // If the end was reached *this frame*...
         if (reachedEnd)
         {
-            // Instead of destroying locally, tell the server via the Fairy script
-            if (destroyOnComplete)
-            {
-                // Debug.Log($"[SplineWalker on {ownerFairy?.NetworkObjectId ?? 0}] Reached end. Calling ReportEndOfPath().", gameObject);
-                ownerFairy.ReportEndOfPath(); // Call the Fairy's notification method
-            }
-            // Disable this component locally to stop further updates
-            // this.enabled = false; // <-- Commented out to see if it interferes with RPC processing
+            // Removed: ownerFairy.ReportEndOfPath();
+            OnPathCompleted?.Invoke(); // Invoke the UnityEvent
+            
+            // Disable this component locally to stop further updates.
+            // The listener (e.g., a fairy controller) will handle deactivation/pooling.
+            this.enabled = false; 
         }
     }
 
-    /// <summary>
-    /// Gets the current direction of movement along the spline.
-    /// Takes into account whether the walker is moving forward or backward.
-    /// </summary>
-    /// <returns>The normalized direction vector in world space, or Vector3.zero if the spline is invalid.</returns>
     public Vector3 GetCurrentDirection()
     {
-        if (spline == null) return Vector3.zero;
+        if (_spline == null) return Vector3.zero;
         
-        Vector3 direction = spline.GetDirection(progress);
-        return movingForward ? direction : -direction;
+        Vector3 direction = _spline.GetDirection(_progress);
+        return _movingForward ? direction : -direction;
     }
 
-    // --- RENAMED and MODIFIED: Only updates position ---
-    private void UpdatePosition(float currentProgress)
+    private void UpdateTransformPosition(float currentProgress)
     {
-        if (!IsServer) return;
-        if (spline == null) return; // Safety check
-        // Get the position on the spline
-        Vector3 position = spline.GetPoint(currentProgress);
+        // Removed: if (!IsServer) return;
+        if (_spline == null) return;
+        Vector3 position = _spline.GetPoint(currentProgress);
         transform.position = position; 
     }
 } 

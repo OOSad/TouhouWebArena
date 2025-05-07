@@ -2,7 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 
 // Handles receiving path info and initializing the SplineWalker for a Fairy
-[RequireComponent(typeof(FairyController), typeof(SplineWalker))] // Requires Fairy and SplineWalker
+// [RequireComponent(typeof(FairyController), typeof(SplineWalker))] // Requires Fairy and SplineWalker -- Temporarily Commented Out
 /// <summary>
 /// [Server Only] Handles receiving path information via NetworkVariables and initializing the
 /// associated <see cref="SplineWalker"/> component for a <see cref="FairyController"/>.
@@ -109,7 +109,7 @@ public class FairyPathInitializer : NetworkBehaviour
         }
 
         // Initialize the SplineWalker locally
-        splineWalker.InitializeSplineInternal(chosenPath, startAtBeginning.Value);
+        // splineWalker.InitializeSplineInternal(chosenPath, startAtBeginning.Value); // Commented out due to SplineWalker refactor
         pathInitialized = true; // Mark as initialized
         splineWalker.enabled = true; // <-- Enable walker AFTER path is set
     }

@@ -13,6 +13,8 @@ public class BulletMovement : MonoBehaviour // CHANGED from NetworkBehaviour
     [SerializeField] private float moveSpeed = 10f; 
     // bulletLifetime will now be handled by ClientProjectileLifetime component
 
+    public ulong FiredByOwnerClientId { get; private set; } // NEW: To identify who fired this bullet
+
     // public NetworkVariable<PlayerRole> OwnerRole { get; private set; } = ... // REMOVED
 
     // private bool isDespawning = false; // REMOVED - Lifetime component will handle this
@@ -36,8 +38,9 @@ public class BulletMovement : MonoBehaviour // CHANGED from NetworkBehaviour
         // If moveSpeed is always constant from the prefab, this is less critical.
     }
 
-    public void Initialize(float speed, float lifetime) // Added lifetime parameter
+    public void Initialize(ulong ownerClientId, float speed, float lifetime) // Added ownerClientId & lifetime parameter
     {
+        this.FiredByOwnerClientId = ownerClientId; // NEW
         this.moveSpeed = speed;
         if (_projectileLifetime != null)
         {
@@ -57,6 +60,13 @@ public class BulletMovement : MonoBehaviour // CHANGED from NetworkBehaviour
         // Check for collision with Fairy or Spirit tags
         if (other.CompareTag("Fairy") || other.CompareTag("Spirit")) 
         {
+            ClientFairyHealth fairyHealth = other.GetComponent<ClientFairyHealth>();
+            if (fairyHealth != null && fairyHealth.IsAlive)
+            {
+                // Assuming 1 damage per bullet. This could be a property of the bullet.
+                fairyHealth.TakeDamage(1, this.FiredByOwnerClientId); 
+            }
+
             // Debug.Log($"[BulletMovement] Client-side collision with {other.name} (Tag: {other.tag})");
             if (_projectileLifetime != null)
             {

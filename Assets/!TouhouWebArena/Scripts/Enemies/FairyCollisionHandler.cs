@@ -8,7 +8,7 @@ using Unity.Netcode;
 /// Requires references to the associated <see cref="FairyController"/> and <see cref="FairyHealth"/>.
 /// Ensures collisions are only processed on the server and only if the fairy is alive (<see cref="FairyHealth.IsAlive"/>).
 /// </summary>
-[RequireComponent(typeof(FairyController), typeof(Collider2D), typeof(FairyHealth))] // Added FairyHealth
+// [RequireComponent(typeof(FairyController), typeof(Collider2D), typeof(FairyHealth))] // Added FairyHealth -- Temporarily Commented Out
 public class FairyCollisionHandler : NetworkBehaviour // Inherit from NetworkBehaviour for IsServer check
 {
     private FairyController sourceFairy;

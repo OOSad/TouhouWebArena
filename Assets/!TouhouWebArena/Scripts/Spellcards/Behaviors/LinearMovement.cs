@@ -42,7 +42,7 @@ namespace TouhouWebArena.Spellcards.Behaviors // Keep namespace for now, can be 
         /// </summary>
         private float CalculateCurrentSpeed()
         {
-            if (!_useTransition)
+            if (!_useTransition) 
             {
                 return _targetSpeed;
             }

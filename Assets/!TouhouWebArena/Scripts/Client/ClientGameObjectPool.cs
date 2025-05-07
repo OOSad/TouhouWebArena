@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq; // Added for LINQ operations like SelectMany
 
 /// <summary>
 /// A simple client-side object pool for GameObjects.
@@ -16,6 +17,8 @@ public class ClientGameObjectPool : MonoBehaviour
         public int initialSize;
         [HideInInspector]
         public Queue<GameObject> objectQueue = new Queue<GameObject>();
+        [HideInInspector]
+        public List<GameObject> activeObjectsInPool = new List<GameObject>(); // NEW: To track active objects
     }
 
     [SerializeField]
@@ -45,6 +48,7 @@ public class ClientGameObjectPool : MonoBehaviour
                 continue;
             }
 
+            poolConfig.activeObjectsInPool.Clear(); // Ensure list is empty on init
             for (int i = 0; i < poolConfig.initialSize; i++)
             {
                 GameObject obj = Instantiate(poolConfig.prefab, transform); // Parent to the pool manager for organization
@@ -77,6 +81,7 @@ public class ClientGameObjectPool : MonoBehaviour
         if (pool.objectQueue.Count > 0)
         {
             GameObject obj = pool.objectQueue.Dequeue();
+            pool.activeObjectsInPool.Add(obj); // NEW: Add to active list
             // obj.SetActive(true); // Activation will be handled by the requesting script
             return obj;
         }
@@ -105,6 +110,7 @@ public class ClientGameObjectPool : MonoBehaviour
             objInstance.SetActive(false);
             objInstance.transform.SetParent(transform); // Re-parent to pool manager
             pool.objectQueue.Enqueue(objInstance);
+            pool.activeObjectsInPool.Remove(objInstance); // NEW: Remove from active list
         }
         else
         {
@@ -112,4 +118,29 @@ public class ClientGameObjectPool : MonoBehaviour
             Destroy(objInstance);
         }
     }
+
+    /// <summary>
+    /// Gets a list of all GameObjects currently considered active (i.e., taken from the pool and not yet returned).
+    /// </summary>
+    /// <returns>A new list containing all active GameObjects across all pools.</returns>
+    public List<GameObject> GetAllActiveObjects()
+    {
+        // Consolidate all active objects from all pools into one list
+        // Using LINQ's SelectMany for conciseness
+        return poolDictionary.Values.SelectMany(pool => pool.activeObjectsInPool).ToList();
+    }
+
+    // Optional: A more performant way if you only care about a specific type or tag
+    // public List<GameObject> GetActiveObjectsWithMover<T>() where T : MonoBehaviour
+    // {
+    //     List<GameObject> result = new List<GameObject>();
+    //     foreach (Pool pool in poolDictionary.Values)
+    //     {
+    //         foreach (GameObject activeObj in pool.activeObjectsInPool)
+    //         {
+    //             if (activeObj.GetComponent<T>() != null) result.Add(activeObj);
+    //         }
+    //     }
+    //     return result;
+    // }
 } 

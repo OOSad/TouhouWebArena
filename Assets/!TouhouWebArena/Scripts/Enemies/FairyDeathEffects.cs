@@ -2,7 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 
 // Handles visual/audio effects upon Fairy death 
-[RequireComponent(typeof(FairyController))] // Requires the main Fairy script
+// [RequireComponent(typeof(FairyController))] // Requires the main Fairy script -- Temporarily Commented Out
 /// <summary>
 /// [Server Only] Handles spawning visual/audio effects, specifically a shockwave,
 /// when the associated <see cref="FairyController"/> dies.

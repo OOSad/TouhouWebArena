@@ -9,7 +9,7 @@ using TouhouWebArena; // For PlayerRole
 /// provides methods for server-side damage application (<see cref="ApplyDamageFromServer"/>, <see cref="ApplyDamageFromRpc"/>, <see cref="ApplyLethalDamage"/>),
 /// and notifies listeners via the <see cref="OnDeath"/> event when health reaches zero.
 /// </summary>
-[RequireComponent(typeof(NetworkObject))] // Health is networked
+// [RequireComponent(typeof(NetworkObject))] // Health is networked -- Temporarily Commented Out
 public class FairyHealth : NetworkBehaviour
 {
     [Header("Health Configuration")]

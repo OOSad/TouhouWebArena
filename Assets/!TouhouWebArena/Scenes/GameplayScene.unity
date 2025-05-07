@@ -385,7 +385,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 20227053}
-  - component: {fileID: 20227055}
   - component: {fileID: 20227054}
   m_Layer: 0
   m_Name: InitializationService
@@ -428,27 +427,12 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &20227055
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 20227052}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 161bd36215e30a640854ff0988ded998, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  player1FairySpawnerPrefab: {fileID: 8918086416351721240, guid: ec02ab2a57a79f34fac0c3aaf72ab337, type: 3}
-  player2FairySpawnerPrefab: {fileID: 3502040356921112979, guid: 3ee738bd8743ad749b3aa76024c58970, type: 3}
 --- !u!1 &49846383
 GameObject:
   m_ObjectHideFlags: 0
@@ -616,7 +600,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -1480,7 +1464,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -1818,7 +1802,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -2053,7 +2037,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -2370,6 +2354,7 @@ GameObject:
   - component: {fileID: 394317614}
   - component: {fileID: 394317615}
   - component: {fileID: 394317616}
+  - component: {fileID: 394317617}
   - component: {fileID: 394317613}
   m_Layer: 0
   m_Name: GameplayManagers
@@ -2427,7 +2412,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -2481,6 +2466,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1766fe8a246be5a488b700d845b58c0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &394317617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 394317610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0c982a26163e45459ed5055e3e7e35b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
@@ -4439,7 +4437,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -5542,77 +5540,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1022790735}
   m_CullTransparentMesh: 1
---- !u!1 &1026409542
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1026409544}
-  - component: {fileID: 1026409543}
-  - component: {fileID: 1026409545}
-  m_Layer: 0
-  m_Name: SceneRpcTestObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1026409543
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1026409542}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2861152442
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 0
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
---- !u!4 &1026409544
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1026409542}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1026409545
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1026409542}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e872ad4fb05559344bd02add0354a47f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &1031706627
 GameObject:
   m_ObjectHideFlags: 0
@@ -6227,7 +6154,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -7893,7 +7820,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -8565,9 +8492,31 @@ MonoBehaviour:
   - prefabId: ReimuBullet
     prefab: {fileID: 5656050771762241772, guid: aee0e98baf9735743b3d66e821ca5936, type: 3}
     initialSize: 50
+    activeObjectsInPool: []
   - prefabId: MarisaBullet
     prefab: {fileID: 5656050771762241772, guid: 59097a917c5931a43aea9a9a3a22fbe2, type: 3}
     initialSize: 50
+    activeObjectsInPool: []
+  - prefabId: NormalFairy
+    prefab: {fileID: 2265545678602581384, guid: 1088179f6c3b7204dbf8e29e4bdfe8bc, type: 3}
+    initialSize: 100
+    activeObjectsInPool: []
+  - prefabId: GreatFairy
+    prefab: {fileID: 2599006119773474308, guid: b9163c1d350c8c6489969e8df68532d9, type: 3}
+    initialSize: 30
+    activeObjectsInPool: []
+  - prefabId: StageSmallBullet
+    prefab: {fileID: 603824684173821203, guid: cf09dfab19bbdfa449358f5a311da220, type: 3}
+    initialSize: 120
+    activeObjectsInPool: []
+  - prefabId: StageLargeBullet
+    prefab: {fileID: 603824684173821203, guid: 160679763d648fe4a84680603d35f329, type: 3}
+    initialSize: 40
+    activeObjectsInPool: []
+  - prefabId: FairyShockwave
+    prefab: {fileID: 825958184812720138, guid: 76cfe1a5018d7d74fbbbd03cf0b269ff, type: 3}
+    initialSize: 50
+    activeObjectsInPool: []
 --- !u!1 &1656017467
 GameObject:
   m_ObjectHideFlags: 0
@@ -9138,7 +9087,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -9646,7 +9595,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -10641,10 +10590,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1941435757}
+  - component: {fileID: 1941435761}
   - component: {fileID: 1941435760}
   - component: {fileID: 1941435759}
   - component: {fileID: 1941435758}
-  - component: {fileID: 1941435761}
+  - component: {fileID: 1941435762}
+  - component: {fileID: 1941435763}
+  - component: {fileID: 1941435764}
+  - component: {fileID: 1941435765}
   m_Layer: 0
   m_Name: SpawningService
   m_TagString: Untagged
@@ -10740,12 +10693,88 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!114 &1941435762
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1941435756}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48ed99defc5282048957a42ac66dd970, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &1941435763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1941435756}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a57ab349a12ba44b863cb17b4d7af3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerIndex: 0
+  normalFairyClientPrefabID: NormalFairy
+  greatFairyClientPrefabID: GreatFairy
+  spawnInterval: 2.5
+  minFairiesPerLine: 6
+  maxFairiesPerLine: 10
+  greatFairyChance: 0.2
+  delayBetweenFairies: 0.3
+  allowReverseSpawning: 1
+  extraAttackTriggerWaveInterval: 4
+  enableExtraAttackTrigger: 1
+  isDebugSpawningEnabled: 1
+--- !u!114 &1941435764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1941435756}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a57ab349a12ba44b863cb17b4d7af3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerIndex: 1
+  normalFairyClientPrefabID: NormalFairy
+  greatFairyClientPrefabID: GreatFairy
+  spawnInterval: 2.5
+  minFairiesPerLine: 6
+  maxFairiesPerLine: 10
+  greatFairyChance: 0.2
+  delayBetweenFairies: 0.3
+  allowReverseSpawning: 1
+  extraAttackTriggerWaveInterval: 4
+  enableExtraAttackTrigger: 1
+  isDebugSpawningEnabled: 1
+--- !u!114 &1941435765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1941435756}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e7e3141be459134cbf7afe14584349a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player1TargetedSpawnCenter: {fileID: 1559253378}
+  player2TargetedSpawnCenter: {fileID: 2008785425}
+  spawnZoneDimensions: {x: 7, y: 1}
 --- !u!1 &1954152527
 GameObject:
   m_ObjectHideFlags: 0
@@ -10817,7 +10846,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -11036,7 +11065,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -12221,4 +12250,3 @@ SceneRoots:
   - {fileID: 881664902}
   - {fileID: 1652915011}
   - {fileID: 1773008112}
-  - {fileID: 1026409544}

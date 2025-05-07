@@ -6,7 +6,7 @@ using UnityEngine;
 /// Provides methods to update the visuals based on the shockwave's expansion progress
 /// and to reset the visuals when the object is reused from a pool.
 /// </summary>
-[RequireComponent(typeof(Shockwave), typeof(SpriteRenderer))]
+//[RequireComponent(typeof(Shockwave), typeof(SpriteRenderer))]
 public class ShockwaveVisuals : MonoBehaviour
 {
     // Visual properties stored on Awake for true reset

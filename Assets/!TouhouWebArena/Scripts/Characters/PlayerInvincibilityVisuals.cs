@@ -7,7 +7,8 @@ using System.Collections;
 /// This component runs locally on all clients, reacting to the <see cref="PlayerHealth.IsInvincible"/> NetworkVariable.
 /// It uses a coroutine to rapidly toggle the sprite's alpha value.
 /// </summary>
-// [RequireComponent(typeof(PlayerHealth))] // TEMPORARILY COMMENTED OUT FOR TESTING
+[RequireComponent(typeof(PlayerHealth))]
+[RequireComponent(typeof(ClientAuthMovement))]
 public class PlayerInvincibilityVisuals : MonoBehaviour 
 {
     [Header("Visual Settings")]
@@ -19,17 +20,26 @@ public class PlayerInvincibilityVisuals : MonoBehaviour
     [SerializeField] private float flashAlpha = 0.5f;
 
     private Coroutine flashingCoroutine;
-    // private PlayerHealth playerHealth; // TEMPORARILY COMMENTED OUT FOR TESTING
+    private PlayerHealth playerHealth;
+    private ClientAuthMovement clientAuthMovement;
 
     void Awake()
     {
-        // playerHealth = GetComponent<PlayerHealth>(); // TEMPORARILY COMMENTED OUT FOR TESTING
-        // if (playerHealth == null) // TEMPORARILY COMMENTED OUT FOR TESTING
-        // { // TEMPORARILY COMMENTED OUT FOR TESTING
-        //     Debug.LogError("PlayerInvincibilityVisuals requires PlayerHealth!", this); // TEMPORARILY COMMENTED OUT FOR TESTING
-        //     enabled = false; // TEMPORARILY COMMENTED OUT FOR TESTING
-        //     return; // TEMPORARILY COMMENTED OUT FOR TESTING
-        // } // TEMPORARILY COMMENTED OUT FOR TESTING
+        playerHealth = GetComponent<PlayerHealth>();
+        clientAuthMovement = GetComponent<ClientAuthMovement>();
+
+        if (playerHealth == null)
+        {
+            Debug.LogError("PlayerInvincibilityVisuals requires PlayerHealth!", this);
+            enabled = false;
+            return;
+        }
+        if (clientAuthMovement == null)
+        {
+            Debug.LogError("PlayerInvincibilityVisuals requires ClientAuthMovement!", this);
+            enabled = false;
+            return;
+        }
          if (playerSpriteRenderer == null)
         {
              Debug.LogError("PlayerInvincibilityVisuals requires PlayerSpriteRenderer to be assigned!", this);
@@ -40,40 +50,45 @@ public class PlayerInvincibilityVisuals : MonoBehaviour
 
     void OnEnable()
     {
-        // TEMPORARILY COMMENTED OUT FOR TESTING
-        // if (playerHealth != null)
-        // {
-        //     playerHealth.IsInvincible.OnValueChanged += HandleInvincibilityChanged;
-        //     HandleInvincibilityChanged(false, playerHealth.IsInvincible.Value);
-        // }
+        if (playerHealth != null)
+        {
+            playerHealth.IsInvincible.OnValueChanged += HandleInvincibilityChanged;
+            HandleInvincibilityChanged(playerHealth.IsInvincible.Value, playerHealth.IsInvincible.Value);
+        }
     }
 
     void OnDisable()
     {
-        // TEMPORARILY COMMENTED OUT FOR TESTING
-        // if (playerHealth != null)
-        // {
-        //     playerHealth.IsInvincible.OnValueChanged -= HandleInvincibilityChanged;
-        // }
-        StopFlashing(); // Still good to stop flashing if disabled
+        if (playerHealth != null)
+        {
+            playerHealth.IsInvincible.OnValueChanged -= HandleInvincibilityChanged;
+        }
+        StopFlashing();
     }
 
     private void HandleInvincibilityChanged(bool previousValue, bool newValue)
     {
-        // This method will not be called if the event subscription is commented out.
-        // if (newValue == true)
-        // {
-        //     StartFlashing();
-        // }
-        // else
-        // {
-        //     StopFlashing();
-        // }
+        if (newValue == true)
+        {
+            StartFlashing();
+            if (clientAuthMovement != null && clientAuthMovement.IsOwner)
+            {
+                clientAuthMovement.IsMovementLocked = true;
+            }
+        }
+        else
+        {
+            StopFlashing();
+            if (clientAuthMovement != null && clientAuthMovement.IsOwner)
+            {
+                clientAuthMovement.IsMovementLocked = false;
+            }
+        }
     }
 
     private void StartFlashing()
     {
-        if (flashingCoroutine == null && playerSpriteRenderer != null) // Added null check for safety
+        if (flashingCoroutine == null && playerSpriteRenderer != null)
         {
             flashingCoroutine = StartCoroutine(FlashSpriteCoroutine());
         }
@@ -92,7 +107,7 @@ public class PlayerInvincibilityVisuals : MonoBehaviour
     private IEnumerator FlashSpriteCoroutine()
     {
         bool showFull = true;
-        while (true)
+        while (playerHealth != null && playerHealth.IsInvincible.Value)
         {
             if (playerSpriteRenderer != null)
             {
@@ -103,6 +118,8 @@ public class PlayerInvincibilityVisuals : MonoBehaviour
             showFull = !showFull;
             yield return new WaitForSeconds(flashInterval);
         }
+        ResetSpriteAlpha();
+        flashingCoroutine = null;
     }
 
     private void ResetSpriteAlpha()

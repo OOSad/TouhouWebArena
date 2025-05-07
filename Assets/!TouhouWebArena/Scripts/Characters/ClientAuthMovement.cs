@@ -39,6 +39,11 @@ public class ClientAuthMovement : NetworkBehaviour
 
     // [SerializeField] private float interpolationSpeed = 15f; // REMOVED - No interpolation for now
 
+    /// <summary>
+    /// If true, player movement input will be ignored. Controlled by other scripts (e.g., during invincibility).
+    /// </summary>
+    public bool IsMovementLocked { get; set; } = false;
+
     void Awake()
     {
         characterStats = GetComponent<CharacterStats>();
@@ -91,7 +96,16 @@ public class ClientAuthMovement : NetworkBehaviour
     {
         if (IsOwner)
         {
-            // Owner reads input
+            // If movement is locked, clear any existing input and do not process new input.
+            if (IsMovementLocked)
+            {
+                horizontalInput = 0f;
+                verticalInput = 0f;
+                // Optionally, ensure animation reflects no movement
+                if (characterAnimation != null) characterAnimation.SetHorizontalInput(0f);
+                return; // Skip reading new input
+            }
+
             horizontalInput = Input.GetAxisRaw("Horizontal");
             verticalInput = Input.GetAxisRaw("Vertical");
             isFocusing = playerFocusController.IsFocusingNetworked;
@@ -115,6 +129,17 @@ public class ClientAuthMovement : NetworkBehaviour
     void FixedUpdate()
     {
         if (!IsOwner) return; // Only owner calculates and applies direct movement & updates NetworkVariable
+
+        // If movement is locked, do not apply any movement logic.
+        // The character will remain still, but NetworkedPosition will still reflect its last valid position.
+        if (IsMovementLocked)
+        {
+            // It might be beneficial to still send the current (locked) position to ensure no stale values are kept by NetworkedPosition
+            // if the lock starts/stops between FixedUpdate cycles. However, if input is zeroed, movement will be zero.
+            // For absolute stillness, ensure movement vector is zero if lock is active.
+            // NetworkedPosition.Value = rb.position; // Keep NetworkedPosition updated even if locked still.
+            return; // Skip applying movement
+        }
 
         float baseMoveSpeed = characterStats.GetMoveSpeed();
         float focusModifier = characterStats.GetFocusSpeedModifier();

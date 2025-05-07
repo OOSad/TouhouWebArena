@@ -1,87 +1,96 @@
 using UnityEngine;
-using Unity.Netcode; // Re-added for NetworkObject interaction
+using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic; // Required for List
 using System.Linq; // Required for LINQ
+using Unity.Collections; // Required for FixedString used in FairyWaveData
 
 /// <summary>
-/// [Server Only] Responsible for spawning waves (lines) of Fairy enemies along predefined paths for a specific player.
-/// This component is expected to be instantiated and initialized by <see cref="GameInitializer"/> on the server.
-/// It retrieves paths from <see cref="PathManager"/>, uses the <see cref="NetworkObjectPool"/> for fairy instances,
-/// and configures each spawned <see cref="FairyController"/> via its Initialize method.
+/// [Server Only] Responsible for calculating parameters for waves of Fairy enemies and 
+/// sending commands via ClientRpc to <see cref="FairySpawnNetworkHandler"/> for clients to spawn them.
+/// Retrieves paths from <see cref="PathManager"/>.
 /// Includes logic for randomizing wave size, path selection, great fairy chance, and optional extra attack triggers.
 /// </summary>
 public class FairySpawner : MonoBehaviour
 {
-    [Tooltip("Player index this spawner belongs to (0 for Player 1, 1 for Player 2). Determines paths and ownership.")]
+    [Tooltip("Player index this spawner creates waves for (0 for Player 1, 1 for Player 2).")]
     [SerializeField] private int playerIndex; // 0 for P1, 1 for P2
 
-    [Header("Prefabs")]
-    [Tooltip("The prefab used for spawning standard fairies.")]
-    [SerializeField] private GameObject normalFairyPrefab;
-    [Tooltip("The prefab used for spawning 'great' fairies (typically first/last in a line).")]
-    [SerializeField] private GameObject greatFairyPrefab;
+    // Removed Prefab references - we now only need the IDs clients expect
+    // [Header("Prefabs")]
+    // [SerializeField] private GameObject normalFairyPrefab;
+    // [SerializeField] private GameObject greatFairyPrefab;
+
+    [Header("Client Prefab IDs")]
+    [Tooltip("The Prefab ID the client pool uses for normal fairies (e.g., NormalFairyClient).")]
+    [SerializeField] private string normalFairyClientPrefabID = "NormalFairyClient";
+    [Tooltip("The Prefab ID the client pool uses for great fairies (e.g., GreatFairyClient).")]
+    [SerializeField] private string greatFairyClientPrefabID = "GreatFairyClient";
 
     [Header("Spawning Configuration")]
-    [Tooltip("Time in seconds between the start of each new line of fairies.")]
-    [SerializeField] private float spawnInterval = 5f; // Time between spawning lines
-    [Tooltip("Minimum number of fairies to spawn in a single line.")]
+    [Tooltip("Time in seconds between sending each wave spawn command.")]
+    [SerializeField] private float spawnInterval = 5f;
+    [Tooltip("Minimum number of fairies per wave.")]
     [SerializeField] private int minFairiesPerLine = 6;
-    [Tooltip("Maximum number of fairies to spawn in a single line.")]
+    [Tooltip("Maximum number of fairies per wave.")]
     [SerializeField] private int maxFairiesPerLine = 10;
-    [Tooltip("Probability (0-1) that the first and/or last fairy in a line will be a 'great' fairy.")]
-    [SerializeField] [Range(0f, 1f)] private float greatFairyChance = 0.2f; // Chance for first/last fairy to be great
-    [Tooltip("Delay in seconds between spawning individual fairies within the same line.")]
-    [SerializeField] private float delayBetweenFairies = 0.3f; // Delay spawning fairies in a line for spacing
-    [Tooltip("If true, lines have a 50% chance to spawn from the end of the path instead of the beginning.")]
-    [SerializeField] private bool allowReverseSpawning = true; // Allow fairies to spawn from the end of the path
+    [Tooltip("Probability (0-1) that the first and/or last fairy in a wave will be a 'great' fairy.")]
+    [SerializeField] [Range(0f, 1f)] private float greatFairyChance = 0.2f;
+    [Tooltip("Delay in seconds between spawning individual fairies within the wave (sent to client).")]
+    [SerializeField] private float delayBetweenFairies = 0.3f;
+    [Tooltip("If true, waves have a 50% chance to spawn from the end of the path instead of the beginning.")]
+    [SerializeField] private bool allowReverseSpawning = true;
 
-    [Header("Extra Attack Trigger (Server Only)")]
-    [Tooltip("If enabled, every N waves, one fairy will be marked as an extra attack trigger.")]
-    [SerializeField] private int extraAttackTriggerWaveInterval = 4; // Every N waves, one fairy becomes a trigger
-    [Tooltip("Master toggle for the extra attack trigger functionality.")]
-    [SerializeField] private bool enableExtraAttackTrigger = true; // Toggle for this feature
+    [Header("Extra Attack Trigger (Server Only Calculation)")]
+    [Tooltip("If enabled, every N waves, one fairy index will be marked as an extra attack trigger.")]
+    [SerializeField] private int extraAttackTriggerWaveInterval = 4;
+    [Tooltip("Master toggle for calculating the extra attack trigger index.")]
+    [SerializeField] private bool enableExtraAttackTrigger = true;
 
-    /// <summary>Reference to the main spawning coroutine.</summary>
     private Coroutine spawnCoroutine;
-    /// <summary>Counter tracking the number of waves (lines) spawned.</summary>
-    private int waveCounter = 0; // Counter for waves spawned
-    /// <summary>If false, the spawning coroutine will pause.</summary>
+    private int waveCounter = 0;
     public bool isDebugSpawningEnabled = true;
 
-    /// <summary>
-    /// [Server Only] Initializes the spawner and starts the spawning loop.
-    /// Called externally (e.g., by <see cref="GameInitializer"/>) after instantiation.
-    /// Validates prefabs and starts the <see cref="ServerSpawnLoop"/> coroutine.
-    /// </summary>
-    public void InitializeAndStartSpawning()
+    void Start()
     {
-        // Basic validation
-        if (normalFairyPrefab == null || greatFairyPrefab == null)
+        // Simple validation for IDs
+        if (string.IsNullOrEmpty(normalFairyClientPrefabID) || string.IsNullOrEmpty(greatFairyClientPrefabID))
         {
-            Debug.LogError($"Spawner P{playerIndex} prefab config invalid on {gameObject.name}! Disabling.", this);
+            Debug.LogError($"Server FairySpawner P{playerIndex} has missing client Prefab IDs! Disabling.", this);
             this.enabled = false;
             return;
         }
 
-        // Since this is only called on the server now, no need for IsServer check
-        if (spawnCoroutine == null) // Prevent starting multiple times
+        // Only start spawning on the server
+        if (NetworkManager.Singleton.IsServer)
+        {
+            InitializeAndStartSpawning();
+        }
+        else
+        {
+            this.enabled = false; // Disable component on clients
+        }
+    }
+
+    /// <summary>
+    /// [Server Only] Initializes the spawner and starts the spawning loop.
+    /// </summary>
+    public void InitializeAndStartSpawning()
+    {
+        if (!NetworkManager.Singleton.IsServer) return; // Extra safety
+
+        if (spawnCoroutine == null) 
         {
             spawnCoroutine = StartCoroutine(ServerSpawnLoop());
         }
     }
 
     /// <summary>
-    /// [Server Only] The main coroutine loop responsible for spawning waves of fairies.
-    /// Runs indefinitely, waiting <see cref="spawnInterval"/> seconds between waves.
-    /// Retrieves paths, selects path/count/direction, determines great/trigger fairies,
-    /// gets instances from the <see cref="NetworkObjectPool"/>, spawns them, and initializes them.
+    /// [Server Only] The main coroutine loop responsible for calculating fairy wave parameters 
+    /// and sending spawn commands to clients via RPC.
     /// </summary>
-    /// <returns>IEnumerator for the coroutine.</returns>
     private IEnumerator ServerSpawnLoop()
     {
-        // Get path list from PathManager ONCE
-        // Ensure PathManager.Instance is ready before calling this
         List<BezierSpline> paths = PathManager.Instance?.GetPathsForPlayer(playerIndex);
         if (paths == null || paths.Count == 0)
         {
@@ -89,9 +98,11 @@ public class FairySpawner : MonoBehaviour
             yield break;
         }
 
+        // Wait until the NetworkHandler instance is ready (clients might connect later)
+        yield return new WaitUntil(() => FairySpawnNetworkHandler.Instance != null);
+
         while (true)
         {
-            // Pause spawning if debug flag is false
             while (!isDebugSpawningEnabled)
             {
                 yield return null; 
@@ -100,104 +111,65 @@ public class FairySpawner : MonoBehaviour
             yield return new WaitForSeconds(spawnInterval);
             if (paths.Count == 0) continue;
 
-            // Increment wave counter
             waveCounter++;
 
-            // Determine if this is a trigger wave and select trigger index
-            bool isTriggerWave = enableExtraAttackTrigger && (waveCounter % extraAttackTriggerWaveInterval == 0);
-            int triggerFairyIndex = -1; // -1 means no trigger fairy this wave
-
+            // --- Calculate all wave parameters --- 
             int pathIndex = Random.Range(0, paths.Count);
+            // Ensure chosen path is valid before proceeding (though list check should suffice)
+            if (paths[pathIndex] == null)
+            {
+                 Debug.LogWarning($"Server Spawner {playerIndex} selected null path at index {pathIndex}! Skipping wave.");
+                 continue;
+            }
+            
             int fairyCount = Random.Range(minFairiesPerLine, maxFairiesPerLine + 1);
-
+            bool spawnAtBeginning = allowReverseSpawning ? (Random.value < 0.5f) : true;
+            bool firstIsGreat = (fairyCount > 0) && (Random.value < greatFairyChance);
+            bool lastIsGreat = (fairyCount > 1) && (Random.value < greatFairyChance);
+            
+            int triggerFairyIndex = -1; 
+            bool isTriggerWave = enableExtraAttackTrigger && (waveCounter % extraAttackTriggerWaveInterval == 0);
             if (isTriggerWave && fairyCount > 0)
             {
                 triggerFairyIndex = Random.Range(0, fairyCount);
             }
+            // --- End Parameter Calculation --- 
 
-            bool spawnAtBeginning = allowReverseSpawning ? (Random.value < 0.5f) : true;
-            bool firstIsGreat = (fairyCount > 0) && (Random.value < greatFairyChance);
-            bool lastIsGreat = (fairyCount > 1) && (Random.value < greatFairyChance);
-
-            BezierSpline chosenPath = paths[pathIndex];
-            if (chosenPath == null)
+            // --- Create and Populate FairyWaveData --- 
+            FairyWaveData waveToSend = new FairyWaveData
             {
-                 Debug.LogError($"Server Spawner {playerIndex} selected null path at index {pathIndex}!");
-                 continue;
-            }
+                PlayerAreaIdentifier = this.playerIndex,
+                PathId = pathIndex, // Send the index, client will resolve using PathManager
+                FairyCount = fairyCount,
+                SpawnAtBeginning = spawnAtBeginning,
+                DelayBetweenFairies = this.delayBetweenFairies,
+                FirstIsGreat = firstIsGreat,
+                LastIsGreat = lastIsGreat,
+                TriggerFairyIndex = triggerFairyIndex,
+                NormalFairyPrefabID = this.normalFairyClientPrefabID, // Assign configured ID
+                GreatFairyPrefabID = this.greatFairyClientPrefabID   // Assign configured ID
+            };
+            // --- End Populate Data ---
 
-            // Generate a unique ID for this line of fairies
-            System.Guid currentLineId = System.Guid.NewGuid();
-
-            for (int i = 0; i < fairyCount; i++)
+            // --- Send ClientRpc --- 
+            // Check instance just in case it becomes null mid-game (unlikely but safe)
+            if (FairySpawnNetworkHandler.Instance != null)
             {
-                // ADDED CHECK: Stop spawning line immediately if disabled mid-spawn
-                if (!isDebugSpawningEnabled) break;
-
-                bool makeGreat = false;
-                if (i == 0 && firstIsGreat) { makeGreat = true; }
-                else if (i == fairyCount - 1 && i != 0 && lastIsGreat) { makeGreat = true; }
-                
-                // Determine prefab and ID BEFORE getting from pool
-                GameObject prefabToUse = makeGreat ? greatFairyPrefab : normalFairyPrefab;
-                PoolableObjectIdentity identity = prefabToUse.GetComponent<PoolableObjectIdentity>();
-                if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
-                {
-                     Debug.LogError($"[FairySpawner] Prefab '{prefabToUse.name}' is missing PoolableObjectIdentity or PrefabID! Skipping spawn.", this);
-                     continue;
-                }
-                string prefabID = identity.PrefabID;
-
-                // Get object from pool
-                NetworkObject pooledNetworkObject = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
-                if (pooledNetworkObject == null)
-                {
-                     Debug.LogError($"[FairySpawner] Failed to get Fairy '{prefabID}' from pool. Skipping spawn.", this);
-                     continue;
-                }
-                
-                // Position and Activate
-                Vector3 spawnPos = spawnAtBeginning ? chosenPath.GetPoint(0f) : chosenPath.GetPoint(1f);
-                pooledNetworkObject.transform.position = spawnPos;
-                pooledNetworkObject.transform.rotation = Quaternion.identity;
-                pooledNetworkObject.gameObject.SetActive(true);
-
-                // Spawn FIRST
-                pooledNetworkObject.Spawn(false);
-
-                // Get script and Initialize AFTER spawning
-                FairyController fairyScript = pooledNetworkObject.GetComponent<FairyController>();
-                if (fairyScript != null)
-                {
-                    // Determine necessary parameters for initialization
-                    PlayerRole ownerRole = (this.playerIndex == 0) ? PlayerRole.Player1 : PlayerRole.Player2;
-                    bool isTrigger = (i == triggerFairyIndex);
-
-                    // Call the consolidated Initialize method
-                    fairyScript.InitializeForPooling(this.playerIndex, pathIndex, spawnAtBeginning, 
-                                                     currentLineId, i, 
-                                                     isTrigger, ownerRole);
-                }
-                else
-                {
-                     Debug.LogError($"[FairySpawner P{playerIndex}] Pooled fairy is missing Fairy script! Returning to pool.", pooledNetworkObject);
-                     NetworkObjectPool.Instance.ReturnNetworkObject(pooledNetworkObject); // Return broken obj
-                     continue; // Skip to next fairy
-                }
-
-                // Only delay if there are more fairies to spawn in this line
-                if (i < fairyCount - 1)
-                {
-                     yield return new WaitForSeconds(delayBetweenFairies);
-                }
+                 FairySpawnNetworkHandler.Instance.SpawnFairyWaveClientRpc(waveToSend);
+                 // Debug.Log($"Server Spawner {playerIndex} sent wave command: Path {pathIndex}, Count {fairyCount}");
             }
+            else
+            {
+                Debug.LogError("[Server FairySpawner] FairySpawnNetworkHandler.Instance became null! Cannot send wave command.");
+                 // Maybe try to wait again? Or stop the loop?
+                 yield return new WaitUntil(() => FairySpawnNetworkHandler.Instance != null);
+            }
+            // --- End Send ClientRpc ---
+
+            // Removed the old per-fairy spawning loop entirely
         }
     }
 
-    /// <summary>
-    /// Called when the MonoBehaviour will be destroyed.
-    /// Stops the active <see cref="spawnCoroutine"/> if it exists.
-    /// </summary>
     void OnDestroy()
     {
         if (spawnCoroutine != null)
@@ -208,16 +180,12 @@ public class FairySpawner : MonoBehaviour
     }
 
     /// <summary>
-    /// [Server Only] Sets the debug flag to enable/disable fairy spawning.
+    /// [Server Only] Sets the debug flag to enable/disable calculating and sending spawn commands.
     /// </summary>
-    /// <param name="enabled">True to enable spawning, false to disable.</param>
     public void SetSpawningEnabledServer(bool enabled)
     {
-        // Although this script should only exist on server, check anyway
         if (!NetworkManager.Singleton.IsServer) return;
         isDebugSpawningEnabled = enabled;
-        UnityEngine.Debug.Log($"Fairy Spawner (Player {playerIndex}) spawning set to: {enabled}");
+        Debug.Log($"Server Fairy Spawner (Player {playerIndex}) command sending set to: {enabled}");
     }
-
-    // TODO: Add logic to associate spawner/fairies with a specific player area if needed (using layers, tags, or parent transforms)
 } 

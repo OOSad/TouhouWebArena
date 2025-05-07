@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using System;
-using TouhouWebArena; // For PlayerRole, DelayedActionProcessor, StageSmallBulletSpawner
+using TouhouWebArena; // For PlayerRole, DelayedActionProcessor
 
 /// <summary>
 /// [Server Only] Handles the chain reaction logic initiated when a <see cref="FairyController"/> dies.
@@ -11,7 +11,7 @@ using TouhouWebArena; // For PlayerRole, DelayedActionProcessor, StageSmallBulle
 /// and the <see cref="chainReactionDelay"/> value.
 /// Called by <see cref="FairyController.HandleDeath"/>.
 /// </summary>
-[RequireComponent(typeof(FairyController))] // Requires access to FairyController context if needed
+// [RequireComponent(typeof(FairyController))] // Requires access to FairyController context if needed -- Temporarily Commented Out
 public class FairyChainReactionHandler : NetworkBehaviour
 {
     [Header("Chain Reaction Configuration")]
@@ -84,18 +84,39 @@ public class FairyChainReactionHandler : NetworkBehaviour
         // Effects below should only happen if killed BY A PLAYER during a chain reaction scenario
         if (killerRole != PlayerRole.None)
         {
-            // --- Spawn Regular Bullet on Opponent Side --- 
-            if (ownerRole != PlayerRole.None) // Check owner is valid
+            // --- NEW: Trigger retaliation bullet via PlayerAttackRelay of the killer ---
+            if (PlayerDataManager.Instance == null)
             {
-                if (StageSmallBulletSpawner.Instance != null)
-                {
-                    StageSmallBulletSpawner.Instance.SpawnBulletForOpponent(ownerRole);
-                }
-                else
-                {
-                    Debug.LogWarning("[FairyChainReactionHandler] StageSmallBulletSpawner instance not found.", this);
-                }
+                Debug.LogWarning("[FairyChainReactionHandler] PlayerDataManager instance not found. Cannot determine killer client ID.", this);
+                return;
             }
+
+            PlayerData? killerPlayerData = PlayerDataManager.Instance.GetPlayerDataByRole(killerRole);
+            if (!killerPlayerData.HasValue)
+            {
+                Debug.LogWarning($"[FairyChainReactionHandler] Could not find PlayerData for killerRole {killerRole}. Cannot trigger retaliation.", this);
+                return;
+            }
+            ulong killerClientId = killerPlayerData.Value.ClientId;
+
+            if (NetworkManager.Singleton.ConnectedClients.TryGetValue(killerClientId, out NetworkClient killerClient))
+            {
+                if (killerClient.PlayerObject != null)
+                {
+                    PlayerAttackRelay playerRelay = killerClient.PlayerObject.GetComponent<PlayerAttackRelay>();
+                    if (playerRelay != null)
+                    {
+                        // The ServerRpc will execute on the server, using the context of the killer's PlayerAttackRelay instance.
+                        // This allows ReportFairyKillServerRpc to correctly identify the opponent of the actual killer.
+                        playerRelay.ReportFairyKillServerRpc(); 
+                        // Debug.Log($"[FairyChainReactionHandler] Triggered ReportFairyKillServerRpc for killer {killerRole} (Client {killerClientId}) due to chain reaction.");
+                    }
+                    else { Debug.LogWarning($"[FairyChainReactionHandler] Killer's PlayerObject (Client {killerClientId}) is missing PlayerAttackRelay component.", this); }
+                }
+                else { Debug.LogWarning($"[FairyChainReactionHandler] Killer's PlayerObject (Client {killerClientId}) is null.", this); }
+            }
+            else { Debug.LogWarning($"[FairyChainReactionHandler] Could not find NetworkClient for killerClientId {killerClientId}.", this); }
+            // --- END NEW --- 
         } // End if (killerRole != PlayerRole.None)
     }
 } 

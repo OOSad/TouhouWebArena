@@ -5,7 +5,7 @@ using TouhouWebArena; // Add namespace for IClearable
 
 // Now requires ShockwaveVisuals instead of SpriteRenderer
 [RequireComponent(typeof(CircleCollider2D))]
-[RequireComponent(typeof(ShockwaveVisuals))] 
+//[RequireComponent(typeof(ShockwaveVisuals))] 
 /// <summary>
 /// Represents a visual shockwave effect that expands outwards from a point.
 /// Handles the expansion logic (radius over time based on curve), collider updates,

@@ -4,16 +4,16 @@ using System.Collections;
 using System.Collections.Generic; // Needed for List
 using TouhouWebArena; // Add namespace for IClearable and PlayerRole
 
-// Final set of required components
-[RequireComponent(typeof(SplineWalker))]
-[RequireComponent(typeof(Collider2D))]
-[RequireComponent(typeof(NetworkObject))]
-[RequireComponent(typeof(FairyCollisionHandler))]
-[RequireComponent(typeof(FairyDeathEffects))]
-[RequireComponent(typeof(FairyPathInitializer))]
-[RequireComponent(typeof(FairyExtraAttackTrigger))]
-[RequireComponent(typeof(FairyChainReactionHandler))]
-[RequireComponent(typeof(FairyHealth))] // Added health component
+// Final set of required components -- Temporarily Commented Out
+// [RequireComponent(typeof(SplineWalker))]
+// [RequireComponent(typeof(Collider2D))]
+// [RequireComponent(typeof(NetworkObject))]
+// [RequireComponent(typeof(FairyCollisionHandler))]
+// [RequireComponent(typeof(FairyDeathEffects))]
+// [RequireComponent(typeof(FairyPathInitializer))]
+// [RequireComponent(typeof(FairyExtraAttackTrigger))]
+// [RequireComponent(typeof(FairyChainReactionHandler))]
+// [RequireComponent(typeof(FairyHealth))] // Added health component
 /// <summary>
 /// Represents a Fairy enemy unit. Acts as the central coordinator for various fairy components,
 /// managing path following initialization, line/owner information, pooling setup, and death sequence coordination.

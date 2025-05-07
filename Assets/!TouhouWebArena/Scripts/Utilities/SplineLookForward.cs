@@ -20,7 +20,7 @@ public class SplineLookForward : MonoBehaviour
     // Use LateUpdate to ensure SplineWalker has updated position/progress in Update
     void LateUpdate()
     {
-        if (!lookForwardEnabled || splineWalker == null || splineWalker.Spline == null || !splineWalker.enabled)
+        if (!lookForwardEnabled || splineWalker == null || splineWalker.CurrentSpline == null || !splineWalker.enabled)
         {
             // Don't rotate if disabled, walker is invalid, or walker isn't active
             return; 

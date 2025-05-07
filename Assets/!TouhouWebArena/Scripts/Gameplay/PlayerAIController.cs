@@ -269,7 +269,7 @@ public class PlayerAIController : NetworkBehaviour
         // {
         //     // clientAuthMovement.SetAIHorizontalInput(0f); // Temporarily commented out
         // }
-        isDodging = false; 
+            isDodging = false;
     }
 
     public void SetAIEnabledServer(bool enabled)
@@ -287,14 +287,14 @@ public class PlayerAIController : NetworkBehaviour
 
         // Visualize dodge check rays if AI is active
         if (Application.isPlaying && aiActive)
-        {
-            Gizmos.color = Color.cyan;
+            {
+                Gizmos.color = Color.cyan;
             Gizmos.DrawLine(hitboxTransform.position, hitboxTransform.position + Vector3.left * dodgeCheckDistance);
             Gizmos.DrawLine(hitboxTransform.position, hitboxTransform.position + Vector3.right * dodgeCheckDistance);
-        }
+            }
 
         // Visualize targeting radius
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(hitboxTransform.position, targetDetectionRadius);
+                Gizmos.DrawWireSphere(hitboxTransform.position, targetDetectionRadius);
     }
 } 

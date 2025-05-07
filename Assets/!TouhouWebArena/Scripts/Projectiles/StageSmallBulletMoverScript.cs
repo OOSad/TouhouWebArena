@@ -1,220 +1,122 @@
 using UnityEngine;
-using Unity.Netcode;
-using TouhouWebArena; // Add namespace for IClearable and PlayerRole
+// Removed: using Unity.Netcode;
+// Removed: using TouhouWebArena; // No longer using IClearable or PlayerRole directly from here in the client-side version
 
-[RequireComponent(typeof(PoolableObjectIdentity))] // Ensure identity component exists
+// Consider renaming this script to ClientStageBulletMovement or similar for clarity.
+// Removed: [RequireComponent(typeof(PoolableObjectIdentity))] // Will use PooledObjectInfo from prefab directly
 /// <summary>
-/// Controls the movement and behavior of small and large stage bullets.
-/// Handles random velocity calculation (or uses a set initial velocity),
-/// network synchronization of velocity, lifetime management, pooling,
-/// and interaction with clearing effects via the IClearable interface.
+/// [Client-Side] Controls the movement and behavior of small and large stage bullets.
+/// Handles movement based on an initial velocity, lifetime management, and returning to ClientGameObjectPool.
 /// Designed to be pooled.
 /// </summary>
-public class StageSmallBulletMoverScript : NetworkBehaviour, IClearable // Implement IClearable
+public class StageSmallBulletMoverScript : MonoBehaviour // Changed from NetworkBehaviour, Removed IClearable for now
 {
-    [Header("Movement & Lifetime")] // Added header for clarity
-    /// <summary>
-    /// The minimum speed for randomly generated velocity.
-    /// </summary>
-    [SerializeField] private float minSpeed = 2f;
-    /// <summary>
-    /// The maximum speed for randomly generated velocity.
-    /// </summary>
-    [SerializeField] private float maxSpeed = 5f;
-    /// <summary>
-    /// Maximum deviation angle from straight down (in degrees) for random velocity generation.
-    /// </summary>
-    [SerializeField] private float maxAngleDeviation = 15f; 
-    /// <summary>
-    /// Maximum time in seconds before the bullet is automatically despawned by the server.
-    /// </summary>
-    [SerializeField] private float maxLifetime = 15f; // Seconds before the bullet despawns
+    [Header("Movement & Lifetime")]
+    [SerializeField] private float defaultSpeed = 3f; // Used if no specific speed is provided during initialization
+    [SerializeField] private float maxLifetime = 15f;
 
-    [Header("Behavior")] // Added header
-    /// <summary>
-    /// If true, this bullet will not be destroyed upon collision with a standard shockwave (e.g., for Large Stage Bullets).
-    /// Used by the IClearable implementation.
-    /// </summary>
-    [SerializeField] 
-    [Tooltip("Can this bullet be cleared by standard shockwaves (non-forced clears)?")]
-    private bool isNormallyClearable = true; // Add field, default to true?
-    // --- REMOVED isImmuneToShockwave, replaced by isNormallyClearable for the interface logic ---
-    // [SerializeField] private bool isImmuneToShockwave = false;
+    [Header("Behavior")]
+    [Tooltip("Can this bullet be cleared by standard shockwaves?")]
+    [SerializeField] private bool isNormallyClearable = true;
 
-    // --- Networked State --- 
-    /// <summary>
-    /// [Server Write, Client Read] The authoritative velocity vector calculated or set by the server.
-    /// Used by the server to move the bullet and implicitly synced for client-side prediction/movement.
-    /// </summary>
-    private NetworkVariable<Vector3> SyncedVelocity = new NetworkVariable<Vector3>(writePerm: NetworkVariableWritePermission.Server);
-    // NetworkVariable to store which player this bullet belongs to
-    /// <summary>
-    /// [Server Write, Client Read] The <see cref="PlayerRole"/> this bullet is targeting or associated with.
-    /// Used for logic like bomb clearing.
-    /// </summary>
-    public NetworkVariable<PlayerRole> TargetPlayerRole { get; private set; } = new NetworkVariable<PlayerRole>(PlayerRole.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    /// <summary>
-    /// [Server Write, Client Read] If true, the bullet will use the <see cref="InitialVelocity"/> instead of calculating a random one.
-    /// </summary>
-    public NetworkVariable<bool> UseInitialVelocity { get; private set; } = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    /// <summary>
-    /// [Server Write, Client Read] The specific velocity vector to use if <see cref="UseInitialVelocity"/> is true.
-    /// </summary>
-    public NetworkVariable<Vector3> InitialVelocity { get; private set; } = new NetworkVariable<Vector3>(Vector3.zero, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    // -----------------------
+    private Vector3 _currentVelocity;
+    private float _currentLifetimeRemaining;
+    private bool _isReturningToPool = false;
 
-    /// <summary>Remaining time before the bullet automatically despawns (server-side timer).</summary>
-    private float currentLifetime;
-    /// <summary>Server-side flag to prevent ReturnToPool from being called multiple times in quick succession.</summary>
-    private bool isReturning = false; // Flag to prevent double returns
+    // --- Public getters for properties that might be needed by the spawner ---
+    public float DefaultSpeed => defaultSpeed;
+    public float MaxLifetime => maxLifetime;
+    // -----------------------------------------------------------------------
 
-    public override void OnNetworkSpawn()
+    void OnEnable()
     {
-        base.OnNetworkSpawn();
-        isReturning = false; // Reset flag
-
-        // Movement logic and velocity calculation should only run on the server
-        if (!IsServer) return;
-
-        // --- Server-side Velocity Calculation/Setting --- 
-        Vector3 calculatedVelocity;
-        if (UseInitialVelocity.Value)
-        {
-            // Use the velocity provided by the spawner
-            calculatedVelocity = InitialVelocity.Value;
-        }
-        else
-        {
-            // Calculate random speed
-            float speed = Random.Range(minSpeed, maxSpeed);
-            // Calculate random angle deviation
-            float randomAngle = Random.Range(-maxAngleDeviation, maxAngleDeviation);
-            // Calculate direction based on the angle
-            Vector3 direction = Quaternion.Euler(0, 0, randomAngle) * Vector3.down;
-            // Calculate the final velocity vector
-            calculatedVelocity = direction.normalized * speed;
-        }
-
-        // Store the final velocity in the NetworkVariable for movement
-        SyncedVelocity.Value = calculatedVelocity;
-        // TargetPlayerRole should be set by the spawner *after* OnNetworkSpawn
-        // --- End Server-side Calculation ---
-
-        // Initialize lifetime timer on the server
-        currentLifetime = maxLifetime;
+        // Reset state when enabled from pool
+        _isReturningToPool = false;
+        // _currentLifetimeRemaining will be set by Initialize
+        // _currentVelocity will be set by Initialize
     }
 
-    // --- Add OnNetworkDespawn --- 
-    public override void OnNetworkDespawn()
-    {
-        base.OnNetworkDespawn();
-        isReturning = false; // Reset flag
-    }
-    // --------------------------
-
-    // --- Add OnDisable --- 
     void OnDisable()
     {
-        // Also reset flag when disabled (e.g., returned to pool)
-        isReturning = false;
+        _isReturningToPool = false; // Reset flag when disabled
     }
-    // ---------------------
 
-    // --- Public getter for speed (used by SpiritController) ---
     /// <summary>
-    /// Gets the minimum speed configured for this bullet type.
+    /// Initializes the bullet's movement direction, speed, and lifetime.
+    /// Called by the spawning system (e.g., PlayerAttackRelay) after getting from pool.
     /// </summary>
-    /// <returns>The minimum speed.</returns>
-    public float GetMinSpeed() { return minSpeed; }
-    // ---------------------------------------------------------
+    /// <param name="initialDirection">The normalized direction the bullet should travel.</param>
+    /// <param name="speed">The speed of the bullet. If 0 or less, uses DefaultSpeed.</param>
+    /// <param name="lifetime">The duration the bullet should exist. If 0 or less, uses MaxLifetime.</param>
+    public void Initialize(Vector3 initialDirection, float speed, float lifetime)
+    {
+        float actualSpeed = speed > 0 ? speed : defaultSpeed;
+        _currentVelocity = initialDirection.normalized * actualSpeed;
+        _currentLifetimeRemaining = lifetime > 0 ? lifetime : maxLifetime;
+        _isReturningToPool = false; // Ensure it's ready to go
+    }
 
     private void Update()
     {
-        if (!IsServer || isReturning) return; // Ignore if not server or already returning
+        if (_isReturningToPool) return;
 
-        // Move using the velocity stored in the NetworkVariable
-        transform.Translate(SyncedVelocity.Value * Time.deltaTime, Space.World);
+        transform.Translate(_currentVelocity * Time.deltaTime, Space.World);
 
-        // --- Lifetime Check (Server) ---
-        currentLifetime -= Time.deltaTime;
-        if (currentLifetime <= 0f)
+        _currentLifetimeRemaining -= Time.deltaTime;
+        if (_currentLifetimeRemaining <= 0f)
         {
-            ReturnToPool(); // Use the new method
-            return; 
+            ReturnToClientPool();
         }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!IsServer || isReturning) return; // Ignore if not server or already returning
+        if (_isReturningToPool) return;
 
-        // Check if the bullet collided with a shockwave
-        if (other.CompareTag("FairyShockwave"))
+        // Example: Client-side shockwave clearing
+        if (other.CompareTag("FairyShockwave")) // Assuming shockwaves are client-side and tagged
         {
-            // --- REMOVED Immunity Check Here - Now handled by IClearable --- 
-            // if (isImmuneToShockwave) return;
-            
-            // Instead of directly returning, the shockwave will now call IClearable.Clear
-            // on this object, which will handle the logic based on isNormallyClearable.
-            // So, we remove the ReturnToPool call from here.
-            // ReturnToPool(); 
+            if (isNormallyClearable)
+            {
+                // TODO: Maybe play a clear visual/sound effect
+                ReturnToClientPool();
+            }
         }
-        // Potentially add other collision checks here that should return the bullet to the pool
-        // (but clearing is now primarily handled via the interface)
+        // Example: Collision with player (if these bullets can hit the player)
+        // if (other.CompareTag("Player")) 
+        // {
+        //     // TODO: Handle player hit logic (e.g., notify player health script)
+        //     ReturnToClientPool(); // Return bullet after hitting player
+        // }
     }
 
-    // --- New ReturnToPool Method --- 
-    private void ReturnToPool()
+    private void ReturnToClientPool()
     {
-        if (!IsServer || isReturning) return; // Should only run on server, prevent double calls
+        if (_isReturningToPool) return;
+        _isReturningToPool = true;
 
-        isReturning = true;
-
-        NetworkObject networkObject = GetComponent<NetworkObject>();
-        if (networkObject != null && networkObject.IsSpawned)
+        if (ClientGameObjectPool.Instance != null)
         {
-            networkObject.Despawn(false); // Despawn WITHOUT destroying
-
-            // Return to the pool manager
-            if (NetworkObjectPool.Instance != null)
-            {
-                NetworkObjectPool.Instance.ReturnNetworkObject(networkObject);
-            }
-            else
-            {
-                // Fallback if pool manager is gone
-                Debug.LogWarning($"NetworkObjectPool instance missing when trying to return {gameObject.name}. Destroying instead.", gameObject);
-                Destroy(gameObject);
-            }
+            ClientGameObjectPool.Instance.ReturnObject(this.gameObject);
         }
         else
         {
-            // If not spawned or null, just ensure flag is reset if somehow reached here
-            isReturning = false; 
+            Debug.LogWarning($"[StageSmallBulletMoverScript] ClientGameObjectPool instance missing. Destroying {gameObject.name} instead.", this);
+            Destroy(gameObject); // Fallback
         }
     }
-    // -----------------------------
 
-    // --- Implementation of IClearable ---
     /// <summary>
-    /// Called by effects like PlayerDeathBomb or Shockwave to clear this bullet.
-    /// On the server, checks if the clear should happen based on forceClear and isNormallyClearable flags,
-    /// then returns the bullet to the object pool if applicable.
+    /// Public method to allow external systems (like a bomb) to force this bullet back to the pool.
     /// </summary>
-    /// <param name="forceClear">If true, the bullet is cleared regardless of isNormallyClearable.</param>
-    /// <param name="sourceRole">The role of the player causing the clear (ignored by this implementation).</param>
-    public void Clear(bool forceClear, PlayerRole sourceRole)
+    public void ForceReturnToPoolByBomb()
     {
-        // Clearing logic only runs on the server
-        if (!IsServer || isReturning) return;
-
-        // If it's a forced clear (player bomb) OR this bullet is normally clearable
-        if (forceClear || isNormallyClearable)
-        {
-            // Reuse the existing pooling logic
-            ReturnToPool();
-        }
-        // Else: Normal clear attempt on a bullet that is not normally clearable - do nothing.
+        // TODO: Optionally play a specific "cleared by bomb" visual/audio effect here first
+        // Debug.Log($"{gameObject.name} being force returned by bomb.");
+        ReturnToClientPool();
     }
-    // ------------------------------------
+
+    // --- IClearable implementation removed for this client-side version ---
+    // The old Clear() method was server-authoritative.
+    // Client-side clearing will be simpler, based on direct collision or specific client events.
 } 

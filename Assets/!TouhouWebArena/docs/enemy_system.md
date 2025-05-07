@@ -2,67 +2,94 @@
 
 ## Overview
 
-The enemy system manages the non-player entities that populate the playfield: Fairies (`NormalFairy`, `GreatFairy`) and Spirits (`Spirit`). These enemies serve as the primary source of interaction between players, as defeating them sends attacks to the opponent. The system is server-authoritative.
+The enemy system manages non-player entities: Fairies (`NormalFairy`, `GreatFairy`) and Spirits (`Spirit`). The system has been refactored to **Server-Authoritative Spawning + Client-Side Simulation**.
+
+*   The server decides *what* enemies spawn and *when/where* (via path data for fairies).
+*   Clients receive spawn commands via RPC and then locally instantiate, move, and manage the health/death of these enemies using `ClientGameObjectPool`.
 
 ## Spawning
 
-Enemy spawning is controlled entirely by the server.
+### Fairies (`NormalFairy`, `GreatFairy`)
 
-*   **Fairies:**
-    *   Spawned via specific spawner objects configured per player side (`PlayerOneFairySpawner`, `PlayerTwoFairySpawner`).
-    *   These spawner prefabs contain a `FairySpawner` component script which defines waves, sequences, timing delays, references to `NormalFairy` / `GreatFairy` prefabs, and which fairies trigger Extra Attacks.
-    *   Fairies follow predefined paths using the `SplineWalker.cs` component, with path data synced from the server via `FairyPathInitializer.cs`.
-    *   The `FairyRegistry.cs` tracks active fairies.
-*   **Spirits:**
-    *   Spawned periodically within designated spawn zones by `SpiritSpawner.cs`.
-    *   Revenge Spawn: Handled by `SpiritController.cs` -> `Die()`, which calls `SpiritSpawner.SpawnRevengeSpirit()` to spawn on the opponent's side.
-    *   The `SpiritRegistry.cs` tracks active spirits per side and enforces a maximum count.
+1.  **Server (`FairySpawner.cs`):**
+    *   Defines waves, sequences, timings, enemy types (prefab IDs), and path data (e.g., from `PathManager`).
+    *   For each wave, it constructs `FairyWaveData` (containing `FairySpawnData` structs: prefab ID, path ID, start delay, etc.).
+    *   Calls `FairySpawnNetworkHandler.Instance.SpawnFairyWaveClientRpc(waveData)` sending this data to all clients.
+2.  **All Clients (`FairySpawnNetworkHandler.SpawnFairyWaveClientRpc`):**
+    *   Receive `waveData`.
+    *   Iterate through `FairySpawnData` entries.
+    *   For each entry:
+        *   Get the enemy prefab (e.g., "NormalFairy") from `ClientGameObjectPool.Instance.GetObject(data.PrefabID)`.
+        *   Retrieve the path from `PathManager.Instance.GetPath(data.PathID)`.
+        *   Initialize `SplineWalker.InitializePath(path, data.StartDelay)`.
+        *   Set initial position/rotation if needed, activate the GameObject.
 
-## Enemy Types & Behavior
+### Spirits (`Spirit` - Requires Further Refactoring)
 
-*   **Fairies (`NormalFairy`, `GreatFairy` prefabs):**
-    *   **Structure:** Fairy behavior is now distributed across multiple components attached to the prefab, coordinated by `FairyController.cs`.
-        *   `FairyController.cs`: Coordinator, manages line/owner info, pooling setup, death sequence coordination. Implements `IClearable` (delegates to `FairyHealth`).
-        *   `FairyHealth.cs`: Manages the fairy's `NetworkVariable` health, handles damage application, and triggers an `OnDeath` event.
-        *   `SplineWalker.cs`: Handles movement along a defined path.
-        *   `FairyPathInitializer.cs`: Initializes the `SplineWalker` with path data from the server.
-        *   `FairyCollisionHandler.cs`: Handles physics trigger detection (e.g., with player shots) and checks `FairyHealth.IsAlive()`.
-        *   `FairyDeathEffects.cs`: Spawns visual/audio effects upon death.
-        *   `FairyChainReactionHandler.cs`: Manages the chain reaction logic (spawning `DelayedActionProcessor`, triggering opponent bullets).
-        *   `DelayedActionProcessor.cs`: (Utility script/prefab) Handles the delay between chain reaction steps.
-        *   `FairyExtraAttackTrigger.cs`: Checks if the fairy should trigger an Extra Attack on death and calls `ExtraAttackManager`.
-    *   **Interaction:**
-        *   Can be destroyed by player shots (damage handled by `FairyHealth`, collision by `FairyCollisionHandler`).
-        *   Always cleared by bombs/shockwaves (via `IClearable` -> `FairyHealth.ApplyLethalDamage`).
-    *   **On-Death Effect (Coordinated by `FairyController.HandleDeath`):**
-        *   Death effects triggered by `FairyDeathEffects`.
-        *   Chain reactions triggered by `FairyChainReactionHandler`.
-        *   Extra Attacks triggered by `FairyExtraAttackTrigger`.
-    *   **Path End:** When a fairy reaches the end of its path (`SplineWalker` reports to `FairyController`), the `FairyController.ReportEndOfPath` method is called **on the server**. This method now **silently returns the fairy's NetworkObject to the pool** using `NetworkObjectPool.Instance.ReturnNetworkObject`. It **no longer triggers death effects or chain reactions**.
+*   **Current State (largely server-authoritative, needs update):** Spawning was handled by `SpiritSpawner.cs`, with revenge spawns initiated by `SpiritController.Die()`.
+*   **Future Refactor Goal:** Adapt to the server-command, client-simulation model. Server would send an RPC to clients to spawn a spirit at a location. `SpiritTimeoutAttack` would become a client-side script.
 
-*   **Spirits (`Spirit` prefab, coordinated by `SpiritController.cs`):**
-    *   Structure: Uses a component-based approach similar to Fairies (e.g., `SpiritVisualController`, `SpiritDeathEffects`, `SpiritTimeoutAttack`).
-    *   States: `inactive` / `activated`.
-    *   Movement: Managed by `SpiritController` using `Rigidbody2D`.
-    *   Interaction:
-        *   Destroyed by player shots.
-        *   Damage player on contact.
-        *   Cleared by bombs/shockwaves (via `IClearable` -> `SpiritController.Die`).
-    *   On-Death Effect: `SpiritController.Die` handles spawning a revenge spirit via `SpiritSpawner` and returning the object to the pool.
+## Enemy Types & Behavior (Client-Side Simulation)
 
-## Clearing Effects (`IClearable` Interface)
+### Fairies (`NormalFairy`, `GreatFairy` prefabs)
 
-Enemies and certain bullets implement the `IClearable` interface.
+*   **Core Client-Side Components:**
+    *   `PooledObjectInfo.cs`: Stores `PrefabID` for `ClientGameObjectPool`.
+    *   `SplineWalker.cs`: Handles movement along a predefined path, initialized by data from the spawn RPC.
+    *   `ClientFairyHealth.cs`: Manages current health. Takes damage from projectiles/shockwaves. On death (health <= 0):
+        *   Spawns a `ClientFairyShockwave` from `ClientGameObjectPool` (passing damage, radius, duration, and original killer's ID).
+        *   If the damage was dealt by a bullet from the *local* player (`attackerOwnerClientId == LocalClientId`), it calls `PlayerAttackRelay.LocalInstance.ReportFairyKillServerRpc()`.
+        *   Notifies `ClientFairyController` of death (optional, if controller needs to stop other logic).
+    *   `ClientFairyController.cs`: Primarily handles `SplineWalker.OnPathCompleted` to return the fairy to `ClientGameObjectPool`. May also handle `OnTriggerEnter2D` for direct collision with player shots as an alternative to `BulletMovement` handling it.
+    *   `CircleCollider2D` (Trigger): For detecting collisions with player shots or shockwave areas.
+    *   Visuals: `SpriteRenderer`, `Animator`.
+*   **Interaction & Death:**
+    *   **Taking Damage:**
+        *   Player bullets (`BulletMovement.cs`) collide, get `ClientFairyHealth`, call `TakeDamage(damage, bulletOwnerClientId)`.
+        *   Enemy shockwaves (`ClientFairyShockwave.cs`) collide, get `ClientFairyHealth`, call `TakeDamage(damage, shockwaveOriginalKillerId)`.
+    *   **On-Death (handled by `ClientFairyHealth`):** Triggers shockwave and reports kill if applicable (see above).
+    *   **Path End:** `SplineWalker` calls `OnPathCompleted` event. `ClientFairyController` subscribes and returns the fairy to `ClientGameObjectPool`.
 
-*   **Interface:** `IClearable` defines `Clear(bool forceClear, PlayerRole sourceRole)`.
-*   **Implementation:**
-    *   `FairyController`: Implements `IClearable`, calls `FairyHealth.ApplyLethalDamage(sourceRole)`.
-    *   `SpiritController`: Implements `IClearable`, calls its own `Die(sourceRole)` method.
-*   **Triggers:** (Bomb/Shockwave logic likely remains the same, checking owner role before calling `Clear`).
+### Spirits (`Spirit` prefab - Requires Refactoring)
+
+*   Client-side components will likely include `PooledObjectInfo`, a movement script, `ClientSpiritHealth` (similar to `ClientFairyHealth`), and a client-side `ClientSpiritTimeoutAttack`.
+*   The timeout attack would spawn a stage bullet (e.g., "StageLargeBullet") locally from `ClientGameObjectPool` and initialize its mover script.
+
+## Clearing Effects (Client-Side)
+
+Enemies are "cleared" by taking lethal damage.
+
+*   **Fairy Shockwaves:** `ClientFairyShockwave` deals damage to other enemies within its radius, potentially triggering chain reactions if that damage is lethal.
+*   **Player Death Bomb:** The `ClientRpc` for bomb clearing (`EffectNetworkHandler.ClearBulletsInRadiusClientRpc`) primarily targets bullets. If bombs are also meant to clear enemies, clients receiving this RPC would need to:
+    *   Iterate active GameObjects from `ClientGameObjectPool`.
+    *   Identify enemies (e.g., by tag or component like `ClientFairyHealth`).
+    *   If in radius, call `enemyHealth.TakeDamage(bombDamage, bombingPlayerId)` or a specific `ForceKill()` method on the health component.
 
 ## Data Structure / Definition
 
-*   **Prefabs:** Enemies (`NormalFairy`, `GreatFairy`, `Spirit`) contain multiple component scripts, `NetworkObject`, colliders, visuals.
-*   **Spawner Configuration:** `FairySpawner` component defines fairy waves.
-*   **Scripts:** Core logic is now spread across coordinator scripts (`FairyController`, `SpiritController`) and specialized behavior components (`FairyHealth`, `FairyChainReactionHandler`, `SpiritVisualController`, etc.).
-*   **Registries:** `FairyRegistry.cs`, `SpiritRegistry.cs` track active enemies.
+*   **Client-Side Prefabs:** `NormalFairy`, `GreatFairy`, `Spirit` (future). Contain client-side components listed above.
+*   **Server-Side Configuration:**
+    *   `FairySpawner.cs`: Defines fairy wave structures, path IDs, timings, and prefab IDs for RPCs.
+    *   `PathManager.cs`: Stores spline path data accessible by ID.
+
+## Key Scripts
+
+*   **Core Client-Side Enemy Components:**
+    *   `ClientFairyHealth.cs` / `ClientSpiritHealth.cs` (future): Manage health, death effects (shockwave, kill reporting).
+    *   `ClientFairyController.cs` / `ClientSpiritController.cs` (future): Coordinate client-side behaviors, path completion pooling.
+    *   `SplineWalker.cs`: Client-side path following for fairies.
+    *   `PooledObjectInfo.cs`: Essential for `ClientGameObjectPool`.
+*   **Server-Side Spawning Logic:**
+    *   `FairySpawner.cs`: Calculates fairy waves and parameters.
+    *   `FairySpawnNetworkHandler.cs`: Singleton that sends `SpawnFairyWaveClientRpc` to all clients.
+    *   (Future `SpiritSpawner.cs` / `SpiritSpawnNetworkHandler.cs`)
+*   **Related Systems:**
+    *   `ClientGameObjectPool.cs`: Pools all client-side enemies.
+    *   `PlayerAttackRelay.cs`: Receives kill reports from `ClientFairyHealth`.
+    *   `ClientFairyShockwave.cs`: Spawned on fairy death, can damage other enemies.
+    *   `PathManager.cs`: Provides path data to clients.
+*   **Deprecated/Replaced (Server-Authoritative Components for Fairies):**
+    *   ~~`FairyPathInitializer.cs`~~
+    *   ~~Server-side `FairyController.cs` logic for death/path end~~ (now client-side)
+    *   ~~`FairyDeathEffects.cs`~~ (Functionality integrated into `ClientFairyHealth`/`ClientFairyShockwave`)
+    *   ~~`FairyChainReactionHandler.cs`~~ (Chain reactions are emergent from client-side shockwaves damaging other client-side enemies)
