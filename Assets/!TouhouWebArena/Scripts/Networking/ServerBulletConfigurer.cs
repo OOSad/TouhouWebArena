@@ -121,10 +121,10 @@ public static class ServerBulletConfigurer
                 if (doubleHoming != null)
                 {
                     // Get opponent PlayerMovement component
-                    PlayerMovement opponentMovement = null;
+                    ClientAuthMovement opponentMovement = null;
                     if (opponentId != ulong.MaxValue && NetworkManager.Singleton.ConnectedClients.TryGetValue(opponentId, out var opponentClient) && opponentClient.PlayerObject != null)
                     {
-                        opponentMovement = opponentClient.PlayerObject.GetComponent<PlayerMovement>();
+                        opponentMovement = opponentClient.PlayerObject.GetComponent<ClientAuthMovement>();
                     }
                     
                     if (opponentMovement != null)

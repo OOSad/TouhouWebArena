@@ -43,7 +43,7 @@ public class MatchmakerUI : MonoBehaviour
         if (cancelButton != null) cancelButton.onClick.AddListener(OnCancelButtonClicked);
         if(startCustomServerButton != null) startCustomServerButton.onClick.AddListener(OnStartCustomServerButtonClicked);
 
-        if (matchmaker == null) matchmaker = FindObjectOfType<Matchmaker>();
+        if (matchmaker == null) matchmaker = FindFirstObjectByType<Matchmaker>();
 
         if (NetworkManager.Singleton != null)
             {

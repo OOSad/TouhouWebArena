@@ -39,7 +39,7 @@ namespace TouhouWebArena.Spellcards.Behaviors
                 enabled = false;
                 return;
             }
-             _rb.isKinematic = true; // Ensure kinematic for direct transform/rigidbody manipulation
+             _rb.bodyType = RigidbodyType2D.Kinematic; // Ensure kinematic for direct transform/rigidbody manipulation
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace TouhouWebArena.Spellcards.Behaviors
             }
 
             // Apply forward velocity
-             _rb.velocity = forwardVelocity;
+             _rb.linearVelocity = forwardVelocity;
         }
 
          // Optional: Consider disabling on becoming Host/Server if needed for specific scenarios

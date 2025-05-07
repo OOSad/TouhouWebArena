@@ -88,12 +88,29 @@ public class ReimuExtraAttackOrb : NetworkBehaviour
         }
 
         // Get components from the hitbox's parent
-        PlayerMovement playerMovement = otherCollider.GetComponentInParent<PlayerMovement>();
+        ClientAuthMovement clientAuthMovement = otherCollider.GetComponentInParent<ClientAuthMovement>();
         PlayerHealth playerHealth = otherCollider.GetComponentInParent<PlayerHealth>();
 
-        if (playerMovement != null && playerHealth != null)
+        if (clientAuthMovement != null && playerHealth != null)
         {
-            PlayerRole hitPlayerRole = playerMovement.GetPlayerRole();
+            PlayerRole hitPlayerRole = PlayerRole.None;
+            NetworkObject hitPlayerNetworkObject = clientAuthMovement.NetworkObject;
+            if (hitPlayerNetworkObject != null && PlayerDataManager.Instance != null)
+            {
+                PlayerData? hitPlayerData = PlayerDataManager.Instance.GetPlayerData(hitPlayerNetworkObject.OwnerClientId);
+                if (hitPlayerData.HasValue)
+                {
+                    hitPlayerRole = hitPlayerData.Value.Role;
+                }
+                else
+                {
+                    Debug.LogWarning($"[ReimuExtraAttackOrb] Could not get PlayerData for hit player object: {hitPlayerNetworkObject.NetworkObjectId}", this);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[ReimuExtraAttackOrb] Hit player NetworkObject or PlayerDataManager.Instance is null.", this);
+            }
 
             // Check if it's the correct target player and if they are currently vulnerable
             if (hitPlayerRole == TargetPlayerRole.Value && !playerHealth.IsInvincible.Value)

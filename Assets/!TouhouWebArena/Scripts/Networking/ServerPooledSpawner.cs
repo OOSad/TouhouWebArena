@@ -67,6 +67,10 @@ public static class ServerPooledSpawner
         BulletMovement bulletMovement = bulletNetworkObject.GetComponent<BulletMovement>();
         if (bulletMovement != null)
         {
+            // OwnerRole NetworkVariable has been removed from the client-side BulletMovement.cs
+            // If this spawner is used for server-side bullets that still have OwnerRole,
+            // those bullets would need a different component or version of BulletMovement.
+            /* // Temporarily removed to allow compilation
             if (PlayerDataManager.Instance != null)
             {
                 PlayerData? ownerData = PlayerDataManager.Instance.GetPlayerData(ownerId);
@@ -78,6 +82,7 @@ public static class ServerPooledSpawner
                  Debug.LogError("[ServerPooledSpawner.SpawnSinglePooledBullet] PlayerDataManager instance not found! Cannot set bullet owner role.");
                  bulletMovement.OwnerRole.Value = PlayerRole.None; // Assign default
             }
+            */
         }
         else
         {

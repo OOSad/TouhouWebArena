@@ -154,7 +154,7 @@ public class ServerIllusionManager : NetworkBehaviour // Inherit from NetworkBeh
         if (prefabNO == null) { Debug.LogError("[ServerIllusionManager] Level 4 IllusionPrefab is missing NetworkObject component!"); return; }
 
         // Determine Spawn Position (Top-center of opponent's bounds)
-        Rect opponentBounds = (opponentRole == PlayerRole.Player1) ? PlayerMovement.player1Bounds : PlayerMovement.player2Bounds;
+        Rect opponentBounds = (opponentRole == PlayerRole.Player1) ? ClientAuthMovement.player1Bounds : ClientAuthMovement.player2Bounds;
         float spawnX = opponentBounds.center.x;
         float spawnY = opponentBounds.yMax - 1.0f; 
         Vector3 spawnPosition = new Vector3(spawnX, spawnY, 0);

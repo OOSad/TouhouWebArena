@@ -93,7 +93,7 @@ public class SpellBarManager : NetworkBehaviour
         if (!IsServer) return;
 
         playerSpellBars.Clear();
-        SpellBarController[] allSpellBars = FindObjectsOfType<SpellBarController>();
+        SpellBarController[] allSpellBars = FindObjectsByType<SpellBarController>(FindObjectsSortMode.None);
         foreach (SpellBarController bar in allSpellBars)
         {
             // Use the TargetPlayerRole configured on the SpellBarController as the key.

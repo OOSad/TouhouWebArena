@@ -39,7 +39,7 @@ namespace TouhouWebArena.DevTools
         private void FindSpawners()
         {
             // Find the single SpiritSpawner instance in the scene
-            spiritSpawnerInstance = FindObjectOfType<SpiritSpawner>();
+            spiritSpawnerInstance = FindFirstObjectByType<SpiritSpawner>();
             if (spiritSpawnerInstance == null)
             {
                  UnityEngine.Debug.LogWarning("DebugMenuController could not find the SpiritSpawner instance.");
@@ -47,7 +47,7 @@ namespace TouhouWebArena.DevTools
 
             // Find all active FairySpawner instances in the scene
             fairySpawnerInstances.Clear();
-            fairySpawnerInstances.AddRange(FindObjectsOfType<FairySpawner>());
+            fairySpawnerInstances.AddRange(FindObjectsByType<FairySpawner>(FindObjectsSortMode.None));
             if (fairySpawnerInstances.Count == 0)
             {
                 UnityEngine.Debug.LogWarning("DebugMenuController could not find any FairySpawner instances.");
@@ -76,7 +76,7 @@ namespace TouhouWebArena.DevTools
             if (!value) 
             {
                 UnityEngine.Debug.Log("Despawning all active spirits due to debug toggle...");
-                SpiritController[] activeSpirits = FindObjectsOfType<SpiritController>();
+                SpiritController[] activeSpirits = FindObjectsByType<SpiritController>(FindObjectsSortMode.None);
                 int despawnCount = 0;
                 foreach (SpiritController spirit in activeSpirits)
                 {
@@ -195,33 +195,43 @@ namespace TouhouWebArena.DevTools
             UnityEngine.Debug.Log($"[Client] Received TogglePlayerHitboxClientRpc for Role: {role}, Enabled: {enabled}");
 
             // Find the correct player object locally based on role
-            PlayerMovement targetPlayer = null;
-            PlayerMovement[] allPlayers = FindObjectsOfType<PlayerMovement>(); // Find all player movement scripts in the scene
-            foreach (PlayerMovement pm in allPlayers)
+            ClientAuthMovement targetPlayerComponent = null;
+            ClientAuthMovement[] allPlayerComponents = FindObjectsByType<ClientAuthMovement>(FindObjectsSortMode.None);
+            foreach (ClientAuthMovement cam in allPlayerComponents)
             {
-                if (pm.GetPlayerRole() == role)
+                PlayerRole currentComponentRole = PlayerRole.None;
+                if (cam.NetworkObject != null && PlayerDataManager.Instance != null)
                 {
-                    targetPlayer = pm;
+                    PlayerData? pd = PlayerDataManager.Instance.GetPlayerData(cam.NetworkObject.OwnerClientId);
+                    if (pd.HasValue)
+                    {
+                        currentComponentRole = pd.Value.Role;
+                    }
+                }
+
+                if (currentComponentRole == role)
+                {
+                    targetPlayerComponent = cam;
                     break;
                 }
             }
 
-            if (targetPlayer != null)
+            if (targetPlayerComponent != null)
             {
-                Transform hitboxTransform = targetPlayer.transform.Find("Hitbox");
+                Transform hitboxTransform = targetPlayerComponent.transform.Find("Hitbox");
                 if (hitboxTransform != null)
                 {
                     hitboxTransform.gameObject.SetActive(enabled);
-                    UnityEngine.Debug.Log($"[Client] Set Player {role} local Hitbox GameObject active state to: {enabled}");
+                    UnityEngine.Debug.Log($"[Client] Set Player {role} (Owner: {targetPlayerComponent.OwnerClientId}) Hitbox GameObject active state to: {enabled}");
                 }
                 else
                 {
-                    UnityEngine.Debug.LogError($"[Client] Could not find local 'Hitbox' child GameObject for player role {role}.");
+                    UnityEngine.Debug.LogWarning($"[Client] Could not find 'Hitbox' child GameObject on player with role {role}.");
                 }
             }
             else
             {
-                 UnityEngine.Debug.LogWarning($"[Client] Could not find local PlayerMovement script for role {role} to toggle hitbox.");
+                UnityEngine.Debug.LogWarning($"[Client] Could not find player component with role {role} to toggle hitbox.");
             }
         }
 

@@ -103,7 +103,7 @@ public class MatchEndUIController : MonoBehaviour
     {
         Debug.Log("[MatchEndUIController] Rematch button clicked.");
         // Find RoundManager and send RPC
-        RoundManager roundManager = FindObjectOfType<RoundManager>(); // Find the server-side manager
+        RoundManager roundManager = FindFirstObjectByType<RoundManager>(); // Find the server-side manager
         if (roundManager != null)
         {
             roundManager.RequestRematchServerRpc();

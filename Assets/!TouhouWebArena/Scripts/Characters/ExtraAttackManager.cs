@@ -64,7 +64,7 @@ public class ExtraAttackManager : NetworkBehaviour
         {
             case "HakureiReimu":
                 prefabToSpawn = reimuExtraAttackPrefab;
-                ReimuExtraAttackOrbSpawner reimuSpawner = FindObjectOfType<ReimuExtraAttackOrbSpawner>();
+                ReimuExtraAttackOrbSpawner reimuSpawner = FindFirstObjectByType<ReimuExtraAttackOrbSpawner>();
                 if (reimuSpawner == null)
                 {
                     return; // Silently return if helper spawner not found
@@ -98,7 +98,7 @@ public class ExtraAttackManager : NetworkBehaviour
 
             case "KirisameMarisa":
                 prefabToSpawn = marisaExtraAttackPrefab;
-                MarisaExtraAttackSpawner marisaSpawner = FindObjectOfType<MarisaExtraAttackSpawner>();
+                MarisaExtraAttackSpawner marisaSpawner = FindFirstObjectByType<MarisaExtraAttackSpawner>();
                  if (marisaSpawner == null)
                 {
                     return; // Silently return if helper spawner not found

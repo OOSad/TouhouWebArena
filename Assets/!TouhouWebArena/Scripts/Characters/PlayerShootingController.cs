@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
+using TouhouWebArena.Spellcards.Behaviors; // Added for LinearMovement
 // Removed unused namespaces like TouhouWebArena.Spellcards, Behaviors etc. as spawning is handled elsewhere.
 
 /// <summary>
@@ -21,6 +22,12 @@ public class PlayerShootingController : NetworkBehaviour
     [Tooltip("The keyboard key used to trigger shooting actions.")]
     [SerializeField] private KeyCode fireKey = KeyCode.Z;
 
+    // [Header("Debug")] // New Header for Debug field - REMOVING DEBUG MARKER
+    // [Tooltip("Assign a simple visible prefab here for RPC testing.")]
+    // [SerializeField] private GameObject debugMarkerPrefab; // REMOVING DEBUG MARKER
+
+    // private bool rpcTestCalled = false; // REMOVING RPC TEST CALL FLAG
+
     // --- Local State (Owner Client Only) ---
     private SpellBarController spellBarController; // Reference to the owner's spell bar UI component in the scene.
     private float nextFireTime = 0f; // Timestamp for when the next basic shot burst can start.
@@ -29,6 +36,7 @@ public class PlayerShootingController : NetworkBehaviour
 
     // --- Component References ---
     private CharacterStats characterStats; // Cached reference to this player's CharacterStats.
+    private Transform firePoint; // Add a reference for the fire point
 
     // Removed Server-Side Cache (playerSpellBars dictionary)
 
@@ -39,13 +47,35 @@ public class PlayerShootingController : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        // Log initial state
+        Debug.Log($"[Client {NetworkManager.Singleton.LocalClientId} GO:{this.gameObject.name}] OnNetworkSpawn: ENTRY. IsOwner: {IsOwner}, IsClient: {IsClient}, IsServer: {IsServer}, IsHost: {IsHost}, NetworkObject.IsSpawned: {NetworkObject.IsSpawned}, NetworkObject.OwnerClientId: {NetworkObject.OwnerClientId}");
 
-        // Removed server-side cache initialization
+        if (characterStats == null) // Moved from Awake to ensure it's checked after potential network init
+        {
+            characterStats = GetComponent<CharacterStats>();
+             if (characterStats == null) {
+                Debug.LogError($"[{this.GetType().Name} on {this.gameObject.name}] CharacterStats component not found! Disabling script.");
+                enabled = false;
+                return;
+             }
+        }
+        if (firePoint == null) // Also moved from Awake
+        {
+            firePoint = transform;
+        }
+        // nextFireTime = Time.time; // Already in Awake, probably fine there.
+
 
         // Owner client needs to find its specific spell bar for local charge level checks.
         if (IsOwner)
         {
-            FindAndAssignSpellBar();
+            FindAndAssignSpellBar(); // Assuming this doesn't involve RPCs itself
+            //Debug.Log($"[Client {OwnerClientId} GO:{this.gameObject.name}] OnNetworkSpawn: IsOwner is TRUE. Attempting to call TestClientRpc.");
+            //TestClientRpc("Hello from OnNetworkSpawn by " + OwnerClientId.ToString()); // MOVED TO UPDATE FOR TESTING
+        }
+        else
+        {
+            Debug.Log($"[Client {NetworkManager.Singleton.LocalClientId} GO:{this.gameObject.name}] OnNetworkSpawn: IsOwner is FALSE.");
         }
     }
 
@@ -72,7 +102,7 @@ public class PlayerShootingController : NetworkBehaviour
         }
         // ------------------------------
 
-        SpellBarController[] allSpellBars = FindObjectsOfType<SpellBarController>();
+        SpellBarController[] allSpellBars = FindObjectsByType<SpellBarController>(FindObjectsSortMode.None);
         bool foundBar = false;
         foreach (SpellBarController bar in allSpellBars)
         {
@@ -106,6 +136,9 @@ public class PlayerShootingController : NetworkBehaviour
         } else {
              nextFireTime = Time.time; // Initialize to allow firing immediately
         }
+
+        // Shots will now originate from the player's transform center.
+        firePoint = transform; 
     }
 
 
@@ -117,7 +150,21 @@ public class PlayerShootingController : NetworkBehaviour
     /// </summary>
     void Update()
     {
-        // Logic only runs for the player controlling this object
+        // --- RPC Test Logic (Call every frame from owner for testing) ---
+        // if (IsOwner) 
+        // {
+        //     if (NetworkManager.Singleton != null && (NetworkManager.Singleton.IsClient || NetworkManager.Singleton.IsHost))
+        //     {
+        //         // Potentially add NetworkManager status logs here as discussed before if still debugging general connectivity
+        //         // Debug.Log($"[NetworkManager Check GO:{this.gameObject.name}] IsListening: {NetworkManager.Singleton.IsListening}, IsConnectedClient: {NetworkManager.Singleton.IsConnectedClient}, IsHost: {NetworkManager.Singleton.IsHost}, IsServer: {NetworkManager.Singleton.IsServer}");
+
+        //         Debug.Log($"[Client {OwnerClientId} GO:{this.gameObject.name}] Update: IsOwner is TRUE. Attempting to call TestServerRpc every frame.");
+        //         TestServerRpc("Hello from Update by GO: " + this.gameObject.name + " (Actual Owner: " + OwnerClientId.ToString() + ", Frame: " + Time.frameCount + ")");
+        //     }
+        // }
+        // --- End RPC Test Logic ---
+
+        // Main game logic - ensure IsOwner check is still effective for actual game actions
         if (!IsOwner) return;
 
         // Safety check for required component
@@ -181,19 +228,121 @@ public class PlayerShootingController : NetworkBehaviour
     /// <returns>IEnumerator for coroutine execution.</returns>
     private IEnumerator BurstFireSequence()
     {
-        // Use cached stats
+        if (ClientGameObjectPool.Instance == null)
+        {
+            Debug.LogError("[PlayerShootingController] ClientGameObjectPool.Instance is null. Cannot fire.");
+            burstCoroutine = null; // Mark coroutine as finished to prevent locking up
+            yield break;
+        }
+
+        string prefabId = characterStats.GetBasicShotPrefabID();
+        float shotSpeed = characterStats.GetBasicShotSpeed();
+        float shotLifetime = characterStats.GetBasicShotLifetime();
+        float spread = characterStats.GetBulletSpread();
+
+        // Spread will now be relative to the player's transform.right
+        Vector3 rightOffset = firePoint.right * (spread / 2f); // firePoint is now 'this.transform'
+        Vector3 leftOffset = -rightOffset;
+
         for (int i = 0; i < characterStats.GetBurstCount(); i++)
         {
-            // Send RPC request to server to spawn one shot pair
-            RequestFireServerRpc();
+            // Spawn Left Bullet of the Pair
+            SpawnAndNetworkBullet(prefabId, firePoint.position + leftOffset, firePoint.rotation, shotSpeed, shotLifetime);
 
-            // Wait if not the last shot in the burst
-            if (i < characterStats.GetBurstCount() - 1)
+            // Spawn Right Bullet of the Pair
+            SpawnAndNetworkBullet(prefabId, firePoint.position + rightOffset, firePoint.rotation, shotSpeed, shotLifetime);
+
+            if (characterStats.GetBurstCount() > 1 && i < characterStats.GetBurstCount() - 1)
             {
                 yield return new WaitForSeconds(characterStats.GetTimeBetweenBurstShots());
             }
         }
         burstCoroutine = null; // Mark coroutine as finished
+    }
+
+    private void SpawnAndNetworkBullet(string prefabId, Vector3 position, Quaternion rotation, float speed, float lifetime)
+    {
+        if (!IsOwner) return; // Should only be called by owner initially
+
+        // Firing Client Log 1: About to spawn locally
+        Debug.Log($"[Firing Client {NetworkManager.Singleton.LocalClientId}] SpawnAndNetworkBullet: Spawning local {prefabId} at {position}");
+
+        GameObject spawnedBullet = ClientGameObjectPool.Instance.GetObject(prefabId);
+        if (spawnedBullet != null)
+        {
+            spawnedBullet.transform.position = position;
+            spawnedBullet.transform.rotation = rotation;
+            spawnedBullet.SetActive(true);
+
+            BulletMovement bulletMovement = spawnedBullet.GetComponent<BulletMovement>();
+            if (bulletMovement != null)
+            {
+                bulletMovement.Initialize(speed, lifetime);
+            }
+            else
+            {
+                Debug.LogError($"[PlayerShootingController] Spawned bullet '{prefabId}' is missing BulletMovement component!");
+            }
+
+            // Firing Client Log 2: About to send RPC
+            Debug.Log($"[Firing Client {NetworkManager.Singleton.LocalClientId}] SpawnAndNetworkBullet: Sending FireShotServerRpc for {prefabId}");
+            FireShotServerRpc(prefabId, position, rotation, speed, lifetime);
+        }
+        else
+        {
+            Debug.LogError($"[PlayerShootingController.SpawnAndNetworkBullet] Failed to get bullet from pool with ID: {prefabId}");
+        }
+    }
+
+    [ServerRpc]
+    private void FireShotServerRpc(string prefabId, Vector3 spawnPosition, Quaternion spawnRotation, float speed, float lifetime, ServerRpcParams rpcParams = default)
+    {
+        Debug.Log($"[SERVER GO:{this.gameObject.name}] FireShotServerRpc: RECEIVED from Client {rpcParams.Receive.SenderClientId} for {prefabId}. Forwarding to FireShotClientRpc.");
+        FireShotClientRpc(prefabId, spawnPosition, spawnRotation, speed, lifetime);
+    }
+
+    [ClientRpc]
+    private void FireShotClientRpc(string prefabId, Vector3 spawnPosition, Quaternion spawnRotation, float speed, float lifetime, ClientRpcParams clientRpcParams = default)
+    {
+        Debug.Log($"[Client {NetworkManager.Singleton.LocalClientId} ID:{this.OwnerClientId} GO:{this.gameObject.name}] FireShotClientRpc: ENTRY. IsOwner: {IsOwner}, PrefabID: {prefabId}, Pos: {spawnPosition}");
+
+        if (IsOwner)
+        {
+            Debug.Log($"[Client {NetworkManager.Singleton.LocalClientId} ID:{this.OwnerClientId} GO:{this.gameObject.name}] FireShotClientRpc: Owner instance, returning.");
+            return;
+        }
+
+        // If we get here, this is a remote client.
+        Debug.Log($"[REMOTE Client {NetworkManager.Singleton.LocalClientId} ID:{this.OwnerClientId} GO:{this.gameObject.name}] FireShotClientRpc: PROCESSING for {prefabId}. Attempting to spawn visual only.");
+
+        if (ClientGameObjectPool.Instance == null)
+        {
+            Debug.LogError($"[PlayerShootingController.FireShotClientRpc on Remote Client {NetworkManager.Singleton.LocalClientId}] ClientGameObjectPool.Instance is null. Cannot spawn remotely initiated shot.");
+            return;
+        }
+
+        GameObject spawnedBullet = ClientGameObjectPool.Instance.GetObject(prefabId);
+        if (spawnedBullet != null)
+        {
+            Debug.Log($"[Remote Client {NetworkManager.Singleton.LocalClientId}] FireShotClientRpc: Successfully got {prefabId} from pool. Activating and initializing.");
+            spawnedBullet.transform.position = spawnPosition;
+            spawnedBullet.transform.rotation = spawnRotation;
+            spawnedBullet.SetActive(true);
+
+            BulletMovement bulletMovement = spawnedBullet.GetComponent<BulletMovement>();
+            if (bulletMovement != null)
+            {
+                bulletMovement.Initialize(speed, lifetime);
+            }
+            else
+            {
+                Debug.LogError($"[PlayerShootingController.FireShotClientRpc on Remote Client {NetworkManager.Singleton.LocalClientId}] Spawned bullet '{prefabId}' is missing BulletMovement component!");
+            }
+        }
+        else
+        {
+            Debug.LogError($"[PlayerShootingController.FireShotClientRpc on Remote Client {NetworkManager.Singleton.LocalClientId}] Failed to get bullet from pool with ID: {prefabId}");
+        }
     }
 
     // --- Owner Client RPC Requests to Server Managers ---
@@ -215,24 +364,6 @@ public class PlayerShootingController : NetworkBehaviour
         {
              Debug.LogError("[ServerRpc UpdateChargeState] SpellBarManager instance not found on server!");
         }
-    }
-
-    /// <summary>
-    /// **[ServerRpc]** Called by the owner client for each pair of shots within a basic shot burst.
-    /// Relays the spawning request to the <see cref="ServerAttackSpawner"/>.
-    /// </summary>
-    /// <param name="rpcParams">Standard RPC parameters, used by server to get SenderClientId.</param>
-    [ServerRpc]
-    private void RequestFireServerRpc(ServerRpcParams rpcParams = default)
-    {
-       if (ServerAttackSpawner.Instance != null)
-       {
-            ServerAttackSpawner.Instance.SpawnBasicShot(rpcParams.Receive.SenderClientId);
-       }
-       else
-       {
-            Debug.LogError("[ServerRpc RequestFire] ServerAttackSpawner instance not found on server!");
-       }
     }
 
     /// <summary>

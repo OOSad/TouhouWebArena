@@ -57,14 +57,14 @@ namespace TouhouWebArena.Managers
         {
             if (!IsServer) return;
 
-            spiritSpawnerInstance = FindObjectOfType<SpiritSpawner>();
+            spiritSpawnerInstance = FindFirstObjectByType<SpiritSpawner>();
             if (spiritSpawnerInstance == null)
             {
                 Debug.LogWarning("[ServerSpawnerManager] Could not find SpiritSpawner instance to cache.");
             }
 
             fairySpawnerInstances.Clear();
-            fairySpawnerInstances.AddRange(FindObjectsOfType<FairySpawner>());
+            fairySpawnerInstances.AddRange(FindObjectsByType<FairySpawner>(FindObjectsSortMode.None));
             if (fairySpawnerInstances.Count == 0)
             {
                 Debug.LogWarning("[ServerSpawnerManager] Could not find any FairySpawner instances to cache.");

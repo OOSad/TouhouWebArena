@@ -114,7 +114,7 @@ public class Matchmaker : NetworkBehaviour
         Instance = this;
 
         queuedPlayers = new NetworkList<PlayerInfo>();
-        if (matchmakerUI == null) matchmakerUI = FindObjectOfType<MatchmakerUI>();
+        if (matchmakerUI == null) matchmakerUI = FindFirstObjectByType<MatchmakerUI>();
         if (matchmakerUI == null) Debug.LogError("MatchmakerUI reference not set and not found in scene!", this);
     }
 

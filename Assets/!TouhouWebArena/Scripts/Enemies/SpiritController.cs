@@ -194,7 +194,7 @@ public class SpiritController : NetworkBehaviour, IClearable
         {
             // Update HP, capping at new max (server-side)
             currentHp.Value = Mathf.Min(currentHp.Value, activatedMaxHp);
-            rb.velocity = Vector2.up * activatedMoveSpeed; // Move upwards (server-side)
+            rb.linearVelocity = Vector2.up * activatedMoveSpeed; // Move upwards (server-side)
             activatedTimer = 0f; // Reset timer when activated
         }
         else
@@ -240,7 +240,7 @@ public class SpiritController : NetworkBehaviour, IClearable
         {
             initialVelocity = Vector2.down * normalMoveSpeed; // Default: move straight down
         }
-        rb.velocity = initialVelocity;
+        rb.linearVelocity = initialVelocity;
     }
 
     #endregion

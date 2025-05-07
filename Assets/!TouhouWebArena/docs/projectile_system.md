@@ -2,88 +2,95 @@
 
 ## Overview
 
-Projectiles (bullets, lasers, orbs, etc.) are fundamental gameplay elements, used in basic shots, charge attacks, spellcards, and extra attacks. This document outlines their common structure, movement behaviors, and interaction systems. The projectile system is server-authoritative, with the server controlling spawning, movement logic, and collision detection.
+Projectiles (bullets, lasers, orbs, etc.) are fundamental gameplay elements. This document outlines their common structure and interaction systems. The projectile system for **basic player shots is now client-authoritative**, while complex spellcard projectiles or enemy-fired projectiles might still use server-authoritative logic or a hybrid model.
 
-## Base Structure / Components
+## Client-Authoritative Basic Player Projectiles
 
-Projectile prefabs generally share a common set of components:
+This model is used for standard player shots to enhance responsiveness and reduce server load.
 
-*   **`NetworkObject`:** Essential for network synchronization.
-*   **`Collider2D`:** Used for collision detection (often set as a Trigger).
-*   **Visual Components:** `SpriteRenderer`, `Animator`, `ParticleSystem`, etc. for appearance.
-*   **Movement Script(s):** One or more scripts defining how the projectile moves (see below). Attached and configured by the spawning logic (e.g., `ServerAttackSpawner`).
-*   **Pooling/Lifetime Script:**
-    *   **`NetworkBulletLifetime.cs`:** Used for spellcard bullets. Manages lifetime, boundary checks, pooling, and implements `IClearable`.
-    *   **`StageSmallBulletMoverScript.cs`:** Used for stage bullets (from Fairies/Spirits). Manages lifetime, movement, pooling, and implements `IClearable`.
-    *   Other projectiles (player shots, charge attacks, extra attacks) might use `BulletMovement.cs` or have custom lifetime/collision logic.
-*   **`PoolableObjectIdentity.cs`:** Required for integration with the `NetworkObjectPool`. Contains the unique `PrefabID` string which **must be set in the Inspector on the prefab asset**.
-*   **`ProjectileDamager.cs`:** (Optional) Can be attached to projectiles to specify a damage value other than the default (usually 1).
+### Structure / Components (Client-Side Projectiles)
 
-There isn't a single mandatory "BaseProjectile" script; behavior is primarily defined by the combination of attached component scripts.
+Client-side projectile prefabs (e.g., `ReimuBullet`, `MarisaBullet`) generally have:
 
-## Movement Behaviors
+*   **`Collider2D`:** Used for visual collision detection on the client (often set as a Trigger).
+*   **Visual Components:** `SpriteRenderer`, `Animator`, etc.
+*   **`BulletMovement.cs`:** A `MonoBehaviour` that handles client-side visual movement (e.g., `transform.Translate`).
+*   **`ClientProjectileLifetime.cs`:** A `MonoBehaviour` that manages the projectile's lifespan and returns it to the `ClientGameObjectPool`.
+*   **`PooledObjectInfo.cs`:** Stores a `PrefabID` string, used by `ClientGameObjectPool` to identify and manage the prefab type.
+*   **NO `NetworkObject`:** These are purely client-side visual representations for basic shots.
 
-These scripts define how projectiles move after being spawned. They reside in `/Scripts/Spellcards/Behaviors/` or `/Scripts/Projectiles/` and are typically controlled server-side. **For spellcard projectiles, these components are attached to the prefab and configured/enabled by `ServerBulletConfigurer` based on `SpellcardAction` data.**
+### Spawning and Synchronization Workflow (Basic Player Shots)
 
-*   **`LinearMovement.cs`:**
-    *   Moves the GameObject forward along its `transform.up` direction at a constant speed.
-    *   Speed is configured via the `Initialize(float initialSpeed)` method, called by the spawner on the server *before* the object is spawned.
-    *   Movement logic runs *only on the server*. Client position is updated via `NetworkObject` transform sync (if attached).
-*   **`DelayedHoming.cs`:**
-    *   Moves linearly (`transform.up` at `initialSpeed`) for a set duration (`homingDelay`).
-    *   After the delay, it locks onto the *direction* towards the initially captured target position.
-    *   Continues moving in that locked direction at `homingSpeed`.
-    *   Configured via `Initialize(...)` method, called by the spawner on the server *before* the object is spawned. Note: `targetId` parameter is currently unused; it homes towards the initial position vector.
-    *   Movement logic runs *only on the server*.
-*   **(Other behaviors):** Additional movement scripts can be created and attached to prefabs to implement more complex patterns (e.g., wavy, accelerating, orbiting).
+1.  **Owner Client (`PlayerShootingController.cs`):
+    *   Detects fire input.
+    *   Spawns a projectile GameObject locally using `ClientGameObjectPool.Instance.GetObject(prefabId)`.
+    *   Sets the projectile's position and rotation.
+    *   Initializes its `BulletMovement` script (with speed) and `ClientProjectileLifetime` script (with lifetime duration).
+    *   Calls a `FireShotServerRpc(string prefabId, Vector3 position, Quaternion rotation, float speed, float lifetime)` method on its own `PlayerShootingController` instance.
+2.  **Server (`PlayerShootingController.FireShotServerRpc`):
+    *   Receives the `ServerRpc` from the owning client.
+    *   Immediately calls a `FireShotClientRpc` method, relaying all the received parameters (prefabId, position, rotation, speed, lifetime) to all clients.
+3.  **All Clients (`PlayerShootingController.FireShotClientRpc`):
+    *   **If `IsOwner` is true (the client that originally fired):** The method typically returns early, as the bullet was already spawned locally.
+    *   **If `IsOwner` is false (remote clients):**
+        *   Retrieves a projectile GameObject from their *local* `ClientGameObjectPool.Instance.GetObject(prefabId)` using the received `prefabId`.
+        *   Sets the projectile's position and rotation based on the RPC parameters.
+        *   Initializes its `BulletMovement` script with the received `speed`.
+        *   Initializes its `ClientProjectileLifetime` script with the received `lifetime`.
+        *   The projectile is now independently simulated visually on this remote client.
 
-## Lifetime Management
+### Client-Side Movement (`BulletMovement.cs`)
 
-*   **Pooled Projectiles:** Scripts like `NetworkBulletLifetime.cs` and `StageSmallBulletMoverScript.cs` handle returning the projectile to the `NetworkObjectPool` after a `maxLifetime` duration or if boundary checks fail (server-side).
-*   **Player Projectiles:** `BulletMovement.cs` uses `Invoke(nameof(ReturnToPool), bulletLifetime)` for time-based pooling.
-*   **Collision:** Projectiles are typically returned to the pool immediately upon hitting a valid target (player or enemy), handled within the projectile's own collision logic (e.g., `BulletMovement.OnTriggerEnter2D`).
+*   Attached to basic player shot prefabs.
+*   A simple `MonoBehaviour` (not a `NetworkBehaviour`).
+*   Its `Update()` method moves the projectile using `transform.Translate(Vector3.up * moveSpeed * Time.deltaTime, Space.Self)` or similar.
+*   Speed is set via an `Initialize(float speed, float lifetime)` method.
+*   Handles `OnTriggerEnter2D` for visual feedback. If it collides with objects tagged "Fairy" or "Spirit", it tells its `ClientProjectileLifetime` component to return the bullet to the pool.
+*   Does not handle "OpponentHitbox" or "WorldBoundary" collisions; lifetime is managed by `ClientProjectileLifetime`.
 
-## Collision & Damage
+### Client-Side Lifetime & Pooling (`ClientProjectileLifetime.cs`)
 
-*   **Detection:** Collision detection happens **on the server**. Projectile `Collider2D` components (usually triggers) detect collisions with other objects. The **Physics 2D Layer Collision Matrix** is the primary method used to filter valid interactions (e.g., player shots only hit enemies/opponent, enemy projectiles only hit players). Tags (`PlayerShot`, `Fairy`, `Spirit`) are used within collision scripts for specific logic checks.
-*   **Damage Application:**
-    *   Player shots (`BulletMovement`) apply damage via methods on the target (`Fairy.ApplyLethalDamage`, `SpiritController.TakeDamage`).
-    *   Enemy projectiles hitting the player are handled by `PlayerHitbox.cs`, which detects the collision (filtered by layers) and calls `PlayerHealth.TakeDamage(1)`.
-    *   Damage is always applied authoritatively on the server.
+*   Attached to basic player shot prefabs.
+*   Initialized with a lifetime duration.
+*   Counts down its lifetime. When expired, it calls `ClientGameObjectPool.Instance.ReturnObject()` to return itself to the pool.
+*   Provides a `ForceReturnToPool()` method that can be called (e.g., by `BulletMovement` on collision) to immediately return the object to the pool.
+
+## Server-Authoritative Projectiles (Spellcards, Enemy Bullets - If Applicable)
+
+For projectiles where authority and precise synchronized state are critical (e.g., complex spellcard patterns, enemy bullets that must deal damage authoritatively), the system might still use server-spawned `NetworkObject`s.
+
+*   **Base Structure:** These would retain `NetworkObject`, and their movement/lifetime scripts (`LinearMovement.cs`, `NetworkBulletLifetime.cs`, `StageSmallBulletMoverScript.cs`) would be `NetworkBehaviour`s with server-side logic, synchronizing state via `NetworkVariable`s or `NetworkTransform` (if reliable).
+*   **Spawning:** The server (e.g., `ServerAttackSpawner`, enemy AI scripts) would spawn these using `NetworkObjectPool` (if pooled) or by instantiating and spawning `NetworkObject`s directly.
+*   **Movement & Logic:** Runs on the server. Client visuals are updated via network synchronization.
+*   **Collision & Damage:** Detected and applied authoritatively on the server.
+
+## Collision & Damage (General Approach)
+
+*   **Client-Side Basic Shots:** Collisions detected by `BulletMovement.cs` are primarily for visual feedback (despawning the bullet). If a client-side bullet *hitting an enemy* needs to register damage, the `BulletMovement` script (or another client-side script) would need to send a `ServerRpc` to the server indicating the hit. The server would then validate this (if necessary) and apply damage authoritatively.
+*   **Server-Side Projectiles:** Collision is detected and damage is applied authoritatively on the server. Player health (`CharacterStats`) and enemy health would be updated on the server and synchronized to clients.
+*   **Physics Layers:** The Physics 2D Layer Collision Matrix remains crucial for filtering which objects can interact.
 
 ## Clearing Effects (`IClearable` Interface)
 
-Certain projectiles (and enemies) implement the `IClearable` interface, allowing them to be removed by area effects like bombs or shockwaves.
-
-*   **Interface:** `IClearable` defines a `Clear(bool forceClear, PlayerRole sourceRole)` method.
-*   **Implementation:** Found on scripts like `NetworkBulletLifetime.cs` (for spellcard bullets) and `StageSmallBulletMoverScript.cs` (for stage bullets). **Not** implemented on standard player shots (`BulletMovement.cs`).
-    *   Both `NetworkBulletLifetime` and `StageSmallBulletMoverScript` provide a `public NetworkVariable<PlayerRole> TargetPlayerRole`.
-*   **`isNormallyClearable` Flag:** Components implementing `IClearable` have a public boolean field `isNormallyClearable` (settable in the prefab inspector). 
-    *   If `forceClear` is `true` (e.g., Player Death Bomb), the `Clear` method always despawns/pools the object **if the bullet's `TargetPlayerRole` matches the bombing player's role**.
-    *   If `forceClear` is `false` (e.g., Fairy Shockwave), the `Clear` method only despawns/pools the object if `isNormallyClearable` is also `true`.
-*   **Triggers:**
-    *   **Player Death Bomb:** Uses `Physics2D.OverlapCircleAll`. Checks the `TargetPlayerRole` of the detected `IClearable` bullet (`NetworkBulletLifetime.TargetPlayerRole.Value`, `StageSmallBulletMoverScript.TargetPlayerRole.Value`). Only calls `Clear(true, ...)` if the bullet's `TargetPlayerRole` matches the role of the player who died.
-    *   **Fairy Shockwave:** Uses trigger colliders (`OnTriggerEnter2D`) and calls `Clear(false, ...)`. Shockwaves typically only collide with objects on the same side due to physics layers/positioning, but the `Clear` method itself doesn't perform a role check for shockwaves.
-
-## Special Interactions
-
-*   **Bomb Clearability (`IClearableByBomb`):**
-    *   Projectiles (and other objects like enemies) that should be destroyed by a player's death bomb must implement the `IClearableByBomb` interface (defined in `IClearableByBomb.cs`).
-    *   This interface likely defines a method (e.g., `Clear()` or `HandleBombClear()`) that contains the logic for being destroyed/returned to pool.
-    *   The `PlayerDeathBomb.cs` script (server-side) finds all objects implementing `IClearableByBomb` within the bomb radius and calls their clearing method.
-*   **(Other interactions):** Systems for projectile reflection, piercing, status effects, etc., are not currently implemented but could be added via new component scripts.
+This system likely remains server-authoritative if it affects game state (e.g., scoring, enemy state).
+*   If client-side visual bullets need to *react* to a clear event (e.g., a bomb effect initiated by the server), the server would send a `ClientRpc` to the relevant clients, which would then despawn their visual bullets in the affected area.
+*   Server-authoritative projectiles implementing `IClearable` would be cleared directly by server logic.
 
 ## Key Projectile Prefabs
 
-*   `ReimuBulletPrefab`, `MarisaBulletPrefab` (Player basic shots)
-*   `StageSmallBulletPrefab`, `StageLargeBulletPrefab` (Enemy/Stage shots)
-*   `ReimuExtraAttackOrb`, `MarisaExtraAttackEarthlightRay` (Extra Attacks)
-*   `RedSmallCircleBullet_Variant`, etc. (Spellcard bullets)
-*   Charge Attack Prefabs (Assigned in `CharacterStats`)
+*   Client-Side (Basic Player Shots): `ReimuBulletPrefab`, `MarisaBulletPrefab` (Contain `BulletMovement`, `ClientProjectileLifetime`, `PooledObjectInfo`).
+*   Server-Side (Examples, if still used): `StageSmallBulletPrefab`, `RedSmallCircleBullet_Variant`, Charge Attack Prefabs (Would contain `NetworkObject` and server-controlled scripts).
 
 ## Key Scripts
 
-*   Movement: `LinearMovement.cs`, `DelayedHoming.cs`, `BulletMovement.cs`, `StageSmallBulletMoverScript.cs`
-*   Lifetime/Pooling: `NetworkBulletLifetime.cs`, `StageSmallBulletMoverScript.cs`, `BulletMovement.cs`, `NetworkObjectPool.cs`, `PoolableObjectIdentity.cs`
-*   Interactions: `IClearable.cs` (Interface), `NetworkBulletLifetime.cs` (Implementation), `StageSmallBulletMoverScript.cs` (Implementation), `PlayerDeathBomb.cs` (Forced Clear Trigger), `Shockwave.cs` (Normal Clear Trigger), `PlayerHitbox.cs` (Player Damage Receiver), `FairyCollisionHandler.cs` (Enemy Damage Receiver), `SpiritController.cs` (Enemy Damage Receiver)
-*   Spawners: `ServerAttackSpawner.cs` (Player Attacks/Spellcards), `StageSmallBulletSpawner.cs`, `SpiritController.cs` (Timeout Spawn), `Fairy.cs` (Death Spawn) 
+*   **Client-Side Projectile System:**
+    *   `PlayerShootingController.cs`: (Owner) Spawns local shots, initiates ServerRpc->ClientRpc for remote visuals.
+    *   `BulletMovement.cs`: Client-side visual movement and basic collision for player shots.
+    *   `ClientProjectileLifetime.cs`: Manages client-side lifetime and return to pool for player shots.
+    *   `ClientGameObjectPool.cs`: Manages pools of non-NetworkObject GameObjects for client visuals.
+    *   `PooledObjectInfo.cs`: Helper for `ClientGameObjectPool`.
+*   **Server-Side / Hybrid Projectile System (If applicable for spellcards/enemies):
+    *   Movement: `LinearMovement.cs` (if server-controlled), `DelayedHoming.cs` (if server-controlled), `StageSmallBulletMoverScript.cs`.
+    *   Lifetime/Pooling: `NetworkBulletLifetime.cs`, `StageSmallBulletMoverScript.cs`, `NetworkObjectPool.cs` (for `NetworkObject`s).
+*   Interactions: `IClearable.cs`, `PlayerHitbox.cs`, etc. (Primarily server-authoritative logic).
+*   Spawners: `ServerAttackSpawner.cs` (for server-authoritative spellcards/attacks), enemy AI scripts. 

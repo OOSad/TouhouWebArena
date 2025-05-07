@@ -88,7 +88,7 @@ public class RoundIndicatorDisplay : MonoBehaviour
 
     private void FindAndSubscribe()
     {
-        roundManager = FindObjectOfType<RoundManager>();
+        roundManager = FindFirstObjectByType<RoundManager>();
 
         if (roundManager != null)
         {

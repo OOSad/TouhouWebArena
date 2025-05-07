@@ -72,7 +72,7 @@ public class PlayerHealthUI : MonoBehaviour
         {
             attempts++;
 
-            PlayerHealth[] allPlayerHealths = FindObjectsOfType<PlayerHealth>();
+            PlayerHealth[] allPlayerHealths = FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
 
             foreach (PlayerHealth ph in allPlayerHealths)
             {

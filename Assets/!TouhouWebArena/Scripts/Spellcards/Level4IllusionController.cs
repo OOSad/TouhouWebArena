@@ -77,8 +77,8 @@ namespace TouhouWebArena.Spellcards
             if (!IsServer || _spellData == null) return;
 
             Rect baseBounds = (TargetPlayerRole.Value == PlayerRole.Player1)
-                              ? PlayerMovement.player1Bounds
-                              : PlayerMovement.player2Bounds;
+                              ? ClientAuthMovement.player1Bounds
+                              : ClientAuthMovement.player2Bounds;
 
             // Clamp movement area height to prevent invalid rects
             float actualMovementHeight = Mathf.Min(_spellData.MovementAreaHeight, baseBounds.height);
@@ -136,7 +136,7 @@ namespace TouhouWebArena.Spellcards
             if (_movementBounds.width <= 0 || _movementBounds.height <= 0)
             {
                 // Fallback if bounds are invalid, stay near top center
-                Rect baseBounds = (TargetPlayerRole.Value == PlayerRole.Player1) ? PlayerMovement.player1Bounds : PlayerMovement.player2Bounds;
+                Rect baseBounds = (TargetPlayerRole.Value == PlayerRole.Player1) ? ClientAuthMovement.player1Bounds : ClientAuthMovement.player2Bounds;
                  return new Vector3(baseBounds.center.x, baseBounds.yMax - 0.5f, transform.position.z);
             }
 

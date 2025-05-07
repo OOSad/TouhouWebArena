@@ -58,7 +58,7 @@ public class ServerSpellcardExecutor
             if (opponentData.HasValue)
             {
                 opponentRole = opponentData.Value.Role;
-                opponentBounds = (opponentRole == PlayerRole.Player1) ? PlayerMovement.player1Bounds : PlayerMovement.player2Bounds;
+                opponentBounds = (opponentRole == PlayerRole.Player1) ? ClientAuthMovement.player1Bounds : ClientAuthMovement.player2Bounds;
             }
             else 
             { 

@@ -20,6 +20,18 @@ public class CharacterStats : NetworkBehaviour // Inherit from NetworkBehaviour 
     private GameObject bulletPrefab;
 
     [SerializeField]
+    [Tooltip("The Prefab ID (string) for the basic shot, used by ClientGameObjectPool.")]
+    private string basicShotPrefabID = "DefaultPlayerShotID";
+
+    [SerializeField]
+    [Tooltip("Movement speed of the basic shot projectiles.")]
+    private float basicShotSpeed = 15f;
+
+    [SerializeField]
+    [Tooltip("Lifetime (in seconds) of the basic shot projectiles.")]
+    private float basicShotLifetime = 2f;
+
+    [SerializeField]
     [Tooltip("The prefab for this character's specific Charge Attack (Level 1).")]
     private GameObject chargeAttackPrefab;
 
@@ -56,6 +68,12 @@ public class CharacterStats : NetworkBehaviour // Inherit from NetworkBehaviour 
 
     /// <summary>Gets the prefab used for the character's basic shots.</summary>
     public GameObject GetBulletPrefab() => bulletPrefab;
+    /// <summary>Gets the Prefab ID (string) for the basic shot, used by ClientGameObjectPool.</summary>
+    public string GetBasicShotPrefabID() => basicShotPrefabID;
+    /// <summary>Gets the movement speed of the basic shot projectiles.</summary>
+    public float GetBasicShotSpeed() => basicShotSpeed;
+    /// <summary>Gets the lifetime (in seconds) of the basic shot projectiles.</summary>
+    public float GetBasicShotLifetime() => basicShotLifetime;
     /// <summary>Gets the horizontal spread between the pair of basic shot bullets.</summary>
     public float GetBulletSpread() => bulletSpread;
     /// <summary>Gets the number of bullet pairs fired in a single basic shot burst.</summary>

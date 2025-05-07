@@ -12,8 +12,8 @@ using Unity.Netcode;
 public class PlayerFocusController : NetworkBehaviour
 {
     [Header("Core References")]
-    [Tooltip("Reference to the PlayerMovement script to control the IsFocused state.")]
-    [SerializeField] private PlayerMovement playerMovement;
+    // [Tooltip("Reference to the PlayerMovement script to control the IsFocused state.")]
+    // [SerializeField] private PlayerMovement playerMovement;
     [Tooltip("Reference to the SpriteRenderer component for the player's hitbox visual.")]
     [SerializeField] private SpriteRenderer hitboxSpriteRenderer;
     [Tooltip("Reference to the character-specific scope style controller for focus-related effects.")]
@@ -47,11 +47,6 @@ public class PlayerFocusController : NetworkBehaviour
         
         // --- Basic Validation --- 
         // Note: Validation happens *before* initial state sync might occur.
-        if (playerMovement == null)
-        {
-            Debug.LogError("PlayerFocusController: PlayerMovement reference not set.", this);
-            enabled = false;
-        }
         if (hitboxSpriteRenderer == null)
         {
              Debug.LogWarning("PlayerFocusController: Hitbox SpriteRenderer reference not set. Hitbox visual will not function.", this);

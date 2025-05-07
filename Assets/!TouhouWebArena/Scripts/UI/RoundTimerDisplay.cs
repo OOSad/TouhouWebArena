@@ -67,7 +67,7 @@ public class RoundTimerDisplay : MonoBehaviour
     {
         // Find the RoundManager instance in the scene
         // Using FindObjectOfType can be slow, consider a Singleton or direct reference if performance matters
-        roundManager = FindObjectOfType<RoundManager>();
+        roundManager = FindFirstObjectByType<RoundManager>();
 
         if (roundManager != null && !isSubscribed)
         {

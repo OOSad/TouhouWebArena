@@ -22,7 +22,7 @@ namespace TouhouWebArena.Spellcards.Behaviors
         private float secondPauseDelay; // Duration of pause phase
         private float firstHomingDuration; // Duration of first homing phase
         private float secondHomingLookAheadDistance; // Distance used to calculate second homing target
-        private PlayerMovement targetPlayer; // The opponent player to home towards
+        private ClientAuthMovement targetPlayer; // The opponent player to home towards
 
         // --- Internal State ---
         private Vector3 firstHomingTargetPosition; // Fixed position captured at start of first homing
@@ -57,8 +57,8 @@ namespace TouhouWebArena.Spellcards.Behaviors
         /// <param name="delay2">Duration (seconds) of the <see cref="HomingState.PauseBeforeSecondHoming"/> phase (<see cref="secondPauseDelay"/>).</param>
         /// <param name="duration1">Duration (seconds) of the <see cref="HomingState.FirstHoming"/> phase (<see cref="firstHomingDuration"/>).</param>
         /// <param name="lookAhead">Distance used to calculate the fixed target point for the <see cref="HomingState.SecondHoming"/> phase (<see cref="secondHomingLookAheadDistance"/>).</param>
-        /// <param name="target">Reference to the opponent's <see cref="PlayerMovement"/> component.</param>
-        public void Initialize(float speed, float homingSpeed, float delay1, float delay2, float duration1, float lookAhead, PlayerMovement target)
+        /// <param name="target">Reference to the opponent's <see cref="ClientAuthMovement"/> component.</param>
+        public void Initialize(float speed, float homingSpeed, float delay1, float delay2, float duration1, float lookAhead, ClientAuthMovement target)
         {
             if (!IsServer) 
             {
@@ -76,7 +76,7 @@ namespace TouhouWebArena.Spellcards.Behaviors
 
             if (targetPlayer == null)
             {
-                Debug.LogError("[DoubleHoming] Initialization failed: Target PlayerMovement is null.", this);
+                Debug.LogError("[DoubleHoming] Initialization failed: Target ClientAuthMovement is null.", this);
                 currentState = HomingState.Completed;
                 enabled = false;
                 return;
@@ -170,8 +170,8 @@ namespace TouhouWebArena.Spellcards.Behaviors
         }
 
         // --- Targeting Note ---
-        // Target is now PlayerMovement, passed via Initialize.
-        // Spawner needs to get reference to opponent's PlayerMovement component.
+        // Target is now ClientAuthMovement, passed via Initialize.
+        // Spawner needs to get reference to opponent's ClientAuthMovement component.
 
         // TODO: Refine Homing state completion conditions.
     }

@@ -51,6 +51,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -98,6 +101,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7acf83bd1e4e31240a38a11de75d67d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   scopeVisualTransform: {fileID: 2753864008375275252}
   scopeSpriteRenderer: {fileID: 6193243748771723809}
   scopeCollider: {fileID: 7195293997286091990}
@@ -112,6 +116,7 @@ PolygonCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 746761529274151221}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -135,7 +140,8 @@ PolygonCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 1
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
@@ -167,8 +173,7 @@ GameObject:
   - component: {fileID: 4019428092217200171}
   - component: {fileID: 8926906112132289737}
   - component: {fileID: 3412707019844636568}
-  - component: {fileID: -3930951124136980858}
-  - component: {fileID: -8837382894695149901}
+  - component: {fileID: 5616463769801615924}
   - component: {fileID: -7345745082240361693}
   - component: {fileID: -6644605225323382049}
   - component: {fileID: 2922928309270852027}
@@ -222,6 +227,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -269,16 +277,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1167757991
+  GlobalObjectIdHash: 2122085789
   InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
   AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 0
+  SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &-3930951124136980858
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &5616463769801615924
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -287,40 +299,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 4454703587389584321}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Script: {fileID: 11500000, guid: 8d86a423e495c1a458025dbd8bfb3572, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UseUnreliableDeltas: 0
-  SyncPositionX: 1
-  SyncPositionY: 1
-  SyncPositionZ: 1
-  SyncRotAngleX: 1
-  SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 0
-  SyncScaleY: 0
-  SyncScaleZ: 0
-  PositionThreshold: 0.001
-  RotAngleThreshold: 0.01
-  ScaleThreshold: 0.01
-  UseQuaternionSynchronization: 0
-  UseQuaternionCompression: 0
-  UseHalfFloatPrecision: 0
-  InLocalSpace: 0
-  Interpolate: 0
-  SlerpPosition: 0
---- !u!114 &-8837382894695149901
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4454703587389584321}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 996d924cf8be0ef48baeaf9be2a071a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &-7345745082240361693
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -333,7 +315,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e679f4f196141f24291c54f43d2611ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   fireKey: 122
+  debugMarkerPrefab: {fileID: 3007841959978551384, guid: af84f3ad4fa1dda47bbde13f54ec3461, type: 3}
 --- !u!114 &-6644605225323382049
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -346,6 +330,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7edba3e3f8306bd4091454cd5d124911, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   CurrentHealth:
     m_InternalValue: 5
   IsInvincible:
@@ -377,6 +362,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10b92f8480744f942bc7713ee2682438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &8745866836830213913
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -389,7 +375,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91877eade6a6e0442bed2c73caab6857, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerMovement: {fileID: -8837382894695149901}
+  ShowTopMostFoldoutHeaderGroup: 1
   hitboxSpriteRenderer: {fileID: 552586912042597319}
   scopeStyleController: {fileID: 3661987046509030196}
 --- !u!114 &-2340701499670656051
@@ -404,8 +390,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68aef25dc4d5355429e39f7c7f63fcb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   characterName: KirisameMarisa
   bulletPrefab: {fileID: 5656050771762241772, guid: 59097a917c5931a43aea9a9a3a22fbe2, type: 3}
+  basicShotPrefabID: MarisaBullet
+  basicShotSpeed: 20
+  basicShotLifetime: 2
   chargeAttackPrefab: {fileID: 4280080153862268507, guid: 27caa464793fc9e4fb8ecdaac521476a, type: 3}
   passiveFillRate: 0.06
   activeChargeRate: 15
@@ -430,6 +420,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8b3d8786f66530489241ee9cabae374, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   hitboxTransform: {fileID: 2540291773711658504}
   hazardLayers:
     serializedVersion: 2
@@ -457,7 +448,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
 --- !u!50 &3961734924531103382
 Rigidbody2D:
-  serializedVersion: 4
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -468,8 +459,8 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_GravityScale: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -484,7 +475,7 @@ Rigidbody2D:
   m_Constraints: 0
 --- !u!95 &3185901584900274323
 Animator:
-  serializedVersion: 5
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -498,6 +489,7 @@ Animator:
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
@@ -565,6 +557,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -655,6 +650,7 @@ CircleCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8501340580021322175}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -678,13 +674,13 @@ CircleCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 1
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
   m_Radius: 0.04
 --- !u!50 &6247756814895974152
 Rigidbody2D:
-  serializedVersion: 4
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -695,8 +691,8 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_GravityScale: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -721,3 +717,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1290eaa71eabf340bc722d7a339e848, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1

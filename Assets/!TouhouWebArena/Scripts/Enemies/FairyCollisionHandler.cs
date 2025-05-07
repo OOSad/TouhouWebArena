@@ -41,10 +41,12 @@ public class FairyCollisionHandler : NetworkBehaviour // Inherit from NetworkBeh
             HandlePlayerCollision(other);
         }
         // --- NEW: Check collision with Player Shots --- 
+        /* // Temporarily commented out - to be replaced by client-side hit detection + RPC
         else if (other.CompareTag("PlayerShot"))
         {
             HandlePlayerShotCollision(other);
         }
+        */
         // --------------------------------------------
     }
 
@@ -81,6 +83,7 @@ public class FairyCollisionHandler : NetworkBehaviour // Inherit from NetworkBeh
     /// <param name="shotCollider">The collider of the player shot object.</param>
     private void HandlePlayerShotCollision(Collider2D shotCollider)
     {
+        /* // Temporarily commented out
         // Get damage amount from the projectile
         int damageAmount = 1; // Default damage
         ProjectileDamager damager = shotCollider.GetComponent<ProjectileDamager>();
@@ -93,26 +96,7 @@ public class FairyCollisionHandler : NetworkBehaviour // Inherit from NetworkBeh
 
         // Apply damage directly on the server
         sourceFairy.ApplyDamageServer(damageAmount, killerRole);
-
-        // --- REMOVED Player Shot Despawn Logic --- 
-        // The BulletMovement script on the shot itself should now handle this
-        // when its own OnTriggerEnter2D detects the collision with the Fairy.
-        /*
-        NetworkObject shotNetworkObject = shotCollider.GetComponent<NetworkObject>();
-        if (shotNetworkObject != null)
-        {
-            PoolableObjectIdentity shotIdentity = shotCollider.GetComponent<PoolableObjectIdentity>();
-            if (shotIdentity != null && NetworkObjectPool.Instance != null) 
-            {
-                NetworkObjectPool.Instance.ReturnNetworkObject(shotNetworkObject);
-            }
-            else
-            {
-                 shotNetworkObject.Despawn(true); 
-            }
-        }
         */
-        // -------------------------------------------
     }
     // --------------------------------------------
 } 

@@ -60,7 +60,7 @@ namespace TouhouWebArena.Spellcards.Behaviors
             if (directionToTarget == Vector2.zero) 
             {
                 // Already at target or calculation failed, continue straight
-                _rb.velocity = transform.up * _moveSpeed;
+                _rb.linearVelocity = transform.up * _moveSpeed;
                 return; 
             }
 
@@ -75,7 +75,7 @@ namespace TouhouWebArena.Spellcards.Behaviors
             _rb.MoveRotation(newAngle);
 
             // Apply forward velocity based on the *new* rotation
-            _rb.velocity = transform.up * _moveSpeed;
+            _rb.linearVelocity = transform.up * _moveSpeed;
         }
     }
 } 

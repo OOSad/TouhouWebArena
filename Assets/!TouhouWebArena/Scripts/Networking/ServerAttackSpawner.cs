@@ -19,7 +19,7 @@ public class ServerAttackSpawner : NetworkBehaviour
     public static ServerAttackSpawner Instance { get; private set; }
 
     // --- Spawner Instances ---
-    private ServerBasicShotSpawner _basicShotSpawner;
+    // private ServerBasicShotSpawner _basicShotSpawner; // REMOVED
     private ServerChargeAttackSpawner _chargeAttackSpawner;
     private ServerSpellcardExecutor _spellcardExecutor; // Add executor
     private ServerSpellcardActionRunner _actionRunner; // Add runner
@@ -50,7 +50,7 @@ public class ServerAttackSpawner : NetworkBehaviour
             // Consider DontDestroyOnLoad(gameObject) if this manager needs to persist across scenes independently.
 
             // Create spawner instances
-            _basicShotSpawner = new ServerBasicShotSpawner();
+            // _basicShotSpawner = new ServerBasicShotSpawner(); // REMOVED
             _chargeAttackSpawner = new ServerChargeAttackSpawner();
             
             // Get/Add runner component
@@ -118,16 +118,17 @@ public class ServerAttackSpawner : NetworkBehaviour
 
     // --- Public Methods Called by PlayerShootingController RPCs ---
 
-    /// <summary>
-    /// **[Server Only]** Spawns a pair of basic shot bullets for the requesting player.
-    /// Called via <see cref="PlayerShootingController.RequestFireServerRpc"/>.
-    /// </summary>
-    /// <param name="requesterClientId">The ClientId of the player who requested the shot.</param>
-    public void SpawnBasicShot(ulong requesterClientId)
-    {
-        // Delegate to the specialized spawner
-        _basicShotSpawner?.SpawnBasicShot(requesterClientId); 
-    }
+    // REMOVED SpawnBasicShot method
+    // /// <summary>
+    // /// **[Server Only]** Spawns a pair of basic shot bullets for the requesting player.
+    // /// Called via <see cref="PlayerShootingController.RequestFireServerRpc"/>.
+    // /// </summary>
+    // /// <param name="requesterClientId">The ClientId of the player who requested the shot.</param>
+    // public void SpawnBasicShot(ulong requesterClientId)
+    // {
+    //     // Delegate to the specialized spawner
+    //     _basicShotSpawner?.SpawnBasicShot(requesterClientId); 
+    // }
 
     /// <summary>
     /// **[Server Only]** Spawns the appropriate (non-pooled) charge attack for the requesting player's character.

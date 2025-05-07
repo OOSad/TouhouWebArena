@@ -1,14 +1,14 @@
 using UnityEngine;
-using Unity.Netcode;
+// using Unity.Netcode; // No longer a NetworkBehaviour
 
-namespace TouhouWebArena.Spellcards.Behaviors
+namespace TouhouWebArena.Spellcards.Behaviors // Keep namespace for now, can be refactored later
 {
     /// <summary>
-    /// A server-authoritative movement behavior that moves the attached GameObject forward
-    /// along its local Y-axis (<c>transform.up</c>) at a constant speed.
-    /// The initial direction must be set by rotating the GameObject upon spawning.
+    /// A client-side movement behavior that moves the attached GameObject forward
+    /// along its local Y-axis (<c>transform.up</c>) at a constant or transitioning speed.
+    /// The initial direction must be set by rotating the GameObject upon spawning/activation.
     /// </summary>
-    public class LinearMovement : NetworkBehaviour // Inherits from NetworkBehaviour for potential network context, even if movement is local
+    public class LinearMovement : MonoBehaviour // Changed from NetworkBehaviour
     {
         // Removed public speed field, now managed internally
         // public float speed = 5f; 
@@ -18,7 +18,7 @@ namespace TouhouWebArena.Spellcards.Behaviors
         private float _initialSpeed = 0f;
         private float _targetSpeed = 5f; // Default target speed
         private float _transitionDuration = 0f;
-        private float _spawnTime = 0f;
+        private float _startTime = 0f; // Renamed from _spawnTime for clarity, as it's start of movement/transition
 
         // We assume the initial direction is baked into the transform's rotation
         // by the spawning logic.
@@ -30,11 +30,10 @@ namespace TouhouWebArena.Spellcards.Behaviors
         /// </summary>
         void Update()
         {
-            if (!IsServer) return;
+            // Logic now runs on the client that owns/manages this projectile
+            // if (!IsServer) return; // REMOVED
 
             float currentSpeed = CalculateCurrentSpeed();
-
-            // Use transform.up because in 2D, forward is typically the Y axis.
             transform.position += transform.up * currentSpeed * Time.deltaTime;
         }
 
@@ -43,23 +42,20 @@ namespace TouhouWebArena.Spellcards.Behaviors
         /// </summary>
         private float CalculateCurrentSpeed()
         {
-            if (!_useTransition) 
+            if (!_useTransition)
             {
                 return _targetSpeed;
             }
 
-            float elapsedTime = Time.time - _spawnTime;
+            float elapsedTime = Time.time - _startTime;
 
             if (elapsedTime >= _transitionDuration)
             {
-                // Transition finished
-                _useTransition = false; // Stop calculating lerp
+                _useTransition = false; 
                 return _targetSpeed;
             }
             else
             {
-                // Still transitioning
-                // Ensure duration is not zero to avoid division by zero
                 if (_transitionDuration <= 0f) return _targetSpeed;
                 return Mathf.Lerp(_initialSpeed, _targetSpeed, elapsedTime / _transitionDuration);
             }
@@ -73,10 +69,10 @@ namespace TouhouWebArena.Spellcards.Behaviors
         /// <param name="targetSpeed">The constant movement speed.</param>
         public void Initialize(float targetSpeed)
         {
-            if (!IsServer) return;
+            // if (!IsServer) return; // REMOVED
             _useTransition = false;
             _targetSpeed = targetSpeed;
-            // _initialSpeed, _transitionDuration, _spawnTime are irrelevant
+            _startTime = Time.time; // Set start time even for non-transition for consistency if needed later
         }
 
         /// <summary>
@@ -87,11 +83,10 @@ namespace TouhouWebArena.Spellcards.Behaviors
         /// <param name="transitionDuration">The duration of the speed transition in seconds.</param>
         public void Initialize(float initialSpeed, float targetSpeed, float transitionDuration)
         {
-            if (!IsServer) return;
+            // if (!IsServer) return; // REMOVED
 
             if (transitionDuration <= 0f)
             {
-                // If duration is zero or negative, just use the target speed instantly
                 Initialize(targetSpeed);
             }
             else
@@ -100,8 +95,17 @@ namespace TouhouWebArena.Spellcards.Behaviors
                 _initialSpeed = initialSpeed;
                 _targetSpeed = targetSpeed;
                 _transitionDuration = transitionDuration;
-                _spawnTime = Time.time; // Record the time transition starts
+                _startTime = Time.time; 
             }
+        }
+        
+        // Call this when the object is enabled/retrieved from pool to reset its movement state
+        void OnEnable()
+        {
+            // If not using transition by default, ensure speed is set based on a default or last initialized value.
+            // For now, Initialize() must be called after getting from pool.
+            // Consider resetting _startTime here if Initialize isn't called immediately after GetObject + SetActive(true)
+            // _startTime = Time.time; // Could be a default reset, but explicit Initialize is better.
         }
     }
 }

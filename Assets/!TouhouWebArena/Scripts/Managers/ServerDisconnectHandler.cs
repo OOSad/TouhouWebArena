@@ -120,7 +120,7 @@ namespace TouhouWebArena.Managers
                         Debug.LogWarning("[ServerDisconnectHandler] NetworkManager was already null before shutdown.");
                     }
 
-                    PlayerDataManager pdmInstance = FindObjectOfType<PlayerDataManager>();
+                    PlayerDataManager pdmInstance = FindFirstObjectByType<PlayerDataManager>();
                     if (pdmInstance != null && pdmInstance.TryGetComponent<NetworkObject>(out var pdmNetObj))
                     {
                         if (pdmNetObj.IsSpawned)

@@ -64,12 +64,29 @@ public class EarthlightRay : NetworkBehaviour
         // Check if it hit a player's hitbox
         if (!other.CompareTag("Player")) return; // Assuming player hitbox has "Player" tag
 
-        PlayerMovement playerMovement = other.GetComponentInParent<PlayerMovement>();
+        ClientAuthMovement clientAuthMovement = other.GetComponentInParent<ClientAuthMovement>();
         PlayerHealth playerHealth = other.GetComponentInParent<PlayerHealth>();
 
-        if (playerMovement != null && playerHealth != null)
+        if (clientAuthMovement != null && playerHealth != null)
         {
-            PlayerRole hitPlayerRole = playerMovement.GetPlayerRole();
+            PlayerRole hitPlayerRole = PlayerRole.None; // Default
+            NetworkObject hitPlayerNetworkObject = clientAuthMovement.NetworkObject;
+            if (hitPlayerNetworkObject != null && PlayerDataManager.Instance != null)
+            {
+                PlayerData? hitPlayerData = PlayerDataManager.Instance.GetPlayerData(hitPlayerNetworkObject.OwnerClientId);
+                if (hitPlayerData.HasValue)
+                {
+                    hitPlayerRole = hitPlayerData.Value.Role;
+                }
+                else
+                {
+                    Debug.LogWarning($"[EarthlightRay] Could not get PlayerData for hit player object: {hitPlayerNetworkObject.NetworkObjectId}", this);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[EarthlightRay] Hit player NetworkObject or PlayerDataManager.Instance is null.", this);
+            }
 
             // Ensure it's a valid player and not the player who fired the laser
             if (hitPlayerRole != PlayerRole.None && hitPlayerRole != AttackerRole.Value)

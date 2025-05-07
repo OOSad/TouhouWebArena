@@ -2,77 +2,81 @@
 
 ## Overview
 
-This document describes the network object pooling system used in Touhou Web Arena. Object pooling is employed to improve performance by reusing frequently created and destroyed networked objects, such as player bullets, enemy projectiles, enemies themselves, and potentially visual effects. This reduces the overhead associated with instantiation, destruction, and garbage collection, especially critical in a networked environment.
+This document describes the object pooling systems used in Touhou Web Arena. Object pooling is employed to improve performance by reusing frequently created and destroyed objects. This reduces the overhead associated with instantiation, destruction, and garbage collection.
 
-## Implementation
+Two distinct pooling systems are now in place:
+1.  **`ClientGameObjectPool.cs`:** For client-side visual objects (e.g., basic player projectiles) that do not have `NetworkObject` components.
+2.  **`NetworkObjectPool.cs`:** For server-authoritative `NetworkObject`s (e.g., enemies, complex spellcard projectiles that need to be network-aware).
 
-The system is implemented in the `NetworkObjectPool.cs` script, located at `Assets/!TouhouWebArena/Scripts/Networking/`. It acts as a Singleton (`NetworkObjectPool.Instance`) for easy access from other server-side scripts.
+## 1. Client-Side Pooling (`ClientGameObjectPool.cs`)
 
-**Requirements for Pooled Prefabs:**
-Any prefab intended for pooling **must** have the following components:
-1.  A `NetworkObject` component.
-2.  A `PoolableObjectIdentity` component (custom script). This component requires a unique string `PrefabID` to be assigned in the Inspector. This ID serves as the key for retrieving instances of this prefab from the pool.
+This system is used for managing pools of purely visual GameObjects on each client, primarily for effects like basic player shots that are client-authoritatively spawned for the owner and then visually replicated on remote clients via RPCs.
 
-## Configuration
+**Location:** `Assets/!TouhouWebArena/Scripts/Projectiles/ClientGameObjectPool.cs` (or similar path)
 
-*   **Inspector List:** The pool is configured entirely via the Inspector on the GameObject that has the `NetworkObjectPool` script attached (likely the `GameManager` object in the main gameplay scene).
-*   **`Pools To Create` List:** This list holds `PoolConfig` entries. For each type of prefab you want to pool:
-    *   Assign the `Prefab` GameObject.
-    *   Set the `Initial Size` (the number of instances to create and deactivate when the server starts, "pre-warming" the pool).
-*   **`Allow Pool Expansion`:** This checkbox is **disabled** (unchecked) in the current configuration (as seen in the Inspector). This means the pool will *not* create new instances at runtime if a request is made when the pool is empty for that prefab type; it will return null instead.
+**Implementation:**
+*   Acts as a Singleton (`ClientGameObjectPool.Instance`) for easy access from client-side scripts.
+*   Manages pools of standard `GameObject`s, indexed by a string `PrefabID`.
 
-## Usage (Server-Side Only)
+**Requirements for Pooled Prefabs (Client-Side):
+**Any prefab intended for client-side pooling **must** have:
+1.  A `PooledObjectInfo.cs` component. This script holds the unique `PrefabID` (string) that identifies this prefab type. This ID must be set in the Inspector on the prefab asset.
+2.  **NO `NetworkObject` component.** These are not networked entities in the NGO sense.
 
-All interactions with the `NetworkObjectPool` must occur on the **server**.
+**Configuration:**
+*   The `ClientGameObjectPool` GameObject in the scene (e.g., attached to a GameManager or a dedicated PoolingManager object) will have an Inspector list to configure pools:
+    *   **`Pool Configurations` List:** Each entry defines:
+        *   `PrefabID` (string): The unique identifier for this pool (must match the `PrefabID` in the `PooledObjectInfo` on the prefab).
+        *   `Prefab` (GameObject): The actual prefab to be pooled.
+        *   `Initial Size`: Number of instances to pre-warm in the pool when the client starts.
+*   `Allow Pool Expansion`: A boolean to control if the pool can grow at runtime if an object is requested but none are available. (Current state to be verified in Inspector).
+
+**Usage (Client-Side Only):**
 
 *   **Getting Objects:**
-    *   **Manual Method:**
-        1.  Obtain the unique `PrefabID` string for the desired object (defined in its `PoolableObjectIdentity` component).
-        2.  Call `NetworkObject networkObjectInstance = NetworkObjectPool.Instance.GetNetworkObject(prefabID);`.
-        3.  Check if `networkObjectInstance` is not null (it will be null if the pool is empty and expansion is disabled).
-        4.  Set the `transform.position` and `transform.rotation` of `networkObjectInstance.gameObject`.
-        5.  Initialize any necessary components on the instance **before** spawning.
-        6.  Spawn the object onto the network: `networkObjectInstance.Spawn(true);`
-    *   **Helper Method (`ServerPooledSpawner`):**
-        *   The static `ServerPooledSpawner.SpawnSinglePooledBullet` method provides a convenient wrapper for spawning bullet prefabs from the pool.
-        *   It handles getting the object by `PrefabID` from the `PoolableObjectIdentity` on the passed `prefab`, setting position/rotation, calling `Spawn(true)`, and assigning the `ownerRole` via `PlayerDataManager`.
+    1.  Obtain the `PrefabID` string for the desired object.
+    2.  Call `GameObject instance = ClientGameObjectPool.Instance.GetObject(prefabID);`.
+    3.  Check if `instance` is not null.
+    4.  Set the `transform.position`, `transform.rotation`, and activate the GameObject (`instance.SetActive(true)`).
+    5.  Initialize any necessary components on the instance (e.g., `BulletMovement.Initialize()`, `ClientProjectileLifetime.Initialize()`).
 *   **Returning Objects:**
-    1.  Pooled objects typically have a component (e.g., `NetworkBulletLifetime`, `BulletMovement`, `StageSmallBulletMoverScript`) that automatically calls `NetworkObjectPool.Instance.ReturnNetworkObject(this.NetworkObject)` upon lifetime expiration, collision, or being cleared.
-    2.  The `ReturnNetworkObject` method handles calling `networkObject.Despawn(false)`, deactivating the GameObject, and enqueuing it back into the pool based on its `PrefabID`.
-    3.  **Important:** Directly calling `networkObject.Despawn(true)` will destroy the GameObject and bypass the pool.
+    1.  Typically, a script on the pooled object itself (e.g., `ClientProjectileLifetime.cs`) is responsible for returning it to the pool.
+    2.  This is done by calling `ClientGameObjectPool.Instance.ReturnObject(this.gameObject, prefabID);`, where `prefabID` is usually retrieved from the object's `PooledObjectInfo` component.
+    3.  `ReturnObject` deactivates the GameObject and places it back into the appropriate pool.
 
-## Pooled Objects
+**Use Cases:**
+*   Basic player projectiles spawned by `PlayerShootingController.cs` (both for the owner and for remote client visuals triggered by RPCs).
+*   Other client-side visual effects.
 
-The following prefabs are currently configured for pooling (see the `NetworkObjectPool` component in the Inspector for exact `Initial Size` values):
+## 2. Server-Side NetworkObject Pooling (`NetworkObjectPool.cs`)
 
-*   Player Bullets:
-    *   `ReimuBulletPrefab`
-    *   `MarisaBulletPrefab`
-*   Stage/Enemy Bullets:
-    *   `StageSmallBulletPrefab`
-    *   `StageLargeBulletPrefab`
-*   Fairy Effects:
-    *   `FairyShockwave`
-    *   `FairyShockwaveVisualOnly`
-*   Enemies:
-    *   `Spirit`
-    *   `NormalFairy`
-    *   `GreatFairy`
-*   Variant Bullets (likely for spellcards/specific patterns):
-    *   `RedSmallCircleBullet_Variant`
-    *   `RedSmallOvalBullet_Variant`
-    *   `WhiteSmallCircleBullet_Variant`
-    *   `WhiteSmallOvalBullet_Variant`
+This system remains for managing `NetworkObject`s that are spawned and controlled authoritatively by the server.
 
-*(Note: Ensure any new projectile or frequently spawned enemy prefabs are added to this list in the Inspector and have the required `NetworkObject` and `PoolableObjectIdentity` components.)*
+**Location:** `Assets/!TouhouWebArena/Scripts/Networking/NetworkObjectPool.cs`
+
+**Implementation & Requirements:** (This section largely remains the same as the original documentation for `NetworkObjectPool.cs`, assuming it's still used for server-authoritative objects).
+*   Singleton (`NetworkObjectPool.Instance`).
+*   Pooled prefabs **must** have `NetworkObject` and `PoolableObjectIdentity` (with a `PrefabID` set in Inspector).
+
+**Configuration:** (Remains the same - via Inspector list on the `NetworkObjectPool` GameObject).
+
+**Usage (Server-Side Only):** (Remains the same - `GetNetworkObject`, `ReturnNetworkObject`, spawning via `networkObjectInstance.Spawn(true)`).
+
+**Use Cases / Pooled Objects (Server-Side):
+**This pool is now primarily for:
+*   Enemies (`Spirit`, `NormalFairy`, `GreatFairy`).
+*   Complex spellcard projectiles or other `NetworkObject`s that require server authority for their lifecycle and behavior (e.g., `StageSmallBulletPrefab`, `StageLargeBulletPrefab`, various `...Bullet_Variant` prefabs if they are `NetworkObject`s).
+*   Fairy Effects if they are `NetworkObject`s (`FairyShockwave`).
+*   **Player basic shots (`ReimuBulletPrefab`, `MarisaBulletPrefab`) are NO LONGER pooled by this system.** They use `ClientGameObjectPool.cs`.
 
 ## Key Scripts
 
-*   **`NetworkObjectPool.cs`:** The central pooling manager script.
-*   **`PoolableObjectIdentity.cs`:** Component script required on all pooled prefabs to define their unique `PrefabID`.
-*   **Scripts using the pool (Server-Side):**
-    *   `PlayerShooting.cs` (for basic shots, charge attacks)
-    *   `SpellcardExecutor.cs` (or server-side equivalent logic in `PlayerShooting.cs` for spawning spellcard bullets)
-    *   `ExtraAttackManager.cs` (for spawning Extra Attack prefabs)
-    *   `FairySpawner.cs` / `SpiritSpawner.cs` (for spawning enemies)
-    *   Potentially enemy scripts or lifetime components (for returning objects to the pool). 
+*   **Client-Side Pooling:**
+    *   `ClientGameObjectPool.cs`: Manages client-side GameObject pools.
+    *   `PooledObjectInfo.cs`: Stores `PrefabID` for client-pooled objects.
+    *   `ClientProjectileLifetime.cs`: Example script that returns client-pooled objects.
+    *   `PlayerShootingController.cs`: Uses `ClientGameObjectPool` for basic shots.
+*   **Server-Side Pooling (for NetworkObjects):**
+    *   `NetworkObjectPool.cs`: The central pooling manager for `NetworkObject`s.
+    *   `PoolableObjectIdentity.cs`: Component required on server-pooled prefabs.
+    *   Scripts using this pool (Server-Side): `ServerAttackSpawner` (for server-authoritative spellcard bullets/entities), enemy spawners, etc. 

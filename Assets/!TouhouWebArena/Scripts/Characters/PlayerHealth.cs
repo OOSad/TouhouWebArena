@@ -4,7 +4,7 @@ using System;
 using System.Collections; // Added for Coroutines
 
 // NEW: Require the visuals component
-[RequireComponent(typeof(PlayerInvincibilityVisuals))]
+// [RequireComponent(typeof(PlayerInvincibilityVisuals))] // TEMPORARILY COMMENTED OUT FOR TESTING
 [RequireComponent(typeof(CharacterStats))]
 /// <summary>
 /// Manages the health state of a player character in a networked environment.

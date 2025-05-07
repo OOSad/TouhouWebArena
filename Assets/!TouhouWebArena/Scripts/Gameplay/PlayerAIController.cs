@@ -6,7 +6,8 @@ using UnityEngine;
 /// Activated via a debug key.
 /// This component only performs actions if running on the Owner client.
 /// </summary>
-[RequireComponent(typeof(PlayerMovement))] // Dependency
+// [RequireComponent(typeof(PlayerMovement))] // Dependency - Changed
+[RequireComponent(typeof(ClientAuthMovement))] // Dependency - Changed
 [RequireComponent(typeof(PlayerShootingController))] // Dependency
 public class PlayerAIController : NetworkBehaviour
 {
@@ -22,7 +23,8 @@ public class PlayerAIController : NetworkBehaviour
     [Tooltip("The child Hitbox object used for collision detection.")]
     [SerializeField] private Transform hitboxTransform;
     // --- Added Component References ---
-    private PlayerMovement playerMovement;
+    // private PlayerMovement playerMovement; // Changed
+    private ClientAuthMovement clientAuthMovement; // Changed
     private PlayerShootingController playerShootingController;
     private NetworkObject networkObject; // Needed for IsOwner check
     // ------------------------------
@@ -53,7 +55,8 @@ public class PlayerAIController : NetworkBehaviour
     private void Awake()
     {
         // Get required components
-        playerMovement = GetComponent<PlayerMovement>();
+        // playerMovement = GetComponent<PlayerMovement>(); // Changed
+        clientAuthMovement = GetComponent<ClientAuthMovement>(); // Changed
         playerShootingController = GetComponent<PlayerShootingController>();
         networkObject = GetComponent<NetworkObject>(); // Get NetworkObject
 
@@ -62,18 +65,20 @@ public class PlayerAIController : NetworkBehaviour
             hitboxTransform = transform.Find("Hitbox");
             if (hitboxTransform == null)
             {
+                // Debug.LogError("PlayerAIController: Hitbox child object not found!");
             }
         }
 
         // Role determination might depend on NetworkSpawn, let's try getting it here but be ready for it to be None initially
         // We might need to get it again in OnNetworkSpawn or Update if PlayerDataManager isn't ready in Awake
-        if(playerMovement != null)
-        {
-            playerRole = playerMovement.GetPlayerRole();
-            if(playerRole == PlayerRole.None)
-            {
-            }
-        }
+        // if(clientAuthMovement != null) // Temporarily commented out - ClientAuthMovement doesn't have GetPlayerRole()
+        // {
+        // playerRole = clientAuthMovement.GetPlayerRole(); // Temporarily commented out
+        // if(playerRole == PlayerRole.None)
+        // {
+        // Debug.LogWarning("PlayerAIController: PlayerRole could not be determined in Awake.");
+        // }
+        // }
     }
 
     private void Update()
@@ -82,13 +87,14 @@ public class PlayerAIController : NetworkBehaviour
         if (!IsOwner) return;
 
         // Role Check: Attempt to get role if not already set
-        if (playerRole == PlayerRole.None && playerMovement != null)
-        {
-            playerRole = playerMovement.GetPlayerRole();
-            if (playerRole != PlayerRole.None)
-            {
-            }
-        }
+        // if (playerRole == PlayerRole.None && clientAuthMovement != null) // Temporarily commented out
+        // {
+        // playerRole = clientAuthMovement.GetPlayerRole(); // Temporarily commented out
+        // if (playerRole != PlayerRole.None)
+        // {
+        // Debug.Log("PlayerAIController: PlayerRole determined in Update: " + playerRole);
+        // }
+        // }
 
         // ADDED: Read NetworkVariable to control internal state
         bool serverRequestedState = IsAIDebugEnabled.Value;
@@ -125,7 +131,7 @@ public class PlayerAIController : NetworkBehaviour
     private void FixedUpdate()
     {
         // AI logic should only run on the owner's machine
-        if (!IsOwner || !aiActive || playerRole == PlayerRole.None)
+        if (!IsOwner || !aiActive || playerRole == PlayerRole.None) // playerRole check might be redundant if AI doesn't move based on it for now
         {
             // Do nothing if not owner, AI inactive, or role unknown
             return;
@@ -145,10 +151,7 @@ public class PlayerAIController : NetworkBehaviour
         if (hitboxTransform == null) return false;
 
         // Calculate detection box center slightly ahead of the hitbox
-        // Use hitbox position as center, extend detectionDistance forward for BoxCast later if needed
-        // For OverlapBox, center it based on hitbox directly
         Vector2 boxCenter = hitboxTransform.position;
-        // Adjust center slightly based on movement? For now, just use hitbox pos.
 
         Collider2D[] hits = Physics2D.OverlapBoxAll(boxCenter, detectionBoxSize, 0f, hazardLayers);
 
@@ -158,22 +161,16 @@ public class PlayerAIController : NetworkBehaviour
         foreach (Collider2D hit in hits)
         {
             // --- Filter based on player side --- 
-            float hazardX = hit.transform.position.x;
-            bool onCorrectSide = (playerRole == PlayerRole.Player1 && hazardX < 0) ||
-                                 (playerRole == PlayerRole.Player2 && hazardX > 0);
-            if (!onCorrectSide)
-            {
-                 continue; // Skip hazards on the opponent's side
-            }
+            // float hazardX = hit.transform.position.x;
+            // bool onCorrectSide = (playerRole == PlayerRole.Player1 && hazardX < 0) ||
+            //                      (playerRole == PlayerRole.Player2 && hazardX > 0);
+            // if (!onCorrectSide) // Temporarily disable side check as playerRole is not reliably set
+            // {
+            //      continue; // Skip hazards on the opponent's side
+            // }
             // -----------------------------------
 
-            // Basic check: is the hazard close enough?
-            // Consider using ClosestPoint for non-point colliders
             float distanceSqr = ((Vector2)hit.transform.position - (Vector2)hitboxTransform.position).sqrMagnitude;
-            // Maybe add a maximum distance check too? detectionBoxSize handles width/height.
-            // float maxDetectionRadiusSqr = (detectionBoxSize.x * detectionBoxSize.x) / 4f + detectionDistance * detectionDistance; // Rough estimate
-            // if (distanceSqr > maxDetectionRadiusSqr) continue;
-
             if (distanceSqr < minDistanceSqr)
             {
                 minDistanceSqr = distanceSqr;
@@ -183,87 +180,70 @@ public class PlayerAIController : NetworkBehaviour
 
         if (closestHazard != null)
         {
-            // Hazard detected, attempt to dodge
             AttemptDodge(closestHazard);
             return true; // Currently dodging
         }
-
-        // No hazards detected that require dodging
         return false;
     }
 
     private void AttemptDodge(Collider2D hazard)
     {
-        if (playerMovement == null) return; // Safety check
+        // if (clientAuthMovement == null) return; // Safety check
 
-        // Simple dodge: move away horizontally from the hazard
         float relativeX = hitboxTransform.position.x - hazard.transform.position.x;
-        float dodgeDirection = Mathf.Sign(relativeX);
+        // float dodgeDirection = Mathf.Sign(relativeX);
 
-        // If hazard is directly aligned vertically, pick a default direction based on which side has more room
-        // Or just pick a consistent direction (e.g., away from center line)
-        if (Mathf.Approximately(relativeX, 0f))
-        {
-            dodgeDirection = (playerRole == PlayerRole.Player1) ? -1f : 1f; // P1 dodges left, P2 dodges right
-        }
+        // if (Mathf.Approximately(relativeX, 0f))
+        // {
+        //     dodgeDirection = (playerRole == PlayerRole.Player1) ? -1f : 1f; 
+        // }
 
-        // Check if the chosen direction is clear using a short raycast
-        Vector2 rayOrigin = hitboxTransform.position;
-        // Use dodgeCheckLayers mask provided in inspector
-        RaycastHit2D hitLeft = Physics2D.Raycast(rayOrigin, Vector2.left, dodgeCheckDistance, dodgeCheckLayers);
-        RaycastHit2D hitRight = Physics2D.Raycast(rayOrigin, Vector2.right, dodgeCheckDistance, dodgeCheckLayers);
+        // Vector2 rayOrigin = hitboxTransform.position;
+        // RaycastHit2D hitLeft = Physics2D.Raycast(rayOrigin, Vector2.left, dodgeCheckDistance, dodgeCheckLayers);
+        // RaycastHit2D hitRight = Physics2D.Raycast(rayOrigin, Vector2.right, dodgeCheckDistance, dodgeCheckLayers);
+        // bool canDodgeLeft = hitLeft.collider == null;
+        // bool canDodgeRight = hitRight.collider == null;
+        // float finalMoveInput = 0f;
+        // bool preferRight = dodgeDirection > 0;
 
-        bool canDodgeLeft = hitLeft.collider == null;
-        bool canDodgeRight = hitRight.collider == null;
+        // if (preferRight)
+        // {
+        //     if (canDodgeRight) finalMoveInput = 1f;
+        //     else if (canDodgeLeft) finalMoveInput = -1f;
+        // }
+        // else 
+        // {
+        //     if (canDodgeLeft) finalMoveInput = -1f;
+        //     else if (canDodgeRight) finalMoveInput = 1f;
+        // }
 
-        float finalMoveInput = 0f;
-
-        // Determine preferred dodge direction based on hazard relative position
-        bool preferRight = dodgeDirection > 0;
-
-        if (preferRight)
-        {
-            if (canDodgeRight) finalMoveInput = 1f;       // Preferred direction (Right) is clear
-            else if (canDodgeLeft) finalMoveInput = -1f; // Preferred (Right) blocked, try opposite (Left)
-            // else: Both blocked, finalMoveInput remains 0
-        }
-        else // Prefer Left
-        {
-            if (canDodgeLeft) finalMoveInput = -1f;       // Preferred direction (Left) is clear
-            else if (canDodgeRight) finalMoveInput = 1f; // Preferred (Left) blocked, try opposite (Right)
-            // else: Both blocked, finalMoveInput remains 0
-        }
-
-        // Apply the movement input
-        if (!Mathf.Approximately(finalMoveInput, 0f))
-        {
-            playerMovement.SetAIHorizontalInput(finalMoveInput);
-        }
-        else
-        {
-            playerMovement.SetAIHorizontalInput(0f);
-        }
+        // if (!Mathf.Approximately(finalMoveInput, 0f))
+        // {
+        //     // clientAuthMovement.SetAIHorizontalInput(finalMoveInput); // Temporarily commented out
+        // }
+        // else
+        // {
+        //     // clientAuthMovement.SetAIHorizontalInput(0f); // Temporarily commented out
+        // }
     }
 
     private void AlignWithTarget()
     {
-        if (playerMovement == null || hitboxTransform == null) return;
+        // if (clientAuthMovement == null || hitboxTransform == null) return;
 
         Collider2D[] potentialTargets = Physics2D.OverlapCircleAll(hitboxTransform.position, targetDetectionRadius, targetLayers);
-
         Collider2D bestTarget = null;
         float minHorizontalDistance = float.MaxValue;
 
         foreach (Collider2D target in potentialTargets)
         {
-            // Filter for correct side
-            float targetX = target.transform.position.x;
-            bool onCorrectSide = (playerRole == PlayerRole.Player1 && targetX < 0) ||
-                                 (playerRole == PlayerRole.Player2 && targetX > 0);
-            if (!onCorrectSide) continue;
+            // // Filter for correct side (temporarily disabled as playerRole not set)
+            // float targetX = target.transform.position.x;
+            // bool onCorrectSide = (playerRole == PlayerRole.Player1 && targetX < 0) ||
+            //                      (playerRole == PlayerRole.Player2 && targetX > 0);
+            // if (!onCorrectSide) continue;
 
-            // Find target closest horizontally
-            float horizontalDistance = Mathf.Abs(targetX - hitboxTransform.position.x);
+            float horizontalDistance = Mathf.Abs(target.transform.position.x - hitboxTransform.position.x);
             if (horizontalDistance < minHorizontalDistance)
             {
                 minHorizontalDistance = horizontalDistance;
@@ -271,80 +251,50 @@ public class PlayerAIController : NetworkBehaviour
             }
         }
 
-        if (bestTarget != null)
-        {
-            float targetX = bestTarget.transform.position.x;
-            float moveInput = Mathf.Sign(targetX - transform.position.x); // Simplified move direction
-            playerMovement.SetAIHorizontalInput(moveInput);
-        }
-        else
-        {
-            playerMovement.SetAIHorizontalInput(0f);
-        }
+        // if (bestTarget != null)
+        // {
+        //     float targetX = bestTarget.transform.position.x;
+        //     float moveInput = Mathf.Sign(targetX - transform.position.x); 
+        //     // clientAuthMovement.SetAIHorizontalInput(moveInput); // Temporarily commented out
+        // }
+        // else
+        // {
+        //     // clientAuthMovement.SetAIHorizontalInput(0f); // Temporarily commented out
+        // }
     }
 
     private void StopAIControl()
     {
-        if (playerMovement != null)
-        {
-            playerMovement.SetAIHorizontalInput(0f);
-            isDodging = false;
-        }
+        // if (clientAuthMovement != null)
+        // {
+        //     // clientAuthMovement.SetAIHorizontalInput(0f); // Temporarily commented out
+        // }
+        isDodging = false; 
     }
 
-    /// <summary>
-    /// [Server Only] Sets the networked state variable to enable/disable the AI.
-    /// Called by the DebugMenuController.
-    /// </summary>
-    /// <param name="enabled">Whether the AI should be enabled.</param>
     public void SetAIEnabledServer(bool enabled)
     {
-        if (!IsServer) return;
         IsAIDebugEnabled.Value = enabled;
-        UnityEngine.Debug.Log($"Server setting AI enabled to {enabled} for client {OwnerClientId}");
     }
 
-    // Draw Gizmos for the detection box in the Scene view for easier debugging
     private void OnDrawGizmosSelected()
     {
-        // Only draw gizmos if the component has been initialized properly
-        if (hitboxTransform != null)
+        if (hitboxTransform == null) return;
+
+        // Visualize detection box
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(hitboxTransform.position, detectionBoxSize);
+
+        // Visualize dodge check rays if AI is active
+        if (Application.isPlaying && aiActive)
         {
-            // Use different colors based on AI state for better visualization
-            Color gizmoColor;
-            if (!aiActive)
-            {
-                 gizmoColor = Color.gray; // AI Inactive
-            }
-            else if (isDodging)
-            {
-                gizmoColor = Color.red; // AI Active and Dodging
-            }
-            else
-            {
-                 gizmoColor = Color.yellow; // AI Active, not Dodging
-            }
-            Gizmos.color = gizmoColor;
-
-            // Draw the OverlapBox
-            Vector2 boxCenter = hitboxTransform.position; // Centered on hitbox
-            Gizmos.DrawWireCube(boxCenter, detectionBoxSize);
-
-            // Draw dodge check rays if AI is active
-            if (aiActive)
-            {
-                Gizmos.color = Color.cyan;
-                Vector2 rayOrigin = hitboxTransform.position;
-                Gizmos.DrawLine(rayOrigin, rayOrigin + Vector2.left * dodgeCheckDistance);
-                Gizmos.DrawLine(rayOrigin, rayOrigin + Vector2.right * dodgeCheckDistance);
-            }
-
-            // Draw targeting radius if AI is active
-            if (aiActive)
-            {
-                Gizmos.color = Color.green; // Use green for targeting radius
-                Gizmos.DrawWireSphere(hitboxTransform.position, targetDetectionRadius);
-            }
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(hitboxTransform.position, hitboxTransform.position + Vector3.left * dodgeCheckDistance);
+            Gizmos.DrawLine(hitboxTransform.position, hitboxTransform.position + Vector3.right * dodgeCheckDistance);
         }
+
+        // Visualize targeting radius
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(hitboxTransform.position, targetDetectionRadius);
     }
 } 

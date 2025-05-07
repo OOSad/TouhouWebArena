@@ -67,7 +67,7 @@ namespace TouhouWebArena.Spellcards
 
         Transform FindOpponentPlayerTransform()
         {
-            var players = FindObjectsOfType<CharacterStats>(); 
+            var players = FindObjectsByType<CharacterStats>(FindObjectsSortMode.None); 
             foreach (var player in players)
             {
                 if (!player.IsOwner) 
