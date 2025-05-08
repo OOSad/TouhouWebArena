@@ -1979,10 +1979,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 331969149}
-  - component: {fileID: 331969150}
   - component: {fileID: 331969152}
-  - component: {fileID: 331969153}
   - component: {fileID: 331969151}
+  - component: {fileID: 331969154}
+  - component: {fileID: 331969153}
   m_Layer: 0
   m_Name: AttackSpawnerService
   m_TagString: Untagged
@@ -2005,19 +2005,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1110497015}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &331969150
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 331969148}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abfeb21c6c4f27b4ca6ebc56fdf62fe8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &331969151
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2057,6 +2044,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &331969153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 331969148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abfeb21c6c4f27b4ca6ebc56fdf62fe8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  SpellcardNetworkHandlerInstance: {fileID: 1175954935}
+--- !u!114 &331969154
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4101,7 +4102,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &767736218
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6182,6 +6183,7 @@ Transform:
   - {fileID: 394317611}
   - {fileID: 1801434699}
   - {fileID: 330573407}
+  - {fileID: 1175954934}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1148050321
@@ -6383,6 +6385,77 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &1175954933
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1175954934}
+  - component: {fileID: 1175954937}
+  - component: {fileID: 1175954936}
+  - component: {fileID: 1175954935}
+  m_Layer: 0
+  m_Name: SpellcardSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1175954934
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175954933}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1110497015}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1175954935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175954933}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f51b77b1769d3f347b7b764199d4d9aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &1175954936
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175954933}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64a80378f318fec4ba9c2efede1d32f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1175954937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175954933}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f35a3e9f3192e641ac504ca822a7025, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1183671269
 GameObject:
   m_ObjectHideFlags: 0
@@ -8516,6 +8589,50 @@ MonoBehaviour:
   - prefabId: FairyShockwave
     prefab: {fileID: 825958184812720138, guid: 76cfe1a5018d7d74fbbbd03cf0b269ff, type: 3}
     initialSize: 50
+    activeObjectsInPool: []
+  - prefabId: BaseBullet
+    prefab: {fileID: 8937448580770282229, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
+    initialSize: 50
+    activeObjectsInPool: []
+  - prefabId: BlueSmallCircle
+    prefab: {fileID: 968588019201452436, guid: bbf6c41255a933e4fa06d4dc01a93369, type: 3}
+    initialSize: 600
+    activeObjectsInPool: []
+  - prefabId: BlueSmallStar
+    prefab: {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
+    initialSize: 600
+    activeObjectsInPool: []
+  - prefabId: GreenSmallStar
+    prefab: {fileID: 968588019201452436, guid: 352bd47918805104da288ef0e3d913e8, type: 3}
+    initialSize: 600
+    activeObjectsInPool: []
+  - prefabId: RedSmallCircle
+    prefab: {fileID: 3753940637100796060, guid: 2ca255f0a3b4acc49ac43f9a6cb19d51, type: 3}
+    initialSize: 600
+    activeObjectsInPool: []
+  - prefabId: RedSmallOval
+    prefab: {fileID: 3753940637100796060, guid: 86b0cd61b3d7bb3469bba1e830d59d37, type: 3}
+    initialSize: 600
+    activeObjectsInPool: []
+  - prefabId: RedTalisman
+    prefab: {fileID: 2173492373472071295, guid: 3f2279f364f549a459822741608eda89, type: 3}
+    initialSize: 600
+    activeObjectsInPool: []
+  - prefabId: WhiteSmallCircle
+    prefab: {fileID: 3753940637100796060, guid: f2a3a3efbdf65af4d9c5bbad7ca3e4a6, type: 3}
+    initialSize: 600
+    activeObjectsInPool: []
+  - prefabId: WhiteSmallOval
+    prefab: {fileID: 3753940637100796060, guid: b9dbc2fdf801f60469638948c951540b, type: 3}
+    initialSize: 600
+    activeObjectsInPool: []
+  - prefabId: WhiteTalisman
+    prefab: {fileID: 3623579197644259766, guid: 044aacc1cd040ac4db9cb9b9b57acf82, type: 3}
+    initialSize: 600
+    activeObjectsInPool: []
+  - prefabId: YellowSmallStar
+    prefab: {fileID: 968588019201452436, guid: d55328e027b60974d97980e25f687443, type: 3}
+    initialSize: 600
     activeObjectsInPool: []
 --- !u!1 &1656017467
 GameObject:
@@ -10785,7 +10902,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1954152529}
   - component: {fileID: 1954152530}
-  - component: {fileID: 1954152528}
   m_Layer: 0
   m_Name: StageSmallBulletSpawner
   m_TagString: Untagged
@@ -10793,25 +10909,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1954152528
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1954152527}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f73740e33bd88345aaaeed62c7c7d88, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  spawnZone1: {fileID: 1559253378}
-  spawnZone2: {fileID: 2008785425}
-  spawnZoneSize: {x: 7, y: 1}
-  smallBulletPrefab: {fileID: 603824684173821203, guid: cf09dfab19bbdfa449358f5a311da220, type: 3}
-  stageLargeBulletPrefab: {fileID: 603824684173821203, guid: 160679763d648fe4a84680603d35f329, type: 3}
-  largeBulletSpawnChance: 0.1
 --- !u!4 &1954152529
 Transform:
   m_ObjectHideFlags: 0
@@ -11250,7 +11347,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2010130884
 Transform:
   m_ObjectHideFlags: 0

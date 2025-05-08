@@ -179,7 +179,7 @@ public class ServerSpellcardActionRunner : NetworkBehaviour
                 // ----------------------------------------------------------
 
                 // --- Configure Behavior AFTER Spawning (using original action data for behavior type etc) ---
-                ServerBulletConfigurer.ConfigureBulletBehavior(bulletInstance, action, currentSpeed, opponentId, capturedOpponentPosition, isTargetOnPositiveSide, originPosition);
+                // ServerBulletConfigurer.ConfigureBulletBehavior(bulletInstance, action, currentSpeed, opponentId, capturedOpponentPosition, isTargetOnPositiveSide, originPosition);
 
                 // Parenting for pooled objects is handled by ServerPooledSpawner
 
@@ -308,8 +308,8 @@ public class ServerSpellcardActionRunner : NetworkBehaviour
             }
             // ----------------------------------------------------------
 
-            // Pass the SPAWN position base for behavior configuration if needed
-            ServerBulletConfigurer.ConfigureBulletBehavior(bulletInstance, action, currentBulletSpeed, targetClientId, capturedTargetPosition, isTargetOnPositiveSide, spawnPositionBase); 
+            // --- Configure Behavior ---
+            // ServerBulletConfigurer.ConfigureBulletBehavior(bulletInstance, action, currentBulletSpeed, targetClientId, capturedTargetPosition, isTargetOnPositiveSide, spawnPositionBase);
 
             // Parenting handled by pooled spawner
 

@@ -50,23 +50,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2442655208907664675, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 1806895215
+      value: 188576666
       objectReference: {fileID: 0}
-    - target: {fileID: 5240710830465845626, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: -1021332001, guid: c86dd6c6a87385944a38d0d0d3a90441, type: 3}
     - target: {fileID: 5765213580922380714, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
       propertyPath: PrefabID
-      value: RedSmallCircle
+      value: WhiteSmallOval
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283731721978266310, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
+      propertyPath: PrefabID
+      value: WhiteSmallOval
       objectReference: {fileID: 0}
     - target: {fileID: 8937448580770282229, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
       propertyPath: m_Name
-      value: RedSmallCircleBullet_Variant
-      objectReference: {fileID: 0}
-    - target: {fileID: 8937448580770282229, guid: 42b7dce380b0e5e48a58273d6cce3082, type: 3}
-      propertyPath: m_TagString
-      value: Untagged
+      value: WhiteSmallOval_Variant
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

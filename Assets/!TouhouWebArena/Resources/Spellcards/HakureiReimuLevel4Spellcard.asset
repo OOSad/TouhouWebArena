@@ -34,6 +34,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 1
       speedIncrementPerBullet: 0.1
@@ -61,6 +64,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 1
       speedIncrementPerBullet: 0.2
@@ -88,6 +94,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: -20
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 1
       speedIncrementPerBullet: 0.1
@@ -115,6 +124,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 20
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 1
       speedIncrementPerBullet: 0.1
@@ -148,6 +160,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 4
       speed: 1
       speedIncrementPerBullet: 0
@@ -175,6 +190,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 4
       speed: 1
       speedIncrementPerBullet: 0
@@ -208,6 +226,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 1
       speedIncrementPerBullet: 0
@@ -235,6 +256,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 1
       speedIncrementPerBullet: 0
@@ -262,6 +286,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 1
       speedIncrementPerBullet: 0
@@ -295,6 +322,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 2
       speed: 3
       speedIncrementPerBullet: 0
@@ -322,6 +352,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 2
       speed: 1.5
       speedIncrementPerBullet: 0

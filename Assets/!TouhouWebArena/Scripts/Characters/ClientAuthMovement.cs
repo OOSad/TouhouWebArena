@@ -68,7 +68,7 @@ public class ClientAuthMovement : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        Debug.Log($"[ClientAuthMovement] OnNetworkSpawn for {gameObject.name}. IsOwner: {IsOwner}, IsClient: {IsClient}, IsServer: {IsServer}, OwnerClientId: {OwnerClientId}");
+        // Debug.Log($"[ClientAuthMovement] OnNetworkSpawn for {gameObject.name}. IsOwner: {IsOwner}, IsClient: {IsClient}, IsServer: {IsServer}, OwnerClientId: {OwnerClientId}");
 
         PlayerDataManager playerDataManager = PlayerDataManager.Instance;
         if (IsOwner)

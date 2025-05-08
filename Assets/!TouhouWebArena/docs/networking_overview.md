@@ -68,6 +68,21 @@ Here's how major game systems interact with the network:
     *   Server calls `EffectNetworkHandler.Instance.SpawnStageBulletClientRpc(opponentClientId, params...)` targeting *all* clients.
     *   All clients receive RPC, use `opponentClientId` to find the correct player's spawn area via `SpawnAreaManager`, get bullet from `ClientGameObjectPool`, set position, initialize `StageSmallBulletMoverScript` with parameters, activate.
 *   **Charge Attacks & Spellcard Activation:** Client (`PlayerShootingController`) sends `ServerRpc` requests (`RequestChargeAttackServerRpc`, `RequestSpellcardServerRpc`). Server (`SpellBarManager`, `ServerAttackSpawner`) validates, consumes costs, and orchestrates effects. Visualization likely involves server sending `ClientRpc`s to instruct clients to spawn specific effects/projectiles locally via `ClientGameObjectPool`, similar to retaliation bullets.
+*   **Spellcard Activation & Execution (Level 2/3 - Server Triggered, Client Simulated):**
+    *   Client (`PlayerShootingController`) sends `RequestSpellcardServerRpc`.
+    *   Server (`SpellBarManager`) validates cost.
+    *   Server (`ServerAttackSpawner`) triggers caster clear effect and banner RPC.
+    *   Server (`ServerAttackSpawner`) loads first action of `SpellcardData` to check `applyRandomSpawnOffset`, calculates a single `sharedRandomOffset` if needed.
+    *   Server (`ServerAttackSpawner`) calls `SpellcardNetworkHandler.ExecuteSpellcardClientRpc`, passing resource path, IDs, level, and the `sharedRandomOffset`.
+    *   All clients receive RPC.
+    *   Client (`ClientSpellcardExecutor`) loads `SpellcardData`, calculates origin (target field center).
+    *   Client (`ClientSpellcardExecutor`) calls `ClientSpellcardActionRunner.RunSpellcardActions`.
+    *   Client (`ClientSpellcardActionRunner`) executes the action sequence coroutine:
+        *   Applies the *same* `sharedRandomOffset` to all actions.
+        *   Spawns bullets from `ClientGameObjectPool`.
+        *   Uses `ClientBulletConfigurer` to activate and initialize client-side behavior scripts on bullets.
+        *   Handles delays and formations.
+    *   Bullet movement and lifetime are handled by client-side components (`ClientLinearMovement`, `ClientProjectileLifetime`, etc.).
 *   **Enemy Spawning & Behavior (Server-Initiated, Client-Simulated):**
     *   Server (`FairySpawner.cs`) determines wave data.
     *   Server calls `FairySpawnNetworkHandler.SpawnFairyWaveClientRpc` targeting all clients, passing wave data.

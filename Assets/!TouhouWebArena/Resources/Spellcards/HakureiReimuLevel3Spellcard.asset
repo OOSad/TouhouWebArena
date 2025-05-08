@@ -23,6 +23,9 @@ MonoBehaviour:
     radius: 0
     spacing: 0
     angle: 0
+    applyRandomSpawnOffset: 1
+    randomOffsetMin: {x: -3, y: -1}
+    randomOffsetMax: {x: 3, y: 1}
     behavior: 0
     speed: 2
     speedIncrementPerBullet: 0
@@ -50,6 +53,9 @@ MonoBehaviour:
     radius: 0
     spacing: 0
     angle: 0
+    applyRandomSpawnOffset: 0
+    randomOffsetMin: {x: 0, y: 0}
+    randomOffsetMax: {x: 0, y: 0}
     behavior: 3
     speed: 1
     speedIncrementPerBullet: 0

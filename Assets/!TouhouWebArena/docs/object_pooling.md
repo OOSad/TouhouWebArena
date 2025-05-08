@@ -50,6 +50,7 @@ This system is the **core pooling solution** for the game. It manages pools of s
 *   Enemies (`ClientFairyController.cs`, `ClientSpiritController.cs` - TBD).
 *   Stage bullets / Retaliation bullets (`StageSmallBulletMoverScript.cs`).
 *   Visual Effects (`ClientFairyShockwave.cs`).
+*   **Spellcard Bullets (Level 2/3):** Spawned via `ClientSpellcardActionRunner`.
 *   Other non-networked, frequently spawned GameObjects.
 
 ## ~~Server-Side NetworkObject Pooling (`NetworkObjectPool.cs`)~~ - DEPRECATED

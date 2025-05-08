@@ -76,7 +76,7 @@ public class PlayerAttackRelay : NetworkBehaviour
     {   
         ulong killerClientId = rpcParams.Receive.SenderClientId;
         PlayerRole killerRole = PlayerDataManager.Instance.GetPlayerData(killerClientId)?.Role ?? PlayerRole.None;
-        Debug.Log($"[Server PlayerAttackRelay for {killerClientId} ({killerRole})] ReportFairyKillServerRpc received.");
+        // Debug.Log($"[Server PlayerAttackRelay for {killerClientId} ({killerRole})] ReportFairyKillServerRpc received.");
 
         ulong opponentClientId = GetOpponentClientId(killerClientId);
         if (opponentClientId == ulong.MaxValue) 
@@ -85,7 +85,7 @@ public class PlayerAttackRelay : NetworkBehaviour
             return;
         }
         PlayerRole opponentRole = PlayerDataManager.Instance.GetPlayerData(opponentClientId)?.Role ?? PlayerRole.None;
-        Debug.Log($"[Server PlayerAttackRelay for {killerClientId}] Opponent identified as Client {opponentClientId} ({opponentRole}).");
+        // Debug.Log($"[Server PlayerAttackRelay for {killerClientId}] Opponent identified as Client {opponentClientId} ({opponentRole}).");
 
         bool spawnLargeBullet = Random.value < largeBulletChance;
         FixedString64Bytes bulletPrefabID = spawnLargeBullet ? 
@@ -107,7 +107,7 @@ public class PlayerAttackRelay : NetworkBehaviour
             {
                 Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds }
             };
-            Debug.Log($"[Server PlayerAttackRelay for {killerClientId} ({killerRole})] Telling EffectNetworkHandler to send RPC to ALL CLIENTS. Explicit Target for bullet: {opponentClientId} ({opponentRole}). Bullet: {bulletPrefabID}, NormPos: {normalizedSpawnPosition}, Speed: {actualSpeed}, Direction: {direction}.");
+            // Debug.Log($"[Server PlayerAttackRelay for {killerClientId} ({killerRole})] Telling EffectNetworkHandler to send RPC to ALL CLIENTS. Explicit Target for bullet: {opponentClientId} ({opponentRole}). Bullet: {bulletPrefabID}, NormPos: {normalizedSpawnPosition}, Speed: {actualSpeed}, Direction: {direction}.");
             EffectNetworkHandler.Instance.SpawnStageBulletClientRpc(opponentClientId, bulletPrefabID, normalizedSpawnPosition, actualSpeed, direction, allClientsRpcParams);
         }
         else
@@ -121,7 +121,7 @@ public class PlayerAttackRelay : NetworkBehaviour
     public void ReceiveStageBulletSpawnClientRpc(FixedString64Bytes bulletPrefabID, Vector2 normalizedSpawnPosition, ClientRpcParams clientRpcParams = default)
     {
         // This RPC should only execute on the client targeted by the server.
-        Debug.Log($"[Client PlayerAttackRelay {OwnerClientId}] Received ReceiveStageBulletSpawnClientRpc for bullet {bulletPrefabID}, NormPos: {normalizedSpawnPosition}. Calling SpawnLocalStageBullet.");
+        // Debug.Log($"[Client PlayerAttackRelay {OwnerClientId}] Received ReceiveStageBulletSpawnClientRpc for bullet {bulletPrefabID}, NormPos: {normalizedSpawnPosition}. Calling SpawnLocalStageBullet.");
         SpawnLocalStageBullet(bulletPrefabID, normalizedSpawnPosition);
     }
 
@@ -129,7 +129,7 @@ public class PlayerAttackRelay : NetworkBehaviour
     public void SpawnLocalStageBullet(FixedString64Bytes bulletPrefabID, Vector2 normalizedSpawnPosition)
     {
         // Log that the *local* method was called
-        Debug.Log($"[PlayerAttackRelay {OwnerClientId}] SpawnLocalStageBullet executing. Bullet: {bulletPrefabID}, NormPos: {normalizedSpawnPosition}");
+        // Debug.Log($"[PlayerAttackRelay {OwnerClientId}] SpawnLocalStageBullet executing. Bullet: {bulletPrefabID}, NormPos: {normalizedSpawnPosition}");
 
         if (_clientObjectPool == null || _resolvedOpponentSpawnCenter == null) 
         {
@@ -168,7 +168,7 @@ public class PlayerAttackRelay : NetworkBehaviour
         // --- END NEW --- 
 
         bulletInstance.SetActive(true);
-        Debug.Log($"[Client PlayerAttackRelay {OwnerClientId}] Successfully spawned stage bullet {bulletPrefabID} at world pos {worldSpawnPos} in area {_resolvedOpponentSpawnCenter.name}");
+        // Debug.Log($"[Client PlayerAttackRelay {OwnerClientId}] Successfully spawned stage bullet {bulletPrefabID} at world pos {worldSpawnPos} in area {_resolvedOpponentSpawnCenter.name}");
     }
 
 
@@ -176,7 +176,7 @@ public class PlayerAttackRelay : NetworkBehaviour
     [ClientRpc]
     public void ReceiveOpponentAttackClientRpc(AttackType type, int intensity, ClientRpcParams clientRpcParams = default)
     {   
-        Debug.Log($"Client {OwnerClientId} received OLD opponent attack: Type={type}, Intensity={intensity}");
+        // Debug.Log($"Client {OwnerClientId} received OLD opponent attack: Type={type}, Intensity={intensity}");
         // _attackSpawner?.SpawnGarbageAttack(type, intensity);
     }
 

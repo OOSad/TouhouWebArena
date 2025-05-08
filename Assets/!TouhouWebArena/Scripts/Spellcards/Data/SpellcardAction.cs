@@ -34,6 +34,14 @@ namespace TouhouWebArena.Spellcards
         public float angle = 0f;
         // Note: Aiming ('aimAtTarget' flag) was removed; handled by CompositeAttackPattern.orientPatternTowardsTarget now.
 
+        [Header("Random Spawn Offset (Relative to Calculated Position)")]
+        [Tooltip("If true, applies a random offset to each bullet's spawn position within the defined min/max range.")]
+        public bool applyRandomSpawnOffset = false;
+        [Tooltip("Minimum random offset (X, Y) to apply if applyRandomSpawnOffset is true.")]
+        public Vector2 randomOffsetMin = Vector2.zero;
+        [Tooltip("Maximum random offset (X, Y) to apply if applyRandomSpawnOffset is true.")]
+        public Vector2 randomOffsetMax = Vector2.zero;
+
         [Header("Bullet Behavior")]
         [Tooltip("The movement behavior applied to the spawned bullets (Linear, DelayedHoming, Spiral, etc.).")]
         public BehaviorType behavior = BehaviorType.Linear;

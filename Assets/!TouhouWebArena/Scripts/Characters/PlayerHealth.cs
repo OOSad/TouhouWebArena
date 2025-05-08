@@ -110,7 +110,7 @@ public class PlayerHealth : NetworkBehaviour
             int previousHealth = CurrentHealth.Value; 
             int newHealth = CurrentHealth.Value - amount;
             CurrentHealth.Value = Mathf.Max(newHealth, 0);
-            Debug.Log($"[PlayerHealth:{OwnerClientId}] [Server] Health changed from {previousHealth} to {CurrentHealth.Value} (Damage: {amount})");
+            // Debug.Log($"[PlayerHealth:{OwnerClientId}] [Server] Health changed from {previousHealth} to {CurrentHealth.Value} (Damage: {amount})");
         }
 
         if (CurrentHealth.Value <= 0 && applyHealthChange) 

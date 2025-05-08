@@ -16,17 +16,12 @@ public class SpellcardActionDrawer : PropertyDrawer
 
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
-        // Using BeginProperty / EndProperty enables prefab override logic
         EditorGUI.BeginProperty(position, label, property);
-
-        // Don't make child fields be indented
         var indent = EditorGUI.indentLevel;
         EditorGUI.indentLevel = 0;
-
-        // Calculate rects
         float currentY = position.y;
 
-        // Get SerializedProperties
+        // Get SerializedProperties (ensure all are fetched here including new ones)
         SerializedProperty startDelayProp = property.FindPropertyRelative("startDelay");
         SerializedProperty bulletPrefabsProp = property.FindPropertyRelative("bulletPrefabs");
         SerializedProperty positionOffsetProp = property.FindPropertyRelative("positionOffset");
@@ -35,6 +30,9 @@ public class SpellcardActionDrawer : PropertyDrawer
         SerializedProperty radiusProp = property.FindPropertyRelative("radius");
         SerializedProperty spacingProp = property.FindPropertyRelative("spacing");
         SerializedProperty angleProp = property.FindPropertyRelative("angle");
+        SerializedProperty applyRandomSpawnOffsetProp = property.FindPropertyRelative("applyRandomSpawnOffset");
+        SerializedProperty randomOffsetMinProp = property.FindPropertyRelative("randomOffsetMin");
+        SerializedProperty randomOffsetMaxProp = property.FindPropertyRelative("randomOffsetMax");
         SerializedProperty behaviorProp = property.FindPropertyRelative("behavior");
         SerializedProperty speedProp = property.FindPropertyRelative("speed");
         SerializedProperty speedIncrementProp = property.FindPropertyRelative("speedIncrementPerBullet");
@@ -54,97 +52,73 @@ public class SpellcardActionDrawer : PropertyDrawer
         SerializedProperty intraActionDelayProp = property.FindPropertyRelative("intraActionDelay");
         SerializedProperty lifetimeProp = property.FindPropertyRelative("lifetime");
 
-        // --- Draw Always Visible Fields ---
-        // Header: Spawning
-        DrawProperty(ref currentY, position.width, bulletPrefabsProp);
-        DrawProperty(ref currentY, position.width, positionOffsetProp);
-        DrawProperty(ref currentY, position.width, countProp);
-
-        // Header: Formation Shape
-        DrawProperty(ref currentY, position.width, formationProp);
+        // Draw fields, passing position.x and position.width
+        DrawProperty(ref currentY, position.x, position.width, bulletPrefabsProp);
+        DrawProperty(ref currentY, position.x, position.width, positionOffsetProp);
+        DrawProperty(ref currentY, position.x, position.width, countProp);
+        DrawProperty(ref currentY, position.x, position.width, formationProp);
         FormationType currentFormation = (FormationType)formationProp.enumValueIndex;
-        if (currentFormation == FormationType.Circle)
+        if (currentFormation == FormationType.Circle) DrawProperty(ref currentY, position.x, position.width, radiusProp);
+        if (currentFormation == FormationType.Line) DrawProperty(ref currentY, position.x, position.width, spacingProp);
+        DrawProperty(ref currentY, position.x, position.width, angleProp);
+        
+        DrawHeader(ref currentY, position.x, position.width, "Random Spawn Offset");
+        DrawProperty(ref currentY, position.x, position.width, applyRandomSpawnOffsetProp);
+        if (applyRandomSpawnOffsetProp.boolValue)
         {
-            DrawProperty(ref currentY, position.width, radiusProp);
+            EditorGUI.indentLevel++;
+            DrawProperty(ref currentY, position.x, position.width, randomOffsetMinProp);
+            DrawProperty(ref currentY, position.x, position.width, randomOffsetMaxProp);
+            EditorGUI.indentLevel--;
         }
-        if (currentFormation == FormationType.Line)
-        {
-            DrawProperty(ref currentY, position.width, spacingProp);
-        }
-        // Angle applies to Point, Circle (offset), and Line (orientation)
-        DrawProperty(ref currentY, position.width, angleProp);
 
-        // Header: Bullet Behavior
-        DrawProperty(ref currentY, position.width, behaviorProp);
+        DrawProperty(ref currentY, position.x, position.width, behaviorProp);
         BehaviorType currentBehavior = (BehaviorType)behaviorProp.enumValueIndex;
-
-        // Header: Behavior Speeds (Draw Speed always, others conditionally)
-        DrawProperty(ref currentY, position.width, speedProp);
-        if (currentFormation == FormationType.Line)
-        {
-            DrawProperty(ref currentY, position.width, speedIncrementProp);
-        }
-        if (currentBehavior == BehaviorType.Homing || currentBehavior == BehaviorType.DelayedHoming || currentBehavior == BehaviorType.DoubleHoming)
-        {
-            DrawProperty(ref currentY, position.width, homingSpeedProp); 
-        }
-        if (currentBehavior == BehaviorType.Spiral)
-        {
-            DrawProperty(ref currentY, position.width, tangentialSpeedProp);
-        }
-
-        // Header: Initial Speed Transition
-        DrawProperty(ref currentY, position.width, useInitialSpeedProp);
+        DrawProperty(ref currentY, position.x, position.width, speedProp);
+        if (currentFormation == FormationType.Line) DrawProperty(ref currentY, position.x, position.width, speedIncrementProp);
+        if (currentBehavior == BehaviorType.Homing || currentBehavior == BehaviorType.DelayedHoming || currentBehavior == BehaviorType.DoubleHoming) DrawProperty(ref currentY, position.x, position.width, homingSpeedProp);
+        if (currentBehavior == BehaviorType.Spiral) DrawProperty(ref currentY, position.x, position.width, tangentialSpeedProp);
+        DrawProperty(ref currentY, position.x, position.width, useInitialSpeedProp);
         if (useInitialSpeedProp.boolValue)
         {
-            DrawProperty(ref currentY, position.width, initialSpeedProp);
-            DrawProperty(ref currentY, position.width, transitionDurationProp);
+            DrawProperty(ref currentY, position.x, position.width, initialSpeedProp);
+            DrawProperty(ref currentY, position.x, position.width, transitionDurationProp);
         }
-
-        // Header: Behavior Timing & Parameters
-        if (currentBehavior == BehaviorType.DelayedHoming || currentBehavior == BehaviorType.DoubleHoming || currentBehavior == BehaviorType.DelayedRandomTurn)
-        {
-             DrawProperty(ref currentY, position.width, homingDelayProp);
-        }
+        if (currentBehavior == BehaviorType.DelayedHoming || currentBehavior == BehaviorType.DoubleHoming || currentBehavior == BehaviorType.DelayedRandomTurn) DrawProperty(ref currentY, position.x, position.width, homingDelayProp);
         if (currentBehavior == BehaviorType.DoubleHoming)
         {
-             DrawProperty(ref currentY, position.width, secondHomingDelayProp);
-             DrawProperty(ref currentY, position.width, firstHomingDurationProp);
-             DrawProperty(ref currentY, position.width, secondHomingLookAheadProp);
+            DrawProperty(ref currentY, position.x, position.width, secondHomingDelayProp);
+            DrawProperty(ref currentY, position.x, position.width, firstHomingDurationProp);
+            DrawProperty(ref currentY, position.x, position.width, secondHomingLookAheadProp);
         }
-         if (currentBehavior == BehaviorType.DelayedRandomTurn)
+        if (currentBehavior == BehaviorType.DelayedRandomTurn)
         {
-            DrawProperty(ref currentY, position.width, spreadAngleProp);
-            DrawProperty(ref currentY, position.width, minTurnSpeedProp);
-            DrawProperty(ref currentY, position.width, maxTurnSpeedProp);
+            DrawProperty(ref currentY, position.x, position.width, spreadAngleProp);
+            DrawProperty(ref currentY, position.x, position.width, minTurnSpeedProp);
+            DrawProperty(ref currentY, position.x, position.width, maxTurnSpeedProp);
         }
+        DrawProperty(ref currentY, position.x, position.width, skipEveryNthProp);
+        DrawProperty(ref currentY, position.x, position.width, startDelayProp);
+        DrawProperty(ref currentY, position.x, position.width, intraActionDelayProp);
+        DrawProperty(ref currentY, position.x, position.width, lifetimeProp);
 
-        // Header: Spawning & Formation Modifiers
-        DrawProperty(ref currentY, position.width, skipEveryNthProp);
-        
-        // Header: Timing & Lifetime
-        DrawProperty(ref currentY, position.width, startDelayProp);
-        DrawProperty(ref currentY, position.width, intraActionDelayProp);
-        DrawProperty(ref currentY, position.width, lifetimeProp);
-
-        // Set indent back to what it was
         EditorGUI.indentLevel = indent;
         EditorGUI.EndProperty();
     }
 
-    // Helper to draw a property and advance the Y position
-    private void DrawProperty(ref float currentY, float totalWidth, SerializedProperty prop)
+    private void DrawProperty(ref float currentY, float startX, float totalWidth, SerializedProperty prop)
     {
         float height = EditorGUI.GetPropertyHeight(prop, true);
-        Rect rect = new Rect(EditorGUIUtility.labelWidth, currentY, totalWidth - EditorGUIUtility.labelWidth, height);
-        Rect labelRect = new Rect(0, currentY, EditorGUIUtility.labelWidth, height); 
-        
-        // Draw Label manually to align left
-        EditorGUI.LabelField(labelRect, prop.displayName);
-        // Draw Property field without label
-        EditorGUI.PropertyField(rect, prop, GUIContent.none, true);
-        
+        Rect propertyRect = new Rect(startX, currentY, totalWidth, height);
+        EditorGUI.PropertyField(propertyRect, prop, true);
         currentY += height + verticalSpacing;
+    }
+
+    private void DrawHeader(ref float currentY, float startX, float totalWidth, string headerText)
+    {
+        Rect headerRect = new Rect(startX, currentY, totalWidth, propertyHeight);
+        EditorGUI.LabelField(headerRect, headerText, EditorStyles.boldLabel);
+        currentY += propertyHeight + verticalSpacing;
     }
 
     // Calculate the total height needed for the property
@@ -180,6 +154,11 @@ public class SpellcardActionDrawer : PropertyDrawer
         SerializedProperty intraActionDelayProp = property.FindPropertyRelative("intraActionDelay");
         SerializedProperty lifetimeProp = property.FindPropertyRelative("lifetime");
 
+        // ADDED: Get properties for random offset for height calculation
+        SerializedProperty applyRandomSpawnOffsetProp = property.FindPropertyRelative("applyRandomSpawnOffset");
+        SerializedProperty randomOffsetMinProp = property.FindPropertyRelative("randomOffsetMin");
+        SerializedProperty randomOffsetMaxProp = property.FindPropertyRelative("randomOffsetMax");
+
         // Always visible fields
         totalHeight += EditorGUI.GetPropertyHeight(bulletPrefabsProp, true) + verticalSpacing;
         totalHeight += EditorGUI.GetPropertyHeight(positionOffsetProp, true) + verticalSpacing;
@@ -193,6 +172,14 @@ public class SpellcardActionDrawer : PropertyDrawer
         totalHeight += EditorGUI.GetPropertyHeight(startDelayProp, true) + verticalSpacing; // Always show start delay
         totalHeight += EditorGUI.GetPropertyHeight(intraActionDelayProp, true) + verticalSpacing; // Always show intra-action delay
         totalHeight += EditorGUI.GetPropertyHeight(lifetimeProp, true) + verticalSpacing; // Always show lifetime
+
+        // ADDED: Height for random offset fields
+        totalHeight += EditorGUI.GetPropertyHeight(applyRandomSpawnOffsetProp, true) + verticalSpacing;
+        if (applyRandomSpawnOffsetProp.boolValue)
+        {
+            totalHeight += EditorGUI.GetPropertyHeight(randomOffsetMinProp, true) + verticalSpacing;
+            totalHeight += EditorGUI.GetPropertyHeight(randomOffsetMaxProp, true) + verticalSpacing;
+        }
 
         // Conditional Fields
         FormationType currentFormation = (FormationType)formationProp.enumValueIndex;

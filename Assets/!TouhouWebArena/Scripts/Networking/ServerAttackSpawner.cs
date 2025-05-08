@@ -3,8 +3,8 @@ using Unity.Netcode;
 using System.Collections;
 using TouhouWebArena;
 using TouhouWebArena.Spellcards;
-using TouhouWebArena.Spellcards.Behaviors;
 using System.Collections.Generic;
+using Unity.Collections; // For FixedString
 
 /// <summary>
 /// **[Server Only]** Server-authoritative singleton service responsible for spawning all player-related projectiles
@@ -21,8 +21,8 @@ public class ServerAttackSpawner : NetworkBehaviour
     // --- Spawner Instances ---
     // private ServerBasicShotSpawner _basicShotSpawner; // REMOVED
     private ServerChargeAttackSpawner _chargeAttackSpawner;
-    private ServerSpellcardExecutor _spellcardExecutor; // Add executor
-    private ServerSpellcardActionRunner _actionRunner; // Add runner
+    // private ServerSpellcardExecutor _spellcardExecutor; // REMOVED - Logic moved to client
+    // private ServerSpellcardActionRunner _actionRunner; // REMOVED - Logic moved to client
     // Add fields for other spawners/executors later
     // -----------------------
 
@@ -33,6 +33,12 @@ public class ServerAttackSpawner : NetworkBehaviour
 
     // Constant vertical offset from player center for spawning basic shot pairs.
     // private const float firePointVerticalOffset = 0.5f; // Moved to ServerBasicShotSpawner
+
+    [Header("Dependencies")]
+    [Tooltip("Drag the GameObject with the SpellcardNetworkHandler component here.")]
+    public SpellcardNetworkHandler SpellcardNetworkHandlerInstance; // MODIFIED: Public field
+
+    private SpellcardNetworkHandler _spellcardNetworkHandler; // ADDED
 
     /// <summary>
     /// Unity Awake method. Implements the singleton pattern.
@@ -53,16 +59,35 @@ public class ServerAttackSpawner : NetworkBehaviour
             // _basicShotSpawner = new ServerBasicShotSpawner(); // REMOVED
             _chargeAttackSpawner = new ServerChargeAttackSpawner();
             
-            // Get/Add runner component
-            _actionRunner = GetComponent<ServerSpellcardActionRunner>();
-            if (_actionRunner == null) // Add component if missing
-            {
-                 Debug.LogWarning("[ServerAttackSpawner] ServerSpellcardActionRunner component not found, adding it.");
-                _actionRunner = gameObject.AddComponent<ServerSpellcardActionRunner>();
-            }
+            // REMOVED: Get SpellcardNetworkHandler instance from Awake
+            // _spellcardNetworkHandler = SpellcardNetworkHandler.Instance;
+            // if (_spellcardNetworkHandler == null)
+            // {
+            //     Debug.LogError("[ServerAttackSpawner] Could not find SpellcardNetworkHandler Instance! Spellcards might not execute on clients.", gameObject);
+            // }
+        }
+    }
 
-            // Create executor, passing the runner
-            _spellcardExecutor = new ServerSpellcardExecutor(_actionRunner);
+    // ADDED Start() method to initialize _spellcardNetworkHandler
+    private void Start()
+    {
+        if (IsServer) // Only server needs to interact with these server-side handlers
+        {
+            // MODIFIED: Prioritize Inspector-assigned instance
+            if (SpellcardNetworkHandlerInstance != null)
+            {
+                _spellcardNetworkHandler = SpellcardNetworkHandlerInstance;
+            }
+            else
+            {
+                Debug.LogWarning("[ServerAttackSpawner] SpellcardNetworkHandlerInstance not assigned in Inspector. Attempting to use Singleton.Instance.", gameObject);
+                _spellcardNetworkHandler = SpellcardNetworkHandler.Instance;
+            }
+            
+            if (_spellcardNetworkHandler == null)
+            {
+                Debug.LogError("[ServerAttackSpawner] Could not find SpellcardNetworkHandler Instance in Start! Spellcards might not execute on clients.", gameObject);
+            }
         }
     }
 
@@ -166,18 +191,18 @@ public class ServerAttackSpawner : NetworkBehaviour
         }
         string senderCharacterName = senderStats.GetCharacterName();
 
-        // --- ADDED: Trigger Spellcard Banner --- 
+        // --- Trigger Caster Clear Effect (Server-Side) & Banner (Client-Side) --- 
+        // It's important to clear around the caster *before* potentially spawning new bullets.
+        TriggerSpellcardClear(senderClientId, spellLevel); 
+        
         PlayerData? casterData = PlayerDataManager.Instance?.GetPlayerData(senderClientId);
         if (casterData.HasValue && !string.IsNullOrEmpty(casterData.Value.SelectedCharacter.ToString()))
         {
             if (SpellcardBannerDisplay.Instance != null)
             {
-                 // Send RPC to all clients
-                 ClientRpcParams clientRpcParams = new ClientRpcParams
-                 {
-                      Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds }
-                 };
-                SpellcardBannerDisplay.Instance.ShowBannerClientRpc(casterData.Value.Role, casterData.Value.SelectedCharacter.ToString(), clientRpcParams);
+                 ClientRpcParams bannerParams = new ClientRpcParams
+                 { Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds } };
+                SpellcardBannerDisplay.Instance.ShowBannerClientRpc(casterData.Value.Role, casterData.Value.SelectedCharacter.ToString(), bannerParams);
                 Debug.Log($"[ServerAttackSpawner] Sent ShowBannerClientRpc for {casterData.Value.Role} ({casterData.Value.SelectedCharacter})");
             }
             else { Debug.LogWarning("[ServerAttackSpawner] SpellcardBannerDisplay Instance is null. Cannot show banner."); }
@@ -187,21 +212,20 @@ public class ServerAttackSpawner : NetworkBehaviour
 
         // --- Find Opponent ---
         ulong opponentClientId = ulong.MaxValue;
-        NetworkObject opponentPlayerObject = null;
-        PlayerRole opponentRole = PlayerRole.None;
+        // NetworkObject opponentPlayerObject = null; // May not be needed here anymore if only ID is passed
         foreach (var connectedClient in NetworkManager.Singleton.ConnectedClientsList)
         {
             if (connectedClient.ClientId != senderClientId)
             {
                 opponentClientId = connectedClient.ClientId;
-                opponentPlayerObject = connectedClient.PlayerObject;
+                // opponentPlayerObject = connectedClient.PlayerObject; // Store if needed for future server logic
                 break;
             }
         }
-        if (opponentPlayerObject == null)
+        if (opponentClientId == ulong.MaxValue)
         {
-            Debug.LogWarning($"[ServerAttackSpawner.ExecuteSpellcard] Could not find opponent for client {senderClientId} to execute spellcard.");
-            return; // Cannot execute spellcard without an opponent
+            Debug.LogWarning($"[ServerAttackSpawner.ExecuteSpellcard] Could not find opponent for client {senderClientId}. Cannot execute spellcard.");
+            return; // Still need an opponent to target
         }
         // --- Determine Opponent Role ---
         if (PlayerDataManager.Instance != null)
@@ -209,34 +233,74 @@ public class ServerAttackSpawner : NetworkBehaviour
             PlayerData? opponentData = PlayerDataManager.Instance.GetPlayerData(opponentClientId);
             if (opponentData.HasValue)
             {
-                opponentRole = opponentData.Value.Role;
+                // opponentRole = opponentData.Value.Role;
             }
             else { Debug.LogError($"[ServerAttackSpawner] Could not get PlayerData for opponent {opponentClientId} for Lv4 spell."); return; }
         }
         else { Debug.LogError("[ServerAttackSpawner] PlayerDataManager instance missing for Lv4 spell."); return; }
         // -------------------------------------------
 
-        // --- Load Spellcard Resource based on Level ---
+        // --- Load Spellcard Resource Path ---
         string resourcePath = $"Spellcards/{senderCharacterName}Level{spellLevel}Spellcard";
 
-        // --- Handle Level 4 --- 
-        if (spellLevel == 4)
+        // --- LOAD SPELLCARD DATA ON SERVER --- (Needed for random offset calculation)
+        Vector2 calculatedOffset = Vector2.zero;
+        SpellcardData spellDataForOffset = Resources.Load<SpellcardData>(resourcePath);
+        if (spellDataForOffset != null)
         {
-            // Cancellation logic moved to ServerIllusionManager.ServerSpawnLevel4Illusion
-            
-            Level4SpellcardData level4Data = Resources.Load<Level4SpellcardData>(resourcePath);
-            if (level4Data == null)
+            if (spellDataForOffset.actions != null && spellDataForOffset.actions.Count > 0 && spellDataForOffset.actions[0].applyRandomSpawnOffset)
             {
-                Debug.LogError($"[ServerAttackSpawner.ExecuteSpellcard] Failed to load Level4SpellcardData at path: {resourcePath}.");
-                return;
+                SpellcardAction firstAction = spellDataForOffset.actions[0];
+                float randomX = (firstAction.randomOffsetMin.x == firstAction.randomOffsetMax.x) ? firstAction.randomOffsetMin.x : Random.Range(firstAction.randomOffsetMin.x, firstAction.randomOffsetMax.x);
+                float randomY = (firstAction.randomOffsetMin.y == firstAction.randomOffsetMax.y) ? firstAction.randomOffsetMin.y : Random.Range(firstAction.randomOffsetMin.y, firstAction.randomOffsetMax.y);
+                calculatedOffset = new Vector2(randomX, randomY); 
             }
-            // Delegate spawning to the manager instance
-            ServerIllusionManager.Instance?.ServerSpawnLevel4Illusion(level4Data, senderClientId, opponentClientId, opponentPlayerObject, opponentRole);
-            return; // Level 4 handled
+            // Note: Currently assumes only SpellcardData. Add check for Level4SpellcardData if needed.
+        }
+        else
+        { 
+            // Attempt to load as Level4SpellcardData if the first load failed or if level is 4
+            // (We might need Level 4 data for other reasons later too)
+             Level4SpellcardData level4DataForOffset = Resources.Load<Level4SpellcardData>(resourcePath);
+            if (level4DataForOffset != null)
+            {
+                 // Decide if/how Level 4 spellcards use random offset. 
+                 // Maybe they have an offset defined directly, or use their first embedded action?
+                 // For now, assume Level 4 doesn't use this shared offset mechanism unless explicitly designed.
+                 // calculatedOffset = ... logic based on level4DataForOffset if needed ...
+            }
+            else
+            {   
+                 Debug.LogWarning($"[ServerAttackSpawner] Failed to load any spellcard data from {resourcePath} on server. Cannot determine random offset.");
+            }
+        }
+        // ------------------------------------
+
+        if (_spellcardNetworkHandler == null)
+        {
+            Debug.LogError("[ServerAttackSpawner] SpellcardNetworkHandler is null (neither Inspector-assigned nor Singleton.Instance found). Cannot send ExecuteSpellcardClientRpc.");
+            return;
         }
 
-        // --- Handle Levels 2 & 3 (Delegate to Executor) ---
-        _spellcardExecutor?.ExecuteLevel2or3Spellcard(senderClientId, senderCharacterName, spellLevel);
+        ClientRpcParams clientRpcParams = new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds } 
+        };
+        
+        _spellcardNetworkHandler.ExecuteSpellcardClientRpc(
+            senderClientId, 
+            opponentClientId, 
+            new FixedString512Bytes(resourcePath),
+            spellLevel,
+            calculatedOffset, // Pass the calculated offset
+            clientRpcParams
+        );
+        Debug.Log($"[ServerAttackSpawner] Sent ExecuteSpellcardClientRpc for Lv{spellLevel} from {senderClientId} targeting {opponentClientId}. Path: {resourcePath}, Offset: {calculatedOffset}"); // Log the offset
+        
+        // --- REMOVED OLD EXECUTION LOGIC --- 
+        // REMOVED: Level 4 handling (ServerIllusionManager call)
+        // REMOVED: Level 2/3 handling (_spellcardExecutor call)
+        // -----------------------------------
     }
 
     /// <summary>
