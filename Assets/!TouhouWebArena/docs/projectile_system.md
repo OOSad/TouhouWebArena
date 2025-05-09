@@ -155,10 +155,11 @@ Client-side projectiles are removed from the game world and returned to the `Cli
 ### Stage-Specific / Enemy Retaliation Bullets
 
 *   The system described in the original `projectile_system.md` involving `PlayerAttackRelay` and `EffectNetworkHandler.SpawnStageBulletClientRpc` for "retaliation/spirit bullets" may still be in use for projectiles not directly part of player spellcards.
+*   **Spirit Timeout Attack:** Another example is the activated Spirit's timeout attack. The `ClientSpiritTimeoutAttack.cs` script directly spawns "StageLargeBullet" prefabs from the `ClientGameObjectPool`. It then initializes their `StageSmallBulletMoverScript` with a direction (towards the targeted player or downwards) and specific speed/lifetime values. These bullets are entirely client-simulated after this initial setup.
 *   These bullets would also use `ClientGameObjectPool` and `ClientProjectileLifetime`.
 *   Their movement scripts (e.g., `StageSmallBulletMoverScript.cs`) would need to be assessed:
-    *   Do they still exist as monolithic movers?
-    *   Or have they been refactored to also use `ClientBulletConfigurer` with generic movement behaviors, with the `EffectNetworkHandler.SpawnStageBulletClientRpc` perhaps carrying parameters similar to a simplified `SpellcardAction`?
+    *   Do they still exist as monolithic movers? (Yes, for stage bullets and spirit timeout bullets, `StageSmallBulletMoverScript` is used directly).
+    *   Or have they been refactored to also use `ClientBulletConfigurer` with generic movement behaviors, with the `EffectNetworkHandler.SpawnStageBulletClientRpc` perhaps carrying parameters similar to a simplified `SpellcardAction`? (Not for stage/spirit timeout bullets, they use their specific mover script).
     *   If they are configured, then `ClientBulletConfigurer` would need to handle their specific `BehaviorType` or they'd need a dedicated configuration path.
 
 ## Key Scripts (Summary)
@@ -176,6 +177,8 @@ Client-side projectiles are removed from the game world and returned to the `Cli
 *   **`SpellcardNetworkHandler.cs`:** Receives RPCs for L1-3 spellcards and delegates to `ClientSpellcardActionRunner`.
 *   **`CharacterStats.cs`:** (Assumed) Server-authoritative player health. Client-side scripts would report hits to it.
 *   **`PlayerAttackRelay.cs` & `EffectNetworkHandler.cs`:** (If still used for stage/retaliation bullets) Handle their server-side initiation and RPC dispatch.
+*   **`ClientSpiritTimeoutAttack.cs`:** Client-side; handles activated spirit timeout, spawns "StageLargeBullet" from pool, and initializes their `StageSmallBulletMoverScript` for movement and lifetime.
+*   **`StageSmallBulletMoverScript.cs`:** Client-side movement script for stage-type bullets, including those spawned by `EffectNetworkHandler` (retaliation) and `ClientSpiritTimeoutAttack`.
 
 ## Outstanding Questions / Areas for Code Review:
 

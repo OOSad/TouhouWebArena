@@ -161,4 +161,30 @@ public class ReimuScopeStyleController : BaseScopeStyleController
         // Ensure visuals are off if component is disabled
         SetVisualActive(false); 
     }
+
+    // --- ADDED: OnTriggerEnter2D for Spirit Activation ---
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        // This controller is on the player, which is a NetworkObject.
+        // The scope style zone is a child, its triggers will be handled by this script on the parent player object if the collider is on the same object or a child
+        // and this script is the one unity finds for the event.
+        // However, it is generally better to have the script that handles collisions directly on the GameObject that has the Collider2D.
+        // Assuming this script IS on the GameObject with the CircleCollider2D for the scope.
+
+        if (!IsClient) return; // Only clients should handle this visual/local activation logic
+
+        // Debug.Log($"[{this.GetType().Name} Owner: {OwnerClientId}] OnTriggerEnter2D triggered by: {other.name} with tag: {other.tag}", gameObject);
+
+        ClientSpiritController spiritController = other.GetComponent<ClientSpiritController>();
+        if (spiritController != null)
+        {
+            Debug.Log($"[{this.GetType().Name} Owner: {OwnerClientId}] Scope style activating spirit: {other.name}", gameObject);
+            spiritController.ActivateSpirit();
+        }
+        // else
+        // {
+        //     Debug.Log($"[{this.GetType().Name} Owner: {OwnerClientId}] Collided with {other.name}, but it's not a spirit (no ClientSpiritController).", gameObject);
+        // }
+    }
+    // --- END ADDED --- 
 } 

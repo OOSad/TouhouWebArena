@@ -24,10 +24,40 @@ The enemy system manages non-player entities: Fairies (`NormalFairy`, `GreatFair
         *   Initialize `SplineWalker.InitializePath(path, data.StartDelay)`.
         *   Set initial position/rotation if needed, activate the GameObject.
 
-### Spirits (`Spirit` - Requires Further Refactoring)
+### Spirits (`Spirit` prefab - Client-Side Simulated)
 
-*   **Current State (largely server-authoritative, needs update):** Spawning was handled by `SpiritSpawner.cs`, with revenge spawns initiated by `SpiritController.Die()`.
-*   **Future Refactor Goal:** Adapt to the server-command, client-simulation model. Server would send an RPC to clients to spawn a spirit at a location. `SpiritTimeoutAttack` would become a client-side script.
+The Spirit system has been refactored to a server-triggered, client-simulated model. The server dictates when and where spirits should appear (and basic parameters), but the client handles their entire lifecycle, including movement, activation, attacks, and health.
+
+1.  **Server-Side Trigger (`SpiritSpawner.cs`):**
+    *   This server-only singleton MonoBehaviour is responsible for deciding when to spawn spirits. This can be:
+        *   **Periodic Spawns:** At regular intervals (`spawnInterval`) in designated `spawnZone1` and `spawnZone2`.
+        *   **Revenge Spawns:** When `PlayerAttackRelay` on the server reports a spirit kill (forwarded from a client), `SpiritSpawner.Instance.SpawnRevengeSpirit(targetPlayerRole)` is called.
+    *   For both spawn types, `SpiritSpawner.cs` determines:
+        *   `spiritPrefabID` (string, typically "Spirit").
+        *   `spawnPosition` (Vector3).
+        *   `shouldAim` (bool, based on `aimAtPlayerChance` for periodic spawns; usually `false` for revenge spawns).
+        *   `targetPlayerClientId` (ulong):
+            *   For aimed periodic spawns, resolved from `PlayerRole` via `PlayerDataManager`. If resolution fails, `shouldAim` becomes false, and `targetPlayerClientId` remains `0`.
+            *   For revenge spawns, resolved from `targetPlayerRole` via `PlayerDataManager`. If resolution fails (e.g., `ClientId` is `0`), an error is logged, and the revenge spirit is not spawned.
+        *   `isRevengeSpawn` (bool).
+        *   `initialVelocity` (float, e.g., `2.0f`).
+        *   `spiritType` (int, e.g., `0` for normal).
+    *   It then calls `ClientSpiritSpawnHandler.Instance.SpawnSpiritClientRpc(...)` with these parameters, broadcasting the spawn command to all clients.
+
+2.  **Client-Side Receiver & Spawner (`ClientSpiritSpawnHandler.cs`):**
+    *   This client-only singleton MonoBehaviour receives the `SpawnSpiritClientRpc`.
+    *   For each RPC call:
+        *   It retrieves a Spirit GameObject from `ClientGameObjectPool.Instance.GetObject(spiritPrefabID)`.
+        *   Sets the spirit's `position` and `rotation`.
+        *   Gets references to the core spirit components:
+            *   `ClientSpiritController`
+            *   `ClientSpiritHealth`
+            *   `ClientSpiritTimeoutAttack`
+        *   Initializes these components using the parameters received in the RPC.
+            *   `clientSpiritController.Initialize(shouldAim, targetPlayerClientId, isRevengeSpawn, initialVelocity, spiritType, originTransform: spiritInstance.transform)`
+            *   `clientSpiritHealth.Initialize(spiritType)`
+            *   The `ClientSpiritTimeoutAttack` is typically initialized implicitly or via `Awake`, but `ClientSpiritController.ActivateSpirit()` will later call its `StartTimeout()` method.
+        *   Activates the Spirit GameObject (`SetActive(true)`).
 
 ## Enemy Types & Behavior (Client-Side Simulation)
 
@@ -50,10 +80,77 @@ The enemy system manages non-player entities: Fairies (`NormalFairy`, `GreatFair
     *   **On-Death (handled by `ClientFairyHealth`):** Triggers shockwave and reports kill if applicable (see above).
     *   **Path End:** `SplineWalker` calls `OnPathCompleted` event. `ClientFairyController` subscribes and returns the fairy to `ClientGameObjectPool`.
 
-### Spirits (`Spirit` prefab - Requires Refactoring)
+### Spirits (`Spirit` prefab)
 
-*   Client-side components will likely include `PooledObjectInfo`, a movement script, `ClientSpiritHealth` (similar to `ClientFairyHealth`), and a client-side `ClientSpiritTimeoutAttack`.
-*   The timeout attack would spawn a stage bullet (e.g., "StageLargeBullet") locally from `ClientGameObjectPool` and initialize its mover script.
+Spirits are client-simulated entities with distinct behaviors before and after activation.
+
+*   **Core Client-Side Components (on the Spirit prefab):**
+    *   `PooledObjectInfo.cs`: Stores `PrefabID` (e.g., "Spirit") for `ClientGameObjectPool`.
+    *   `ClientSpiritController.cs`:
+        *   **Responsibilities:** Manages overall spirit behavior, movement, and activation state.
+        *   `Initialize()`: Sets initial parameters like `shouldAim`, `targetPlayerClientId`, `initialVelocity`, `currentDirection` (defaults to `Vector2.down` or aims once at `targetPlayerClientId`'s position if `shouldAim` is true).
+        *   `Update()`:
+            *   If not activated, moves in `_currentDirection` at `_currentSpeed`.
+            *   If activated, moves upwards (`Vector2.up`) and accelerates from `activatedInitialUpwardSpeed` to `activatedMaxUpwardSpeed` using `activatedAcceleration`.
+        *   `ActivateSpirit()`:
+            *   Called by `ReimuScopeStyleController` or `MarisaScopeStyleController` via `OnTriggerEnter2D`.
+            *   Sets `_isActivated = true`.
+            *   Changes movement to upward and applies initial activated speed.
+            *   Swaps visual GameObjects (`normalSpiritVisual` off, `activatedSpiritVisual` on).
+            *   Calls `_spiritHealth.OnActivated()` to set HP to 1.
+            *   Calls `_timeoutAttack.StartTimeout(duration, _targetPlayerClientId)` (duration is e.g., 1.5s). The `_targetPlayerClientId` here is the initial one from spawn, but `ClientSpiritTimeoutAttack` will re-evaluate its actual target based on its side of the screen.
+        *   `Deinitialize()`: Resets state when returned to pool.
+        *   **Serialized Fields:** `normalSpiritVisual`, `activatedSpiritVisual`, `activatedInitialUpwardSpeed`, `activatedMaxUpwardSpeed`, `activatedAcceleration`.
+    *   `ClientSpiritHealth.cs`:
+        *   **Responsibilities:** Manages spirit health, damage taking, and death sequence.
+        *   `Initialize()`: Sets HP to `NORMAL_SPIRIT_HP` (e.g., 5). Resets `_isActivated` flag.
+        *   `TakeDamage(amount, attackerOwnerClientId)`: Reduces HP. If HP <= 0, calls `Die()`. Called by `BulletMovement.OnTriggerEnter2D` or `PlayerDeathBomb`.
+        *   `OnActivated()`: Sets HP to `ACTIVATED_SPIRIT_HP` (e.g., 1) and sets `_isActivated = true`.
+        *   `Die(attackerOwnerClientId)`:
+            *   Calls `SpawnDeathShockwave(attackerOwnerClientId)` (see below).
+            *   If `attackerOwnerClientId` is the local player, calls `PlayerAttackRelay.LocalInstance.ReportSpiritKillServerRpc()` to potentially trigger a revenge spawn.
+            *   Returns the spirit GameObject to `ClientGameObjectPool`.
+        *   `SpawnDeathShockwave(killerClientId)`:
+            *   Gets a shockwave prefab (e.g., "FairyShockwave") from `ClientGameObjectPool`.
+            *   Sets its position.
+            *   Gets `ClientFairyShockwave` component.
+            *   Initializes it, using `activatedSpiritShockwaveMaxRadius` if `_isActivated` is true, otherwise `normalSpiritShockwaveMaxRadius`.
+        *   `ForceReturnToPool()`: Returns object to pool *without* triggering `Die()` (used by timeout).
+        *   **Serialized Fields:** `shockwavePrefabId`, `normalSpiritShockwaveMaxRadius`, `activatedSpiritShockwaveMaxRadius`, `shockwaveDuration`, `shockwaveDamage`, `shockwaveInitialRadius`.
+    *   `ClientSpiritTimeoutAttack.cs`:
+        *   **Responsibilities:** Handles the attack pattern when an activated spirit times out.
+        *   `StartTimeout(duration, initialTargetPlayerId_UnusedForTargeting)`: Called by `ClientSpiritController.ActivateSpirit()`. Starts `TimeoutAttackCoroutine`.
+        *   `TimeoutAttackCoroutine(duration, loggedSpawnTargetPlayerId)`:
+            *   Waits for `duration`.
+            *   Determines its current side of the screen (Player 1 or Player 2) based on its X position relative to `stageCenterXCoordinate`.
+            *   Queries `PlayerDataManager.Instance.GetPlayerDataByRole()` for the player on that side to get an `actualTargetPlayerId`.
+            *   Attempts to find the `Transform` of this `actualTargetPlayerId`.
+            *   If a valid `targetTransform` is found, `directionToTarget` is calculated towards it.
+            *   If no valid `targetTransform` is found (e.g., no player on that side, or `actualTargetPlayerId` is 0), `directionToTarget` defaults to `Vector2.down`.
+            *   Spawns 3 bullets (e.g., "StageLargeBullet" from `ClientGameObjectPool`) in a claw pattern (`clawPatternAngles`) aimed along `directionToTarget`.
+            *   Initializes each bullet's `StageSmallBulletMoverScript.Initialize(direction, timeoutBulletSpeed, timeoutBulletLifetime)`.
+            *   Calls `_spiritHealth.ForceReturnToPool()` to despawn the spirit without a death shockwave.
+        *   **Serialized Fields:** `timeoutBulletPrefabID`, `clawPatternAngles`, `timeoutBulletSpeed`, `timeoutBulletLifetime`, `stageCenterXCoordinate`.
+    *   Appropriate 2D Colliders (e.g., `BoxCollider2D`) and a `Rigidbody2D` (typically Kinematic).
+
+*   **Interaction & Lifecycle:**
+    *   **Spawning:** Triggered by server RPC via `ClientSpiritSpawnHandler`.
+    *   **Movement:**
+        *   Normal: Downwards or one-time aim at spawn.
+        *   Activated: Upwards with acceleration.
+    *   **Activation:** `ClientSpiritController.ActivateSpirit()` called by `OnTriggerEnter2D` of `ReimuScopeStyleController` or `MarisaScopeStyleController` when the spirit overlaps the active zone.
+    *   **Taking Damage:**
+        *   Player bullets (`BulletMovement.cs` modified to check for "Spirit" tag) collide, get `ClientSpiritHealth`, call `TakeDamage(damage, bulletOwnerClientId)`.
+    *   **Death (Normal or Activated, by Damage):**
+        *   `ClientSpiritHealth.Die()` is called.
+        *   A shockwave is spawned (larger if activated).
+        *   Kill is reported to server for revenge spawn if local player killed it.
+        *   Spirit returned to pool.
+    *   **Timeout (Activated Spirit):**
+        *   `ClientSpiritTimeoutAttack.TimeoutAttackCoroutine` completes.
+        *   Fires a 3-bullet claw pattern (targeted at player on its side, or downwards).
+        *   Spirit is returned to pool via `ForceReturnToPool()` (no shockwave).
+    *   **Player Death Bomb:** `PlayerDeathBomb.ClearObjectsInRadiusClientRpc` iterates pooled objects, finds spirits via `ClientSpiritHealth`, and calls `TakeDamage()`.
 
 ## Clearing Effects (Client-Side)
 
@@ -75,21 +172,31 @@ Enemies are "cleared" by taking lethal damage.
 ## Key Scripts
 
 *   **Core Client-Side Enemy Components:**
-    *   `ClientFairyHealth.cs` / `ClientSpiritHealth.cs` (future): Manage health, death effects (shockwave, kill reporting).
-    *   `ClientFairyController.cs` / `ClientSpiritController.cs` (future): Coordinate client-side behaviors, path completion pooling.
+    *   `ClientFairyHealth.cs`: Manage health, death effects (shockwave, kill reporting) for Fairies.
+    *   `ClientFairyController.cs`: Coordinate client-side behaviors, path completion pooling for Fairies.
+    *   `ClientSpiritController.cs`: Manages overall spirit behavior, movement (normal, aimed, activated with acceleration), visual state, and triggers activation consequences (health change, timeout attack start).
+    *   `ClientSpiritHealth.cs`: Manages spirit health (normal/activated), damage processing, death sequence (shockwave with variable size, reporting kill to server), and forced despawn for timeouts.
+    *   `ClientSpiritTimeoutAttack.cs`: Handles the activated spirit's timeout, including determining target side, aiming the 3-bullet claw attack (or firing downwards), and despawning the spirit.
     *   `SplineWalker.cs`: Client-side path following for fairies.
     *   `PooledObjectInfo.cs`: Essential for `ClientGameObjectPool`.
 *   **Server-Side Spawning Logic:**
     *   `FairySpawner.cs`: Calculates fairy waves and parameters.
     *   `FairySpawnNetworkHandler.cs`: Singleton that sends `SpawnFairyWaveClientRpc` to all clients.
-    *   (Future `SpiritSpawner.cs` / `SpiritSpawnNetworkHandler.cs`)
+    *   `SpiritSpawner.cs`: Server-only singleton that decides when/where to spawn spirits (periodic or revenge), resolves initial target parameters, and calls an RPC on `ClientSpiritSpawnHandler`.
+*   **Client-Side Spawning Handlers:**
+    *   `ClientSpiritSpawnHandler.cs`: Client-only singleton that receives an RPC from `SpiritSpawner` to spawn and initialize spirits locally from the `ClientGameObjectPool`.
 *   **Related Systems:**
-    *   `ClientGameObjectPool.cs`: Pools all client-side enemies.
-    *   `PlayerAttackRelay.cs`: Receives kill reports from `ClientFairyHealth`.
-    *   `ClientFairyShockwave.cs`: Spawned on fairy death, can damage other enemies.
-    *   `PathManager.cs`: Provides path data to clients.
-*   **Deprecated/Replaced (Server-Authoritative Components for Fairies):**
+    *   `ClientGameObjectPool.cs`: Pools all client-side enemies (Fairies, Spirits) and their effects (shockwaves, spirit timeout bullets).
+    *   `PlayerAttackRelay.cs`: Receives kill reports from `ClientFairyHealth` and `ClientSpiritHealth`.
+    *   `ClientFairyShockwave.cs`: Spawned on fairy death, can damage other enemies. (Also used by spirits for their death shockwave).
+    *   `PathManager.cs`: Provides path data to clients for fairies.
+    *   `ReimuScopeStyleController.cs` / `MarisaScopeStyleController.cs`: Their `OnTriggerEnter2D` methods call `ClientSpiritController.ActivateSpirit()`.
+    *   `BulletMovement.cs`: Modified to apply damage to `ClientSpiritHealth` upon collision with spirits.
+    *   `PlayerDeathBomb.cs`: Modified to apply damage to `ClientSpiritHealth` for spirits in radius.
+    *   `StageSmallBulletMoverScript.cs`: Used by bullets spawned from `ClientSpiritTimeoutAttack`.
+*   **Deprecated/Replaced (Server-Authoritative Components for Fairies & Old Spirit System):**
     *   ~~`FairyPathInitializer.cs`~~
     *   ~~Server-side `FairyController.cs` logic for death/path end~~ (now client-side)
     *   ~~`FairyDeathEffects.cs`~~ (Functionality integrated into `ClientFairyHealth`/`ClientFairyShockwave`)
     *   ~~`FairyChainReactionHandler.cs`~~ (Chain reactions are emergent from client-side shockwaves damaging other client-side enemies)
+    *   ~~Old server-side `SpiritController.cs` and its direct `NetworkObjectPool` usage for spirits.~~

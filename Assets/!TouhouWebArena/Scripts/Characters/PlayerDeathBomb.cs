@@ -102,27 +102,37 @@ public class PlayerDeathBomb : NetworkBehaviour
 
                 // If not a clearable bullet, try to clear as a Fairy
                 ClientFairyHealth fairyHealth = activeGO.GetComponent<ClientFairyHealth>();
-                if (fairyHealth != null && fairyHealth.IsAlive) // Check IsAlive to prevent multiple calls on already dying fairy
+                if (fairyHealth != null)
                 {
                     // Debug.Log($"[Client DeathBomb] Damaging Fairy {activeGO.name} with bomb from client {bombingPlayerClientId}.");
                     fairyHealth.TakeDamage(BOMB_DAMAGE_TO_ENEMIES, bombingPlayerClientId); // Pass bomber's ID
-                    // No need to increment objectsClearedCount here if TakeDamage handles its own logic/pooling
-                    // or if we only count bullets. If we want to count killed enemies, add it.
+                    objectsClearedCount++; // Counting cleared/damaged enemies too
                     continue;
                 }
 
-                // TODO: Add similar logic for ClientSpiritHealth when it's refactored
-                // ClientSpiritHealth spiritHealth = activeGO.GetComponent<ClientSpiritHealth>();
-                // if (spiritHealth != null && spiritHealth.IsAlive)
-                // {
-                //     spiritHealth.TakeDamage(BOMB_DAMAGE_TO_ENEMIES, bombingPlayerClientId);
-                //     continue;
-                // }
+                // ADDED: Logic for ClientSpiritHealth
+                ClientSpiritHealth spiritHealth = activeGO.GetComponent<ClientSpiritHealth>();
+                if (spiritHealth != null)
+                {
+                    // Debug.Log($"[Client DeathBomb] Damaging Spirit {activeGO.name} with bomb from client {bombingPlayerClientId}.");
+                    spiritHealth.TakeDamage(BOMB_DAMAGE_TO_ENEMIES, bombingPlayerClientId);
+                    objectsClearedCount++; // Counting cleared/damaged enemies too
+                    continue;
+                }
+
+                // ADDED: Generic projectile clearing using ClientProjectileLifetime
+                // This should catch BaseBullet prefabs if they have this component.
+                ClientProjectileLifetime projectileLifetime = activeGO.GetComponent<ClientProjectileLifetime>();
+                if (projectileLifetime != null)
+                {
+                    // Debug.Log($"[Client DeathBomb] Clearing generic projectile {activeGO.name} with bomb.");
+                    projectileLifetime.ForceReturnToPool();
+                    objectsClearedCount++;
+                    continue; 
+                }
             }
         }
-        // Log bullets cleared, or total objects if you sum them up differently.
-        // For now, this log might be misleading if it only counts bullets but fairies are also cleared.
-        // Consider a separate counter or more detailed logging if needed.
-        if (objectsClearedCount > 0) Debug.Log($"[Client {NetworkManager.Singleton.LocalClientId} DeathBomb] Cleared {objectsClearedCount} stage bullets (enemies also processed).");
+        // Log total objects affected by the bomb
+        if (objectsClearedCount > 0) Debug.Log($"[Client {NetworkManager.Singleton.LocalClientId} DeathBomb] Processed {objectsClearedCount} objects (bullets/enemies) in bomb radius.");
     }
 } 

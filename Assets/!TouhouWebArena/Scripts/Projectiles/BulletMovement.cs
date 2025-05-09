@@ -57,16 +57,34 @@ public class BulletMovement : MonoBehaviour // CHANGED from NetworkBehaviour
     // Client-side collision detection
     void OnTriggerEnter2D(Collider2D other)
     {
+        bool hitSomething = false;
+
         // Check for collision with Fairy or Spirit tags
-        if (other.CompareTag("Fairy") || other.CompareTag("Spirit")) 
+        if (other.CompareTag("Fairy")) 
         {
             ClientFairyHealth fairyHealth = other.GetComponent<ClientFairyHealth>();
-            if (fairyHealth != null && fairyHealth.IsAlive)
+            if (fairyHealth != null) // Removed .IsAlive check, TakeDamage should handle if already dead
             {
-                // Assuming 1 damage per bullet. This could be a property of the bullet.
-                fairyHealth.TakeDamage(1, this.FiredByOwnerClientId); 
+                Debug.Log($"Bullet {this.name} hit Fairy {other.name}. Attempting to deal damage.");
+                int damageToDeal = GetComponent<ProjectileDamager>()?.damage ?? 1;
+                fairyHealth.TakeDamage(damageToDeal, this.FiredByOwnerClientId); 
+                hitSomething = true;
             }
+        }
+        else if (other.CompareTag("Spirit")) // Added specific check for Spirit tag
+        {
+            ClientSpiritHealth spiritHealth = other.GetComponent<ClientSpiritHealth>();
+            if (spiritHealth != null)
+            {
+                Debug.Log($"Bullet {this.name} hit Spirit {other.name}. Attempting to deal damage.");
+                int damageToDeal = GetComponent<ProjectileDamager>()?.damage ?? 1;
+                spiritHealth.TakeDamage(damageToDeal, this.FiredByOwnerClientId);
+                hitSomething = true;
+            }
+        }
 
+        if (hitSomething)
+        {
             // Debug.Log($"[BulletMovement] Client-side collision with {other.name} (Tag: {other.tag})");
             if (_projectileLifetime != null)
             {
@@ -77,11 +95,9 @@ public class BulletMovement : MonoBehaviour // CHANGED from NetworkBehaviour
                 // Fallback if lifetime component is missing for some reason
                 gameObject.SetActive(false); 
             }
-            // Note: Actual damage dealing or enemy destruction would happen elsewhere, 
-            // or the client would send an RPC to the server if hits need to be validated/processed server-side.
-            // For now, the bullet just disappears on hit.
         }
         // Removed checks for "Enemy", "OpponentHitbox", "WorldBoundary"
+        // If you have other things bullets should collide with (e.g., stage walls), add those checks here.
     }
 
     // ReturnToPool method is REMOVED - ClientProjectileLifetime handles returning to ClientGameObjectPool

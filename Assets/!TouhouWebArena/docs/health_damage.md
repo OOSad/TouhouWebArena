@@ -12,7 +12,22 @@ This document describes how health is managed and damage is processed. Player he
     *   Manages health for Level 4 Illusions.
     *   **Client-Side:** Stores max health. A specific client (`_isResponsibleClient`, set via `ClientIllusionView.InitializeClientRpc`) handles hit detection in `OnTriggerEnter2D` against "PlayerShot" layer/tag. If hit, calls `TakeDamageClientSide(damage)`. If health depleted, calls `ReportDeathToServerRpc()`.
     *   **Server-Side:** Receives `ReportDeathToServerRpc`. This RPC then calls a public method `ProcessClientDeathReport()` on the illusion's `ServerIllusionOrchestrator` component, which then handles the despawn.
-*   **`ClientSpiritHealth.cs` (Client-Side - Future):** For Spirit prefabs.
+*   **`ClientSpiritHealth.cs` (Client-Side):** Attached to Spirit prefabs. Manages local health, death effects (shockwave), and reporting kills for client-simulated spirits.
+    *   **Initialization:** `Initialize(spiritType)` sets HP to `NORMAL_SPIRIT_HP` (e.g., 5) and resets an internal `_isActivated` flag. Called by `ClientSpiritSpawnHandler` after retrieving the spirit from the pool.
+    *   **Taking Damage:** `TakeDamage(amount, attackerOwnerClientId)` is called by other client-side systems (e.g., `BulletMovement.cs` when a player shot hits a spirit, or `PlayerDeathBomb.cs` when a spirit is caught in a bomb).
+        *   It decrements the local health.
+        *   If health drops to 0 or below, it calls the private `Die(attackerOwnerClientId)` method.
+    *   **Activation:** `OnActivated()` is called by `ClientSpiritController.ActivateSpirit()` when a spirit enters a Scope Style zone.
+        *   Sets HP to `ACTIVATED_SPIRIT_HP` (e.g., 1).
+        *   Sets the internal `_isActivated` flag to true.
+    *   **Death Sequence (`Die(attackerOwnerClientId)`):
+        *   Calls `SpawnDeathShockwave(attackerOwnerClientId)` to create a visual/damaging effect.
+            *   This method gets a shockwave prefab (e.g., "FairyShockwave") from `ClientGameObjectPool`.
+            *   It initializes the `ClientFairyShockwave` script on it, providing damage, duration, and a radius. The `maxRadius` is chosen from `activatedSpiritShockwaveMaxRadius` if `_isActivated` was true, or `normalSpiritShockwaveMaxRadius` otherwise, allowing activated spirits to produce a larger shockwave.
+        *   If the `attackerOwnerClientId` matches the `NetworkManager.Singleton.LocalClientId` (i.e., the local player killed the spirit), it calls `PlayerAttackRelay.LocalInstance.ReportSpiritKillServerRpc()` to inform the server, which may trigger a revenge spawn.
+        *   Finally, it returns the spirit GameObject to `ClientGameObjectPool.Instance`.
+    *   **Timeout Despawn:** `ForceReturnToPool()` is called by `ClientSpiritTimeoutAttack` when an activated spirit times out.
+        *   This method returns the spirit GameObject directly to the pool *without* calling `Die()`, so no shockwave is produced, and no kill is reported for the timeout event itself.
 
 ## Taking Damage & Invincibility Sequence (Player)
 
@@ -104,8 +119,9 @@ Illusions do not have an invincibility period or trigger a "death bomb" effect u
     *   `CharacterStats.cs`: Provides invincibility duration, bomb radius, health values.
 *   **Enemy Health & Damage (Primarily Client-Side Simulation):**
     *   `ClientFairyHealth.cs`: Manages fairy health, spawns shockwave, reports local player kills.
-    *   `BulletMovement.cs`: Deals damage to `ClientFairyHealth`.
-    *   `ClientFairyShockwave.cs`: Deals damage to `ClientFairyHealth`.
+    *   `ClientSpiritHealth.cs`: Manages spirit health (normal/activated), damage processing, death sequence (shockwave with variable size, reporting kill to server), and forced despawn for timeouts.
+    *   `BulletMovement.cs`: Deals damage to `ClientFairyHealth` and `ClientSpiritHealth`.
+    *   `ClientFairyShockwave.cs`: Deals damage to `ClientFairyHealth` (and its prefab is used by `ClientSpiritHealth` for its shockwave).
 *   **Illusion Health & Damage Cycle:**
     *   `IllusionHealth.cs`: `NetworkBehaviour` for illusion health. Client detects hits, responsible client reports death via RPC. Server receives and tells `ServerIllusionOrchestrator` to despawn.
     *   `ClientIllusionView.cs`: Its `InitializeClientRpc` sets up `IllusionHealth` on clients.

@@ -152,4 +152,24 @@ public class MarisaScopeStyleController : BaseScopeStyleController
         // Ensure visuals are off if component is disabled
         SetVisualActive(false);
     }
+
+    // --- ADDED: OnTriggerEnter2D for Spirit Activation ---
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!IsClient) return; // Only clients should handle this visual/local activation logic
+
+        // Debug.Log($"[{this.GetType().Name} Owner: {OwnerClientId}] OnTriggerEnter2D triggered by: {other.name} with tag: {other.tag}", gameObject);
+
+        ClientSpiritController spiritController = other.GetComponent<ClientSpiritController>();
+        if (spiritController != null)
+        {
+            // Debug.Log($"[{this.GetType().Name} Owner: {OwnerClientId}] Scope style activating spirit: {other.name}", gameObject);
+            spiritController.ActivateSpirit();
+        }
+        // else
+        // {
+        //     Debug.Log($"[{this.GetType().Name} Owner: {OwnerClientId}] Collided with {other.name}, but it's not a spirit (no ClientSpiritController).", gameObject);
+        // }
+    }
+    // --- END ADDED ---
 } 

@@ -47,9 +47,11 @@ This system is the **core pooling solution** for the game. It manages pools of s
 
 **Use Cases:**
 *   Player basic projectiles (`BulletMovement.cs`).
-*   Enemies (`ClientFairyController.cs`, `ClientSpiritController.cs` - TBD).
+*   Enemies (Fairies via `FairySpawnNetworkHandler` triggering client-side pooling, client-simulated Spirits via `ClientSpiritSpawnHandler` triggering client-side pooling).
+*   Spirit death shockwaves (spawned by `ClientSpiritHealth` from the pool, e.g., "FairyShockwave" prefab).
+*   Spirit timeout attack bullets (spawned by `ClientSpiritTimeoutAttack` from the pool, e.g., "StageLargeBullet" prefab).
 *   Stage bullets / Retaliation bullets (`StageSmallBulletMoverScript.cs`).
-*   Visual Effects (`ClientFairyShockwave.cs`).
+*   Visual Effects (`ClientFairyShockwave.cs` - spawned by `ClientFairyHealth` for fairies and spirits).
 *   **Spellcard Bullets (All Levels, including Illusion Attacks):** Spawned via `ClientSpellcardActionRunner` (triggered by `SpellcardNetworkHandler` for L1-3 or `ClientIllusionView` for L4 illusion attacks).
 *   Other non-networked, frequently spawned GameObjects.
 
@@ -65,8 +67,11 @@ This system was previously used for managing server-authoritative `NetworkObject
 *   **`PooledObjectInfo.cs`:** Stores `PrefabID` on prefabs for `ClientGameObjectPool`.
 *   **`ClientProjectileLifetime.cs`:** Example script that returns client-pooled projectiles.
 *   **`ClientFairyController.cs`:** Returns pooled fairies on path completion/death.
+*   **`ClientSpiritController.cs` (indirectly):** Relies on `ClientSpiritHealth` and `ClientSpiritTimeoutAttack` which handle returning the spirit to the pool.
+*   **`ClientSpiritHealth.cs`:** Returns pooled spirits on death and spawns shockwaves from the pool.
+*   **`ClientSpiritTimeoutAttack.cs`:** Returns pooled spirits on timeout and spawns timeout bullets from the pool.
 *   **`ClientFairyShockwave.cs`:** Returns pooled shockwaves after duration.
-*   **Scripts that *get* objects from the pool:** `PlayerShootingController`, `EffectNetworkHandler`, `FairySpawnNetworkHandler` (via RPCs triggering client-side logic), `ClientSpellcardActionRunner` (for all spellcard bullets), `ClientIllusionView` (indirectly, by calling `ClientSpellcardActionRunner`), `ClientFairyHealth` (for shockwaves).
+*   **Scripts that *get* objects from the pool:** `PlayerShootingController`, `EffectNetworkHandler`, `FairySpawnNetworkHandler` (via RPCs triggering client-side logic), `ClientSpiritSpawnHandler` (for spirits), `ClientSpellcardActionRunner` (for all spellcard bullets), `ClientIllusionView` (indirectly, by calling `ClientSpellcardActionRunner`), `ClientFairyHealth` (for fairy shockwaves), `ClientSpiritHealth` (for spirit shockwaves), `ClientSpiritTimeoutAttack` (for spirit timeout bullets).
 *   **~~`NetworkObjectPool.cs`~~:** Deprecated.
 *   **~~`PoolableObjectIdentity.cs`~~:** Deprecated (associated with `NetworkObjectPool`).
 

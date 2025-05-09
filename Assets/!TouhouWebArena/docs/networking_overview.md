@@ -31,6 +31,17 @@ Netcode for GameObjects provides several building blocks for networked applicati
         1.  Server (`FairySpawner`): Determines wave parameters.
         2.  Server: Calls `SpawnFairyWaveClientRpc` on a singleton (`FairySpawnNetworkHandler.Instance`), targeting all clients.
         3.  All Clients: Receive `SpawnFairyWaveClientRpc`, get prefab from `ClientGameObjectPool`, initialize position/path (`SplineWalker`), activate the enemy.
+    *   **NEW: Common Flow for Spirit Spawning (Server-Triggered, Client-Simulated):**
+        1.  **Server (`SpiritSpawner.cs`):**
+            *   Determines spirit parameters (prefab ID, position, aim, target ClientID for aiming, revenge status, velocity, type) based on periodic spawn logic or revenge triggers.
+            *   Calls `ClientSpiritSpawnHandler.Instance.SpawnSpiritClientRpc(...)` targeting all clients.
+        2.  **All Clients (`ClientSpiritSpawnHandler.cs`):**
+            *   Receive `SpawnSpiritClientRpc`.
+            *   Get a Spirit GameObject from `ClientGameObjectPool`.
+            *   Set its position/rotation.
+            *   Initialize its client-side components (`ClientSpiritController`, `ClientSpiritHealth`, `ClientSpiritTimeoutAttack`) using the RPC parameters.
+            *   Activate the Spirit GameObject.
+            *   All subsequent spirit logic (movement, activation, timeout attack, health, death) is handled client-side.
     *   **NEW: Common Flow for Level 4 Illusion Lifecycle & Attacks:**
         *   **Illusion Spawning (Server-Side):**
             1.  `ServerAttackSpawner.ExecuteSpellcard` (for Level 4) loads `Level4SpellcardData`.
@@ -119,6 +130,7 @@ Here's how major game systems interact with the network:
     *   Clients receive RPC, iterate wave data, get enemy prefabs (e.g., "NormalFairy") from `ClientGameObjectPool`.
     *   Clients initialize enemy position and path using `SplineWalker.InitializePath`.
     *   Enemy movement is handled client-side by `SplineWalker`. Enemy health by `ClientFairyHealth`.
+    *   **Spirits:** `SpiritSpawner.cs` (server) decides parameters and calls `ClientSpiritSpawnHandler.SpawnSpiritClientRpc`. Clients receive and manage spirits locally (movement via `ClientSpiritController`, health/death via `ClientSpiritHealth`, timeout attack via `ClientSpiritTimeoutAttack`).
 *   **Enemy Death & Chain Reactions (Client-Side):**
     *   `BulletMovement` collision calls `ClientFairyHealth.TakeDamage(damage, bulletOwnerId)`.
     *   If health <= 0, `ClientFairyHealth` spawns a `ClientFairyShockwave` from `ClientGameObjectPool`, initializing it with damage parameters and `bulletOwnerId`.

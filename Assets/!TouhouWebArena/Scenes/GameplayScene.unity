@@ -8564,6 +8564,10 @@ MonoBehaviour:
     prefab: {fileID: 2599006119773474308, guid: b9163c1d350c8c6489969e8df68532d9, type: 3}
     initialSize: 30
     activeObjectsInPool: []
+  - prefabId: Spirit
+    prefab: {fileID: 1241426470714071119, guid: ab6e43f2a705add4f8928d6b3a7393df, type: 3}
+    initialSize: 50
+    activeObjectsInPool: []
   - prefabId: StageSmallBullet
     prefab: {fileID: 603824684173821203, guid: cf09dfab19bbdfa449358f5a311da220, type: 3}
     initialSize: 120
@@ -10694,6 +10698,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1941435757}
   - component: {fileID: 1941435761}
+  - component: {fileID: 1941435766}
   - component: {fileID: 1941435760}
   - component: {fileID: 1941435759}
   - component: {fileID: 1941435758}
@@ -10776,6 +10781,7 @@ MonoBehaviour:
   revengeSpawnZoneSize: {x: 7, y: 1}
   spawnInterval: 2
   aimAtPlayerChance: 0.25
+  spiritPrefabID: Spirit
   isDebugSpawningEnabled: 1
 --- !u!114 &1941435761
 MonoBehaviour:
@@ -10878,6 +10884,19 @@ MonoBehaviour:
   player1TargetedSpawnCenter: {fileID: 1559253378}
   player2TargetedSpawnCenter: {fileID: 2008785425}
   spawnZoneDimensions: {x: 7, y: 1}
+--- !u!114 &1941435766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1941435756}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 168b7217cea849a46bace1274f53dad0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &1954152527
 GameObject:
   m_ObjectHideFlags: 0

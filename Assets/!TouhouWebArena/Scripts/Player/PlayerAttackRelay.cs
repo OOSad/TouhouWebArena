@@ -116,6 +116,37 @@ public class PlayerAttackRelay : NetworkBehaviour
         }
     }
 
+    [ServerRpc]
+    public void ReportSpiritKillServerRpc(ServerRpcParams rpcParams = default)
+    {
+        ulong killerClientId = rpcParams.Receive.SenderClientId;
+        // PlayerRole killerRole = PlayerDataManager.Instance.GetPlayerData(killerClientId)?.Role ?? PlayerRole.None;
+        // Debug.Log($"[Server PlayerAttackRelay for {killerClientId} ({killerRole})] ReportSpiritKillServerRpc received.");
+
+        ulong opponentClientId = GetOpponentClientId(killerClientId);
+        if (opponentClientId == ulong.MaxValue) 
+        {
+            Debug.LogWarning($"[Server PlayerAttackRelay for {killerClientId}] Could not find opponent for spirit revenge spawn.");
+            return;
+        }
+        PlayerRole opponentPlayerRole = PlayerDataManager.Instance.GetPlayerData(opponentClientId)?.Role ?? PlayerRole.None;
+        if (opponentPlayerRole == PlayerRole.None)
+        {
+            Debug.LogWarning($"[Server PlayerAttackRelay for {killerClientId}] Opponent {opponentClientId} has no role. Cannot spawn revenge spirit.");
+            return;
+        }
+
+        // Debug.Log($"[Server PlayerAttackRelay for {killerClientId}] Opponent for revenge spirit identified as Client {opponentClientId} ({opponentPlayerRole}). Calling SpiritSpawner.");
+        if (SpiritSpawner.Instance != null)
+        {
+            SpiritSpawner.Instance.SpawnRevengeSpirit(opponentPlayerRole);
+        }
+        else
+        {
+            Debug.LogError($"[Server PlayerAttackRelay for {killerClientId}] SpiritSpawner.Instance is null. Cannot spawn revenge spirit.");
+        }
+    }
+
     // New ClientRpc specifically for receiving stage bullet spawn command
     [ClientRpc]
     public void ReceiveStageBulletSpawnClientRpc(FixedString64Bytes bulletPrefabID, Vector2 normalizedSpawnPosition, ClientRpcParams clientRpcParams = default)

@@ -224,7 +224,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32b750eb55895a343a623b3f36dd8d7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 1
+  maxHealth: 2
   deathShockwavePrefabId: FairyShockwave
   deathShockwaveMaxRadius: 1
   deathShockwaveDuration: 1

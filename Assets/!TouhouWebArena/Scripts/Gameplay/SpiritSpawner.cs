@@ -31,6 +31,10 @@ public class SpiritSpawner : NetworkBehaviour
     [Tooltip("Probability (0-1) that a newly spawned Spirit will initially move towards the corresponding player.")]
     [SerializeField, Range(0f, 1f)] private float aimAtPlayerChance = 0.25f;
 
+    // Default Spirit Prefab ID to be used by clients
+    [Tooltip("The PrefabID string for the standard spirit, used by ClientGameObjectPool.")]
+    [SerializeField] private string spiritPrefabID = "Spirit"; // Example ID
+
     /// <summary>If false, the spawning coroutine will pause.</summary>
     public bool isDebugSpawningEnabled = true;
 
@@ -80,25 +84,20 @@ public class SpiritSpawner : NetworkBehaviour
             return false;
         }
 
-        if (spiritPrefab.GetComponent<NetworkObject>() == null)
-        {
-            Debug.LogError("SpiritSpawner: Spirit Prefab is missing a NetworkObject component.", this);
-            enabled = false;
-            return false;
-        }
         if (spiritPrefab.GetComponent<SpiritController>() == null)
         {
-            Debug.LogError("SpiritSpawner: Spirit Prefab is missing a SpiritController component.", this);
-            enabled = false;
-            return false;
+            Debug.LogWarning("SpiritSpawner: Spirit Prefab is missing a SpiritController component. This might be intended if it's purely client-side.", this);
+            // We might not need a server-side controller anymore.
+            // enabled = false;
+            // return false;
         }
         // Also check for PoolableObjectIdentity
-        if (spiritPrefab.GetComponent<PoolableObjectIdentity>() == null || string.IsNullOrEmpty(spiritPrefab.GetComponent<PoolableObjectIdentity>().PrefabID))
-        {
-            Debug.LogError("SpiritSpawner: Spirit Prefab is missing PoolableObjectIdentity or has an empty PrefabID.", this);
-            enabled = false;
-            return false;
-        }
+        // if (spiritPrefab.GetComponent<PoolableObjectIdentity>() == null || string.IsNullOrEmpty(spiritPrefab.GetComponent<PoolableObjectIdentity>().PrefabID))
+        // {
+        // Debug.LogError("SpiritSpawner: Spirit Prefab is missing PoolableObjectIdentity or has an empty PrefabID.", this);
+        // enabled = false;
+        // return false;
+        // }
         return true;
     }
 
@@ -151,38 +150,40 @@ public class SpiritSpawner : NetworkBehaviour
         Vector3 spawnPosition = new Vector3(center.x + randomX, center.y + randomY, center.z);
 
         // --- Pool Integration --- 
-        if (spiritPrefab == null) return; // Should be validated earlier
+        // if (spiritPrefab == null) return; // Should be validated earlier
 
-        PoolableObjectIdentity identity = spiritPrefab.GetComponent<PoolableObjectIdentity>();
-        if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
-        {
-            Debug.LogError($"[SpiritSpawner] Spirit prefab '{spiritPrefab.name}' is missing PoolableObjectIdentity or PrefabID! Cannot spawn.", this);
-            return;
-        }
-        string prefabID = identity.PrefabID;
+        // PoolableObjectIdentity identity = spiritPrefab.GetComponent<PoolableObjectIdentity>();
+        // if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
+        // {
+        // Debug.LogError($"[SpiritSpawner] Spirit prefab '{spiritPrefab.name}' is missing PoolableObjectIdentity or PrefabID! Cannot spawn.", this);
+        // return;
+        // }
+        // string prefabID = identity.PrefabID;
 
         // Get object from pool
-        NetworkObject pooledNetworkObject = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
-        if (pooledNetworkObject == null)
-        {
-            Debug.LogError($"[SpiritSpawner] Failed to get Spirit with PrefabID '{prefabID}' from pool.", this);
-            return;
-        }
+        // NetworkObject pooledNetworkObject = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
+        // if (pooledNetworkObject == null)
+        // {
+        // Debug.LogError($"[SpiritSpawner] Failed to get Spirit with PrefabID '{prefabID}' from pool.", this);
+        // return;
+        // }
         // ----------------------
 
         // Get components from pooled object
-        SpiritController spiritController = pooledNetworkObject.GetComponent<SpiritController>();
+        // SpiritController spiritController = pooledNetworkObject.GetComponent<SpiritController>();
         // NetworkObject networkObject = pooledNetworkObject; // Already have reference
 
         // Position and Activate (BEFORE Initialize and Spawn)
-        pooledNetworkObject.transform.position = spawnPosition;
-        pooledNetworkObject.transform.rotation = Quaternion.identity;
-        pooledNetworkObject.gameObject.SetActive(true); 
+        // pooledNetworkObject.transform.position = spawnPosition;
+        // pooledNetworkObject.transform.rotation = Quaternion.identity;
+        // pooledNetworkObject.gameObject.SetActive(true); 
 
         // Determine target player and aim chance
         PlayerRole targetRole = (zoneCenter == spawnZone1) ? PlayerRole.Player1 : PlayerRole.Player2;
         bool shouldAim = Random.value < aimAtPlayerChance;
-        Transform targetPlayerTransform = null;
+        // Transform targetPlayerTransform = null; // Client will resolve target transform
+        ulong targetPlayerClientId = 0;
+
 
         // Get player transform if aiming
         if (shouldAim)
@@ -193,16 +194,17 @@ public class SpiritSpawner : NetworkBehaviour
                 PlayerData? playerData = PlayerDataManager.Instance.GetPlayerDataByRole(targetRole);
                 if (playerData.HasValue)
                 {
-                    NetworkObject playerNetObj = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerData.Value.ClientId);
-                    if (playerNetObj != null)
-                    {
-                        targetPlayerTransform = playerNetObj.transform;
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"[SpiritSpawner] Could not find NetworkObject for Player {targetRole}. Spirit will not aim.", this);
-                        shouldAim = false; // Fallback to not aiming
-                    }
+                    targetPlayerClientId = playerData.Value.ClientId;
+                    // NetworkObject playerNetObj = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerData.Value.ClientId);
+                    // if (playerNetObj != null)
+                    // {
+                    // targetPlayerTransform = playerNetObj.transform;
+                    // }
+                    // else
+                    // {
+                    // Debug.LogWarning($"[SpiritSpawner] Could not find NetworkObject for Player {targetRole}. Spirit will not aim.", this);
+                    // shouldAim = false; // Fallback to not aiming
+                    // }
                 }
                 else
                 {
@@ -219,11 +221,23 @@ public class SpiritSpawner : NetworkBehaviour
         }
 
         // Spawn network object FIRST
-        pooledNetworkObject.Spawn(false); 
+        // pooledNetworkObject.Spawn(false); 
 
         // Initialize the spirit AFTER spawning
         // Zone references no longer needed by SpiritController
-        spiritController.Initialize(targetPlayerTransform, targetRole, shouldAim);
+        // spiritController.Initialize(targetPlayerTransform, targetRole, shouldAim);
+
+        // TODO: Define parameters for RPC based on Spirit needs (velocity, type, etc.)
+        // For now, just basic info. Default velocity can be handled client-side initially.
+        if (ClientSpiritSpawnHandler.Instance != null)
+        {
+            // Example default values: initialVelocity = 2.0f, spiritType = 0 (normal)
+            ClientSpiritSpawnHandler.Instance.SpawnSpiritClientRpc(spiritPrefabID, spawnPosition, shouldAim, targetPlayerClientId, false /*isRevengeSpawn*/, 2.0f, 0);
+        }
+        else
+        {
+            Debug.LogError("[SpiritSpawner] ClientSpiritSpawnHandler.Instance is null. Cannot send SpawnSpiritClientRpc.", this);
+        }
     }
 
     /// <summary>
@@ -250,102 +264,86 @@ public class SpiritSpawner : NetworkBehaviour
     {
         if (!IsServer) return;
         isDebugSpawningEnabled = enabled;
-        UnityEngine.Debug.Log($"Spirit Spawner spawning set to: {enabled}");
+        Debug.Log($"[SpiritSpawner] Spawning enabled: {isDebugSpawningEnabled}", this);
     }
 
     /// <summary>
-    /// [Server Only] Spawns a single "revenge" spirit on the specified target player's side.
-    /// Triggered by <see cref="SpiritController.Die"/> when a spirit is killed by a player.
-    /// Checks the spirit limit (<see cref="maxSpiritsPerSide"/>) for the target player before spawning.
-    /// Uses the <see cref="NetworkObjectPool"/> and configures the spirit for the target player within the <see cref="revengeSpawnZoneSize"/>.
+    /// [Server Only] Spawns a "revenge" spirit on the opposing player's side when a spirit is destroyed.
+    /// This is typically called by <see cref="PlayerAttackRelay"/> or a similar system reporting a spirit kill.
     /// </summary>
-    /// <param name="targetPlayerRole">The role of the player who will own the newly spawned spirit (the opponent of the killer).</param>
+    /// <param name="targetPlayerRole">The role of the player on whose side the revenge spirit should spawn (i.e., the opponent of the player who killed a spirit).</param>
     public void SpawnRevengeSpirit(PlayerRole targetPlayerRole)
     {
-        // Basic server and role checks
-        if (!IsServer || targetPlayerRole == PlayerRole.None) return;
+        if (!IsServer) return;
 
-        // Check Prefab configuration (already validated in Start, but good practice)
-        if (spiritPrefab == null)
+        Transform zoneCenter = (targetPlayerRole == PlayerRole.Player1) ? spawnZone1 : spawnZone2;
+        if (zoneCenter == null)
         {
-            Debug.LogError("[SpiritSpawner] SpawnRevengeSpirit: Spirit prefab reference is missing!", this);
-            return;
-        }
-        PoolableObjectIdentity identity = spiritPrefab.GetComponent<PoolableObjectIdentity>();
-        if (identity == null || string.IsNullOrEmpty(identity.PrefabID))
-        {
-            Debug.LogError($"[SpiritSpawner] SpawnRevengeSpirit: Spirit prefab '{spiritPrefab.name}' missing identity/ID!", this);
-            return;
-        }
-        string prefabID = identity.PrefabID;
-
-        // Check Pool existence
-        if (NetworkObjectPool.Instance == null)
-        {
-            Debug.LogError("[SpiritSpawner] SpawnRevengeSpirit: NetworkObjectPool instance not found!", this);
+            Debug.LogError($"[SpiritSpawner] Cannot spawn revenge spirit, spawn zone for {targetPlayerRole} is null.", this);
             return;
         }
 
-        // Check Registry existence (for count check)
-        if (SpiritRegistry.Instance == null)
+        // Basic check for max spirits on that side (can be made more sophisticated)
+        // This check is simplistic as it doesn't know current client-side spirit counts.
+        // For a full client-simulated model, this server-side check might be less critical
+        // or would need client-reported counts if strictly enforced.
+        /*
+        int currentSpiritsOnSide = 0; // Need a way to count this if strictly enforced
+        if (SpiritRegistry.Instance != null) // Assuming SpiritRegistry still tracks server-side NetworkObjects
         {
-             Debug.LogWarning("[SpiritSpawner] SpawnRevengeSpirit: SpiritRegistry instance not found.", this);
-             // Decide if we should proceed without check or abort. Aborting is safer.
-             return; 
+            currentSpiritsOnSide = (targetPlayerRole == PlayerRole.Player1) ? 
+                                   SpiritRegistry.Instance.GetSpiritCountForPlayer(ClientPlayerAssignment.Player1ClientId) : 
+                                   SpiritRegistry.Instance.GetSpiritCountForPlayer(ClientPlayerAssignment.Player2ClientId);
         }
 
-        // Check max spirit count for the TARGET player's side.
-        int targetSpiritCount = SpiritRegistry.Instance.GetSpiritCount(targetPlayerRole);
-        if (targetSpiritCount >= maxSpiritsPerSide)
+        if (currentSpiritsOnSide >= maxSpiritsPerSide)
         {
-             Debug.Log($"[SpiritSpawner] SpawnRevengeSpirit: Target player {targetPlayerRole} at max spirit capacity ({targetSpiritCount}/{maxSpiritsPerSide}). Revenge spawn skipped.", this);
-             return; // Target player is at max capacity
-        }
-
-        // Determine the TARGET player's spawn zone.
-        Transform targetSpawnZone = (targetPlayerRole == PlayerRole.Player1) ? spawnZone1 : spawnZone2;
-        if (targetSpawnZone == null) // Should be validated in Start, but check anyway
-        {
-            Debug.LogError($"[SpiritSpawner] SpawnRevengeSpirit: Target player ({targetPlayerRole}) spawn zone reference is null!", this);
+            Debug.Log($"[SpiritSpawner] Max spirits ({maxSpiritsPerSide}) reached for Player {targetPlayerRole}. Revenge spirit not spawned.", this);
             return;
         }
-        
-        // Calculate random position within the REVENGE spawn zone dimensions.
-        float spawnX = Random.Range(-revengeSpawnZoneSize.x / 2f, revengeSpawnZoneSize.x / 2f);
-        float spawnY = Random.Range(-revengeSpawnZoneSize.y / 2f, revengeSpawnZoneSize.y / 2f);
-        Vector3 spawnPosition = targetSpawnZone.position + new Vector3(spawnX, spawnY, 0);
+        */
 
-        // Get spirit from pool
-        NetworkObject pooledNetworkObject = NetworkObjectPool.Instance.GetNetworkObject(prefabID);
-        if (pooledNetworkObject == null)
-        {    
-            Debug.LogError($"[SpiritSpawner] SpawnRevengeSpirit: Failed to get Spirit '{prefabID}' from pool.", this);
+        // Calculate spawn position using revengeSpawnZoneSize for wider placement
+        Vector3 center = zoneCenter.position;
+        float randomX = Random.Range(-revengeSpawnZoneSize.x / 2f, revengeSpawnZoneSize.x / 2f);
+        float randomY = Random.Range(-revengeSpawnZoneSize.y / 2f, revengeSpawnZoneSize.y / 2f);
+        Vector3 spawnPosition = new Vector3(center.x + randomX, center.y + randomY, center.z);
+
+        // For revenge spirits, they typically don't aim initially, but this can be configured.
+        bool shouldAim = false; // Or use aimAtPlayerChance for revenge spirits too?
+        ulong targetPlayerClientId = 0;
+
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerData? playerData = PlayerDataManager.Instance.GetPlayerDataByRole(targetPlayerRole);
+            if (playerData.HasValue && playerData.Value.ClientId != 0)
+            {
+                targetPlayerClientId = playerData.Value.ClientId;
+            }
+            else
+            {
+                Debug.LogError($"[SpiritSpawner] SpawnRevengeSpirit: Could not get valid PlayerData (or ClientId is 0) for role {targetPlayerRole}. Revenge spirit will not be spawned.", this);
+                return;
+            }
+        }
+        else
+        {
+            Debug.LogError("[SpiritSpawner] SpawnRevengeSpirit: PlayerDataManager.Instance is null. Revenge spirit cannot be targeted and will not be spawned.", this);
             return;
         }
 
-        // Get required components from pooled object
-        SpiritController newSpiritController = pooledNetworkObject.GetComponent<SpiritController>();
-        if (newSpiritController == null)
-        {   
-            Debug.LogError("[SpiritSpawner] SpawnRevengeSpirit: Pooled object missing SpiritController! Returning to pool.", this);
-            NetworkObjectPool.Instance.ReturnNetworkObject(pooledNetworkObject); // Return broken object
-            return;
+        Debug.Log($"[SpiritSpawner] Attempting to spawn REVENGE spirit for {targetPlayerRole} (Client ID: {targetPlayerClientId}) at {spawnPosition}", this);
+        // Similar to SpawnSpiritInZone, but using revenge parameters
+        // We'll use the same RPC but flag it as a revenge spawn.
+        if (ClientSpiritSpawnHandler.Instance != null)
+        {
+            // Example default values: initialVelocity = 2.0f, spiritType = 0 (normal)
+            ClientSpiritSpawnHandler.Instance.SpawnSpiritClientRpc(spiritPrefabID, spawnPosition, shouldAim, targetPlayerClientId, true /*isRevengeSpawn*/, 2.0f, 0);
         }
-
-        // Position and Activate pooled object
-        pooledNetworkObject.transform.position = spawnPosition;
-        pooledNetworkObject.transform.rotation = Quaternion.identity;
-        pooledNetworkObject.gameObject.SetActive(true);
-
-        // Revenge spirits don't aim initially
-        Transform opponentPlayerTransform = null; 
-        bool shouldAim = false;
-        
-        // Spawn the new spirit on the network FIRST
-        pooledNetworkObject.Spawn(false); // Spawn client-owned or server-owned based on pool config? Assume false for now.
-        
-        // Initialize the new spirit AFTER spawning (passing the target role as the new owner)
-        newSpiritController.Initialize(opponentPlayerTransform, targetPlayerRole, shouldAim);
+        else
+        {
+            Debug.LogError("[SpiritSpawner] ClientSpiritSpawnHandler.Instance is null during revenge spawn. Cannot send SpawnSpiritClientRpc.", this);
+        }
     }
 
     public override void OnDestroy()

@@ -158,6 +158,7 @@ PolygonCollider2D:
       - {x: 0, y: 4.896}
       - {x: -0.8328604, y: 4.8979244}
       - {x: -0.391029, y: 1.648387}
+      - {x: -0.20224549, y: 0.36964837}
       - {x: -0.11654413, y: -0.21085593}
       - {x: 0.12881725, y: -0.2082524}
       - {x: 0.3927319, y: 1.7259218}
@@ -585,8 +586,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 558797947
+  m_SortingLayer: 1
   m_SortingOrder: 1
   m_Sprite: {fileID: 679922954, guid: c86dd6c6a87385944a38d0d0d3a90441, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
