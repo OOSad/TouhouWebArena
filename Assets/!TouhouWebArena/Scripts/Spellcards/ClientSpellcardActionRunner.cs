@@ -6,19 +6,23 @@ using TouhouWebArena.Spellcards;
 using TouhouWebArena.Spellcards.Behaviors; // For ClientBulletConfigurer
 
 /// <summary>
-/// [Client Only] Client-side service responsible for executing sequences of SpellcardActions locally.
-/// Handles delays, calculates formations, and spawns projectiles using ClientGameObjectPool.
+/// [Client Only] Handles the client-side execution of spellcard actions defined in `SpellcardAction` objects.
+/// This class is responsible for interpreting action sequences, managing delays, calculating bullet spawn positions
+/// and rotations based on formation types, and interfacing with the `ClientGameObjectPool` to spawn projectiles.
+/// It supports both static origin attacks (where all bullets originate from a fixed point and orientation)
+/// and dynamic origin attacks (where bullets can be spawned from a moving `Transform` with an explicit orientation,
+/// typically used for illusions moving while attacking).
+/// Multiple actions within a sequence can be started concurrently if their `startDelay` allows.
 /// </summary>
 public class ClientSpellcardActionRunner : MonoBehaviour
 {
-    // Optional: Singleton instance if needed, or accessed via ClientSpellcardExecutor
+    // Optional: Singleton instance for global access, if preferred over GetComponent.
     // public static ClientSpellcardActionRunner Instance { get; private set; } 
 
     // void Awake() { /* Singleton setup if needed */ }
     // void OnDestroy() { /* Singleton cleanup if needed */ }
 
-    // Reference to the object pool
-    private ClientGameObjectPool _poolInstance;
+    private ClientGameObjectPool _poolInstance; // Cached reference to the object pool for projectile spawning.
 
     void Start()
     {
@@ -32,8 +36,16 @@ public class ClientSpellcardActionRunner : MonoBehaviour
     }
 
     /// <summary>
-    /// Starts the execution of a sequence of spellcard actions (e.g., for Level 2/3 spellcards).
+    /// Initiates the execution of a list of `SpellcardAction` objects from a static origin.
+    /// Suitable for spellcards where the caster remains stationary or the attack pattern is fixed relative to a point.
+    /// Each action in the list is started as a separate coroutine, allowing for concurrent execution based on `startDelay`.
     /// </summary>
+    /// <param name="casterClientId">The NetworkObjectId of the entity casting the spellcard.</param>
+    /// <param name="targetClientId">The NetworkObjectId of the target (for homing or targeted effects, passed to ClientBulletConfigurer).</param>
+    /// <param name="actions">The list of `SpellcardAction` to execute.</param>
+    /// <param name="originPosition">The world-space position from which all actions in this sequence will originate.</param>
+    /// <param name="originRotation">The base world-space rotation for all actions in this sequence.</param>
+    /// <param name="sharedRandomOffset">A random offset applied consistently to all bullets spawned by this sequence (if the action's `applyRandomSpawnOffset` is true, though current implementation uses this as a sequence-wide base offset).</param>
     public void RunSpellcardActions(ulong casterClientId, ulong targetClientId, List<SpellcardAction> actions, Vector3 originPosition, Quaternion originRotation, Vector2 sharedRandomOffset)
     {
         if (actions == null || actions.Count == 0)
@@ -45,8 +57,14 @@ public class ClientSpellcardActionRunner : MonoBehaviour
     }
 
     /// <summary>
-    /// Starts the execution of a single spellcard action (e.g., for Level 4 illusion attacks).
+    /// Initiates the execution of a single `SpellcardAction` from a static origin.
+    /// Convenience method that wraps the action in a list and calls `RunSpellcardActions`.
     /// </summary>
+    /// <param name="casterClientId">The NetworkObjectId of the entity casting the spellcard.</param>
+    /// <param name="targetClientId">The NetworkObjectId of the target.</param>
+    /// <param name="action">The `SpellcardAction` to execute.</param>
+    /// <param name="originPosition">The world-space position from which the action will originate.</param>
+    /// <param name="originRotation">The base world-space rotation for the action.</param>
     public void RunSingleSpellcardAction(ulong casterClientId, ulong targetClientId, SpellcardAction action, Vector3 originPosition, Quaternion originRotation)
     {
         if (action == null)
@@ -60,6 +78,62 @@ public class ClientSpellcardActionRunner : MonoBehaviour
         // StartCoroutine(ExecuteSingleActionCoroutine(casterClientId, targetClientId, action, originPosition, originRotation)); 
     }
 
+    /// <summary>
+    /// Initiates the execution of a list of `SpellcardAction` objects using a dynamic origin `Transform`.
+    /// This is designed for scenarios like a moving illusion firing bullets. The bullets will spawn relative to the
+    /// `originTransform`'s position at the moment of spawning, but will use the `explicitAttackOrientation` for their rotation.
+    /// Each action in the list is started as a separate coroutine.
+    /// </summary>
+    /// <param name="casterClientId">The NetworkObjectId of the entity casting the spellcard (e.g., the illusion).</param>
+    /// <param name="targetClientId">The NetworkObjectId of the target.</param>
+    /// <param name="actions">The list of `SpellcardAction` to execute.</param>
+    /// <param name="originTransform">The `Transform` whose world position will be used as the origin for spawning bullets. This is read each time a bullet is spawned.</param>
+    /// <param name="explicitAttackOrientation">The world-space rotation to be applied to spawned bullets, overriding the `originTransform`'s rotation for bullet orientation.</param>
+    /// <param name="sharedRandomOffset">A random offset applied consistently to all bullets spawned by this sequence.</param>
+    public void RunSpellcardActionsDynamicOrigin(ulong casterClientId, ulong targetClientId, List<SpellcardAction> actions, Transform originTransform, Quaternion explicitAttackOrientation, Vector2 sharedRandomOffset)
+    {
+        if (actions == null || actions.Count == 0)
+        {
+            Debug.LogWarning("[ClientSpellcardActionRunner] RunSpellcardActionsDynamicOrigin called with no actions.");
+            return;
+        }
+        if (originTransform == null)
+        {
+            Debug.LogError("[ClientSpellcardActionRunner] RunSpellcardActionsDynamicOrigin called with null originTransform.");
+            return;
+        }
+        StartCoroutine(ExecuteActionSequenceCoroutineDynamicOrigin(casterClientId, targetClientId, actions, originTransform, explicitAttackOrientation, sharedRandomOffset));
+    }
+
+    /// <summary>
+    /// Initiates the execution of a single `SpellcardAction` using a dynamic origin `Transform`.
+    /// Convenience method that wraps the action in a list and calls `RunSpellcardActionsDynamicOrigin`.
+    /// </summary>
+    /// <param name="casterClientId">The NetworkObjectId of the entity casting the spellcard.</param>
+    /// <param name="targetClientId">The NetworkObjectId of the target.</param>
+    /// <param name="action">The `SpellcardAction` to execute.</param>
+    /// <param name="originTransform">The `Transform` whose world position will be used as the origin for spawning bullets. This is read each time a bullet is spawned.</param>
+    /// <param name="explicitAttackOrientation">The world-space rotation to be applied to spawned bullets, overriding the `originTransform`'s rotation for bullet orientation.</param>
+    public void RunSingleSpellcardActionDynamicOrigin(ulong casterClientId, ulong targetClientId, SpellcardAction action, Transform originTransform, Quaternion explicitAttackOrientation)
+    {
+        if (action == null)
+        {
+            Debug.LogWarning("[ClientSpellcardActionRunner] RunSingleSpellcardActionDynamicOrigin called with null action.");
+            return;
+        }
+        if (originTransform == null)
+        {
+            Debug.LogError("[ClientSpellcardActionRunner] RunSingleSpellcardActionDynamicOrigin called with null originTransform.");
+            return;
+        }
+        StartCoroutine(ExecuteActionSequenceCoroutineDynamicOrigin(casterClientId, targetClientId, new List<SpellcardAction>{ action }, originTransform, explicitAttackOrientation, Vector2.zero));
+    }
+
+    /// <summary>
+    /// Coroutine that iterates through a list of `SpellcardAction` objects and starts an individual coroutine
+    /// (`ExecuteSingleActionCoroutineInternal`) for each one. This allows actions to run concurrently based on their `startDelay`.
+    /// Uses a static origin position and rotation for all actions in the sequence.
+    /// </summary>
     private IEnumerator ExecuteActionSequenceCoroutine(ulong casterClientId, ulong targetClientId, List<SpellcardAction> actions, Vector3 originPosition, Quaternion originRotation, Vector2 sharedRandomOffset)
     {
         if (_poolInstance == null) yield break; 
@@ -71,45 +145,67 @@ public class ClientSpellcardActionRunner : MonoBehaviour
         }
 
         // --- CALCULATE SHARED RANDOM OFFSET (based on first action) --- 
-        Vector3 sequenceOffset = sharedRandomOffset;
+        // This offset is calculated once for the entire sequence if the first action requests it.
+        // If individual actions need truly independent random offsets, this logic might need to be per-action.
+        // For now, assuming a single shared offset for the composite pattern is desired.
+        Vector3 sequenceOffset = sharedRandomOffset; 
         // --- END SHARED RANDOM OFFSET ---
 
         foreach (SpellcardAction action in actions)
         {
-            if (action.startDelay > 0) yield return new WaitForSeconds(action.startDelay);
+            // Launch a separate coroutine for each action. This allows actions with startDelay = 0
+            // to effectively begin their execution logic (including the delay itself) in parallel.
+            StartCoroutine(ExecuteSingleActionCoroutineInternal(casterClientId, targetClientId, action, originPosition, originRotation, targetPlayerRole, sequenceOffset));
+        }
+        yield return null; // Yield once to allow all started coroutines to begin processing.
+    }
 
-            int bulletsSpawnedThisAction = 0;
-            for (int i = 0; i < action.count; i++)
+    /// <summary>
+    /// Internal coroutine to execute a single `SpellcardAction` from a static origin.
+    /// Handles `startDelay`, then iterates `action.count` times to spawn bullets.
+    /// Manages `intraActionDelay` between bullet spawns within the same action.
+    /// Calculates spawn position and rotation for each bullet and configures it using `ClientBulletConfigurer`.
+    /// </summary>
+    private IEnumerator ExecuteSingleActionCoroutineInternal(ulong casterClientId, ulong targetClientId, SpellcardAction action, Vector3 originPosition, Quaternion originRotation, PlayerRole targetPlayerRole, Vector3 sequenceOffset)
+    {
+        if (_poolInstance == null) yield break;
+
+        if (action.startDelay > 0) yield return new WaitForSeconds(action.startDelay);
+
+        int bulletsSpawnedThisAction = 0;
+        for (int i = 0; i < action.count; i++)
+        {
+            if (action.skipEveryNth > 0 && (i + 1) % action.skipEveryNth == 0)
             {
-                if (action.skipEveryNth > 0 && (i + 1) % action.skipEveryNth == 0)
-                {
-                    if (action.intraActionDelay > 0 && i < action.count - 1) yield return new WaitForSeconds(action.intraActionDelay);
-                    continue; 
-                }
-
-                GameObject bulletPrefab = GetBulletPrefab(action.bulletPrefabs, bulletsSpawnedThisAction);
-                if (bulletPrefab == null) { Debug.LogError($"[ClientSpellcardActionRunner] Could not get bullet prefab for action."); continue; }
-                PooledObjectInfo poolInfo = bulletPrefab.GetComponent<PooledObjectInfo>();
-                if (poolInfo == null || string.IsNullOrEmpty(poolInfo.PrefabID)) { Debug.LogError($"[ClientSpellcardActionRunner] Bullet prefab '{bulletPrefab.name}' missing PooledObjectInfo/PrefabID!"); continue; }
-                GameObject bulletInstance = _poolInstance.GetObject(poolInfo.PrefabID);
-                if (bulletInstance == null) { Debug.LogWarning($"[ClientSpellcardActionRunner] Pool returned null for PrefabID '{poolInfo.PrefabID}'."); continue; }
-
-                // Pass the single sequenceOffset to CalculateSpawnPosition
-                Vector3 spawnPosition = CalculateSpawnPosition(action, i, originPosition, originRotation, targetPlayerRole, sequenceOffset); 
-                Quaternion spawnRotation = CalculateSpawnRotation(action, i, originRotation);
-
-                bulletInstance.transform.position = spawnPosition;
-                bulletInstance.transform.rotation = spawnRotation;
-                ClientBulletConfigurer.ConfigureBullet(bulletInstance, action, casterClientId, targetClientId, i);
-                bulletInstance.SetActive(true);
-                bulletsSpawnedThisAction++;
-
                 if (action.intraActionDelay > 0 && i < action.count - 1) yield return new WaitForSeconds(action.intraActionDelay);
+                continue; 
             }
+
+            GameObject bulletPrefab = GetBulletPrefab(action.bulletPrefabs, bulletsSpawnedThisAction);
+            if (bulletPrefab == null) { Debug.LogError($"[ClientSpellcardActionRunner] Could not get bullet prefab for action."); continue; }
+            PooledObjectInfo poolInfo = bulletPrefab.GetComponent<PooledObjectInfo>();
+            if (poolInfo == null || string.IsNullOrEmpty(poolInfo.PrefabID)) { Debug.LogError($"[ClientSpellcardActionRunner] Bullet prefab '{bulletPrefab.name}' missing PooledObjectInfo/PrefabID!"); continue; }
+            GameObject bulletInstance = _poolInstance.GetObject(poolInfo.PrefabID);
+            if (bulletInstance == null) { Debug.LogWarning($"[ClientSpellcardActionRunner] Pool returned null for PrefabID '{poolInfo.PrefabID}'."); continue; }
+
+            if (!bulletInstance.activeSelf)
+            {
+                bulletInstance.SetActive(true);
+            }
+
+            Vector3 spawnPosition = CalculateSpawnPosition(action, i, originPosition, originRotation, targetPlayerRole, sequenceOffset); 
+            Quaternion spawnRotation = CalculateSpawnRotation(action, i, originRotation);
+
+            bulletInstance.transform.position = spawnPosition;
+            bulletInstance.transform.rotation = spawnRotation;
+            ClientBulletConfigurer.ConfigureBullet(bulletInstance, action, casterClientId, targetClientId, i);
+            bulletsSpawnedThisAction++;
+
+            if (action.intraActionDelay > 0 && i < action.count - 1) yield return new WaitForSeconds(action.intraActionDelay);
         }
     }
     
-    // Helper to cycle through bullet prefabs
+    // Helper to cycle through bullet prefabs if multiple are defined in an action.
     private GameObject GetBulletPrefab(List<GameObject> prefabs, int index)
     {
         if (prefabs == null || prefabs.Count == 0) return null;
@@ -137,17 +233,18 @@ public class ClientSpellcardActionRunner : MonoBehaviour
                 break;
         }
 
-        // APPLY SHARED sequence offset AFTER formation offset is calculated
+        // Apply the sequence-wide shared offset to the calculated local offset of the formation.
         Vector3 finalLocalOffset = baseLocalOffset + sequenceOffset;
 
+        // Transform the final local offset by the origin's rotation and add it to the origin's position.
         return originPos + (originRot * finalLocalOffset);
     }
     
-    // Helper to calculate initial spawn rotation
+    // Helper to calculate initial spawn rotation for a bullet within an action.
     private Quaternion CalculateSpawnRotation(SpellcardAction action, int index, Quaternion originRot)
     { 
-        // TODO: Implement more complex rotation logic if needed (e.g., circle bullets facing out)
-        // For now, basic rotation based on formation angle + origin rotation.
+        // Determines the local rotation of a bullet based on its action's properties (e.g., formation angle).
+        // This local rotation is then combined with the overall originRotation.
         Quaternion localRotation = Quaternion.Euler(0, 0, action.angle);
         switch (action.formation)
         {
@@ -168,5 +265,81 @@ public class ClientSpellcardActionRunner : MonoBehaviour
                  break;
         }
         return originRot * localRotation;
+    }
+
+    /// <summary>
+    /// Coroutine that iterates through a list of `SpellcardAction` objects and starts an individual coroutine
+    /// (`ExecuteSingleActionCoroutineInternalDynamicOrigin`) for each. This allows concurrent execution based on `startDelay`.
+    /// Uses a dynamic `originTransform` for position (read per bullet) and an `explicitAttackOrientation` for rotation.
+    /// </summary>
+    private IEnumerator ExecuteActionSequenceCoroutineDynamicOrigin(ulong casterClientId, ulong targetClientId, List<SpellcardAction> actions, Transform originTransform, Quaternion explicitAttackOrientation, Vector2 sharedRandomOffset)
+    {
+        if (_poolInstance == null) yield break; 
+        PlayerRole targetPlayerRole = PlayerRole.None; 
+        if (PlayerDataManager.Instance != null)
+        {
+            PlayerData? targetData = PlayerDataManager.Instance.GetPlayerData(targetClientId);
+            if (targetData.HasValue) targetPlayerRole = targetData.Value.Role;
+        }
+
+        Vector3 sequenceOffset = sharedRandomOffset; 
+
+        foreach (SpellcardAction action in actions)
+        {
+            // Each action gets its own coroutine, using the shared dynamic transform and explicit orientation.
+            StartCoroutine(ExecuteSingleActionCoroutineInternalDynamicOrigin(casterClientId, targetClientId, action, originTransform, explicitAttackOrientation, targetPlayerRole, sequenceOffset));
+        }
+        yield return null; // Yield once to allow all started coroutines to begin.
+    }
+
+    /// <summary>
+    /// Internal coroutine to execute a single `SpellcardAction` using a dynamic origin `Transform`.
+    /// Handles `startDelay`, then iterates `action.count` times to spawn bullets.
+    /// For each bullet, it reads the current `originTransform.position` for the spawn location
+    /// but uses the `explicitAttackOrientation` for the bullet's rotation.
+    /// Manages `intraActionDelay` between spawns.
+    /// </summary>
+    private IEnumerator ExecuteSingleActionCoroutineInternalDynamicOrigin(ulong casterClientId, ulong targetClientId, SpellcardAction action, Transform originTransform, Quaternion explicitAttackOrientation, PlayerRole targetPlayerRole, Vector3 sequenceOffset)
+    {
+        if (_poolInstance == null || action == null || originTransform == null) yield break;
+
+        if (action.startDelay > 0) yield return new WaitForSeconds(action.startDelay);
+
+        int bulletsSpawnedThisAction = 0;
+        for (int i = 0; i < action.count; i++)
+        {
+            if (action.skipEveryNth > 0 && (i + 1) % action.skipEveryNth == 0)
+            {
+                if (action.intraActionDelay > 0 && i < action.count - 1) yield return new WaitForSeconds(action.intraActionDelay);
+                continue; 
+            }
+
+            GameObject bulletPrefab = GetBulletPrefab(action.bulletPrefabs, bulletsSpawnedThisAction);
+            if (bulletPrefab == null) { Debug.LogError($"[ClientSpellcardActionRunner] Could not get bullet prefab for action."); continue; }
+            PooledObjectInfo poolInfo = bulletPrefab.GetComponent<PooledObjectInfo>();
+            if (poolInfo == null || string.IsNullOrEmpty(poolInfo.PrefabID)) { Debug.LogError($"[ClientSpellcardActionRunner] Bullet prefab '{bulletPrefab.name}' missing PooledObjectInfo/PrefabID!"); continue; }
+            GameObject bulletInstance = _poolInstance.GetObject(poolInfo.PrefabID);
+            if (bulletInstance == null) { Debug.LogWarning($"[ClientSpellcardActionRunner] Pool returned null for PrefabID '{poolInfo.PrefabID}'."); continue; }
+
+            if (!bulletInstance.activeSelf)
+            {
+                bulletInstance.SetActive(true);
+            }
+
+            // Fetch current position from the dynamic transform FOR EACH BULLET/SUB-SPAWN
+            Vector3 currentOriginPos = originTransform.position;
+            // Use the explicitly passed attack orientation for rotation calculations
+            Quaternion currentOriginRot = explicitAttackOrientation; 
+
+            Vector3 spawnPosition = CalculateSpawnPosition(action, i, currentOriginPos, currentOriginRot, targetPlayerRole, sequenceOffset); 
+            Quaternion spawnRotation = CalculateSpawnRotation(action, i, currentOriginRot);
+
+            bulletInstance.transform.position = spawnPosition;
+            bulletInstance.transform.rotation = spawnRotation;
+            ClientBulletConfigurer.ConfigureBullet(bulletInstance, action, casterClientId, targetClientId, i);
+            bulletsSpawnedThisAction++;
+
+            if (action.intraActionDelay > 0 && i < action.count - 1) yield return new WaitForSeconds(action.intraActionDelay);
+        }
     }
 } 

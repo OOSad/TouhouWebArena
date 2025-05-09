@@ -3,19 +3,20 @@
 This document provides an overview of the networking architecture for Touhou Web Arena, which uses Unity's Netcode for GameObjects package. The project utilizes a hybrid approach:
 
 *   **Client-Authoritative Movement:** Player movement is handled entirely client-side (`ClientAuthMovement.cs`) for maximum responsiveness, with the owner synchronizing its position via a `NetworkVariable`.
-*   **Server-Authoritative Spawning:** The server decides *what* and *when* to spawn for key gameplay events (enemy waves, retaliation bullets, complex attacks). It then sends targeted `ClientRpc` calls to instruct clients.
-*   **Client-Side Simulation:** Clients, upon receiving spawn commands via RPC, instantiate and simulate the relevant objects locally. This includes enemy movement (`SplineWalker.cs`), projectile movement (`BulletMovement.cs`, `StageSmallBulletMoverScript.cs`), object lifetimes (`ClientProjectileLifetime.cs`), and visual effects (`ClientFairyShockwave.cs`). These simulated objects are typically managed by `ClientGameObjectPool.cs` and do not have `NetworkObject` components.
-*   **Client Reporting:** Clients report significant events (like dealing the killing blow to a fairy) back to the server via `ServerRpc` (`PlayerAttackRelay.ReportFairyKillServerRpc`).
-*   **Server Orchestration:** The server processes these reports and orchestrates subsequent actions (e.g., instructing all clients via `ClientRpc` to spawn a retaliation bullet on the opponent's field).
+*   **Server-Authoritative Spawning & Control for Key Entities:** The server decides *what* and *when* to spawn for key gameplay events (enemy waves, Level 4 Illusions). It then sends targeted `ClientRpc` calls to instruct clients for purely visual/simulated objects, or directly spawns and manages `NetworkObject`s (like Illusions).
+    *   **Level 4 Illusions (`ServerIllusionOrchestrator`, `ClientIllusionView`):** These are server-spawned `NetworkObject`s. The server manages their logical state (position, health, attack decisions). Clients have a `ClientIllusionView` that receives RPCs to update visuals and execute attacks. The *attacks themselves* (bullets) are then client-simulated.
+*   **Client-Side Simulation (for projectiles, basic enemies, effects):** Clients, upon receiving spawn commands via RPC (for spellcard bullets, basic enemies, etc.), instantiate and simulate the relevant objects locally. This includes enemy movement (`SplineWalker.cs`), projectile movement (various `Client...Movement.cs` scripts configured by `ClientBulletConfigurer.cs`), object lifetimes (`ClientProjectileLifetime.cs`), and visual effects (`ClientFairyShockwave.cs`). These simulated objects are typically managed by `ClientGameObjectPool.cs` and do not have `NetworkObject` components.
+*   **Client Reporting:** Clients report significant events (like dealing the killing blow to a fairy, or an illusion taking lethal damage) back to the server via `ServerRpc` (e.g., `PlayerAttackRelay.ReportFairyKillServerRpc`, `IllusionHealth.ReportDeathToServerRpc`).
+*   **Server Orchestration:** The server processes these reports and orchestrates subsequent actions (e.g., instructing all clients via `ClientRpc` to spawn a retaliation bullet, or updating the state of a server-authoritative illusion).
 
-This model aims for responsiveness in player control and basic actions while retaining server control over critical game flow and preventing simple cheats related to spawning.
+This model aims for responsiveness in player control and basic actions while retaining server control over critical game flow, preventing simple cheats related to spawning, and managing authoritative entities like Illusions.
 
 ## Core Concepts
 
 Netcode for GameObjects provides several building blocks for networked applications:
 
-*   **`NetworkObject`:** Key game entities that need their state *continuously synchronized* or require server-authoritative control (like Players, potentially complex boss entities) must have a `NetworkObject` component attached. Objects spawned and simulated purely client-side based on RPC commands (basic projectiles, fairies, shockwaves) generally do *not* have `NetworkObject` components.
-*   **`NetworkBehaviour`:** Scripts that contain networking logic (RPCs, NetworkVariables) must inherit from `NetworkBehaviour`. These typically reside on `NetworkObject`s (like the Player prefab or singleton network handlers).
+*   **`NetworkObject`:** Key game entities that need their state *continuously synchronized* or require server-authoritative control (like Players, Level 4 Illusions) must have a `NetworkObject` component attached. Objects spawned and simulated purely client-side based on RPC commands (spellcard projectiles, basic projectiles, fairies, shockwaves) generally do *not* have `NetworkObject` components.
+*   **`NetworkBehaviour`:** Scripts that contain networking logic (RPCs, NetworkVariables) must inherit from `NetworkBehaviour`. These typically reside on `NetworkObject`s (like the Player prefab, Illusion prefabs, or singleton network handlers).
 *   **RPCs (Remote Procedure Calls):** Allow specific functions to be called across the network.
     *   **`ServerRpc`:** Used by a client (typically the owner of a `NetworkObject`, like `PlayerAttackRelay` on the Player) to report an event to the server (e.g., `ReportFairyKillServerRpc`).
     *   **`ClientRpc`:** Used by the server (often from a singleton `NetworkBehaviour` like `EffectNetworkHandler` or `FairySpawnNetworkHandler`) to command one or more clients to execute a function (e.g., `SpawnStageBulletClientRpc`, `SpawnFairyWaveClientRpc`).
@@ -30,7 +31,36 @@ Netcode for GameObjects provides several building blocks for networked applicati
         1.  Server (`FairySpawner`): Determines wave parameters.
         2.  Server: Calls `SpawnFairyWaveClientRpc` on a singleton (`FairySpawnNetworkHandler.Instance`), targeting all clients.
         3.  All Clients: Receive `SpawnFairyWaveClientRpc`, get prefab from `ClientGameObjectPool`, initialize position/path (`SplineWalker`), activate the enemy.
-*   **`NetworkVariable`:** Used to automatically synchronize simple data types. Mainly used for player position (`ClientAuthMovement.NetworkedPosition`, owner-write) and potentially server-managed states like score or player metadata (`PlayerDataManager`). Health is now primarily client-side (`ClientFairyHealth`) with kills reported to the server, rather than being a directly synchronized variable.
+    *   **NEW: Common Flow for Level 4 Illusion Lifecycle & Attacks:**
+        *   **Illusion Spawning (Server-Side):**
+            1.  `ServerAttackSpawner.ExecuteSpellcard` (for Level 4) loads `Level4SpellcardData`.
+            2.  It instantiates the `IllusionPrefab` (which has a `NetworkObject`, `ServerIllusionOrchestrator`, `ClientIllusionView`, `IllusionHealth` etc.).
+            3.  The `NetworkObject` is spawned: `illusionNetworkObject.Spawn(true)`.
+            4.  `ServerIllusionOrchestrator.Initialize()` is called by `ServerAttackSpawner` to set its target, spellcard data, etc.
+            5.  `ServerIllusionOrchestrator` (likely in `OnNetworkSpawn` or `Initialize`) calls `InitializeClientRpc` on its `ClientIllusionView` component, sending initial state like max health, target ID, and if the current client is responsible for reporting its death.
+        *   **Illusion Idle Movement (Server-Initiated, Client Visual Update):**
+            1.  `ServerIllusionOrchestrator` determines a new idle position.
+            2.  It calls `UpdateTransformClientRpc(newPosition, newRotation, isTeleport)` on its `ClientIllusionView`.
+            3.  All clients' `ClientIllusionView` instances receive this and update their `transform`.
+        *   **Illusion Attack Execution (Server-Initiated Logic, Client-Simulated Attack):**
+            1.  `ServerIllusionOrchestrator` decides to perform an attack (e.g., from its `AttackPool`).
+            2.  It calculates movement parameters if the attack involves movement (start/end positions, duration).
+            3.  It calls `ExecuteAttackPatternClientRpc(attackPatternId, targetPlayerId, isMovingWithAttack, startPos, endPos, moveDuration, initialOrientation)` on its `ClientIllusionView`.
+            4.  Each `ClientIllusionView` receives this:
+                *   If `isMovingWithAttack`, it starts `AnimateIllusionMovementAndAttack` coroutine (Lerps illusion, calls `ClientSpellcardActionRunner.RunSpellcardActionsDynamicOrigin`).
+                *   Otherwise, it calls `ClientSpellcardActionRunner.RunSpellcardActions` directly.
+                *   `ClientSpellcardActionRunner` then uses `ClientBulletConfigurer` to spawn and set up client-simulated projectiles as detailed in `projectile_system.md`.
+        *   **Illusion Taking Damage & Despawning (Client Reports, Server Acts):**
+            1.  A player's bullet hits an illusion's collider on a client.
+            2.  `IllusionHealth.OnTriggerEnter2D` (on the client-side illusion) detects this.
+            3.  If this client is responsible for the illusion (`_isResponsibleClient`), `IllusionHealth.TakeDamageClientSide` is called. If health <= 0, it calls `ReportDeathToServerRpc()`.
+            4.  The server-side `IllusionHealth` receives `ReportDeathToServerRpc`.
+            5.  It calls the public method `ProcessClientDeathReport()` on its local `ServerIllusionOrchestrator`.
+            6.  `ServerIllusionOrchestrator.DespawnIllusion()` is called, which notifies `ServerIllusionManager` and then despawns the illusion's `NetworkObject` (`NetworkObject.Despawn()`).
+        *   **Other Despawn Scenarios (Server-Side):**
+            *   Timed despawn: `ServerIllusionOrchestrator` can despawn itself after its lifetime.
+            *   Countered: `ServerAttackSpawner` can directly call `DespawnIllusion()` on an enemy `ServerIllusionOrchestrator` if the local player casts a Level 4 spell.
+*   **`NetworkVariable`:** Used to automatically synchronize simple data types. Mainly used for player position (`ClientAuthMovement.NetworkedPosition`, owner-write) and potentially server-managed states like score or player metadata (`PlayerDataManager`). Health for illusions is managed via `IllusionHealth` (client-side tracking, server-RPC for death), and fairy health is client-side (`ClientFairyHealth`) with kills reported to the server, rather than being directly synchronized variables.
 
 ## Starting a Session / Connection Flow
 
@@ -68,21 +98,21 @@ Here's how major game systems interact with the network:
     *   Server calls `EffectNetworkHandler.Instance.SpawnStageBulletClientRpc(opponentClientId, params...)` targeting *all* clients.
     *   All clients receive RPC, use `opponentClientId` to find the correct player's spawn area via `SpawnAreaManager`, get bullet from `ClientGameObjectPool`, set position, initialize `StageSmallBulletMoverScript` with parameters, activate.
 *   **Charge Attacks & Spellcard Activation:** Client (`PlayerShootingController`) sends `ServerRpc` requests (`RequestChargeAttackServerRpc`, `RequestSpellcardServerRpc`). Server (`SpellBarManager`, `ServerAttackSpawner`) validates, consumes costs, and orchestrates effects. Visualization likely involves server sending `ClientRpc`s to instruct clients to spawn specific effects/projectiles locally via `ClientGameObjectPool`, similar to retaliation bullets.
-*   **Spellcard Activation & Execution (Level 2/3 - Server Triggered, Client Simulated):**
-    *   Client (`PlayerShootingController`) sends `RequestSpellcardServerRpc`.
-    *   Server (`SpellBarManager`) validates cost.
+*   **Spellcard Activation & Execution (Levels 1-3 - Server Triggered, Client Simulated):**
+    *   Client (`PlayerShootingController`) sends `RequestSpellcardServerRpc` (passing spell level).
+    *   Server (`SpellBarManager`) validates cost based on level.
     *   Server (`ServerAttackSpawner`) triggers caster clear effect and banner RPC.
-    *   Server (`ServerAttackSpawner`) loads first action of `SpellcardData` to check `applyRandomSpawnOffset`, calculates a single `sharedRandomOffset` if needed.
-    *   Server (`ServerAttackSpawner`) calls `SpellcardNetworkHandler.ExecuteSpellcardClientRpc`, passing resource path, IDs, level, and the `sharedRandomOffset`.
-    *   All clients receive RPC.
-    *   Client (`ClientSpellcardExecutor`) loads `SpellcardData`, calculates origin (target field center).
-    *   Client (`ClientSpellcardExecutor`) calls `ClientSpellcardActionRunner.RunSpellcardActions`.
-    *   Client (`ClientSpellcardActionRunner`) executes the action sequence coroutine:
-        *   Applies the *same* `sharedRandomOffset` to all actions.
-        *   Spawns bullets from `ClientGameObjectPool`.
-        *   Uses `ClientBulletConfigurer` to activate and initialize client-side behavior scripts on bullets.
-        *   Handles delays and formations.
-    *   Bullet movement and lifetime are handled by client-side components (`ClientLinearMovement`, `ClientProjectileLifetime`, etc.).
+    *   Server (`ServerAttackSpawner`) loads `SpellcardData` for the character and spell level. If the first action has `applyRandomSpawnOffset`, it calculates a single `sharedRandomOffset`.
+    *   Server (`ServerAttackSpawner`) calls `SpellcardNetworkHandler.ExecuteSpellcardClientRpc`, passing the spellcard resource path, sender/target client IDs, spell level, and the `sharedRandomOffset`.
+    *   All clients receive the `ExecuteSpellcardClientRpc` call via `SpellcardNetworkHandler`.
+    *   The client-side `SpellcardNetworkHandler` loads the `SpellcardData` using the resource path.
+    *   It then calls `ClientSpellcardActionRunner.RunSpellcardActions`, providing the loaded actions, sender/target IDs, the shared offset, and an origin transform (typically the center of the target player's play area).
+    *   `ClientSpellcardActionRunner` executes the sequence of `SpellcardAction`s:
+        *   It applies the `sharedRandomOffset` to relevant spawn positions if applicable.
+        *   For each bullet-spawning action, it gets a prefab from `ClientGameObjectPool`.
+        *   It then calls `ClientBulletConfigurer.ConfigureBullet()`, passing the bullet instance, the `SpellcardAction` data, caster/target IDs, and bullet index. This step is responsible for setting the bullet's lifetime and enabling/initializing the correct client-side movement behavior script (e.g., `ClientLinearMovement`, `ClientHomingMovement`).
+        *   Handles delays and pattern formations as defined in the `SpellcardAction` sequence.
+    *   The actual movement of bullets and their timed despawn are handled by their respective client-side components (e.g., `ClientLinearMovement.cs`, `ClientProjectileLifetime.cs`).
 *   **Enemy Spawning & Behavior (Server-Initiated, Client-Simulated):**
     *   Server (`FairySpawner.cs`) determines wave data.
     *   Server calls `FairySpawnNetworkHandler.SpawnFairyWaveClientRpc` targeting all clients, passing wave data.
@@ -97,6 +127,14 @@ Here's how major game systems interact with the network:
         *   Clear certain bullets (e.g., `StageSmallBulletMoverScript.ForceReturnToPoolByBomb()`).
     *   If the kill was by the local player (`bulletOwnerId == LocalClientId`), `ClientFairyHealth` also calls `PlayerAttackRelay.LocalInstance.ReportFairyKillServerRpc()`.
 *   **Health & Damage:** Player bullet collision is detected client-side (`BulletMovement` or `ClientFairyController`). Damage is applied locally to `ClientFairyHealth`. If this results in a kill, and the killer is the local player, the kill is reported to the server. Server handles consequences (retaliation bullets, score). Direct player health (`PlayerHealth`) might still be server-authoritative (TBD based on its implementation).
+*   **NEW: Level 4 Illusion System:**
+    *   Server-authoritative `NetworkObject`s (`ServerIllusionOrchestrator`) are spawned by `ServerAttackSpawner` when a player casts a Level 4 spellcard.
+    *   Clients have a corresponding `ClientIllusionView` (which is also a component on the same Illusion prefab that includes the `NetworkObject`) that mirrors the illusion's state and actions. `ClientIllusionView` receives RPCs to update the illusion's visual transform and to trigger attack patterns.
+    *   `ServerIllusionOrchestrator` manages the illusion's lifecycle (including timed despawn), idle movement (changes are sent to clients via `UpdateTransformClientRpc`), and attack selection from its configured `AttackPool`.
+    *   When an illusion attacks, `ServerIllusionOrchestrator` sends an `ExecuteAttackPatternClientRpc` to its `ClientIllusionView`.
+    *   `ClientIllusionView` then uses `ClientSpellcardActionRunner` (passing its own transform if the illusion is moving during the attack, for dynamic bullet origins) to execute the attack pattern. This involves spawning client-simulated projectiles that are configured by `ClientBulletConfigurer`.
+    *   Illusion health is managed by `IllusionHealth.cs` (a `NetworkBehaviour` on the Illusion prefab). Client-side detection of hits (on the client responsible for that illusion) can lead to `TakeDamageClientSide`. If health is depleted, `ReportDeathToServerRpc` is sent to the server. The server-side `IllusionHealth` then calls `ProcessClientDeathReport` on its `ServerIllusionOrchestrator`, which handles the despawn process (including notifying `ServerIllusionManager`).
+    *   Illusions can also be despawned by direct server logic, such as when an opposing player casts a Level 4 spell (handled in `ServerAttackSpawner`).
 *   **Game State (Score, Rounds):** Managed by a server-authoritative `RoundManager`.
 *   **Object Pooling:**
     *   **`ClientGameObjectPool.cs`:** Primary pool used by all clients for non-NetworkObject entities spawned via RPC commands or local actions (player bullets, enemy bullets, fairies, spirits, shockwaves, VFX).
@@ -122,8 +160,15 @@ Here's how major game systems interact with the network:
 *   **`SpawnAreaManager.cs`:** Singleton providing spawn area positions based on `PlayerRole`.
 *   **`PlayerDataManager.cs`:** Manages `PlayerData` structs containing `ClientId` and `PlayerRole`.
 *   **`PlayerDeathBomb.cs`:** Server-side script on player(?). Sends `ClearBulletsInRadiusClientRpc` (likely via `EffectNetworkHandler` or similar).
-*   **`ServerAttackSpawner.cs`:** Server-side. Still needed for orchestrating server-verified charge/spell attacks.
+*   **`ServerAttackSpawner.cs`:** Server-side. Orchestrates server-verified charge attacks and Level 1-3 spellcards (via `SpellcardNetworkHandler.ExecuteSpellcardClientRpc`). For Level 4 spellcards, it instantiates and spawns the Illusion prefab (containing `ServerIllusionOrchestrator` and `NetworkObject`), and calls `Initialize` on the orchestrator. Also handles despawning an enemy's illusion if it targets the caster of a new Level 4 spell.
 *   **`SpellBarManager.cs`:** Server-side. Still needed for managing spell costs.
+*   **`ServerIllusionManager.cs`:** Server-side singleton. Tracks all active `ServerIllusionOrchestrator` instances. Used by orchestrators to notify upon despawn and by `ServerAttackSpawner` to find existing illusions.
+*   **`ServerIllusionOrchestrator.cs`:** Server-side `NetworkBehaviour` on Illusion prefabs. Manages an illusion's lifecycle (timed despawn, health-based despawn via `IllusionHealth`), idle movement (`UpdateTransformClientRpc`), and attack selection/execution (`ExecuteAttackPatternClientRpc`). Interacts with `ServerIllusionManager`.
+*   **`ClientIllusionView.cs`:** Client-side `NetworkBehaviour` on Illusion prefabs. Receives RPCs from `ServerIllusionOrchestrator` to update transform, initialize, and execute attack patterns (delegating to `ClientSpellcardActionRunner`).
+*   **`IllusionHealth.cs`:** `NetworkBehaviour` on Illusion prefabs. Manages illusion health. Client-side `OnTriggerEnter2D` detects hits; if responsible, calls `TakeDamageClientSide` and `ReportDeathToServerRpc`. Server-side receives RPC and tells its `ServerIllusionOrchestrator` to `ProcessClientDeathReport`.
+*   **`SpellcardNetworkHandler.cs`:** Server singleton for sending, and client-side receiver for, `ExecuteSpellcardClientRpc` for Level 1-3 spellcards. Client-side, it loads data and passes it to `ClientSpellcardActionRunner`.
+*   **`ClientSpellcardActionRunner.cs`:** Client-side helper. Executes sequences of `SpellcardAction`s, spawns bullets from pool, and calls `ClientBulletConfigurer`.
+*   **`ClientBulletConfigurer.cs`:** Client-side static helper. Configures individual bullets (lifetime, movement behavior) based on `SpellcardAction` data.
 *   **`FairySpawner.cs`:** Server-side. Calculates waves, calls `FairySpawnNetworkHandler`.
 *   **~~`NetworkObjectPool.cs`~~:** Likely Deprecated/Unused.
 *   **~~`ServerBasicShotSpawner.cs`~~:** Deprecated for player shots.

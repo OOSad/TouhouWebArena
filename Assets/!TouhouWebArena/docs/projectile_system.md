@@ -2,165 +2,186 @@
 
 ## Overview
 
-Projectiles (bullets, lasers, orbs, etc.) are fundamental gameplay elements. This document outlines their common structure and interaction systems. The projectile system is now predominantly **Client-Side Simulated** based on server commands.
+Projectiles (bullets, lasers, orbs, etc.) are fundamental gameplay elements in Touhou Web Arena. This document outlines their structure, lifecycle, and interaction systems.
 
-## Client-Simulated Player Projectiles (Basic Shots)
+The projectile system for player spellcards and illusion attacks is primarily **Client-Simulated** for responsiveness and visual fidelity. The server dictates *what* projectiles to fire and *their properties* through spellcard data and RPCs, but the clients are responsible for spawning the visual representation, moving them according to defined behaviors, and handling visual-only collisions (like with walls). Critical game state changes resulting from projectile interactions (e.g., player damage, illusion death) are ultimately reported to and validated by the server.
 
-This model is used for standard player shots to enhance responsiveness.
+This document covers:
+*   Core projectile components.
+*   The lifecycle of spellcard-based projectiles (including those from illusions).
+*   Client-side movement behaviors and configuration.
+*   Projectile despawning mechanisms (timed, wall collision, clearing effects).
+*   Collision detection and its relation to damage application.
+*   (If applicable) Other projectile types like stage-specific or basic attack projectiles.
 
-### Structure / Components
+## Core Client-Side Projectile Components
 
-Client-side projectile prefabs (e.g., `ReimuBullet`, `MarisaBullet`) generally have:
+Client-side projectile prefabs (e.g., `RedSmallCircleBullet`, `BlueNeedleBullet`) are typically equipped with the following components:
 
-*   **`Collider2D`:** Used for collision detection on the client (often set as a Trigger).
-*   **Visual Components:** `SpriteRenderer`, `Animator`, etc.
-*   **`BulletMovement.cs`:** A `MonoBehaviour` that handles client-side movement and collision.
-*   **`ClientProjectileLifetime.cs`:** A `MonoBehaviour` that manages the projectile's lifespan and returns it to the `ClientGameObjectPool`.
-*   **`PooledObjectInfo.cs`:** Stores a `PrefabID` string, used by `ClientGameObjectPool`.
-*   **NO `NetworkObject`:** These are simulated locally per client.
+*   **`Collider2D`:** For client-side collision detection (e.g., against stage walls or, in some cases, visual-only hit detection). Often set as a Trigger.
+*   **Visual Components:** `SpriteRenderer`, `Animator`, etc., for appearance.
+*   **`ClientProjectileLifetime.cs`:** Manages the projectile's timed lifespan and returns it to the `ClientGameObjectPool`. Handles forced despawning.
+*   **`ClientBulletWallCollision.cs`:** (Optional, common) Detects collisions with stage boundaries (e.g., "StageWalls" layer) and tells `ClientProjectileLifetime` to despawn the bullet.
+*   **`PooledObjectInfo.cs`:** Stores a `PrefabID` string used by `ClientGameObjectPool` for efficient reuse.
+*   **Movement Behavior Scripts (All Disabled by Default):**
+    *   `ClientLinearMovement.cs`
+    *   `ClientHomingMovement.cs`
+    *   `ClientSpiralMovement.cs`
+    *   `ClientDelayedHoming.cs`
+    *   `ClientDoubleHoming.cs`
+    *   `ClientDelayedRandomTurn.cs`
+    *   (And any other specialized client-side movement behaviors)
+*   **NO `NetworkObject`:** These are visual representations simulated locally on each client based on server instructions.
 
-### Spawning and Synchronization Workflow
+## Spellcard Projectile Lifecycle & Spawning
 
-1.  **Owner Client (`PlayerShootingController.cs`):**
-    *   Detects fire input.
-    *   Spawns a projectile GameObject locally using `ClientGameObjectPool.Instance.GetObject(prefabId)`.
-    *   Sets the projectile's position and rotation.
-    *   Initializes its `BulletMovement` script (passing its `OwnerClientId`, speed, lifetime). The `FiredByOwnerClientId` is crucial for damage attribution.
-    *   Calls `FireShotServerRpc(string prefabId, Vector3 position, Quaternion rotation, float speed, float lifetime)` on its own `PlayerShootingController`.
-2.  **Server (`PlayerShootingController.FireShotServerRpc`):**
-    *   Receives the `ServerRpc`.
-    *   Calls `FireShotClientRpc`, relaying parameters to all clients.
-3.  **All Clients (`PlayerShootingController.FireShotClientRpc`):**
-    *   **Remote Clients (IsOwner == false):**
-        *   Retrieves a projectile from their local `ClientGameObjectPool`.
-        *   Sets position/rotation from RPC.
-        *   Initializes `BulletMovement` with firer's `OwnerClientId` (from RPC or by looking up the NetworkObject of the firing player), speed, and lifetime.
-    *   **Owner Client (IsOwner == true):** May ignore this RPC as it spawned the bullet locally, or use it for confirmation.
+Projectiles for Level 1-4 spellcards, including those fired by Level 4 Illusions, follow a server-defined, client-executed model.
 
-### Client-Side Movement & Collision (`BulletMovement.cs`)
+### 1. Triggering & Server Definition
+    
+*   **Server Action:** An action on the server (e.g., player uses a spellcard, an illusion decides to attack) initiates the projectile sequence.
+*   **Data Loading:** The server loads the relevant `SpellcardData` (for Levels 1-3) or `Level4SpellcardData` (which contains `AttackPatternData` for illusions). This data defines `SpellcardAction` lists.
+*   **RPC to Clients:**
+    *   For Level 1-3: `ServerAttackSpawner` calls `ExecuteSpellcardClientRpc` on `SpellcardNetworkHandler`, sending the spellcard resource path and target information.
+    *   For Level 4 Illusions: `ServerIllusionOrchestrator` calls `ExecuteAttackPatternClientRpc` on the `ClientIllusionView` associated with that illusion, sending the chosen `AttackPatternData`'s ID/details, movement parameters (if any), and target information.
 
-*   Attached to player shot prefabs.
-*   `Update()` moves the projectile.
-*   Initialized with `OwnerClientId`, speed, and lifetime.
-*   `OnTriggerEnter2D` handles collisions:
-    *   If it collides with an enemy (e.g., object with `ClientFairyHealth`), it calls `other.GetComponent<ClientFairyHealth>().TakeDamage(damageAmount, this.FiredByOwnerClientId)`.
-    *   After collision, it typically tells its `ClientProjectileLifetime` component to return the bullet to the pool.
+### 2. Client-Side Reception & Execution (`ClientSpellcardActionRunner` / `ClientIllusionView`)
 
-### Client-Side Lifetime & Pooling (`ClientProjectileLifetime.cs`)
+*   **`SpellcardNetworkHandler` (for L1-3):** Receives the RPC, loads the `SpellcardData`, and uses `ClientSpellcardActionRunner.RunSpellcardActions` to execute the spellcard's actions.
+*   **`ClientIllusionView` (for L4 Illusions):**
+    *   Receives `ExecuteAttackPatternClientRpc`.
+    *   Loads the specified `AttackPatternData`.
+    *   If the illusion is performing movement *during* the attack (`isMovingWithAttack = true`):
+        *   It starts its `AnimateIllusionMovementAndAttack` coroutine. This coroutine Lerps the illusion's visual position/orientation on the client.
+        *   It calls `ClientSpellcardActionRunner.RunSpellcardActionsDynamicOrigin`, passing its own `transform` as the `originTransform`. This allows bullets to spawn from the moving illusion.
+    *   If the illusion is static for the attack:
+        *   It calls `ClientSpellcardActionRunner.RunSpellcardActions` using its current (static) transform.
+*   **`ClientSpellcardActionRunner.cs`:**
+    *   Iterates through the `SpellcardAction` list from the data.
+    *   For each action that spawns bullets:
+        *   Obtains a bullet prefab instance from `ClientGameObjectPool.Instance.GetObject()`.
+        *   Sets initial position and orientation (potentially from a dynamic origin for moving illusions).
+        *   **Crucially, calls `ClientBulletConfigurer.ConfigureBullet()` for each spawned instance.**
 
-*   Attached to client-pooled projectile prefabs.
-*   Returns the object to `ClientGameObjectPool` after a set duration or when `ForceReturnToPool()` is called.
+### 3. Bullet Configuration (`ClientBulletConfigurer.cs`)
 
-## Server-Initiated, Client-Simulated Stage Projectiles (Retaliation/Spirit Bullets)
+This static helper class is vital for setting up individual bullets:
 
-These bullets are spawned based on server decisions but simulated client-side.
+*   Takes the `GameObject bulletInstance`, `SpellcardAction action`, `casterClientId`, `targetClientId`, and `bulletIndex` as parameters.
+*   **Lifetime:** Initializes `ClientProjectileLifetime` on the bullet using `action.lifetime` (or a default if not specified). This must happen *after* the bullet GameObject is set active.
+*   **Movement Behavior Reset:** Deactivates all potential movement behavior scripts attached to the bullet prefab (e.g., `ClientLinearMovement`, `ClientHomingMovement`, etc.) to ensure a clean state.
+*   **Specific Behavior Activation:** Based on `action.behavior` (e.g., `BehaviorType.Linear`, `BehaviorType.Homing`):
+    *   Gets the corresponding movement script (e.g., `bulletInstance.GetComponent<ClientLinearMovement>()`).
+    *   Initializes it with parameters from the `action` (e.g., `speed`, `homingSpeed`, `homingDelay`, `targetPlayerId`, `bulletIndex` for speed increments).
+    *   Enables the chosen movement script (`linear.enabled = true`).
 
-### Spawning Workflow
+### 4. Client-Side Movement Behaviors
 
-1.  **Server Event:** An event occurs (e.g., `PlayerAttackRelay.ReportFairyKillServerRpc` is processed).
-2.  **Server Logic (`PlayerAttackRelay`):**
-    *   Determines the target player for the bullet (e.g., the opponent).
-    *   Calculates bullet parameters: `prefabId` (e.g., "StageSmallBullet"), initial spawn position (normalized), `actualSpeed`, and `direction` (Vector2 for angle). Speed and angle can be randomized within configured ranges (`minStageBulletSpeed`, `maxStageBulletSpeed`, `maxStageBulletAngleOffset` in `PlayerAttackRelay`).
-3.  **Server Command (`EffectNetworkHandler.cs`):**
-    *   The server calls `EffectNetworkHandler.Instance.SpawnStageBulletClientRpc(explicitTargetClientId, bulletPrefabID, normalizedSpawnPosition, actualSpeed, direction, clientRpcParamsForAll)`.
-    *   `explicitTargetClientId` indicates on whose field the bullet should conceptually spawn.
-    *   The RPC is sent to *all* clients.
-4.  **All Clients (Execution of `SpawnStageBulletClientRpc` in `EffectNetworkHandler`):**
-    *   Each client retrieves the bullet GameObject from its local `ClientGameObjectPool` using `bulletPrefabID`.
-    *   Determines the actual world spawn position:
-        *   Uses `explicitTargetClientId` to get the `PlayerRole` via `PlayerDataManager`.
-        *   Uses the `PlayerRole` to get the correct spawn zone center from `SpawnAreaManager.Instance.GetSpawnCenterForTargetedPlayer(role)`.
-        *   Combines the zone center with `normalizedSpawnPosition` to get the final world position.
-    *   Initializes the bullet's movement script (e.g., `StageSmallBulletMoverScript.Initialize(actualSpeed, direction, lifetime)`).
-    *   Activates the bullet.
+These are individual `MonoBehaviour` scripts attached to bullet prefabs. `ClientBulletConfigurer` enables and initializes the correct one per `SpellcardAction`.
 
-### Movement (`StageSmallBulletMoverScript.cs`)
+*   **`ClientLinearMovement.cs`:** Moves the bullet in a straight line. Can have initial speed, speed increment per bullet in a volley, and smooth speed transitions.
+*   **`ClientHomingMovement.cs`:** Steers the bullet towards a target's position (at the time of initialization or updated if more sophisticated).
+*   **`ClientSpiralMovement.cs`:** Moves the bullet in a spiral pattern.
+*   **`ClientDelayedHoming.cs`:** Moves linearly for a delay, then homes.
+*   **`ClientDoubleHoming.cs`:** Performs two phases of homing with an intermediate delay.
+*   **`ClientDelayedRandomTurn.cs`:** Moves linearly, then turns randomly within a specified angle.
+*   All movement scripts are responsible for updating `transform.position` (and sometimes `transform.rotation`) in their `Update()` or `FixedUpdate()` methods.
 
-*   `MonoBehaviour` on stage bullet prefabs.
-*   Handles client-side movement based on initialized speed and direction.
-*   Includes `ForceReturnToPoolByBomb()` for clearing.
-*   Handles `OnTriggerEnter2D` for collisions (e.g., with player hitbox, or with enemies if stage bullets can damage enemies).
-    *   If it collides with an enemy, it would call `ClientFairyHealth.TakeDamage(damage, 0);` (or a special non-player owner ID if needed).
-    *   Returns self to pool on collision or lifetime expiry via `ClientProjectileLifetime`.
+## Projectile Despawning Mechanisms
 
-## Collision & Damage
+Client-side projectiles are removed from the game world and returned to the `ClientGameObjectPool` through several mechanisms:
 
-*   **Client-Simulated Bullets (Player & Stage):**
-    *   Collision is detected client-side by the bullet's movement script (`BulletMovement.cs`, `StageSmallBulletMoverScript.cs`).
-    *   The script calls `TakeDamage(damageAmount, attackerOwnerClientId)` on the `ClientFairyHealth` component of the hit enemy.
-    *   `ClientFairyHealth`, on the client where the damage occurred:
-        *   If `attackerOwnerClientId == NetworkManager.Singleton.LocalClientId` (i.e., *this* client's player fired the killing shot), it calls `PlayerAttackRelay.LocalInstance.ReportFairyKillServerRpc()`.
-        *   Spawns a `ClientFairyShockwave` locally.
-    *   The server receives the `ReportFairyKillServerRpc` and orchestrates consequences (e.g., retaliation bullets, scoring).
+### 1. Timed Despawn (`ClientProjectileLifetime.cs`)
 
-## Bullet Clearing Mechanisms
+*   This is the primary despawn method for most projectiles.
+*   When `ClientBulletConfigurer.ConfigureBullet()` initializes a bullet, it also calls `Initialize(lifetime)` on the bullet's `ClientProjectileLifetime` component.
+*   The `lifetime` is typically derived from `SpellcardAction.lifetime`. If `action.lifetime` is 0 or not set, a default lifetime is used.
+*   `ClientProjectileLifetime` tracks its active time and calls `ReturnToPool()` when `_timeActive >= _lifetime`.
 
-Bullet clearing is handled client-side, often triggered by RPCs or local effects.
+### 2. Wall Collision (`ClientBulletWallCollision.cs`)
 
-### 1. Fairy/Spirit Death Shockwave Clearing
+*   This component is attached to projectile prefabs that should despawn upon hitting stage boundaries.
+*   It requires a `Collider2D` on the same GameObject.
+*   In `Awake()`, it caches the "StageWalls" layer.
+*   `OnTriggerEnter2D()` and/or `OnCollisionEnter2D()`:
+    *   Checks if the colliding object is on the "StageWalls" layer.
+    *   If so, it calls `_projectileLifetime.ForceReturnToPool()`, where `_projectileLifetime` is a cached reference to the `ClientProjectileLifetime` component on the same bullet.
 
-*   When an enemy with `ClientFairyHealth` dies, it spawns a `ClientFairyShockwave`.
-*   `ClientFairyShockwave.cs` (client-side):
-    *   Has a `CircleCollider2D` that expands over `_expansionDuration`.
-    *   In `OnTriggerStay2D` (with a tick rate limit to avoid multiple clears/damage per frame per object):
-        *   It checks collided objects for a clearable bullet script (e.g., `StageSmallBulletMoverScript`).
-        *   If found, it calls `bulletMover.ForceReturnToPoolByBomb()`.
-        *   It also damages other enemies (`otherHealth.TakeDamage(shockwaveDamage, _ownerIdForChainedDamage)`).
+### 3. Explicit Clearing Effects (e.g., Bombs, Special Abilities)
 
-### 2. Player Death Bomb Clearing
+*   Mechanisms like player "death bombs" or other special spellcard effects might need to clear a large number of bullets from the screen.
+*   **Server Initiation:** Typically, the server determines such an event occurs (e.g., `PlayerDeathBomb.cs` logic).
+*   **RPC to Clients:** The server sends a `ClientRpc` to all clients (e.g., `EffectNetworkHandler.Instance.ClearBulletsInAreaClientRpc(areaParameters)`).
+*   **Client-Side Execution:**
+    *   Each client iterates through relevant active projectiles. This could be all active objects in `ClientGameObjectPool.Instance.GetAllActiveObjects()`, or a more targeted list.
+    *   For each projectile in the specified area:
+        *   It calls `ForceReturnToPool()` on the projectile's `ClientProjectileLifetime` component.
+*   The `IClearable` interface or specific methods on projectile scripts (as mentioned in previous versions of this document for `StageSmallBulletMoverScript`) can be seen as conventions leading to this `ForceReturnToPool()` call on `ClientProjectileLifetime`.
 
-*   When a player uses a death bomb (spellcard), `PlayerDeathBomb.cs` (server-side) is invoked.
-*   `PlayerDeathBomb.cs` calls a `ClientRpc` (e.g., via `EffectNetworkHandler.Instance.ClearBulletsInRadiusClientRpc(position, radius, paramsToAllClients)`).
-*   **All Clients (Executing `ClearBulletsInRadiusClientRpc`):**
-    *   Iterate through all *active* GameObjects currently managed by their `ClientGameObjectPool.Instance.GetAllActiveObjects()`.
-    *   For each active object:
-        *   Check if it's within the specified radius of the bomb's position.
-        *   Try to get a component that allows forced pooling (e.g., `StageSmallBulletMoverScript`, `ClientProjectileLifetime`).
-        *   If found, call its `ForceReturnToPoolByBomb()` or `ForceReturnToPool()` method.
+## Collision Detection and Damage Application
 
-### `IClearable` Interface
+*   **Visual Collisions (Client-Side):**
+    *   Wall collisions are handled by `ClientBulletWallCollision` as described above, leading to despawning. This is purely visual and local.
+    *   Bullets visually passing through each other is normal; there's no client-side bullet-to-bullet collision.
 
-*   While not strictly enforced by a central system, bullet scripts like `StageSmallBulletMoverScript` and `ClientProjectileLifetime` implement methods like `ForceReturnToPoolByBomb()` or `ForceReturnToPool()`. This serves a similar purpose to an `IClearable` interface, providing a common way to despawn bullets.
+*   **Player-vs-Illusion and Illusion-vs-Player (Primary Focus of Recent Refactor):**
+    *   **Player Shots vs. Illusion Health:**
+        *   If a player's client-simulated spellcard bullet *visually* overlaps with an illusion's `Collider2D` on that player's client:
+        *   The `IllusionHealth.OnTriggerEnter2D()` method (on the illusion's client-side representation) is triggered.
+        *   `IllusionHealth` checks if the hit was from a "PlayerShot" layer/tag.
+        *   It then calls its own `TakeDamageClientSide(damageAmount)`.
+        *   If health drops to zero, `IllusionHealth.ReportDeathToServerRpc()` is called.
+        *   The server's `IllusionHealth` receives this RPC and calls `ServerIllusionOrchestrator.ProcessClientDeathReport()` which then despawns the illusion server-side (and thus for all clients).
+    *   **Illusion Shots vs. Player Health:**
+        *   An illusion's client-simulated bullet visually overlaps with a player's `Collider2D` (e.g., on the `PlayerHitbox` GameObject).
+        *   A script on the player's hitbox (e.g., `ClientPlayerCollisionController.cs` - *name hypothetical*) detects this.
+        *   This script would then need to call a `ServerRpc` to the player's own `CharacterStats` (or a central health manager) on the server, e.g., `ReportHitByIllusionBulletServerRpc(bulletType, damageAmount)`.
+        *   The server validates the hit (e.g., basic cooldown, checks if player is invincible) and applies damage to the server-authoritative `CharacterStats.Health`. Health is then synced back to clients.
+        *   *Note: The exact implementation for illusion bullet to player damage needs to be confirmed from scripts like `CharacterStats` or any player-side collision handlers.*
 
-## Key Projectile Prefabs
+*   **General Principles:**
+    *   Clients handle the "Am I visually hitting something?" question for immediate feedback (like bullet despawning on walls).
+    *   For game state changes (damage, death), the client that observes the event (or is responsible for the entity being hit) informs the server via an RPC.
+    *   The server has the final say on damage application and state changes.
+    *   Physics layers (`Edit -> Project Settings -> Physics 2D -> Layer Collision Matrix`) are crucial for defining what *can* interact.
 
-*   Player Basic Shots: `ReimuBulletPrefab`, `MarisaBulletPrefab` (Contain `BulletMovement`, `ClientProjectileLifetime`, `PooledObjectInfo`).
-*   Stage Bullets: `StageSmallBulletPrefab`, `StageLargeBulletPrefab` (Contain `StageSmallBulletMoverScript` (or similar), `ClientProjectileLifetime`, `PooledObjectInfo`).
-*   Effects that interact with projectiles: `FairyShockwavePrefab` (Contains `ClientFairyShockwave`, `ClientShockwaveVisuals`, `PooledObjectInfo`).
+## Other Projectile Types (If Applicable)
 
-## Key Scripts
+### Basic Player Shots (Legacy or Current?)
 
-*   **`PlayerShootingController.cs`:** Owner client spawns local shots, initializes `BulletMovement` with `OwnerClientId`, initiates ServerRpc->ClientRpc for remote visuals.
-*   **`BulletMovement.cs`:** Client-side movement for player shots. Passes `FiredByOwnerClientId` to `ClientFairyHealth.TakeDamage()`.
-*   **`StageSmallBulletMoverScript.cs`:** Client-side movement for stage bullets. Initialized with speed/angle. Has `ForceReturnToPoolByBomb()`. Can damage enemies.
-*   **`ClientProjectileLifetime.cs`:** Manages client-side lifetime and return to `ClientGameObjectPool`. Has `ForceReturnToPool()`.
-*   **`ClientGameObjectPool.cs`:** Primary client-side pool.
-*   **`PooledObjectInfo.cs`:** Identifies prefabs for pooling.
-*   **`ClientFairyHealth.cs`:** Receives damage, conditionally reports kills, spawns shockwaves.
-*   **`ClientFairyShockwave.cs`:** Client-side effect. Clears bullets and damages enemies in radius via `OnTriggerStay2D`.
-*   **`EffectNetworkHandler.cs`:** Server singleton. Relays `SpawnStageBulletClientRpc` and `ClearBulletsInRadiusClientRpc`.
-*   **`PlayerAttackRelay.cs`:** Server-side logic on player. Receives kill reports, initiates retaliation bullets via `EffectNetworkHandler`.
-*   **`PlayerDeathBomb.cs`:** Server-side logic. Initiates bomb clearing RPC via `EffectNetworkHandler`.
-*   **`SpawnAreaManager.cs`:** Provides spawn locations for stage bullets.
-*   **`ServerAttackSpawner.cs` (Spellcards):** Server-side. For complex spellcards, likely still uses server RPCs to tell clients to spawn specific sequences of client-simulated projectiles/effects.
+*   *This section needs to be reviewed based on whether basic player shots still use a separate system (e.g., the old `BulletMovement.cs` and `PlayerShootingController.FireShotServerRpc` flow) or if they have been integrated into the `ServerAttackSpawner` -> `ClientSpellcardActionRunner` -> `ClientBulletConfigurer` model (perhaps by defining them as very simple `SpellcardData` assets).*
+*   If they are separate, the original documentation's description of their client-side spawning and `BulletMovement.cs` might still be partly valid, but needs to be explicitly distinct from the spellcard system.
 
-## Server-Authoritative Projectiles (Spellcards, Enemy Bullets - If Applicable)
+### Stage-Specific / Enemy Retaliation Bullets
 
-For projectiles where authority and precise synchronized state are critical (e.g., complex spellcard patterns, enemy bullets that must deal damage authoritatively), the system might still use server-spawned `NetworkObject`s.
+*   The system described in the original `projectile_system.md` involving `PlayerAttackRelay` and `EffectNetworkHandler.SpawnStageBulletClientRpc` for "retaliation/spirit bullets" may still be in use for projectiles not directly part of player spellcards.
+*   These bullets would also use `ClientGameObjectPool` and `ClientProjectileLifetime`.
+*   Their movement scripts (e.g., `StageSmallBulletMoverScript.cs`) would need to be assessed:
+    *   Do they still exist as monolithic movers?
+    *   Or have they been refactored to also use `ClientBulletConfigurer` with generic movement behaviors, with the `EffectNetworkHandler.SpawnStageBulletClientRpc` perhaps carrying parameters similar to a simplified `SpellcardAction`?
+    *   If they are configured, then `ClientBulletConfigurer` would need to handle their specific `BehaviorType` or they'd need a dedicated configuration path.
 
-*   **Base Structure:** These would retain `NetworkObject`, and their movement/lifetime scripts (`LinearMovement.cs`, `NetworkBulletLifetime.cs`, `StageSmallBulletMoverScript.cs`) would be `NetworkBehaviour`s with server-side logic, synchronizing state via `NetworkVariable`s or `NetworkTransform` (if reliable).
-*   **Spawning:** The server (e.g., `ServerAttackSpawner`, enemy AI scripts) would spawn these using `NetworkObjectPool` (if pooled) or by instantiating and spawning `NetworkObject`s directly.
-*   **Movement & Logic:** Runs on the server. Client visuals are updated via network synchronization.
-*   **Collision & Damage:** Detected and applied authoritatively on the server.
+## Key Scripts (Summary)
 
-## Collision & Damage (General Approach)
+*   **`ClientSpellcardActionRunner.cs`:** Central to executing client-side spellcard actions, including bullet spawning and dynamic origin for moving illusions.
+*   **`ClientBulletConfigurer.cs`:** Static helper; vital for initializing individual bullets (lifetime, activating and configuring specific movement behaviors).
+*   **`ClientProjectileLifetime.cs`:** Manages timed despawn and forced despawn for all pooled client-side projectiles.
+*   **`ClientBulletWallCollision.cs`:** Handles bullet despawn on contact with "StageWalls" layer.
+*   **Movement Behaviors (Client-Side):** `ClientLinearMovement.cs`, `ClientHomingMovement.cs`, etc. – individual scripts defining how bullets move.
+*   **`ClientGameObjectPool.cs` & `PooledObjectInfo.cs`:** Manage efficient reuse of projectile GameObjects on the client.
+*   **`ServerAttackSpawner.cs`:** Server-side; initiates L1-3 spellcards by sending RPCs to `SpellcardNetworkHandler`. Spawns L4 illusion prefabs.
+*   **`ServerIllusionOrchestrator.cs`:** Server-side; manages illusion behavior, including triggering illusion attacks (which then become client-simulated via `ClientIllusionView`).
+*   **`ClientIllusionView.cs`:** Client-side; receives RPCs for illusion attacks, manages illusion animation during attacks, and uses `ClientSpellcardActionRunner` for bullet spawning.
+*   **`IllusionHealth.cs`:** Handles illusion damage detection on the client and reports death to the server.
+*   **`SpellcardNetworkHandler.cs`:** Receives RPCs for L1-3 spellcards and delegates to `ClientSpellcardActionRunner`.
+*   **`CharacterStats.cs`:** (Assumed) Server-authoritative player health. Client-side scripts would report hits to it.
+*   **`PlayerAttackRelay.cs` & `EffectNetworkHandler.cs`:** (If still used for stage/retaliation bullets) Handle their server-side initiation and RPC dispatch.
 
-*   **Client-Side Basic Shots:** Collisions detected by `BulletMovement.cs` are primarily for visual feedback (despawning the bullet). If a client-side bullet *hitting an enemy* needs to register damage, the `BulletMovement` script (or another client-side script) would need to send a `ServerRpc` to the server indicating the hit. The server would then validate this (if necessary) and apply damage authoritatively.
-*   **Server-Side Projectiles:** Collision is detected and damage is applied authoritatively on the server. Player health (`CharacterStats`) and enemy health would be updated on the server and synchronized to clients.
-*   **Physics Layers:** The Physics 2D Layer Collision Matrix remains crucial for filtering which objects can interact.
+## Outstanding Questions / Areas for Code Review:
 
-## Clearing Effects (`IClearable` Interface)
+*   How are basic player direct attacks (non-spellcard shots) handled? Do they use the old `BulletMovement.cs` or are they now a type of `SpellcardAction`?
+*   How do illusion-fired bullets register damage against a player? Which client-side script on the player detects the hit, and what RPC does it send to the server?
+*   Are stage-specific/retaliation bullets (from `PlayerAttackRelay`) still using bespoke movement scripts (e.g., `StageSmallBulletMoverScript`), or do they also leverage `ClientBulletConfigurer`?
+*   Review `PlayerHitbox` and related scripts to confirm the illusion-to-player damage pathway.
 
-This system likely remains server-authoritative if it affects game state (e.g., scoring, enemy state).
-*   If client-side visual bullets need to *react* to a clear event (e.g., a bomb effect initiated by the server), the server would send a `ClientRpc` to the relevant clients, which would then despawn their visual bullets in the affected area.
-*   Server-authoritative projectiles implementing `IClearable` would be cleared directly by server logic. 
+This rewrite should align `projectile_system.md` much better with the recent refactoring. 

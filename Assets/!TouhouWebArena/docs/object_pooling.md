@@ -12,7 +12,7 @@ The previous server-side `NetworkObjectPool.cs` system is currently **DEPRECATED
 
 This system is the **core pooling solution** for the game. It manages pools of standard `GameObject`s locally on each client, used for projectiles, enemies, visual effects, etc.
 
-**Location:** `Assets/!TouhouWebArena/Scripts/Projectiles/ClientGameObjectPool.cs` (Verify path)
+**Location:** `Assets/!TouhouWebArena/Scripts/Client/ClientGameObjectPool.cs`
 
 **Implementation:**
 *   Acts as a Singleton (`ClientGameObjectPool.Instance`) for easy access from client-side scripts.
@@ -50,7 +50,7 @@ This system is the **core pooling solution** for the game. It manages pools of s
 *   Enemies (`ClientFairyController.cs`, `ClientSpiritController.cs` - TBD).
 *   Stage bullets / Retaliation bullets (`StageSmallBulletMoverScript.cs`).
 *   Visual Effects (`ClientFairyShockwave.cs`).
-*   **Spellcard Bullets (Level 2/3):** Spawned via `ClientSpellcardActionRunner`.
+*   **Spellcard Bullets (All Levels, including Illusion Attacks):** Spawned via `ClientSpellcardActionRunner` (triggered by `SpellcardNetworkHandler` for L1-3 or `ClientIllusionView` for L4 illusion attacks).
 *   Other non-networked, frequently spawned GameObjects.
 
 ## ~~Server-Side NetworkObject Pooling (`NetworkObjectPool.cs`)~~ - DEPRECATED
@@ -66,7 +66,7 @@ This system was previously used for managing server-authoritative `NetworkObject
 *   **`ClientProjectileLifetime.cs`:** Example script that returns client-pooled projectiles.
 *   **`ClientFairyController.cs`:** Returns pooled fairies on path completion/death.
 *   **`ClientFairyShockwave.cs`:** Returns pooled shockwaves after duration.
-*   **Scripts that *get* objects from the pool:** `PlayerShootingController`, `EffectNetworkHandler`, `FairySpawnNetworkHandler` (via RPCs triggering client-side logic), `ClientFairyHealth` (for shockwaves).
+*   **Scripts that *get* objects from the pool:** `PlayerShootingController`, `EffectNetworkHandler`, `FairySpawnNetworkHandler` (via RPCs triggering client-side logic), `ClientSpellcardActionRunner` (for all spellcard bullets), `ClientIllusionView` (indirectly, by calling `ClientSpellcardActionRunner`), `ClientFairyHealth` (for shockwaves).
 *   **~~`NetworkObjectPool.cs`~~:** Deprecated.
 *   **~~`PoolableObjectIdentity.cs`~~:** Deprecated (associated with `NetworkObjectPool`).
 

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   illusionPrefab: {fileID: 6341418190357833515, guid: cf16fadf4679e504381b26e8e4690492, type: 3}
   duration: 15
-  health: 75
+  health: 10
   movementAreaHeight: 2
   minMoveDelay: 2
   maxMoveDelay: 3.5
@@ -34,8 +34,41 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 1
       speed: 2.9
+      speedIncrementPerBullet: 0
+      homingSpeed: 3
+      tangentialSpeed: 0
+      useInitialSpeed: 0
+      initialSpeed: 0
+      speedTransitionDuration: 0
+      homingDelay: 0
+      secondHomingDelay: 0
+      firstHomingDuration: 0
+      secondHomingLookAheadDistance: 0
+      spreadAngle: 0
+      minTurnSpeed: 0
+      maxTurnSpeed: 0
+      skipEveryNth: 0
+      intraActionDelay: 0.03
+      lifetime: 10
+    - startDelay: 0.2
+      bulletPrefabs:
+      - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
+      positionOffset: {x: 0, y: 0}
+      count: 20
+      formation: 0
+      radius: 0
+      spacing: 0
+      angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
+      behavior: 1
+      speed: 2.6
       speedIncrementPerBullet: 0
       homingSpeed: 3
       tangentialSpeed: 0
@@ -61,33 +94,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
-      behavior: 1
-      speed: 2.6
-      speedIncrementPerBullet: 0
-      homingSpeed: 3
-      tangentialSpeed: 0
-      useInitialSpeed: 0
-      initialSpeed: 0
-      speedTransitionDuration: 0
-      homingDelay: 0
-      secondHomingDelay: 0
-      firstHomingDuration: 0
-      secondHomingLookAheadDistance: 0
-      spreadAngle: 0
-      minTurnSpeed: 0
-      maxTurnSpeed: 0
-      skipEveryNth: 0
-      intraActionDelay: 0.03
-      lifetime: 10
-    - startDelay: 0.8
-      bulletPrefabs:
-      - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
-      positionOffset: {x: 0, y: 0}
-      count: 20
-      formation: 0
-      radius: 0
-      spacing: 0
-      angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 1
       speed: 2.3
       speedIncrementPerBullet: 0
@@ -106,7 +115,7 @@ MonoBehaviour:
       skipEveryNth: 0
       intraActionDelay: 0.03
       lifetime: 10
-    - startDelay: 1.2
+    - startDelay: 0.6
       bulletPrefabs:
       - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
       positionOffset: {x: 0, y: 0}
@@ -115,6 +124,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 1
       speed: 2
       speedIncrementPerBullet: 0
@@ -148,6 +160,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 2.5
       speedIncrementPerBullet: 0
@@ -175,6 +190,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 35
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 2.5
       speedIncrementPerBullet: 0
@@ -202,6 +220,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 70
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 2.5
       speedIncrementPerBullet: 0
@@ -229,6 +250,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 105
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 2.5
       speedIncrementPerBullet: 0
@@ -256,6 +280,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 140
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 2.5
       speedIncrementPerBullet: 0
@@ -283,6 +310,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 175
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 2.5
       speedIncrementPerBullet: 0
@@ -310,6 +340,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 210
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 2.5
       speedIncrementPerBullet: 0
@@ -337,6 +370,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 245
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 2.5
       speedIncrementPerBullet: 0
@@ -364,6 +400,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 280
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 2.5
       speedIncrementPerBullet: 0
@@ -391,6 +430,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 315
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 0
       speed: 2.5
       speedIncrementPerBullet: 0
@@ -424,6 +466,9 @@ MonoBehaviour:
       radius: 0
       spacing: 0
       angle: 0
+      applyRandomSpawnOffset: 0
+      randomOffsetMin: {x: 0, y: 0}
+      randomOffsetMax: {x: 0, y: 0}
       behavior: 5
       speed: 5
       speedIncrementPerBullet: 0

@@ -35,7 +35,7 @@ This document describes the typical sequence of events from launching the applic
     *   Resets spell bars (`SpellBarController` state).
     *   Starts the **`SpiritSpawner.cs`** (on the `GameManager`) to begin periodic spirit spawning.
     *   Other managers on `GameManager` (`FairyRegistry`, `SpiritRegistry`, `PathManager`, `ExtraAttackManager`) are ready.
-2.  **Gameplay:** Players move, shoot, charge, use spellcards. Enemies spawn via `FairySpawner` and `SpiritSpawner`. State changes (health, spell charge, enemy death, spellcard execution) are managed authoritatively by the server and synchronized via `NetworkVariables` and RPCs (as detailed in `networking_overview.md`).
+2.  **Gameplay:** Players move, shoot, charge, use spellcards (including Level 4 spellcards which summon server-authoritative Illusions that then perform client-simulated attacks). Enemies spawn via `FairySpawner` and `SpiritSpawner`. State changes (health, spell charge, enemy death, spellcard execution) are managed authoritatively by the server and synchronized via `NetworkVariables` and RPCs (as detailed in `networking_overview.md`).
 3.  **Round End Condition:** A round ends when one player's health reaches zero. This is detected server-side (likely by monitoring the health `NetworkVariable` in `CharacterStats`).
 4.  **Round Conclusion:**
     *   The server determines the round winner (the player whose opponent reached zero health).

@@ -5,11 +5,23 @@ using Unity.Netcode;
 namespace TouhouWebArena.Spellcards.Behaviors
 {
     /// <summary>
-    /// [Client Only] Static helper class to configure the behavior components 
-    /// of locally spawned spellcard bullets based on SpellcardAction data.
+    /// [Client Only] Static helper class responsible for setting up client-side spellcard bullets after they are spawned.
+    /// It initializes the bullet's lifetime, deactivates all potential movement behaviors attached to the prefab,
+    /// and then activates and initializes the specific movement behavior defined in the `SpellcardAction` data.
+    /// This ensures that bullets behave as defined by the spellcard design.
     /// </summary>
     public static class ClientBulletConfigurer
     {
+        /// <summary>
+        /// Configures a newly spawned spellcard bullet instance based on a `SpellcardAction`.
+        /// This involves setting its lifetime, disabling all pre-attached movement scripts,
+        /// then finding, initializing, and enabling the correct client-side movement behavior script.
+        /// </summary>
+        /// <param name="bulletInstance">The GameObject instance of the spawned bullet.</param>
+        /// <param name="action">The `SpellcardAction` data defining how this bullet should behave.</param>
+        /// <param name="casterClientId">The NetworkObjectId of the entity that cast the spellcard.</param>
+        /// <param name="targetClientId">The NetworkObjectId of the target player (used for homing behaviors).</param>
+        /// <param name="bulletIndex">The index of this bullet within its spawn sequence (0-based), used for some behaviors like speed increment.</param>
         public static void ConfigureBullet(GameObject bulletInstance, SpellcardAction action, ulong casterClientId, ulong targetClientId, int bulletIndex)
         {
             if (bulletInstance == null || action == null)
@@ -18,14 +30,26 @@ namespace TouhouWebArena.Spellcards.Behaviors
                 return;
             }
 
-            ClientProjectileLifetime lifetime = bulletInstance.GetComponent<ClientProjectileLifetime>();
-            if (lifetime != null && action.lifetime > 0)
+            Debug.Log($"[ClientBulletConfigurer] Configuring bullet '{bulletInstance.name}'. Action Lifetime from data: {action.lifetime}");
+
+            ClientProjectileLifetime lifetimeComponent = bulletInstance.GetComponent<ClientProjectileLifetime>();
+            if (lifetimeComponent != null)
             {
-                lifetime.Initialize(action.lifetime);
+                if (action.lifetime > 0)
+                {
+                    lifetimeComponent.Initialize(action.lifetime);
+                }
+                else
+                {
+                    // Action's lifetime is not set or is invalid, use a default.
+                    const float defaultBulletLifetime = 7.0f; // Example: 7 seconds, adjust as needed
+                    lifetimeComponent.Initialize(defaultBulletLifetime);
+                    Debug.LogWarning($"[ClientBulletConfigurer] Bullet '{bulletInstance.name}' used default lifetime ({defaultBulletLifetime}s) because action.lifetime was {action.lifetime}. Ensure lifetime is set in SpellcardAction if a specific duration is needed.");
+                }
             }
-            else if (lifetime == null)
+            else
             {
-                Debug.LogWarning($"[ClientBulletConfigurer] Bullet prefab '{bulletInstance.name}' is missing ClientProjectileLifetime. Lifetime will not be managed by configurer.");
+                Debug.LogWarning($"[ClientBulletConfigurer] Bullet prefab '{bulletInstance.name}' is missing ClientProjectileLifetime. Lifetime will not be managed.");
             }
 
             DeactivateAllMovementBehaviors(bulletInstance);
@@ -138,6 +162,11 @@ namespace TouhouWebArena.Spellcards.Behaviors
             }
         }
 
+        /// <summary>
+        /// Helper method to explicitly disable all known client-side movement behavior components on a bullet instance.
+        /// This is called before enabling the specific behavior dictated by the `SpellcardAction` to ensure a clean state.
+        /// </summary>
+        /// <param name="bulletInstance">The bullet GameObject to process.</param>
         private static void DeactivateAllMovementBehaviors(GameObject bulletInstance)
         {
             var linear = bulletInstance.GetComponent<ClientLinearMovement>();
@@ -159,6 +188,12 @@ namespace TouhouWebArena.Spellcards.Behaviors
             if (homingMovement != null) homingMovement.enabled = false;
         }
 
+        /// <summary>
+        /// Finds the Transform of a connected player's PlayerObject based on their ClientId.
+        /// Used by homing behaviors to acquire a target.
+        /// </summary>
+        /// <param name="clientId">The NetworkObjectId of the client whose PlayerObject transform is needed.</param>
+        /// <returns>The Transform of the player's PlayerObject, or null if not found.</returns>
         private static Transform FindPlayerTransform(ulong clientId)
         {
             if (NetworkManager.Singleton != null &&
@@ -170,6 +205,11 @@ namespace TouhouWebArena.Spellcards.Behaviors
             return null;
         }
 
+        /// <summary>
+        /// Logs a standardized error message when a required behavior script is missing from a bullet prefab.
+        /// </summary>
+        /// <param name="bulletName">Name of the bullet prefab.</param>
+        /// <param name="scriptName">Name of the missing script.</param>
         private static void LogMissingBehaviorError(string bulletName, string scriptName)
         {
             Debug.LogError($"[ClientBulletConfigurer] Prefab '{bulletName}' is missing the required script '{scriptName}'. This behavior cannot be applied.");

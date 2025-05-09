@@ -110,11 +110,11 @@ public class CharacterSelector : NetworkBehaviour
             return;
         }
         playerDataManager = PlayerDataManager.Instance; // Assign local cache
-        Debug.Log("[CharacterSelector] OnNetworkSpawn: PlayerDataManager instance found via Singleton.", this);
+        // Debug.Log("[CharacterSelector] OnNetworkSpawn: PlayerDataManager instance found via Singleton.", this);
 
         // Subscribe to updates AFTER confirming PlayerDataManager exists
         playerDataManager.OnPlayerDataUpdated += HandlePlayerDataUpdated;
-        Debug.Log("[CharacterSelector] OnNetworkSpawn: Subscribed to OnPlayerDataUpdated.", this);
+        // Debug.Log("[CharacterSelector] OnNetworkSpawn: Subscribed to OnPlayerDataUpdated.", this);
 
         // --- Determine Local/Opponent Panels ---
         // Moved here from Start - NetworkManager and PlayerData should be more reliable
@@ -132,19 +132,19 @@ public class CharacterSelector : NetworkBehaviour
         {
             localSynopsisPanel = player1SynopsisPanel;
             opponentSynopsisPanel = player2SynopsisPanel;
-            Debug.Log("[CharacterSelector] Local player is Player 1.", this);
+            // Debug.Log("[CharacterSelector] Local player is Player 1.", this);
         }
         else if (localRole == PlayerRole.Player2)
         {
             localSynopsisPanel = player2SynopsisPanel;
             opponentSynopsisPanel = player1SynopsisPanel;
-             Debug.Log("[CharacterSelector] Local player is Player 2.", this);
+             // Debug.Log("[CharacterSelector] Local player is Player 2.", this);
         }
         else // Observer or Undefined
         {
              localSynopsisPanel = null; 
              opponentSynopsisPanel = null;
-             Debug.LogWarning("[CharacterSelector] Local player role is not P1 or P2. Local synopsis updates disabled.", this);
+             // Debug.LogWarning("[CharacterSelector] Local player role is not P1 or P2. Local synopsis updates disabled.", this);
         }
 
         // Check if panels are assigned before trying to use them
@@ -180,7 +180,7 @@ public class CharacterSelector : NetworkBehaviour
         }
         else if (!canNavigate || localSynopsisPanel == null)
         {
-             Debug.LogWarning("[CharacterSelector] Initial button selection skipped (Navigation disabled or Local Panel invalid).", this);
+             // Debug.LogWarning("[CharacterSelector] Initial button selection skipped (Navigation disabled or Local Panel invalid).", this);
         }
 
         // Initialize the input controller AFTER buttons are set up and initial selection might be done
@@ -220,7 +220,7 @@ public class CharacterSelector : NetworkBehaviour
     /// <param name="characterInternalName">The internal name of the character associated with the clicked button.</param>
     private void OnCharacterButtonClicked(string characterInternalName)
     {
-        Debug.Log($"[CharacterSelector] Button clicked for character: {characterInternalName}");
+        // Debug.Log($"[CharacterSelector] Button clicked for character: {characterInternalName}");
         RequestSetCharacterServerRpc(characterInternalName);
     }
 
@@ -236,6 +236,8 @@ public class CharacterSelector : NetworkBehaviour
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
         
+        // Debug.Log($"[CharacterSelector] ServerRPC RequestSetCharacter: Client {clientId} selected {characterInternalName}", this);
+
         // Use the locally cached reference
         if (playerDataManager != null)
         {
@@ -258,6 +260,14 @@ public class CharacterSelector : NetworkBehaviour
                     // if (IsServer) NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
                 }
             }
+            else
+            {
+                // Debug.Log("[CharacterSelector] Server: Not all players ready yet.");
+            }
+        }
+        else 
+        {
+            Debug.LogError("[CharacterSelector] ServerRPC: PlayerDataManager is NULL! Cannot set character or check readiness.", this);
         }
     }
 
@@ -269,69 +279,69 @@ public class CharacterSelector : NetworkBehaviour
     /// </summary>
     private void HandlePlayerDataUpdated()
     {
-        Debug.Log("[CharacterSelector] HandlePlayerDataUpdated called.", this);
+        // Debug.Log("[CharacterSelector] HandlePlayerDataUpdated called.", this);
         if (playerDataManager == null) { /* Error logged in OnNetworkSpawn */ return; }
         if (player1SynopsisPanel == null || player2SynopsisPanel == null) { /* Error logged in OnNetworkSpawn */ return; } 
 
         Debug.Log("[CharacterSelector] HandlePlayerDataUpdated: Updating Synopsis Panels...", this);
 
-        // --- Update Player 1 --- 
-        PlayerData? p1Data = playerDataManager.GetPlayer1Data();
-        CharacterSynopsisData p1Synopsis = null;
-        string p1SelectedChar = ""; // Initialize
-        if (p1Data.HasValue)
+        // Loop through all connected clients (usually 2 players)
+        foreach (var clientData in NetworkManager.Singleton.ConnectedClients.Values)
         {
-            p1SelectedChar = p1Data.Value.SelectedCharacter.ToString();
-            Debug.Log($"[CharacterSelector] HandlePlayerDataUpdated: P1 Data found. SelectedCharacter = '{p1SelectedChar}'", this); // LOG Character Name
-            if (!string.IsNullOrEmpty(p1SelectedChar))
+            // Debug.Log($"[CharacterSelector] Processing client ID: {clientData.ClientId}", this);
+            PlayerData? playerData = playerDataManager.GetPlayerData(clientData.ClientId);
+
+            if (playerData.HasValue)
             {
-                bool foundP1 = synopsisLookup.TryGetValue(p1SelectedChar, out p1Synopsis);
-                Debug.Log($"[CharacterSelector] HandlePlayerDataUpdated: Synopsis lookup for P1 ('{p1SelectedChar}') result: Found={foundP1}, Data={(p1Synopsis != null ? p1Synopsis.name : "NULL")}", this); // LOG Lookup Result
+                // Debug.Log($"[CharacterSelector] PlayerData found for client {clientData.ClientId}. Character: '{playerData.Value.SelectedCharacter}', Role: {playerData.Value.Role}", this);
+                SynopsisPanelController targetPanel = null;
+
+                // Determine which panel to update based on the player's role
+                if (playerData.Value.Role == PlayerRole.Player1)
+                {
+                    targetPanel = player1SynopsisPanel;
+                    // Debug.Log($"[CharacterSelector] Updating Player 1 panel.", this);
+                }
+                else if (playerData.Value.Role == PlayerRole.Player2)
+                {
+                    targetPanel = player2SynopsisPanel;
+                    // Debug.Log($"[CharacterSelector] Updating Player 2 panel.", this);
+                }
+                // else: Handle Observers or unassigned roles if necessary
+
+                if (targetPanel != null)
+                {
+                    if (!string.IsNullOrEmpty(playerData.Value.SelectedCharacter.ToString()))
+                    {
+                        if (synopsisLookup.TryGetValue(playerData.Value.SelectedCharacter.ToString(), out CharacterSynopsisData dataToDisplay))
+                        {
+                            targetPanel.UpdateDisplay(dataToDisplay, playerData.Value.Role);
+                            // Debug.Log($"[CharacterSelector] Synopsis lookup for P{(playerData.Value.Role == PlayerRole.Player1 ? 1:2)} ('{playerData.Value.SelectedCharacter}') result: Found=True, Data={dataToDisplay.characterName}", this);
+                        }
+                        else
+                        {
+                            // Character selected but no synopsis found (should not happen if data is set up correctly)
+                            targetPanel.gameObject.SetActive(false);
+                            Debug.LogWarning($"[CharacterSelector] Synopsis data not found for character: {playerData.Value.SelectedCharacter}. Hiding panel for P{(playerData.Value.Role == PlayerRole.Player1 ? 1:2)}.", this);
+                        }
+                    }
+                    else
+                    {
+                        // No character selected yet for this player, ensure panel is hidden
+                        targetPanel.gameObject.SetActive(false);
+                        // Debug.Log($"[CharacterSelector] P{(playerData.Value.Role == PlayerRole.Player1 ? 1:2)} SelectedCharacter is null or empty. Set Panel Active=False. Hier={targetPanel.gameObject.activeInHierarchy}", this);
+                    }
+                }
+                else
+                {
+                    // Debug.LogWarning($"[CharacterSelector] Target panel is null for player role: {playerData.Value.Role}. Cannot update synopsis.", this);
+                }
             }
-            else {
-                 Debug.Log("[CharacterSelector] HandlePlayerDataUpdated: P1 SelectedCharacter is null or empty.", this); // LOG Empty Selection
-            }
-        } else {
-             Debug.Log("[CharacterSelector] HandlePlayerDataUpdated: P1 Data is NULL.", this); // LOG No P1 Data
-        }
-        if (player1SynopsisPanel)
-        {
-             player1SynopsisPanel.gameObject.SetActive(p1Synopsis != null);
-             Debug.Log($"[CharacterSelector] Set P1 Panel Active={player1SynopsisPanel.gameObject.activeSelf}. Hier={player1SynopsisPanel.gameObject.activeInHierarchy}", this);
-             if (player1SynopsisPanel.gameObject.activeSelf)
-             {
-                 player1SynopsisPanel.UpdateDisplay(p1Synopsis);
-             }
-        } else { Debug.LogError("[CharacterSelector] player1SynopsisPanel reference is NULL!", this); }
-        
-        // --- Update Player 2 --- 
-        PlayerData? p2Data = playerDataManager.GetPlayer2Data();
-        CharacterSynopsisData p2Synopsis = null;
-        string p2SelectedChar = ""; // Initialize
-         if (p2Data.HasValue)
-        {
-            p2SelectedChar = p2Data.Value.SelectedCharacter.ToString();
-             Debug.Log($"[CharacterSelector] HandlePlayerDataUpdated: P2 Data found. SelectedCharacter = '{p2SelectedChar}'", this); // LOG Character Name
-             if (!string.IsNullOrEmpty(p2SelectedChar))
+            else
             {
-                 bool foundP2 = synopsisLookup.TryGetValue(p2SelectedChar, out p2Synopsis);
-                 Debug.Log($"[CharacterSelector] HandlePlayerDataUpdated: Synopsis lookup for P2 ('{p2SelectedChar}') result: Found={foundP2}, Data={(p2Synopsis != null ? p2Synopsis.name : "NULL")}", this); // LOG Lookup Result
+                // Debug.LogWarning($"[CharacterSelector] PlayerData not found for client ID: {clientData.ClientId}. Cannot update synopsis.", this);
             }
-             else {
-                 Debug.Log("[CharacterSelector] HandlePlayerDataUpdated: P2 SelectedCharacter is null or empty.", this); // LOG Empty Selection
-             }
-        } else {
-             Debug.Log("[CharacterSelector] HandlePlayerDataUpdated: P2 Data is NULL.", this); // LOG No P2 Data
         }
-        if (player2SynopsisPanel)
-        {
-            player2SynopsisPanel.gameObject.SetActive(p2Synopsis != null);
-            Debug.Log($"[CharacterSelector] Set P2 Panel Active={player2SynopsisPanel.gameObject.activeSelf}. Hier={player2SynopsisPanel.gameObject.activeInHierarchy}", this);
-            if (player2SynopsisPanel.gameObject.activeSelf)
-            {
-                player2SynopsisPanel.UpdateDisplay(p2Synopsis);
-        }
-        } else { Debug.LogError("[CharacterSelector] player2SynopsisPanel reference is NULL!", this); }
     }
 
     /// <summary>
@@ -343,7 +353,7 @@ public class CharacterSelector : NetworkBehaviour
         if (playerDataManager != null)
         {
             playerDataManager.OnPlayerDataUpdated -= HandlePlayerDataUpdated;
-            Debug.Log("[CharacterSelector] OnNetworkDespawn: Unsubscribed from OnPlayerDataUpdated.");
+            // Debug.Log("[CharacterSelector] OnNetworkDespawn: Unsubscribed from OnPlayerDataUpdated.");
         }
         // Reset cached references if needed
         playerDataManager = null;
@@ -374,11 +384,10 @@ public class CharacterSelector : NetworkBehaviour
     /// <param name="index">The index in the characterButtons list to display.</param>
     public void UpdateLocalHighlightSynopsis(int index)
     {
-        // Navigation active check is handled by the InputController before invoking the event
         if (localSynopsisPanel == null) 
-        { 
-            // Debug.LogWarning("[CharacterSelector] UpdateLocalHighlightSynopsis: Local panel is null, cannot update highlight.");
-            return; // Cannot update if local panel isn't determined or assigned
+        {
+            // Debug.LogWarning("[CharacterSelector] UpdateLocalHighlightSynopsis: Local panel is null, cannot update.", this);
+            return;
         }
         if (index < 0 || index >= characterButtons.Count)
         {
@@ -389,12 +398,24 @@ public class CharacterSelector : NetworkBehaviour
         string internalName = characterButtons[index].characterInternalName;
         if (synopsisLookup.TryGetValue(internalName, out CharacterSynopsisData synopsisData))
         {    
-            // Only show if not null
-            localSynopsisPanel.gameObject.SetActive(synopsisData != null);
-            if (localSynopsisPanel.gameObject.activeSelf)
+            if (characterButtons[index].button != null && !string.IsNullOrEmpty(characterButtons[index].characterInternalName))
             {
-                localSynopsisPanel.UpdateDisplay(synopsisData);
-                 Debug.Log($"[CharacterSelector] Updated local highlight synopsis to: {internalName}", this);
+                if (synopsisLookup.TryGetValue(internalName, out CharacterSynopsisData dataToDisplay))
+                {
+                    // Debug.Log($"[CharacterSelector] Highlighting character: {dataToDisplay.characterName}", this);
+                    localSynopsisPanel.UpdateDisplay(dataToDisplay, PlayerRole.None); // PlayerRole.None signifies a highlight, not a lock-in
+                    localSynopsisPanel.gameObject.SetActive(true); // CS1061 Fix: Ensure it's visible for highlighting
+                }
+                else
+                {
+                    Debug.LogWarning($"[CharacterSelector] Synopsis data not found for highlight: {internalName}", this);
+                    localSynopsisPanel.gameObject.SetActive(false); // CS1061 Fix: Hide if no data
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[CharacterSelector] Invalid button or internal name at index {index} for highlight.", this);
+                localSynopsisPanel.gameObject.SetActive(false); // CS1061 Fix: Hide if button/data is invalid
             }
         }
         else
@@ -421,34 +442,24 @@ public class CharacterSelector : NetworkBehaviour
     /// </summary>
     private void ExecuteConfirmSelection()
     {
-        // Get the currently selected button index from the EventSystem directly
-        // This assumes the InputController keeps the EventSystem selection up-to-date.
-        GameObject currentSelectedObj = EventSystem.current?.currentSelectedGameObject;
-        if (currentSelectedObj == null)
+        GameObject currentSelectedButton = EventSystem.current.currentSelectedGameObject;
+        if (currentSelectedButton != null)
         {
-            Debug.LogWarning("[CharacterSelector] ExecuteConfirmSelection called but nothing is selected.");
-            return;
-        }
-
-        int currentSelectedIndex = -1;
-        for (int i = 0; i < characterButtons.Count; i++)
-        {
-            if (characterButtons[i].button != null && characterButtons[i].button.gameObject == currentSelectedObj)
-            {   
-                currentSelectedIndex = i;
-                break;
+            CharacterButtonMapping? mapping = characterButtons.FirstOrDefault(cb => cb.button != null && cb.button.gameObject == currentSelectedButton);
+            if (mapping.HasValue && !string.IsNullOrEmpty(mapping.Value.characterInternalName))
+            {
+                string selectedCharName = mapping.Value.characterInternalName;
+                // Debug.Log($"[CharacterSelector] Confirming selection: {selectedCharName}", this);
+                RequestSetCharacterServerRpc(selectedCharName);
             }
-        }
-
-        if (currentSelectedIndex >= 0)
-        {
-            string selectedName = characterButtons[currentSelectedIndex].characterInternalName;
-            Debug.Log($"[CharacterSelector] Executing confirmation for: {selectedName}");
-            RequestSetCharacterServerRpc(selectedName);
+            else
+            {
+                Debug.LogWarning("[CharacterSelector] ExecuteConfirmSelection: Current selected UI element is not a valid character button or mapping not found.", this);
+            }
         }
         else
         {
-            Debug.LogWarning($"[CharacterSelector] ExecuteConfirmSelection: Currently selected object '{currentSelectedObj.name}' not found in buttons.");
+            Debug.LogWarning("[CharacterSelector] ExecuteConfirmSelection: No UI element currently selected by EventSystem.", this);
         }
     }
 } 

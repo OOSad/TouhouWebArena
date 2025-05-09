@@ -8,6 +8,10 @@ This document describes how health is managed and damage is processed. Player he
 
 *   **`PlayerHealth.cs` (Server-Authoritative):** Attached to the player prefab. Manages `CurrentHealth` (`NetworkVariable<int>`) and `IsInvincible` (`NetworkVariable<bool>`).
 *   **`ClientFairyHealth.cs` (Client-Side):** Attached to Fairy prefabs. Manages local health and death effects.
+*   **`IllusionHealth.cs` (`NetworkBehaviour`):** Attached to Illusion prefabs (which are `NetworkObject`s).
+    *   Manages health for Level 4 Illusions.
+    *   **Client-Side:** Stores max health. A specific client (`_isResponsibleClient`, set via `ClientIllusionView.InitializeClientRpc`) handles hit detection in `OnTriggerEnter2D` against "PlayerShot" layer/tag. If hit, calls `TakeDamageClientSide(damage)`. If health depleted, calls `ReportDeathToServerRpc()`.
+    *   **Server-Side:** Receives `ReportDeathToServerRpc`. This RPC then calls a public method `ProcessClientDeathReport()` on the illusion's `ServerIllusionOrchestrator` component, which then handles the despawn.
 *   **`ClientSpiritHealth.cs` (Client-Side - Future):** For Spirit prefabs.
 
 ## Taking Damage & Invincibility Sequence (Player)
@@ -49,6 +53,39 @@ This document describes how health is managed and damage is processed. Player he
 *   Damage applied via `ClientFairyHealth.TakeDamage(damage, attackerId)`.
 *   If local player kills an enemy, `ClientFairyHealth` calls `PlayerAttackRelay.ReportFairyKillServerRpc()`.
 
+## Illusion Taking Damage & Death
+
+Level 4 Illusions have their own health system, distinct from player invincibility mechanics. The process is as follows:
+
+1.  **Initialization (Client-Side):**
+    *   When an illusion is spawned, `ClientIllusionView.InitializeClientRpc` is called by `ServerIllusionOrchestrator`.
+    *   This RPC provides initial data to the `ClientIllusionView`, which in turn passes the max health to its `IllusionHealth` component and sets a flag (`_isResponsibleClient`) on one specific client, making it responsible for reporting this illusion's death.
+
+2.  **Hit Detection (Responsible Client):**
+    *   A player's client-simulated spellcard bullet collides with an illusion's `Collider2D`.
+    *   On the client designated as `_isResponsibleClient` for that illusion, `IllusionHealth.OnTriggerEnter2D()` is triggered.
+
+3.  **Damage Application (Responsible Client):**
+    *   `IllusionHealth` verifies the collision is with an object on the "PlayerShot" layer (or equivalent tag).
+    *   It calls its own `TakeDamageClientSide(damageAmount)` method, which decrements its local health counter.
+
+4.  **Report Death (Responsible Client to Server):**
+    *   If `TakeDamageClientSide` results in the illusion's health dropping to 0 or below, the client-side `IllusionHealth` component calls `ReportDeathToServerRpc()`.
+
+5.  **Server Receives Death Report:**
+    *   The `[ServerRpc] ReportDeathToServerRpc` on the server-side instance of `IllusionHealth` (which exists on the server's version of the Illusion `NetworkObject`) is executed.
+
+6.  **Notify Server Orchestrator (Server-Side Method Call):**
+    *   The server-side `ReportDeathToServerRpc` method directly calls a public, non-RPC method `ProcessClientDeathReport()` on the `ServerIllusionOrchestrator` component that resides on the *same* Illusion GameObject.
+
+7.  **Despawn Illusion (Server-Side on `ServerIllusionOrchestrator`):
+    *   `ServerIllusionOrchestrator.ProcessClientDeathReport()` triggers the despawn sequence.
+    *   This typically involves calling `ServerIllusionOrchestrator.DespawnIllusion()`, which:
+        *   Notifies the `ServerIllusionManager.Instance.ServerNotifyIllusionDespawned(this)` (or similar method passing its NetworkObjectId or reference).
+        *   Calls `NetworkObject.Despawn()` on the Illusion's NetworkObject, which removes the illusion from all clients and destroys the server object.
+
+Illusions do not have an invincibility period or trigger a "death bomb" effect upon being destroyed. They are simply removed from play.
+
 ## Final Death Handling (Player)
 
 *   When `PlayerHealth.CurrentHealth` on the server reaches zero (and is not locked), `HandleDeathServer()` is called.
@@ -69,7 +106,12 @@ This document describes how health is managed and damage is processed. Player he
     *   `ClientFairyHealth.cs`: Manages fairy health, spawns shockwave, reports local player kills.
     *   `BulletMovement.cs`: Deals damage to `ClientFairyHealth`.
     *   `ClientFairyShockwave.cs`: Deals damage to `ClientFairyHealth`.
+*   **Illusion Health & Damage Cycle:**
+    *   `IllusionHealth.cs`: `NetworkBehaviour` for illusion health. Client detects hits, responsible client reports death via RPC. Server receives and tells `ServerIllusionOrchestrator` to despawn.
+    *   `ClientIllusionView.cs`: Its `InitializeClientRpc` sets up `IllusionHealth` on clients.
+    *   `ServerIllusionOrchestrator.cs`: Contains `ProcessClientDeathReport()` and `DespawnIllusion()`.
+    *   `ServerIllusionManager.cs`: Notified by `ServerIllusionOrchestrator` upon despawn.
 *   **Networking Support & Managers:**
     *   `PlayerAttackRelay.cs`: Receives enemy kill reports.
     *   `EffectNetworkHandler.cs`: (Not directly used by `PlayerDeathBomb` for its RPC, but for other effects).
-    *   `PlayerDataManager.cs`, `ClientGameObjectPool.cs`. 
+    *   `PlayerDataManager.cs`, `ClientGameObjectPool.cs`.

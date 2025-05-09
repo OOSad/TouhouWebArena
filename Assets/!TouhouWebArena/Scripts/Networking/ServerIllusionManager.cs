@@ -112,17 +112,19 @@ public class ServerIllusionManager : NetworkBehaviour // Inherit from NetworkBeh
     private void ServerForceDespawnIllusion(NetworkObject illusionNO)
     {
         if (!IsServer || illusionNO == null || !illusionNO.IsSpawned) return;
-        IllusionHealth health = illusionNO.GetComponent<IllusionHealth>();
-        if (health != null)
+
+        ServerIllusionOrchestrator orchestrator = illusionNO.GetComponent<ServerIllusionOrchestrator>();
+        if (orchestrator != null)
         {
-            // Let IllusionHealth handle the despawn via TakeDamage, which should call ServerNotifyIllusionDespawned
-            health.TakeDamageServerSide(float.MaxValue, PlayerRole.None); 
+            // ServerIllusionOrchestrator.DespawnIllusion() now handles notifying the ServerIllusionManager.
+            orchestrator.DespawnIllusion();
         }
         else
         {   
-            Debug.LogWarning($"[ServerIllusionManager] Illusion {illusionNO.name} missing IllusionHealth, attempting direct despawn.");
-            illusionNO.Despawn(true);
-            ServerNotifyIllusionDespawned(illusionNO); // Manual notify if no health component
+            Debug.LogWarning($"[ServerIllusionManager] Illusion {illusionNO.name} ({illusionNO.NetworkObjectId}) missing ServerIllusionOrchestrator. Attempting direct despawn and manual notification.");
+            illusionNO.Despawn(true); // true to destroy object after despawn
+            // Manually notify if orchestrator was missing, as its DespawnIllusion() couldn't be called.
+            ServerNotifyIllusionDespawned(illusionNO); 
         }
     }
 
@@ -174,16 +176,6 @@ public class ServerIllusionManager : NetworkBehaviour // Inherit from NetworkBeh
         Level4IllusionController controller = illusionInstance.GetComponent<Level4IllusionController>();
         if (controller != null) { controller.ServerInitialize(opponentRole, spellData); }
         else { Debug.LogError($"[ServerIllusionManager] Spawned illusion {illusionInstance.name} missing Level4IllusionController!"); }
-
-        // Initialize Health
-        IllusionHealth healthComponent = illusionInstance.GetComponent<IllusionHealth>();
-        if (healthComponent != null) 
-        {
-             healthComponent.ServerInitialize(spellData.Health, opponentRole);
-             // Optionally, give health component a reference back to this manager for notification?
-             // healthComponent.SetManager(this); 
-        }
-        else { Debug.LogError($"[ServerIllusionManager] Spawned illusion {illusionInstance.name} missing IllusionHealth!"); }
 
         // Start Lifetime Management
         StartCoroutine(ServerManageIllusionLifetime(illusionNO, spellData.Duration));

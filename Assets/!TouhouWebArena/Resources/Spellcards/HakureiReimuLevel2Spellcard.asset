@@ -44,7 +44,7 @@ MonoBehaviour:
     maxTurnSpeed: 0
     skipEveryNth: 0
     intraActionDelay: 0
-    lifetime: 20
+    lifetime: 10
   - startDelay: 0
     bulletPrefabs:
     - {fileID: 3753940637100796060, guid: f2a3a3efbdf65af4d9c5bbad7ca3e4a6, type: 3}
@@ -75,4 +75,4 @@ MonoBehaviour:
     maxTurnSpeed: 0
     skipEveryNth: 0
     intraActionDelay: 0
-    lifetime: 20
+    lifetime: 10

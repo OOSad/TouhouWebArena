@@ -11,28 +11,19 @@ using Unity.Collections; // For FixedString
 /// (basic shots, charge attacks, spellcards) based on requests received from <see cref="PlayerShootingController"/> RPCs.
 /// Interacts with helper classes like <see cref="ServerBasicShotSpawner"/>, <see cref="ServerChargeAttackSpawner"/>,
 /// <see cref="ServerIllusionManager"/>, and <see cref="ServerBulletConfigurer"/>.
+/// For Level 4 spellcards, it handles the initial spawning of illusion prefabs, which are then managed by `ServerIllusionOrchestrator`.
 /// </summary>
-[RequireComponent(typeof(ServerSpellcardActionRunner))] // Add dependency for runner
+[RequireComponent(typeof(ServerSpellcardActionRunner))]
 public class ServerAttackSpawner : NetworkBehaviour
 {
     /// <summary>Singleton instance of the ServerAttackSpawner.</summary>
     public static ServerAttackSpawner Instance { get; private set; }
 
     // --- Spawner Instances ---
-    // private ServerBasicShotSpawner _basicShotSpawner; // REMOVED
     private ServerChargeAttackSpawner _chargeAttackSpawner;
-    // private ServerSpellcardExecutor _spellcardExecutor; // REMOVED - Logic moved to client
-    // private ServerSpellcardActionRunner _actionRunner; // REMOVED - Logic moved to client
-    // Add fields for other spawners/executors later
     // -----------------------
 
-    // --- Active Illusion Tracking (Server Only) --- Removed, handled by ServerIllusionManager
-    // private Dictionary<ulong, NetworkObject> _activeIllusionsTargetingPlayer = new Dictionary<ulong, NetworkObject>();
-    // private Dictionary<ulong, NetworkObject> _activeIllusionsCastByPlayer = new Dictionary<ulong, NetworkObject>();
-    // ---------------------------------------------
-
     // Constant vertical offset from player center for spawning basic shot pairs.
-    // private const float firePointVerticalOffset = 0.5f; // Moved to ServerBasicShotSpawner
 
     [Header("Dependencies")]
     [Tooltip("Drag the GameObject with the SpellcardNetworkHandler component here.")]
@@ -56,19 +47,11 @@ public class ServerAttackSpawner : NetworkBehaviour
             // Consider DontDestroyOnLoad(gameObject) if this manager needs to persist across scenes independently.
 
             // Create spawner instances
-            // _basicShotSpawner = new ServerBasicShotSpawner(); // REMOVED
             _chargeAttackSpawner = new ServerChargeAttackSpawner();
             
-            // REMOVED: Get SpellcardNetworkHandler instance from Awake
-            // _spellcardNetworkHandler = SpellcardNetworkHandler.Instance;
-            // if (_spellcardNetworkHandler == null)
-            // {
-            //     Debug.LogError("[ServerAttackSpawner] Could not find SpellcardNetworkHandler Instance! Spellcards might not execute on clients.", gameObject);
-            // }
         }
     }
 
-    // ADDED Start() method to initialize _spellcardNetworkHandler
     private void Start()
     {
         if (IsServer) // Only server needs to interact with these server-side handlers
@@ -129,31 +112,7 @@ public class ServerAttackSpawner : NetworkBehaviour
     }
     // -----------------------------------------
 
-    // --- Illusion Tracking Management (Server Only) --- Removed, handled by ServerIllusionManager
-    // public void ServerNotifyIllusionDespawned(NetworkObject illusionNO)
-    // {
-        // [METHOD CONTENT REMOVED]
-    // }
-
-    // private void ServerForceDespawnIllusion(NetworkObject illusionNO)
-    // {
-       // [METHOD CONTENT REMOVED]
-    // }
-    // ---------------------------------------------------
-
     // --- Public Methods Called by PlayerShootingController RPCs ---
-
-    // REMOVED SpawnBasicShot method
-    // /// <summary>
-    // /// **[Server Only]** Spawns a pair of basic shot bullets for the requesting player.
-    // /// Called via <see cref="PlayerShootingController.RequestFireServerRpc"/>.
-    // /// </summary>
-    // /// <param name="requesterClientId">The ClientId of the player who requested the shot.</param>
-    // public void SpawnBasicShot(ulong requesterClientId)
-    // {
-    //     // Delegate to the specialized spawner
-    //     _basicShotSpawner?.SpawnBasicShot(requesterClientId); 
-    // }
 
     /// <summary>
     /// **[Server Only]** Spawns the appropriate (non-pooled) charge attack for the requesting player's character.
@@ -240,67 +199,164 @@ public class ServerAttackSpawner : NetworkBehaviour
         else { Debug.LogError("[ServerAttackSpawner] PlayerDataManager instance missing for Lv4 spell."); return; }
         // -------------------------------------------
 
-        // --- Load Spellcard Resource Path ---
-        string resourcePath = $"Spellcards/{senderCharacterName}Level{spellLevel}Spellcard";
-
-        // --- LOAD SPELLCARD DATA ON SERVER --- (Needed for random offset calculation)
-        Vector2 calculatedOffset = Vector2.zero;
-        SpellcardData spellDataForOffset = Resources.Load<SpellcardData>(resourcePath);
-        if (spellDataForOffset != null)
+        if (spellLevel == 4)
         {
-            if (spellDataForOffset.actions != null && spellDataForOffset.actions.Count > 0 && spellDataForOffset.actions[0].applyRandomSpawnOffset)
+            // --- NEW LOGIC FOR LEVEL 4 --- 
+            string lv4ResourcePath = $"Spellcards/{senderCharacterName}Level{spellLevel}Spellcard"; 
+            Level4SpellcardData lv4Data = Resources.Load<Level4SpellcardData>(lv4ResourcePath);
+
+            if (lv4Data == null)
             {
-                SpellcardAction firstAction = spellDataForOffset.actions[0];
-                float randomX = (firstAction.randomOffsetMin.x == firstAction.randomOffsetMax.x) ? firstAction.randomOffsetMin.x : Random.Range(firstAction.randomOffsetMin.x, firstAction.randomOffsetMax.x);
-                float randomY = (firstAction.randomOffsetMin.y == firstAction.randomOffsetMax.y) ? firstAction.randomOffsetMin.y : Random.Range(firstAction.randomOffsetMin.y, firstAction.randomOffsetMax.y);
-                calculatedOffset = new Vector2(randomX, randomY); 
+                Debug.LogError($"[ServerAttackSpawner] Failed to load Level4SpellcardData from path: {lv4ResourcePath} for character {senderCharacterName}");
+                return;
             }
-            // Note: Currently assumes only SpellcardData. Add check for Level4SpellcardData if needed.
-        }
-        else
-        { 
-            // Attempt to load as Level4SpellcardData if the first load failed or if level is 4
-            // (We might need Level 4 data for other reasons later too)
-             Level4SpellcardData level4DataForOffset = Resources.Load<Level4SpellcardData>(resourcePath);
-            if (level4DataForOffset != null)
+
+            if (lv4Data.IllusionPrefab == null)
             {
-                 // Decide if/how Level 4 spellcards use random offset. 
-                 // Maybe they have an offset defined directly, or use their first embedded action?
-                 // For now, assume Level 4 doesn't use this shared offset mechanism unless explicitly designed.
-                 // calculatedOffset = ... logic based on level4DataForOffset if needed ...
+                Debug.LogError($"[ServerAttackSpawner] IllusionPrefab is null in Level4SpellcardData: {lv4ResourcePath}");
+                return;
+            }
+
+            // --- Determine Spawn Position for Illusion ---
+            Vector3 illusionSpawnPosition = Vector3.zero; 
+            Quaternion illusionSpawnRotation = Quaternion.identity; 
+
+            // TODO: Replace this with your actual logic to get the opponent's side spawn point.
+            // This likely involves your SpawnAreaManager and the opponentClientId.
+            // Example (you'll need to adapt this to your SpawnAreaManager's API):
+            /*
+            if (PlayerDataManager.Instance != null && SpawnAreaManager.Instance != null) // Ensure SpawnAreaManager.Instance exists and is accessible
+            {
+                PlayerData? opponentData = PlayerDataManager.Instance.GetPlayerData(opponentClientId);
+                if (opponentData.HasValue)
+                {
+                    // Assuming SpawnAreaManager has a method that takes a PlayerRole 
+                    // and returns a suitable spawn point (e.g., top-center of their field)
+                    // illusionSpawnPosition = SpawnAreaManager.Instance.GetIllusionSpawnPoint(opponentData.Value.Role); 
+                }
+                else
+                {
+                    Debug.LogError($"[ServerAttackSpawner] Could not get PlayerData for opponent {opponentClientId} to determine illusion spawn point.");
+                }
             }
             else
-            {   
-                 Debug.LogWarning($"[ServerAttackSpawner] Failed to load any spellcard data from {resourcePath} on server. Cannot determine random offset.");
+            {
+                Debug.LogWarning("[ServerAttackSpawner] PlayerDataManager or SpawnAreaManager instance not available for illusion spawn positioning.");
             }
-        }
-        // ------------------------------------
+            */
+            // As a TEMPORARY placeholder if SpawnAreaManager logic isn't ready:
+            // This simplistic example assumes player fields are centered around x=0 and tries to place on left/right.
+            // You WILL need to replace this with proper logic from SpawnAreaManager.
+            float spawnX = 5.0f; // Default for one side
+            if (PlayerDataManager.Instance != null) {
+                PlayerData? casterPlayerData = PlayerDataManager.Instance.GetPlayerData(senderClientId);
+                // If caster is P1 (typically on left), spawn illusion on P2's side (right).
+                if (casterPlayerData.HasValue && casterPlayerData.Value.Role == PlayerRole.Player1) {
+                    spawnX = 5.0f; // Example X for Player 2's side
+                } 
+                // If caster is P2 (typically on right), spawn illusion on P1's side (left).
+                else if (casterPlayerData.HasValue && casterPlayerData.Value.Role == PlayerRole.Player2) {
+                    spawnX = -5.0f; // Example X for Player 1's side
+                }
+            }
+            illusionSpawnPosition = new Vector3(spawnX, 3.0f, 0); // Example Y and Z. Adjust Y based on your field layout.
+            // --- End TEMPORARY Placeholder ---
 
-        if (_spellcardNetworkHandler == null)
-        {
-            Debug.LogError("[ServerAttackSpawner] SpellcardNetworkHandler is null (neither Inspector-assigned nor Singleton.Instance found). Cannot send ExecuteSpellcardClientRpc.");
-            return;
-        }
+            // LEVEL 4 SPELLCARD: SPAWN ILLUSION
+            if (lv4Data.IllusionPrefab == null)
+            {
+                Debug.LogError($"[ServerAttackSpawner] Level 4 Spellcard '{lv4ResourcePath}' has no IllusionPrefab assigned.");
+                return;
+            }
 
-        ClientRpcParams clientRpcParams = new ClientRpcParams
+            // --- Logic to Despawn Existing Enemy Illusion --- 
+            ServerIllusionOrchestrator[] allIllusions = FindObjectsByType<ServerIllusionOrchestrator>(FindObjectsSortMode.None);
+            foreach (ServerIllusionOrchestrator existingIllusionOrchestrator in allIllusions)
+            {
+                if (existingIllusionOrchestrator != null && existingIllusionOrchestrator.IsSpawned && existingIllusionOrchestrator.TargetPlayerId == senderClientId)
+                {
+                    if (existingIllusionOrchestrator.NetworkObject.OwnerClientId != senderClientId)
+                    {
+                        Debug.Log($"[ServerAttackSpawner] Player {senderClientId} is casting a Level 4. Despawning enemy illusion (Owner: {existingIllusionOrchestrator.NetworkObject.OwnerClientId}, Target: {existingIllusionOrchestrator.TargetPlayerId}) that was targeting them.");
+                        existingIllusionOrchestrator.DespawnIllusion();
+                        break; 
+                    }
+                }
+            }
+            // --- End Despawn Logic ---
+
+            GameObject illusionInstance = Instantiate(lv4Data.IllusionPrefab, illusionSpawnPosition, illusionSpawnRotation); 
+            
+            NetworkObject illusionNetworkObject = illusionInstance.GetComponent<NetworkObject>();
+            if (illusionNetworkObject == null)
+            {
+                Debug.LogError($"[ServerAttackSpawner] IllusionPrefab '{lv4Data.IllusionPrefab.name}' is missing a NetworkObject component.");
+                Destroy(illusionInstance);
+                return;
+            }
+
+            illusionNetworkObject.Spawn(true);
+
+            ServerIllusionOrchestrator orchestrator = illusionInstance.GetComponent<ServerIllusionOrchestrator>();
+            if (orchestrator == null)
+            {
+                Debug.LogError($"[ServerAttackSpawner] IllusionPrefab '{lv4Data.IllusionPrefab.name}' is missing ServerIllusionOrchestrator component.");
+                // Optional: Despawn if critical, though client view might still exist if orchestrator is missing.
+                // illusionNetworkObject.Despawn(); 
+                // Destroy(illusionInstance);
+                return; // Return or log, initialization will fail on orchestrator anyway
+            }
+
+            orchestrator.Initialize(lv4ResourcePath, opponentClientId); // Pass opponentId as the target
+            Debug.Log($"[ServerAttackSpawner] Initialized Level 4 Illusion ({lv4ResourcePath}) for {senderCharacterName} targeting player {opponentClientId}.");
+        }
+        else if (spellLevel == 2 || spellLevel == 3)
         {
-            Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds } 
-        };
-        
-        _spellcardNetworkHandler.ExecuteSpellcardClientRpc(
-            senderClientId, 
-            opponentClientId, 
-            new FixedString512Bytes(resourcePath),
-            spellLevel,
-            calculatedOffset, // Pass the calculated offset
-            clientRpcParams
-        );
-        Debug.Log($"[ServerAttackSpawner] Sent ExecuteSpellcardClientRpc for Lv{spellLevel} from {senderClientId} targeting {opponentClientId}. Path: {resourcePath}, Offset: {calculatedOffset}"); // Log the offset
-        
-        // --- REMOVED OLD EXECUTION LOGIC --- 
-        // REMOVED: Level 4 handling (ServerIllusionManager call)
-        // REMOVED: Level 2/3 handling (_spellcardExecutor call)
-        // -----------------------------------
+            // --- EXISTING LOGIC FOR LEVEL 2/3 --- 
+            string resourcePath = $"Spellcards/{senderCharacterName}Level{spellLevel}Spellcard";
+            Vector2 calculatedOffset = Vector2.zero;
+            SpellcardData spellDataForOffset = Resources.Load<SpellcardData>(resourcePath);
+
+            if (spellDataForOffset != null)
+            {
+                if (spellDataForOffset.actions != null && spellDataForOffset.actions.Count > 0 && spellDataForOffset.actions[0].applyRandomSpawnOffset)
+                {
+                    SpellcardAction firstAction = spellDataForOffset.actions[0];
+                    float randomX = (firstAction.randomOffsetMin.x == firstAction.randomOffsetMax.x) ? firstAction.randomOffsetMin.x : Random.Range(firstAction.randomOffsetMin.x, firstAction.randomOffsetMax.x);
+                    float randomY = (firstAction.randomOffsetMin.y == firstAction.randomOffsetMax.y) ? firstAction.randomOffsetMin.y : Random.Range(firstAction.randomOffsetMin.y, firstAction.randomOffsetMax.y);
+                    calculatedOffset = new Vector2(randomX, randomY);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[ServerAttackSpawner] Failed to load SpellcardData from {resourcePath} for Lv{spellLevel}. Random offset will be zero.");
+            }
+
+            if (_spellcardNetworkHandler == null)
+            {
+                Debug.LogError("[ServerAttackSpawner] SpellcardNetworkHandler is null. Cannot send ExecuteSpellcardClientRpc for Lv{spellLevel}.");
+                return;
+            }
+
+            ClientRpcParams clientRpcParams = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds }
+            };
+
+            _spellcardNetworkHandler.ExecuteSpellcardClientRpc(
+                senderClientId,
+                opponentClientId,
+                new FixedString512Bytes(resourcePath),
+                spellLevel,
+                calculatedOffset,
+                clientRpcParams
+            );
+            Debug.Log($"[ServerAttackSpawner] Sent ExecuteSpellcardClientRpc for Lv{spellLevel} from {senderClientId} targeting {opponentClientId}. Path: {resourcePath}, Offset: {calculatedOffset}");
+        }
+        else
+        {
+            Debug.LogWarning($"[ServerAttackSpawner] ExecuteSpellcard called with unhandled spell level: {spellLevel}");
+        }
     }
 
     /// <summary>

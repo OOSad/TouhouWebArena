@@ -125,8 +125,11 @@ public class SpellcardActionDrawer : PropertyDrawer
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {
         float totalHeight = 0f;
+        // It's good practice to define these constants locally or access them consistently
+        float singleLineHeight = EditorGUIUtility.singleLineHeight;
+        float currentVerticalSpacing = EditorGUIUtility.standardVerticalSpacing;
 
-        // Get SerializedProperties (again, needed for height calculation)
+        // Get SerializedProperties (ensure all are fetched here including new ones)
         SerializedProperty bulletPrefabsProp = property.FindPropertyRelative("bulletPrefabs");
         SerializedProperty positionOffsetProp = property.FindPropertyRelative("positionOffset");
         SerializedProperty countProp = property.FindPropertyRelative("count");
@@ -134,6 +137,9 @@ public class SpellcardActionDrawer : PropertyDrawer
         SerializedProperty radiusProp = property.FindPropertyRelative("radius");
         SerializedProperty spacingProp = property.FindPropertyRelative("spacing");
         SerializedProperty angleProp = property.FindPropertyRelative("angle");
+        SerializedProperty applyRandomSpawnOffsetProp = property.FindPropertyRelative("applyRandomSpawnOffset");
+        SerializedProperty randomOffsetMinProp = property.FindPropertyRelative("randomOffsetMin");
+        SerializedProperty randomOffsetMaxProp = property.FindPropertyRelative("randomOffsetMax");
         SerializedProperty behaviorProp = property.FindPropertyRelative("behavior");
         SerializedProperty speedProp = property.FindPropertyRelative("speed");
         SerializedProperty speedIncrementProp = property.FindPropertyRelative("speedIncrementPerBullet");
@@ -154,78 +160,59 @@ public class SpellcardActionDrawer : PropertyDrawer
         SerializedProperty intraActionDelayProp = property.FindPropertyRelative("intraActionDelay");
         SerializedProperty lifetimeProp = property.FindPropertyRelative("lifetime");
 
-        // ADDED: Get properties for random offset for height calculation
-        SerializedProperty applyRandomSpawnOffsetProp = property.FindPropertyRelative("applyRandomSpawnOffset");
-        SerializedProperty randomOffsetMinProp = property.FindPropertyRelative("randomOffsetMin");
-        SerializedProperty randomOffsetMaxProp = property.FindPropertyRelative("randomOffsetMax");
-
-        // Always visible fields
-        totalHeight += EditorGUI.GetPropertyHeight(bulletPrefabsProp, true) + verticalSpacing;
-        totalHeight += EditorGUI.GetPropertyHeight(positionOffsetProp, true) + verticalSpacing;
-        totalHeight += EditorGUI.GetPropertyHeight(countProp, true) + verticalSpacing;
-        totalHeight += EditorGUI.GetPropertyHeight(formationProp, true) + verticalSpacing;
-        totalHeight += EditorGUI.GetPropertyHeight(angleProp, true) + verticalSpacing; // Always show angle
-        totalHeight += EditorGUI.GetPropertyHeight(behaviorProp, true) + verticalSpacing;
-        totalHeight += EditorGUI.GetPropertyHeight(speedProp, true) + verticalSpacing; // Always show base speed
-        totalHeight += EditorGUI.GetPropertyHeight(useInitialSpeedProp, true) + verticalSpacing; // Always show checkbox
-        totalHeight += EditorGUI.GetPropertyHeight(skipEveryNthProp, true) + verticalSpacing; // Always show skip
-        totalHeight += EditorGUI.GetPropertyHeight(startDelayProp, true) + verticalSpacing; // Always show start delay
-        totalHeight += EditorGUI.GetPropertyHeight(intraActionDelayProp, true) + verticalSpacing; // Always show intra-action delay
-        totalHeight += EditorGUI.GetPropertyHeight(lifetimeProp, true) + verticalSpacing; // Always show lifetime
-
-        // ADDED: Height for random offset fields
-        totalHeight += EditorGUI.GetPropertyHeight(applyRandomSpawnOffsetProp, true) + verticalSpacing;
+        // Calculate height in the same order as OnGUI drawing if possible for clarity
+        totalHeight += EditorGUI.GetPropertyHeight(bulletPrefabsProp, true) + currentVerticalSpacing;
+        totalHeight += EditorGUI.GetPropertyHeight(positionOffsetProp, true) + currentVerticalSpacing;
+        totalHeight += EditorGUI.GetPropertyHeight(countProp, true) + currentVerticalSpacing;
+        totalHeight += EditorGUI.GetPropertyHeight(formationProp, true) + currentVerticalSpacing;
+        
+        FormationType currentFormation = (FormationType)formationProp.enumValueIndex;
+        if (currentFormation == FormationType.Circle) totalHeight += EditorGUI.GetPropertyHeight(radiusProp, true) + currentVerticalSpacing;
+        if (currentFormation == FormationType.Line) totalHeight += EditorGUI.GetPropertyHeight(spacingProp, true) + currentVerticalSpacing;
+        
+        totalHeight += EditorGUI.GetPropertyHeight(angleProp, true) + currentVerticalSpacing;
+        
+        // Height for "Random Spawn Offset" Header itself
+        totalHeight += singleLineHeight + currentVerticalSpacing; 
+        totalHeight += EditorGUI.GetPropertyHeight(applyRandomSpawnOffsetProp, true) + currentVerticalSpacing;
         if (applyRandomSpawnOffsetProp.boolValue)
         {
-            totalHeight += EditorGUI.GetPropertyHeight(randomOffsetMinProp, true) + verticalSpacing;
-            totalHeight += EditorGUI.GetPropertyHeight(randomOffsetMaxProp, true) + verticalSpacing;
+            totalHeight += EditorGUI.GetPropertyHeight(randomOffsetMinProp, true) + currentVerticalSpacing;
+            totalHeight += EditorGUI.GetPropertyHeight(randomOffsetMaxProp, true) + currentVerticalSpacing;
         }
 
-        // Conditional Fields
-        FormationType currentFormation = (FormationType)formationProp.enumValueIndex;
+        totalHeight += EditorGUI.GetPropertyHeight(behaviorProp, true) + currentVerticalSpacing;
         BehaviorType currentBehavior = (BehaviorType)behaviorProp.enumValueIndex;
-
-        if (currentFormation == FormationType.Circle)
-        {
-             totalHeight += EditorGUI.GetPropertyHeight(radiusProp, true) + verticalSpacing;
-        }
-        if (currentFormation == FormationType.Line)
-        {
-             totalHeight += EditorGUI.GetPropertyHeight(spacingProp, true) + verticalSpacing;
-             totalHeight += EditorGUI.GetPropertyHeight(speedIncrementProp, true) + verticalSpacing;
-        }
-       
-        if (currentBehavior == BehaviorType.Homing || currentBehavior == BehaviorType.DelayedHoming || currentBehavior == BehaviorType.DoubleHoming)
-        {
-             totalHeight += EditorGUI.GetPropertyHeight(homingSpeedProp, true) + verticalSpacing;
-        }
-        if (currentBehavior == BehaviorType.Spiral)
-        {
-             totalHeight += EditorGUI.GetPropertyHeight(tangentialSpeedProp, true) + verticalSpacing;
-        }
-
+        totalHeight += EditorGUI.GetPropertyHeight(speedProp, true) + currentVerticalSpacing;
+        if (currentFormation == FormationType.Line) totalHeight += EditorGUI.GetPropertyHeight(speedIncrementProp, true) + currentVerticalSpacing;
+        if (currentBehavior == BehaviorType.Homing || currentBehavior == BehaviorType.DelayedHoming || currentBehavior == BehaviorType.DoubleHoming) totalHeight += EditorGUI.GetPropertyHeight(homingSpeedProp, true) + currentVerticalSpacing;
+        if (currentBehavior == BehaviorType.Spiral) totalHeight += EditorGUI.GetPropertyHeight(tangentialSpeedProp, true) + currentVerticalSpacing;
+        
+        totalHeight += EditorGUI.GetPropertyHeight(useInitialSpeedProp, true) + currentVerticalSpacing;
         if (useInitialSpeedProp.boolValue)
         {
-             totalHeight += EditorGUI.GetPropertyHeight(initialSpeedProp, true) + verticalSpacing;
-             totalHeight += EditorGUI.GetPropertyHeight(transitionDurationProp, true) + verticalSpacing;
+            totalHeight += EditorGUI.GetPropertyHeight(initialSpeedProp, true) + currentVerticalSpacing;
+            totalHeight += EditorGUI.GetPropertyHeight(transitionDurationProp, true) + currentVerticalSpacing;
         }
 
-        if (currentBehavior == BehaviorType.DelayedHoming || currentBehavior == BehaviorType.DoubleHoming || currentBehavior == BehaviorType.DelayedRandomTurn)
-        {
-              totalHeight += EditorGUI.GetPropertyHeight(homingDelayProp, true) + verticalSpacing;
-        }
+        if (currentBehavior == BehaviorType.DelayedHoming || currentBehavior == BehaviorType.DoubleHoming || currentBehavior == BehaviorType.DelayedRandomTurn) totalHeight += EditorGUI.GetPropertyHeight(homingDelayProp, true) + currentVerticalSpacing;
         if (currentBehavior == BehaviorType.DoubleHoming)
         {
-             totalHeight += EditorGUI.GetPropertyHeight(secondHomingDelayProp, true) + verticalSpacing;
-             totalHeight += EditorGUI.GetPropertyHeight(firstHomingDurationProp, true) + verticalSpacing;
-             totalHeight += EditorGUI.GetPropertyHeight(secondHomingLookAheadProp, true) + verticalSpacing;
+            totalHeight += EditorGUI.GetPropertyHeight(secondHomingDelayProp, true) + currentVerticalSpacing;
+            totalHeight += EditorGUI.GetPropertyHeight(firstHomingDurationProp, true) + currentVerticalSpacing;
+            totalHeight += EditorGUI.GetPropertyHeight(secondHomingLookAheadProp, true) + currentVerticalSpacing;
         }
         if (currentBehavior == BehaviorType.DelayedRandomTurn)
         {
-             totalHeight += EditorGUI.GetPropertyHeight(spreadAngleProp, true) + verticalSpacing;
-             totalHeight += EditorGUI.GetPropertyHeight(minTurnSpeedProp, true) + verticalSpacing;
-             totalHeight += EditorGUI.GetPropertyHeight(maxTurnSpeedProp, true) + verticalSpacing;
+            totalHeight += EditorGUI.GetPropertyHeight(spreadAngleProp, true) + currentVerticalSpacing;
+            totalHeight += EditorGUI.GetPropertyHeight(minTurnSpeedProp, true) + currentVerticalSpacing;
+            totalHeight += EditorGUI.GetPropertyHeight(maxTurnSpeedProp, true) + currentVerticalSpacing;
         }
+
+        totalHeight += EditorGUI.GetPropertyHeight(skipEveryNthProp, true) + currentVerticalSpacing;
+        totalHeight += EditorGUI.GetPropertyHeight(startDelayProp, true) + currentVerticalSpacing;
+        totalHeight += EditorGUI.GetPropertyHeight(intraActionDelayProp, true) + currentVerticalSpacing;
+        totalHeight += EditorGUI.GetPropertyHeight(lifetimeProp, true) + currentVerticalSpacing;
 
         return totalHeight;
     }

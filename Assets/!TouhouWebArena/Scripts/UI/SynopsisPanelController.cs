@@ -41,15 +41,17 @@ public class SynopsisPanelController : MonoBehaviour
     /// Updates all the UI elements on the panel with data from the provided ScriptableObject.
     /// </summary>
     /// <param name="data">The CharacterSynopsisData to display.</param>
-    public void UpdateDisplay(CharacterSynopsisData data)
+    /// <param name="role">The role of the player (default: None).</param>
+    public void UpdateDisplay(CharacterSynopsisData data, PlayerRole role = PlayerRole.None)
     {
         if (data == null)
         {
-            Debug.LogWarning("[SynopsisPanelController] UpdateDisplay called with null data.");
-            // Optionally clear the panel or show default text here
-            // For now, just return to avoid errors.
+            // Debug.LogWarning("[SynopsisPanelController] UpdateDisplay called with null data.");
+            gameObject.SetActive(false); // Hide if no data
             return;
         }
+
+        gameObject.SetActive(true); // Ensure panel is active if data is provided
 
         // Update Text Fields
         if (titleText) titleText.text = data.characterTitle;
@@ -89,7 +91,7 @@ public class SynopsisPanelController : MonoBehaviour
         }
         
         // Add final log to confirm execution and active state
-        Debug.Log($"[SynopsisPanelController] UpdateDisplay finished for {(data != null ? data.displayName : "NULL data")}. Panel active in hierarchy: {gameObject.activeInHierarchy}", this);
+        // Debug.Log($"[SynopsisPanelController] UpdateDisplay finished for {(data != null ? data.displayName : "NULL data")}. Panel active in hierarchy: {gameObject.activeInHierarchy}", this);
     }
 
     // Removed ShowPanel() and HidePanel() methods as they just wrapped SetActive()

@@ -12,9 +12,10 @@ GameObject:
   - component: {fileID: 6391845667892019718}
   - component: {fileID: 3919797260187292663}
   - component: {fileID: 7990105738771674110}
-  - component: {fileID: 2045147505522550338}
-  - component: {fileID: 7573944977857745994}
-  - component: {fileID: 2554992243760125298}
+  - component: {fileID: 4366995607004267019}
+  - component: {fileID: 8098768446333118459}
+  - component: {fileID: -4222837582346743045}
+  - component: {fileID: 3734415615316906374}
   m_Layer: 12
   m_Name: HakureiReimuIllusion
   m_TagString: Illusion
@@ -54,6 +55,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -97,6 +101,7 @@ BoxCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6341418190357833515}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -120,7 +125,8 @@ BoxCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 1
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
@@ -131,7 +137,6 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  serializedVersion: 2
   m_Size: {x: 0.46, y: 0.75}
   m_EdgeRadius: 0
 --- !u!114 &7990105738771674110
@@ -146,8 +151,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3484406291
+  GlobalObjectIdHash: 2635512211
   InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
   ActiveSceneSynchronization: 0
@@ -155,7 +162,9 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &2045147505522550338
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &4366995607004267019
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -164,29 +173,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 6341418190357833515}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Script: {fileID: 11500000, guid: 638970972d8a973418e4bb88372d586f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UseUnreliableDeltas: 0
-  SyncPositionX: 1
-  SyncPositionY: 1
-  SyncPositionZ: 1
-  SyncRotAngleX: 1
-  SyncRotAngleY: 1
-  SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
-  PositionThreshold: 0.001
-  RotAngleThreshold: 0.01
-  ScaleThreshold: 0.01
-  UseQuaternionSynchronization: 0
-  UseQuaternionCompression: 0
-  UseHalfFloatPrecision: 0
-  InLocalSpace: 0
-  Interpolate: 1
-  SlerpPosition: 0
---- !u!114 &7573944977857745994
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &8098768446333118459
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -195,12 +186,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 6341418190357833515}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0e6ca5f99e44974eb832883df9da73a, type: 3}
+  m_Script: {fileID: 11500000, guid: fddd2b0c37fb7b4458764afd9a43e2ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TargetPlayerRole:
-    m_InternalValue: 0
---- !u!114 &2554992243760125298
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &-4222837582346743045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6341418190357833515}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64a80378f318fec4ba9c2efede1d32f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3734415615316906374
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -212,5 +214,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fda70ecb573db8b46a69cde151958445, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentHealth:
-    m_InternalValue: 0
+  ShowTopMostFoldoutHeaderGroup: 1

@@ -219,7 +219,7 @@ public class PlayerDataManager : NetworkBehaviour
     private void HandleServerStarted()
     {
         if (!IsServer) return; // Should not happen if subscribed correctly, but safety check
-        Debug.Log("[PlayerDataManager] Server Started event received. Initializing NetworkList.");
+        // Debug.Log("[PlayerDataManager] Server Started event received. Initializing NetworkList.");
         // InitializeNetworkList(); // REMOVED - Initialization moved back to Awake
     }
 
@@ -229,7 +229,7 @@ public class PlayerDataManager : NetworkBehaviour
         // We want to dispose if we *were* the server
         if (wasServer) 
         {
-             Debug.Log("[PlayerDataManager] Server Stopped event received. Disposing NetworkList.");
+             // Debug.Log("[PlayerDataManager] Server Stopped event received. Disposing NetworkList.");
              DisposeNetworkList();
         }
     }
@@ -238,7 +238,7 @@ public class PlayerDataManager : NetworkBehaviour
     {
         if (players != null)
         {
-            Debug.Log("[PlayerDataManager] Disposing existing NetworkList.");
+            // Debug.Log("[PlayerDataManager] Disposing existing NetworkList.");
             players.OnListChanged -= HandlePlayerDataListChanged;
             players.Dispose();
             players = null;
@@ -257,6 +257,8 @@ public class PlayerDataManager : NetworkBehaviour
     /// <param name="playerName">The name of the player who queued.</param>
     private void HandlePlayerQueued(ulong clientId, string playerName)
     {
+        if (!IsServer) return;
+        // Debug.Log($"[PlayerDataManager] Player Queued: ClientId={clientId}, Name={playerName}");
         RegisterPlayer(clientId, playerName);
     }
 
@@ -270,6 +272,7 @@ public class PlayerDataManager : NetworkBehaviour
     public void RegisterPlayer(ulong clientId, string playerName)
     {
         if (!IsServer) return;
+        // Debug.Log($"[PlayerDataManager] Registering player: ClientId={clientId}, Name={playerName}");
         
         // Check if player already exists
         for (int i = 0; i < players.Count; i++)
@@ -291,6 +294,9 @@ public class PlayerDataManager : NetworkBehaviour
         
         // Add to list
         players.Add(newPlayer);
+
+        // Debug.Log($"[PlayerDataManager] Player {playerName} (Client {clientId}) registered. Total players: {players.Count}");
+        // OnPlayerDataUpdated?.Invoke(); // Let NetworkList event handle this
     }
     
     /// <summary>
@@ -302,7 +308,7 @@ public class PlayerDataManager : NetworkBehaviour
     public void SetPlayerCharacter(ulong clientId, string characterName)
     {
         if (!IsServer) return;
-        
+        // Debug.Log($"[PlayerDataManager] Setting character for Client {clientId} to {characterName}");
         for (int i = 0; i < players.Count; i++)
         {
             if (players[i].ClientId == clientId)
@@ -310,7 +316,7 @@ public class PlayerDataManager : NetworkBehaviour
                 PlayerData updatedData = players[i];
                 updatedData.SelectedCharacter = new FixedString32Bytes(characterName);
                 players[i] = updatedData;
-                Debug.Log($"[PlayerDataManager] Updated PlayerData: {players[i]}");
+                // Debug.Log($"[PlayerDataManager] Updated PlayerData: {players[i]}");
                 return;
             }
         }
@@ -325,7 +331,7 @@ public class PlayerDataManager : NetworkBehaviour
     public void AssignPlayerRole(ulong clientId, PlayerRole role)
     {
         if (!IsServer) return;
-        
+        // Debug.Log($"[PlayerDataManager] Assigning role {role} to Client {clientId}");
         for (int i = 0; i < players.Count; i++)
         {
             if (players[i].ClientId == clientId)
@@ -376,15 +382,18 @@ public class PlayerDataManager : NetworkBehaviour
     public void UnregisterPlayer(ulong clientId)
     {
         if (!IsServer) return;
-        
-        for (int i = 0; i < players.Count; i++)
+        // Debug.Log($"[PlayerDataManager] Attempting to unregister Client {clientId}");
+        for (int i = players.Count - 1; i >= 0; i--)
         {
             if (players[i].ClientId == clientId)
             {
+                // Debug.Log($"[PlayerDataManager] Unregistering player: {players[i].PlayerName} (Client {clientId})");
                 players.RemoveAt(i);
-                return;
+                // OnPlayerDataUpdated?.Invoke(); // Let NetworkList event handle this
+                return; // Player found and removed
             }
         }
+        // Debug.LogWarning($"[PlayerDataManager] Could not unregister Client {clientId}: Player not found.");
     }
     
     /// <summary>
@@ -503,6 +512,8 @@ public class PlayerDataManager : NetworkBehaviour
     /// <param name="clientId">The ClientId of the player who disconnected.</param>
     private void HandleClientDisconnect(ulong clientId)
     {
+        if (!IsServer) return;
+        // Debug.Log($"[PlayerDataManager] Client {clientId} disconnected. Unregistering.");
         UnregisterPlayer(clientId);
     }
     #endregion
