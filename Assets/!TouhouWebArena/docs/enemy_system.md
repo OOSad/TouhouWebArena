@@ -35,10 +35,10 @@ The Spirit system has been refactored to a server-triggered, client-simulated mo
     *   For both spawn types, `SpiritSpawner.cs` determines:
         *   `spiritPrefabID` (string, typically "Spirit").
         *   `spawnPosition` (Vector3).
-        *   `shouldAim` (bool, based on `aimAtPlayerChance` for periodic spawns; usually `false` for revenge spawns).
-        *   `targetPlayerClientId` (ulong):
-            *   For aimed periodic spawns, resolved from `PlayerRole` via `PlayerDataManager`. If resolution fails, `shouldAim` becomes false, and `targetPlayerClientId` remains `0`.
-            *   For revenge spawns, resolved from `targetPlayerRole` via `PlayerDataManager`. If resolution fails (e.g., `ClientId` is `0`), an error is logged, and the revenge spirit is not spawned.
+        *   `shouldAim` (bool, based on `aimAtPlayerChance` for periodic spawns; also for revenge spawns now, not always true).
+        *   `targetNetworkObjectId` (ulong):
+            *   If `shouldAim` is true, the server attempts to resolve the target player's `NetworkObject.NetworkObjectId` via `PlayerDataManager` and `NetworkManager.SpawnManager.GetPlayerNetworkObject()`.
+            *   If resolution fails or `shouldAim` is false, `targetNetworkObjectId` defaults to `0` (indicating no specific target or aim downwards).
         *   `isRevengeSpawn` (bool).
         *   `initialVelocity` (float, e.g., `2.0f`).
         *   `spiritType` (int, e.g., `0` for normal).
@@ -54,7 +54,7 @@ The Spirit system has been refactored to a server-triggered, client-simulated mo
             *   `ClientSpiritHealth`
             *   `ClientSpiritTimeoutAttack`
         *   Initializes these components using the parameters received in the RPC.
-            *   `clientSpiritController.Initialize(shouldAim, targetPlayerClientId, isRevengeSpawn, initialVelocity, spiritType, originTransform: spiritInstance.transform)`
+            *   `clientSpiritController.Initialize(owningSide, shouldAim, targetNetworkObjectId, isRevengeSpawn, initialVelocity, spiritType, originTransform: spiritInstance.transform)`
             *   `clientSpiritHealth.Initialize(spiritType)`
             *   The `ClientSpiritTimeoutAttack` is typically initialized implicitly or via `Awake`, but `ClientSpiritController.ActivateSpirit()` will later call its `StartTimeout()` method.
         *   Activates the Spirit GameObject (`SetActive(true)`).
@@ -88,7 +88,7 @@ Spirits are client-simulated entities with distinct behaviors before and after a
     *   `PooledObjectInfo.cs`: Stores `PrefabID` (e.g., "Spirit") for `ClientGameObjectPool`.
     *   `ClientSpiritController.cs`:
         *   **Responsibilities:** Manages overall spirit behavior, movement, and activation state.
-        *   `Initialize()`: Sets initial parameters like `shouldAim`, `targetPlayerClientId`, `initialVelocity`, `currentDirection` (defaults to `Vector2.down` or aims once at `targetPlayerClientId`'s position if `shouldAim` is true).
+        *   `Initialize()`: Sets initial parameters like `owningPlayerRole`, `shouldAim`, `targetNetworkObjectId`, `initialVelocity`. `currentDirection` defaults to `Vector2.down`. If `shouldAim` is true and `targetNetworkObjectId` is valid (not 0), it attempts to find the target's `Transform` using `NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(_targetNetworkObjectId, out NetworkObject playerNetObj)` and aims towards it. If not found, `shouldAim` becomes false.
         *   `Update()`:
             *   If not activated, moves in `_currentDirection` at `_currentSpeed`.
             *   If activated, moves upwards (`Vector2.up`) and accelerates from `activatedInitialUpwardSpeed` to `activatedMaxUpwardSpeed` using `activatedAcceleration`.
@@ -98,7 +98,7 @@ Spirits are client-simulated entities with distinct behaviors before and after a
             *   Changes movement to upward and applies initial activated speed.
             *   Swaps visual GameObjects (`normalSpiritVisual` off, `activatedSpiritVisual` on).
             *   Calls `_spiritHealth.OnActivated()` to set HP to 1.
-            *   Calls `_timeoutAttack.StartTimeout(duration, _targetPlayerClientId)` (duration is e.g., 1.5s). The `_targetPlayerClientId` here is the initial one from spawn, but `ClientSpiritTimeoutAttack` will re-evaluate its actual target based on its side of the screen.
+            *   Calls `_timeoutAttack.StartTimeout(duration, _targetNetworkObjectId)` (duration is e.g., 1.5s). If the spirit was initially aimed, this `_targetNetworkObjectId` is passed; otherwise, `0` is passed.
         *   `Deinitialize()`: Resets state when returned to pool.
         *   **Serialized Fields:** `normalSpiritVisual`, `activatedSpiritVisual`, `activatedInitialUpwardSpeed`, `activatedMaxUpwardSpeed`, `activatedAcceleration`.
     *   `ClientSpiritHealth.cs`:
@@ -119,18 +119,16 @@ Spirits are client-simulated entities with distinct behaviors before and after a
         *   **Serialized Fields:** `shockwavePrefabId`, `normalSpiritShockwaveMaxRadius`, `activatedSpiritShockwaveMaxRadius`, `shockwaveDuration`, `shockwaveDamage`, `shockwaveInitialRadius`.
     *   `ClientSpiritTimeoutAttack.cs`:
         *   **Responsibilities:** Handles the attack pattern when an activated spirit times out.
-        *   `StartTimeout(duration, initialTargetPlayerId_UnusedForTargeting)`: Called by `ClientSpiritController.ActivateSpirit()`. Starts `TimeoutAttackCoroutine`.
-        *   `TimeoutAttackCoroutine(duration, loggedSpawnTargetPlayerId)`:
+        *   `StartTimeout(duration, targetNetworkObjectIdToAttack)`: Called by `ClientSpiritController.ActivateSpirit()`. Stores `targetNetworkObjectIdToAttack` and starts `TimeoutAttackCoroutine`.
+        *   `TimeoutAttackCoroutine(duration)`:
             *   Waits for `duration`.
-            *   Determines its current side of the screen (Player 1 or Player 2) based on its X position relative to `stageCenterXCoordinate`.
-            *   Queries `PlayerDataManager.Instance.GetPlayerDataByRole()` for the player on that side to get an `actualTargetPlayerId`.
-            *   Attempts to find the `Transform` of this `actualTargetPlayerId`.
-            *   If a valid `targetTransform` is found, `directionToTarget` is calculated towards it.
-            *   If no valid `targetTransform` is found (e.g., no player on that side, or `actualTargetPlayerId` is 0), `directionToTarget` defaults to `Vector2.down`.
+            *   If `targetNetworkObjectIdToAttack` (stored from `StartTimeout`) is valid (not 0), it attempts to find the target `Transform` using `NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetNetworkObjectIdToAttack, out NetworkObject playerNetObj)`.
+            *   If a `targetTransform` is found, `directionToTarget` is calculated towards it.
+            *   If `targetNetworkObjectIdToAttack` was 0 or the target wasn't found, `directionToTarget` defaults to `Vector2.down`.
             *   Spawns 3 bullets (e.g., "StageLargeBullet" from `ClientGameObjectPool`) in a claw pattern (`clawPatternAngles`) aimed along `directionToTarget`.
             *   Initializes each bullet's `StageSmallBulletMoverScript.Initialize(direction, timeoutBulletSpeed, timeoutBulletLifetime)`.
             *   Calls `_spiritHealth.ForceReturnToPool()` to despawn the spirit without a death shockwave.
-        *   **Serialized Fields:** `timeoutBulletPrefabID`, `clawPatternAngles`, `timeoutBulletSpeed`, `timeoutBulletLifetime`, `stageCenterXCoordinate`.
+        *   **Serialized Fields:** `timeoutBulletPrefabID`, `clawPatternAngles`, `timeoutBulletSpeed`, `timeoutBulletLifetime`.
     *   Appropriate 2D Colliders (e.g., `BoxCollider2D`) and a `Rigidbody2D` (typically Kinematic).
 
 *   **Interaction & Lifecycle:**

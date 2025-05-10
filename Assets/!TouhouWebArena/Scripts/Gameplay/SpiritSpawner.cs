@@ -256,7 +256,7 @@ public class SpiritSpawner : NetworkBehaviour
         if (shouldAimAtTarget)
         {
             if (PlayerDataManager.Instance != null)
-            {
+        {
                 PlayerData? playerData = PlayerDataManager.Instance.GetPlayerDataByRole(targetPlayerRole);
                 if (playerData.HasValue && playerData.Value.ClientId != 0)
                 {
@@ -266,19 +266,19 @@ public class SpiritSpawner : NetworkBehaviour
                         targetNetworkObjectId = playerNO.NetworkObjectId;
                     }
                     else
-                    {
+        {
                         Debug.LogError($"[SpiritSpawner] SpawnRevengeSpirit: Could not find Player NetworkObject for ClientId {playerData.Value.ClientId} (Role {targetPlayerRole}). Revenge spirit will not aim.", this);
                         shouldAimAtTarget = false;
                     }
                 }
                 else
-                {
+        {    
                     Debug.LogError($"[SpiritSpawner] SpawnRevengeSpirit: Could not find PlayerData or ClientId for Role {targetPlayerRole}. Revenge spirit will not aim.", this);
                     shouldAimAtTarget = false;
                 }
             }
             else
-            {
+        {   
                 Debug.LogError("[SpiritSpawner] SpawnRevengeSpirit: PlayerDataManager not available. Revenge spirit will not aim.", this);
                 shouldAimAtTarget = false;
             }

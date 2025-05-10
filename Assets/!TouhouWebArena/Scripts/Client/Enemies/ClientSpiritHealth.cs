@@ -40,6 +40,11 @@ using Unity.Netcode;
             // Debug.Log($"[ClientSpiritHealth] Initialized with {_currentHealth} HP for type {spiritType}", this);
         }
 
+        public bool IsAlive()
+        {
+            return _isInitialized && _currentHealth > 0;
+        }
+
         public void TakeDamage(int amount, ulong attackerOwnerClientId)
         {
             if (!_isInitialized || _currentHealth <= 0) return;

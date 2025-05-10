@@ -1,59 +1,155 @@
-# Extra Attack Documentation
+# Extra Attack System Documentation
 
 ## Overview
 
-Extra Attacks are character-specific special attacks that are triggered automatically under certain conditions during gameplay. They are distinct from regular shots, charge attacks, and manually activated spellcards. The system for fairy-triggered extra attacks is assumed to be server-authoritative until refactored. The player death bomb is another automatic effect.
+Extra Attacks are character-specific special abilities automatically triggered when a player destroys a designated "trigger" fairy. This system is **client-authoritative for visual spawning and behavior**, with the server acting as a relay to ensure all clients witness the same event with synchronized parameters. This ensures responsive visuals for the triggering player while maintaining consistency across all participants.
 
-## Fairy-Triggered Extra Attacks (Assumed Server-Authoritative)
+## Triggering Mechanism
 
-*   **Condition:** An Extra Attack is triggered when a player destroys a specific "trigger" fairy.
-*   **Marking Triggers:** The `FairySpawner.cs` script marks specific fairies as triggers during the spawning process (e.g., by passing `isTrigger = true` to what would have been `FairyController.InitializeForPooling` in a server-auth model. How this is communicated to the client-side `ClientFairyHealth` for reporting needs review if this system is kept).
-*   **Activation:** When a trigger fairy dies, if its `ClientFairyHealth` reports the kill to the server, the server-side logic (perhaps in `PlayerAttackRelay` or a dedicated handler) would need to check if it was a trigger fairy.
-*   **Notification:** If a trigger fairy kill is confirmed, the server would call `ExtraAttackManager.Instance.TriggerExtraAttackInternal()` (or a similar refactored method), passing necessary player data.
+1.  **Fairy Marking (Server-Side):**
+    *   `FairySpawner.cs` on the server determines which fairy in a wave will be a "trigger" fairy. It sets the `TriggerFairyIndex` in the `FairyWaveData` before this data is sent to clients when a new wave begins.
 
-*   **Coordinator:** The `ExtraAttackManager.cs` script (a NetworkBehaviour Singleton) orchestrates the execution.
-*   **Character Specificity:** Inside `TriggerExtraAttackInternal()`, the `ExtraAttackManager` checks the character name of the *attacker*.
-*   **Prefab Selection:** Based on the attacker's character, it selects the corresponding Extra Attack prefab.
-*   **Spawning:** The `ExtraAttackManager` likely instantiates the selected prefab on the server as a NetworkObject, or sends an RPC to clients to spawn a specific client-simulated effect sequence.
-*   **Targeting & Behavior:** The attack's specific behavior. If server-spawned, it uses server-authoritative collision/damage. If client-simulated via RPC, the client handles visuals and reports impacts if necessary.
+2.  **Client-Side Fairy Initialization:**
+    *   `FairySpawnNetworkHandler.cs` on each client receives the `FairyWaveData`.
+    *   When spawning fairies for the wave, it identifies the trigger fairy using the `TriggerFairyIndex`.
+    *   It initializes the corresponding `ClientFairyHealth.cs` component with an `_isExtraAttackTrigger = true` flag.
 
-## Player Death Bomb (Server-Initiated, Client-Side Effect)
+3.  **Client-Side Kill Detection & Initial Action:**
+    *   When any fairy\'s `ClientFairyHealth.TakeDamage()` method results in the fairy\'s death, it checks its `_isExtraAttackTrigger` flag.
+    *   If `true`, it calls `ClientExtraAttackManager.Instance.OnTriggerFairyKilled(attackerOwnerClientId)`, passing the `OwnerClientId` of the player character that dealt the killing blow.
 
-This is an automatic effect triggered after a player takes a hit.
+## Synchronization Flow for Randomized Parameters
 
-*   **Trigger:** Player is hit, `PlayerHitbox` sends RPC, `PlayerHealth.TakeDamage()` is called on the server. If the player survives the hit, `PlayerHealth` starts the invincibility sequence (`TriggerInvincibilityServer()` -> `ServerInvincibilityTimerCoroutine`).
-*   **Server Action:** After the invincibility duration (`CharacterStats.GetInvincibilityDuration()`) completes in `ServerInvincibilityTimerCoroutine`, the server calls `PlayerDeathBomb.ExecuteBomb()` (located on the player object).
-*   **Effect Command:** `PlayerDeathBomb.ExecuteBomb()` calls its own `ClearObjectsInRadiusClientRpc(bombPosition, bombRadius, bombingPlayerRole, bombingPlayerClientId)` targeting all clients.
-    *   `bombPosition` is the player's position at the time the bomb executes.
-    *   `bombRadius` is read from `CharacterStats.deathBombRadius`.
-    *   `bombingPlayerClientId` identifies the player whose bomb it is.
-*   **Client-Side Clearing Execution:**
-    *   All clients receive the `ClearObjectsInRadiusClientRpc`.
-    *   Each client iterates through its `ClientGameObjectPool.Instance.GetAllActiveObjects()`.
-    *   For each active pooled object, it checks if it's within the `bombRadius` of `bombPosition`.
-    *   If the object is a bullet (e.g., has `StageSmallBulletMoverScript`), `ForceReturnToPoolByBomb()` is called.
-    *   If the object is an enemy (e.g., has `ClientFairyHealth` and `IsAlive`), `TakeDamage(BOMB_DAMAGE_TO_ENEMIES, bombingPlayerClientId)` is called (likely killing it).
-    *   (Logic for `ClientSpiritHealth` will be added when refactored).
+To ensure all clients see the exact same extra attack (e.g., same spawn position, same initial trajectory, same cosmetic variations like tilt), the client that triggers the event pre-calculates all random values and these are relayed by the server.
 
-## Definition
+1.  **Parameter Generation (Triggering Client):**
+    *   Inside `ClientExtraAttackManager.OnTriggerFairyKilled()`:
+        *   If the `attackerOwnerClientId` matches the `NetworkManager.Singleton.LocalClientId` (i.e., the local player\'s character made the kill):
+            *   The client determines the `killerCharacterName` and `killerPlayerRole`.
+            *   It then **pre-calculates all necessary random values** for the potential extra attacks:
+                *   For Reimu\'s Orb: `reimuSpawnX`, `reimuSpawnY`, `reimuSidewaysForce`.
+                *   For Marisa\'s Laser: `marisaSpawnXOffset`, `marisaTiltAngle`. (The decision to tilt and the specific angle are combined here).
+            *   It calls `PlayerExtraAttackRelay.LocalInstance.InformServerOfExtraAttackTriggerServerRpc()` on its local Player object, passing:
+                *   `killerCharacterName`
+                *   `killerPlayerRole`
+                *   `attackerOwnerClientId` (original triggerer)
+                *   All pre-calculated random parameters (`reimuSpawnX`, `reimuSpawnY`, `reimuSidewaysForce`, `marisaSpawnXOffset`, `marisaTiltAngle`).
 
-*   **Prefabs (Fairy Extra Attacks):** Character-specific Extra Attack prefabs (e.g., `ReimuExtraAttack.prefab`). Their nature (NetworkObject vs. client-simulated effect) depends on implementation if refactored.
-*   **Assignment (Fairy Extra Attacks):** Prefabs assigned to `ExtraAttackManager` component fields.
-*   **Behavior Scripts (Fairy Extra Attacks):** Logic attached to the Extra Attack prefabs or defining client-side simulation sequences.
-*   **Radius (Death Bomb):** `CharacterStats.deathBombRadius`.
+2.  **Server Relay:**
+    *   The `PlayerExtraAttackRelay.InformServerOfExtraAttackTriggerServerRpc()` method (executing on the server) receives all the event data and the pre-calculated random parameters.
+    *   It immediately calls `ClientExtraAttackManager.Instance.RelayExtraAttackToClientsClientRpc()` (this is a ClientRpc targeting the global `ClientExtraAttackManager` instance on all clients), passing through all the received data, including the exact random parameters.
 
-## Execution
+3.  **Synchronized Client-Side Spawning:**
+    *   All clients (including the one that originally sent the ServerRpc) receive the `ClientExtraAttackManager.RelayExtraAttackToClientsClientRpc()`.\
+    *   This RPC handler now has the deterministic parameters. It calls `SpawnExtraAttackInternal()`, passing these exact values.
+    *   Crucially, the original triggering client no longer spawns the attack immediately in `OnTriggerFairyKilled()`; it waits for this RPC call like all other clients to ensure it uses the server-confirmed (and thus relayed) parameters.
 
-*   **Coordinator:** The `ExtraAttackManager.cs` script (a NetworkBehaviour Singleton) orchestrates the execution.
-*   **Character Specificity:** Inside `TriggerExtraAttackInternal()`, the `ExtraAttackManager` checks the character name of the *attacker* (passed in via `PlayerData`).
-*   **Prefab Selection:** Based on the attacker's character, it selects the corresponding Extra Attack prefab (`reimuExtraAttackPrefab` or `marisaExtraAttackPrefab`) assigned in its Inspector fields.
-*   **Spawning:** The `ExtraAttackManager` instantiates the selected prefab on the server.
-*   **Targeting & Behavior:** The spawned prefab likely targets the opponent's play area, potentially using helper spawner scripts for positioning. The attack's specific behavior, including **server-authoritative collision detection and damage application**, is contained within the scripts attached to the spawned Extra Attack prefab itself (e.g., `ReimuExtraAttackOrb.cs`, `EarthlightRay.cs`).
-*   **Networking:** Extra Attack prefabs are NetworkObjects, ensuring their state is synchronized. The core interaction logic (collision/damage) should execute on the server.
+## Spawning Logic (`ClientExtraAttackManager.cs`)
 
-## Definition
+1.  **`SpawnExtraAttackInternal(...)`:**
+    *   Accepts `characterName`, `attackerPlayerRole`, `actualAttackerClientId`, and all the synchronized random parameters.
+    *   Determines the `targetPlayerRole` (opponent of `attackerPlayerRole`).
+    *   Calculates `targetPlayAreaBounds` for the opponent.
+    *   Calls the appropriate character-specific internal spawn method:
+        *   If Reimu: `SpawnReimuExtraAttackInternal(targetSpawnAreaAnchor, actualAttackerClientId, pReimuSpawnX, pReimuSpawnY, pReimuSidewaysForce)`
+        *   If Marisa: `SpawnMarisaExtraAttackInternal(laserSpecificSpawnAnchor, targetPlayAreaBounds, actualAttackerClientId, pMarisaSpawnXOffset, pMarisaTiltAngle)`
 
-*   **Prefabs:** Character-specific Extra Attack prefabs (e.g., `ReimuExtraAttack.prefab`).
-*   **Assignment:** Prefabs assigned to `ExtraAttackManager` component fields.
-*   **Behavior Scripts:** Logic attached to the Extra Attack prefabs.
-*   **Spawner Helpers (Optional):** Scene scripts providing positioning/patterns. 
+2.  **`SpawnReimuExtraAttackInternal(...)`:**
+    *   Gets a Reimu Orb prefab from the `ClientGameObjectPool`.
+    *   Sets its spawn position using the provided `pReimuSpawnX`, `pReimuSpawnY`, and the Z from `targetSpawnAreaAnchor`.
+    *   Calls `orbScript.Initialize(attackerClientId, pReimuSidewaysForce)`, passing the synchronized sideways force.
+
+3.  **`SpawnMarisaExtraAttackInternal(...)`:**
+    *   Gets a Marisa Laser prefab from the `ClientGameObjectPool`.
+    *   Selects the correct `laserSpecificSpawnAnchor` (P1 or P2).
+    *   Calculates the final spawn X using `laserSpecificSpawnAnchor.position.x + pMarisaSpawnXOffset` (clamped to `targetPlayAreaBounds`).
+    *   Sets its spawn position.
+    *   Calls `laserScript.Initialize(attackerClientId, targetPlayAreaBounds, pMarisaTiltAngle)`, passing the synchronized tilt angle.
+
+## Character-Specific Extra Attacks (Client-Simulated)
+
+### Reimu\'s Extra Attack: Yin-Yang Orb
+
+*   **Prefab:** `ReimuExtraAttackOrb.prefab` (pooled). Contains `ReimuExtraAttackOrb_Client.cs`.
+*   **Spawning:** Handled by `ClientExtraAttackManager.SpawnReimuExtraAttackInternal()` using synchronized spawn X, Y.
+*   **Behavior (`ReimuExtraAttackOrb_Client.cs`):**
+    *   **Initialization:** `Initialize(attackerClientId, predeterminedSidewaysForce)` sets the attacker and applies initial forces.
+    *   **Movement:** Uses a `Rigidbody2D`.
+        *   An initial `initialUpwardForce` (from prefab field) and the `predeterminedSidewaysForce` (synchronized) are applied as an impulse.
+        *   Affected by gravity.
+        *   Bounces off stage elements (requires appropriate `PhysicsMaterial2D` on its `CircleCollider2D`).
+    *   **Damage:**
+        *   On `OnTriggerEnter2D` with an opponent\'s `PlayerHitbox` (layer check, `OwnerClientId != _attackerClientId`):
+            *   Calls `PlayerExtraAttackRelay.LocalInstance.ReportExtraAttackPlayerHitServerRpc()` to inform the server to deal damage.
+        *   The orb **does not despawn** upon hitting a player. It continues its trajectory.
+    *   **Other Collisions:** Despawns (`ReturnToPool()`) if it hits a `ClientFairyHealth` or `ClientSpiritHealth`.
+    *   **Lifetime:** Automatically returns to the pool after a set `lifetime` (countdown in `Update()`).
+    *   **Pooling:** Uses `ClientGameObjectPool.Instance.ReturnObject()`.
+
+### Marisa\'s Extra Attack: Earthlight Ray (Laser)
+
+*   **Prefab:** `MarisaExtraAttackEarthlightRay.prefab` (pooled). Contains `MarisaExtraAttackLaser_Client.cs`.
+*   **Spawning:** Handled by `ClientExtraAttackManager.SpawnMarisaExtraAttackInternal()` using a synchronized X offset from a designated anchor (`marisaLaserSpawnAnchorP1` or `P2`).
+*   **Behavior (`MarisaExtraAttackLaser_Client.cs`):**
+    *   **Initialization:** `Initialize(attackerClientId, playBounds, predeterminedTiltAngle)` sets attacker, play area bounds (for height), and the exact tilt.
+    *   **Visuals:** Uses a `SpriteRenderer`.
+        *   Positioned at the synchronized spawn point (bottom of opponent\'s screen).
+        *   Scaled/shaped to extend to the top of the `playBounds`.
+        *   Rotation is set directly using `predeterminedTiltAngle`.
+    *   **Activation Delay:** Has a configurable `activationDelay` (e.g., 0.5s). The laser is visible but non-damaging during this period (`currentActivationTimer` in `Update()`).
+    *   **Damage:**
+        *   `OnTriggerStay2D` is used.
+        *   If `currentActivationTimer <= 0`:
+            *   If it collides with an opponent\'s `PlayerHitbox` (layer check, `OwnerClientId != _attackerClientId`):
+                *   Deals 1 damage per frame of contact by calling `PlayerExtraAttackRelay.LocalInstance.ReportExtraAttackPlayerHitServerRpc()`.\
+                *   The player\'s own invincibility frames (I-frames, handled server-side by `PlayerHealth`) are responsible for preventing multiple damage instances from a single laser pass.
+    *   **Lifetime:** Automatically returns to the pool after `activeDuration` (countdown in `Update()`).
+    *   **Pooling:** Resets rotation to identity, then uses `ClientGameObjectPool.Instance.ReturnObject()`.
+
+## Damage Application (Server-Authoritative)
+
+While the extra attacks are visually client-simulated, the actual damage to players is server-authoritative.
+
+1.  **Client Hit Report:**
+    *   `ReimuExtraAttackOrb_Client.OnTriggerEnter2D` or `MarisaExtraAttackLaser_Client.OnTriggerStay2D` detects a collision with an opponent\'s `PlayerHitbox`.
+    *   It calls `PlayerExtraAttackRelay.LocalInstance.ReportExtraAttackPlayerHitServerRpc(victimOwnerClientId, damageAmount, _attackerClientId)`.
+
+2.  **Server Damage Processing (`PlayerExtraAttackRelay.cs`):**
+    *   The `ReportExtraAttackPlayerHitServerRpc` method (executing on the server):
+        *   Iterates through `NetworkManager.Singleton.SpawnManager.SpawnedObjects.Values` to find the `NetworkObject` of the player whose `OwnerClientId` matches `victimOwnerClientId` and has a `PlayerHealth` component.
+        *   If found, it calls `victimPlayerHealth.TakeDamage(damageAmount)` on that `PlayerHealth` component. Player health and subsequent death are server-authoritative.
+
+## Key Scripts & Their Roles
+
+*   **`FairySpawner.cs` (Server-Side):**
+    *   Marks a fairy in `FairyWaveData` with `TriggerFairyIndex`.
+*   **`FairySpawnNetworkHandler.cs` (Client-Side):**
+    *   Reads `TriggerFairyIndex` from `FairyWaveData`.
+    *   Initializes `ClientFairyHealth` with `_isExtraAttackTrigger` flag.
+*   **`ClientFairyHealth.cs` (Client-Side, on Fairy Prefab):**
+    *   Stores `_isExtraAttackTrigger`.
+    *   On death (if trigger), calls `ClientExtraAttackManager.Instance.OnTriggerFairyKilled()`.
+*   **`ClientExtraAttackManager.cs` (Client-Side Singleton, `NetworkBehaviour`):**
+    *   `OnTriggerFairyKilled()`: If local player is attacker, generates all random parameters (spawn positions, forces, offsets, tilt angles) and calls `PlayerExtraAttackRelay...InformServerOfExtraAttackTriggerServerRpc()`.
+    *   `RelayExtraAttackToClientsClientRpc()`: Receives trigger event and synchronized parameters from the server. Calls `SpawnExtraAttackInternal()`.
+    *   `SpawnExtraAttackInternal()`: Determines target, calls character-specific internal spawn methods with synchronized parameters.
+    *   `SpawnReimuExtraAttackInternal()` / `SpawnMarisaExtraAttackInternal()`: Get pooled object, set position using synchronized values, and call the attack script\'s `Initialize` method with synchronized parameters.
+    *   Manages references to extra attack prefabs and parameters needed for random value generation (e.g., `marisaLaserXSpread`, `reimuOrbInitialSidewaysForceMin/Max`, `marisaLaserMaxTiltAngle`).
+*   **`PlayerExtraAttackRelay.cs` (Client-Side, `NetworkBehaviour` on Player Prefab):**
+    *   `LocalInstance`: Singleton accessor for the local player\'s relay.
+    *   `InformServerOfExtraAttackTriggerServerRpc()`: Called by `ClientExtraAttackManager` (only on the client that triggered the kill). Sends event details and all pre-calculated random parameters to the server.
+    *   `ReportExtraAttackPlayerHitServerRpc()`: Called by client-side attack scripts (`ReimuExtraAttackOrb_Client`, `MarisaExtraAttackLaser_Client`) when they hit an opponent. Sends victim and attacker details to the server for damage processing.
+*   **`ReimuExtraAttackOrb_Client.cs` (Client-Side, on Reimu\'s Orb Prefab):**
+    *   Manages orb\'s physics-based movement, lifetime, collision detection (player damage report, fairy/spirit despawn), and pooling.
+    *   `Initialize` method now accepts a `predeterminedSidewaysForce`.
+*   **`MarisaExtraAttackLaser_Client.cs` (Client-Side, on Marisa\'s Laser Prefab):**
+    *   Manages laser\'s visuals (SpriteRenderer), activation delay, continuous damage logic (player damage report), lifetime, and pooling.
+    *   `Initialize` method now accepts `playBounds` (for height) and a `predeterminedTiltAngle`.
+*   **Supporting Manager Scripts (Client-Side Singletons):**
+    *   `PlayerDataManager.cs`: Provides player character/role from `OwnerClientId`.
+    *   `SpawnAreaManager.cs`: Provides opponent\'s play area bounds/transforms for targeting.
+    *   `ClientGameObjectPool.cs`: Provides pooling for the extra attack prefabs.
+    *   `NetworkManager.cs` (Netcode for GameObjects): Core networking functionality.
+    *   `PlayerHealth.cs` (Server-Authoritative, on Player Prefab): Handles taking damage.
+
+*(The old Player Death Bomb section can be removed from this file if it's documented elsewhere or considered out of scope for "Extra Attacks" specifically related to fairy triggers. For this update, I'm assuming it will be removed to keep the focus clear).* 

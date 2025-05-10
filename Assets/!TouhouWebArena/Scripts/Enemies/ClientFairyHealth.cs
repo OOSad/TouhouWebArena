@@ -16,6 +16,7 @@ public class ClientFairyHealth : MonoBehaviour
     [SerializeField] private int deathShockwaveDamage = 5;
 
     private int _currentHealth;
+    private bool _isExtraAttackTrigger = false; // Added for extra attack
 
     public int CurrentHealth => _currentHealth;
     public bool IsAlive => _currentHealth > 0;
@@ -26,6 +27,15 @@ public class ClientFairyHealth : MonoBehaviour
     {
         // Reset health when enabled (e.g., when taken from pool)
         _currentHealth = maxHealth;
+        _isExtraAttackTrigger = false; // Reset trigger status on enable
+    }
+
+    public void Initialize(int startingHealth, bool isTrigger)
+    {
+        maxHealth = startingHealth > 0 ? startingHealth : 1;
+        _currentHealth = maxHealth;
+        _isExtraAttackTrigger = isTrigger;
+        // Debug.Log($"{gameObject.name} initialized. Health: {_currentHealth}, IsTrigger: {_isExtraAttackTrigger}");
     }
 
     public void SetMaxHealth(int newMaxHealth, bool setCurrentToMax = true)
@@ -51,7 +61,20 @@ public class ClientFairyHealth : MonoBehaviour
             SpawnDeathShockwave(attackerOwnerClientId); // Spawn effect first
 
             // Conditional Kill Reporting
-            if (attackerOwnerClientId == NetworkManager.Singleton.LocalClientId)
+            if (_isExtraAttackTrigger)
+            {
+                // If it's a trigger fairy, let ClientExtraAttackManager handle it.
+                // It will decide if a server report is needed for relaying.
+                if (ClientExtraAttackManager.Instance != null)
+                {
+                    ClientExtraAttackManager.Instance.OnTriggerFairyKilled(attackerOwnerClientId);
+                }
+                else
+                {
+                    Debug.LogError($"[ClientFairyHealth on {gameObject.name}] ClientExtraAttackManager.Instance is null. Cannot report trigger fairy kill by {attackerOwnerClientId}.");
+                }
+            }
+            else if (attackerOwnerClientId == NetworkManager.Singleton.LocalClientId) // Only report normal fairy kill if not a trigger and killed by local player
             {
                 if (PlayerAttackRelay.LocalInstance != null)
                 {
@@ -76,7 +99,11 @@ public class ClientFairyHealth : MonoBehaviour
         SpawnDeathShockwave(instigatorClientId); // Spawn effect first
 
         // Conditional Kill Reporting for bombs/special
-        if (instigatorClientId == NetworkManager.Singleton.LocalClientId)
+        // For lethal damage (e.g. bombs), we might not want extra attacks to trigger,
+        // or it needs specific rules. For now, extra attacks only trigger from normal TakeDamage kills.
+        // If bombs should trigger them, the logic from TakeDamage's _isExtraAttackTrigger block would be duplicated here.
+        // For now, only standard kill reporting for lethal damage (if not handled by extra attack logic)
+        if (!_isExtraAttackTrigger && instigatorClientId == NetworkManager.Singleton.LocalClientId)
         {
             if (PlayerAttackRelay.LocalInstance != null)
             {

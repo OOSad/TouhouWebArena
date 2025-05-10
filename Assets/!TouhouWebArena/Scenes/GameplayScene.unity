@@ -2337,7 +2337,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 394317611}
-  - component: {fileID: 394317612}
+  - component: {fileID: 394317618}
   - component: {fileID: 394317614}
   - component: {fileID: 394317615}
   - component: {fileID: 394317616}
@@ -2365,21 +2365,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1110497015}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &394317612
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 394317610}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1718bfe9e5aa6dc44b5fed26e05e140a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  reimuExtraAttackPrefab: {fileID: 916272378052303310, guid: 9323d805ec3d7ab4cb582c51d6f02265, type: 3}
-  marisaExtraAttackPrefab: {fileID: 2089556739134321075, guid: a7448fa3f730c494c917eae3278c48a1, type: 3}
 --- !u!114 &394317613
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2469,6 +2454,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &394317618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 394317610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a7fa97878526724488495dbcd76ca03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  reimuExtraAttackPrefab: {fileID: 916272378052303310, guid: 9323d805ec3d7ab4cb582c51d6f02265, type: 3}
+  marisaExtraAttackPrefab: {fileID: 2089556739134321075, guid: a7448fa3f730c494c917eae3278c48a1, type: 3}
+  marisaLaserSpawnAnchorP1: {fileID: 474647436}
+  marisaLaserSpawnAnchorP2: {fileID: 881664902}
+  marisaLaserXSpread: 7
 --- !u!1 &422618548
 GameObject:
   m_ObjectHideFlags: 0
@@ -8632,6 +8635,14 @@ MonoBehaviour:
     prefab: {fileID: 3646520139153876449, guid: 3ec2a5d1f99b35844b76285fbcca410d, type: 3}
     initialSize: 40
     activeObjectsInPool: []
+  - prefabId: MarisaExtraAttackEarthlightRay
+    prefab: {fileID: 2089556739134321075, guid: a7448fa3f730c494c917eae3278c48a1, type: 3}
+    initialSize: 20
+    activeObjectsInPool: []
+  - prefabId: ReimuExtraAttackOrb
+    prefab: {fileID: 916272378052303310, guid: 9323d805ec3d7ab4cb582c51d6f02265, type: 3}
+    initialSize: 20
+    activeObjectsInPool: []
 --- !u!1 &1656017467
 GameObject:
   m_ObjectHideFlags: 0
@@ -10850,7 +10861,7 @@ MonoBehaviour:
   greatFairyChance: 0.2
   delayBetweenFairies: 0.3
   allowReverseSpawning: 1
-  extraAttackTriggerWaveInterval: 4
+  extraAttackTriggerWaveInterval: 2
   enableExtraAttackTrigger: 1
   isDebugSpawningEnabled: 1
 --- !u!114 &1941435764
@@ -10874,7 +10885,7 @@ MonoBehaviour:
   greatFairyChance: 0.2
   delayBetweenFairies: 0.3
   allowReverseSpawning: 1
-  extraAttackTriggerWaveInterval: 4
+  extraAttackTriggerWaveInterval: 2
   enableExtraAttackTrigger: 1
   isDebugSpawningEnabled: 1
 --- !u!114 &1941435765
@@ -10905,63 +10916,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
---- !u!1 &1954152527
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1954152529}
-  - component: {fileID: 1954152530}
-  m_Layer: 0
-  m_Name: StageSmallBulletSpawner
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1954152529
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1954152527}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1954152530
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1954152527}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1454233846
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 0
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
 --- !u!1 &1959105278
 GameObject:
   m_ObjectHideFlags: 0
@@ -12350,7 +12304,6 @@ SceneRoots:
   - {fileID: 1318922055}
   - {fileID: 836781148}
   - {fileID: 242555829}
-  - {fileID: 1954152529}
   - {fileID: 1559253378}
   - {fileID: 2008785425}
   - {fileID: 1378866819}

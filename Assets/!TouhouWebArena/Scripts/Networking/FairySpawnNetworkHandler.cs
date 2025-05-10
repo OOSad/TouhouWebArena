@@ -100,6 +100,10 @@ public class FairySpawnNetworkHandler : NetworkBehaviour
         // Get the list of paths for the specified player area from PathManager
         List<BezierSpline> pathsForArea = _pathManager.GetPathsForPlayer(waveData.PlayerAreaIdentifier); 
 
+        // Define health values locally for clarity
+        const int normalFairyHealth = 1;
+        const int greatFairyHealth = 3;
+
         if (pathsForArea == null || waveData.PathId < 0 || waveData.PathId >= pathsForArea.Count)
         {
             Debug.LogError($"[FairySpawnNetworkHandler] Client could not find/resolve path. Area: {waveData.PlayerAreaIdentifier}, PathID (index): {waveData.PathId}. Path list for area was null or index out of bounds.", this);
@@ -146,17 +150,17 @@ public class FairySpawnNetworkHandler : NetworkBehaviour
             if (fairyController != null)
             {
                 fairyController.SetOwningPlayerRole(owningSide);
-                bool isTrigger = (i == waveData.TriggerFairyIndex);
+                // bool isTrigger = (i == waveData.TriggerFairyIndex); // Old way of just passing to controller
                 // Example: if ClientFairyController has an Init method:
                 // fairyController.InitializeWaveData(isTrigger /*, other relevant data from waveData */);
             }
 
-            // Example: If health needs to be set based on wave data or if it's a great fairy
             ClientFairyHealth fairyHealth = fairyInstance.GetComponent<ClientFairyHealth>();
             if (fairyHealth != null) 
             {
-                // int healthToSet = isGreat ? 3 : 1; // Example, could also come from waveData
-                // fairyHealth.SetMaxHealth(healthToSet, true);
+                bool isTriggerFairy = (i == waveData.TriggerFairyIndex && waveData.TriggerFairyIndex != -1); // Ensure index is valid
+                int healthToSet = isGreat ? greatFairyHealth : normalFairyHealth; 
+                fairyHealth.Initialize(healthToSet, isTriggerFairy);
             }
 
             if (i < waveData.FairyCount - 1 && waveData.DelayBetweenFairies > 0.0f)

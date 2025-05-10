@@ -33,7 +33,7 @@ Netcode for GameObjects provides several building blocks for networked applicati
         3.  All Clients: Receive `SpawnFairyWaveClientRpc`, get prefab from `ClientGameObjectPool`, initialize position/path (`SplineWalker`), activate the enemy.
     *   **NEW: Common Flow for Spirit Spawning (Server-Triggered, Client-Simulated):**
         1.  **Server (`SpiritSpawner.cs`):**
-            *   Determines spirit parameters (prefab ID, position, aim, target ClientID for aiming, revenge status, velocity, type) based on periodic spawn logic or revenge triggers.
+            *   Determines spirit parameters (prefab ID, position, aim, target `NetworkObjectId` for aiming if `shouldAim` is true, revenge status, velocity, type) based on periodic spawn logic or revenge triggers.
             *   Calls `ClientSpiritSpawnHandler.Instance.SpawnSpiritClientRpc(...)` targeting all clients.
         2.  **All Clients (`ClientSpiritSpawnHandler.cs`):**
             *   Receive `SpawnSpiritClientRpc`.
@@ -90,6 +90,15 @@ Netcode for GameObjects provides several building blocks for networked applicati
         *   **Other Despawn Scenarios (Server-Side):**
             *   Timed despawn: `ServerIllusionOrchestrator` can despawn itself after its lifetime.
             *   Countered: `ServerAttackSpawner` can directly call `DespawnIllusion()` on an enemy `ServerIllusionOrchestrator` if the local player casts a Level 4 spell.
+    *   **NEW: Synchronizing Client-Generated Randomness for Relayed Effects (e.g., Extra Attacks):**
+        1.  **Client-Side Trigger & Parameter Generation:** Client A (the one whose action triggers the event, e.g., killing a specific fairy for an Extra Attack) detects the event.
+        2.  Client A then **pre-calculates all necessary random values** that will define the visual effect's unique characteristics (e.g., precise spawn coordinates, initial forces, cosmetic variations like projectile tilt angles).
+        3.  **ServerRpc with Parameters:** Client A sends these deterministic random values, along with the core event data (e.g., attacker's character, role, ClientID), in a `ServerRpc` to its `PlayerExtraAttackRelay` script (or a similar per-player relay object).
+        4.  **Server Relay to All Clients:** The `PlayerExtraAttackRelay`'s `ServerRpc` method (now executing on the server) receives this data. It then immediately calls a `ClientRpc` on a global manager singleton (e.g., `ClientExtraAttackManager.Instance.RelayExtraAttackToClientsClientRpc()`). This `ClientRpc` includes all the original event data *and* the exact, pre-calculated random parameters.
+        5.  **Synchronized Execution on All Clients:** All clients (including the original Client A) receive this `ClientRpc` via the global manager.
+        6.  Each client then uses the *provided* deterministic random values to spawn and configure the visual effect (e.g., using `ClientExtraAttackManager.SpawnExtraAttackInternal()`).
+        7.  This ensures that every client renders the exact same visual outcome, as they are all working from the identical set of random numbers generated once by the triggering client and then distributed by the server. This avoids desynchronization that would occur if each client called `Random.Range()` independently for the same event.
+        8.  Damage or other game-state-altering consequences of such an attack are still typically reported back to the server for authoritative handling (e.g., `PlayerExtraAttackRelay.ReportExtraAttackPlayerHitServerRpc()`).
 *   **`NetworkVariable`:** Used to automatically synchronize simple data types. Mainly used for player position (`ClientAuthMovement.NetworkedPosition`, owner-write) and potentially server-managed states like score or player metadata (`PlayerDataManager`). Health for illusions is managed via `IllusionHealth` (client-side tracking, server-RPC for death), and fairy health is client-side (`ClientFairyHealth`) with kills reported to the server, rather than being directly synchronized variables.
 
 ## Starting a Session / Connection Flow
@@ -172,6 +181,17 @@ Here's how major game systems interact with the network:
 *   **Object Pooling:**
     *   **`ClientGameObjectPool.cs`:** Primary pool used by all clients for non-NetworkObject entities spawned via RPC commands or local actions (player bullets, enemy bullets, fairies, spirits, shockwaves, VFX).
     *   **`NetworkObjectPool.cs`:** Likely **DEPRECATED/UNUSED** unless specific server-authoritative `NetworkObject`s (e.g., a complex boss segment) require pooling.
+
+## NEW: Extra Attacks (Client-Authoritative Trigger & Simulation)
+
+*   **Trigger Marking (Server):** `FairySpawner.cs` determines if a wave contains an extra attack trigger fairy and sets `FairyWaveData.TriggerFairyIndex`.
+*   **Client Fairy Initialization:** `FairySpawnNetworkHandler.cs` uses this index to set an `_isExtraAttackTrigger` flag on the corresponding `ClientFairyHealth` instance.
+*   **Local Activation (Client):** When a trigger fairy is killed, `ClientFairyHealth.OnTriggerFairyKilled()` is called on the client that simulated the kill. This method:
+    1.  Calls `ClientExtraAttackManager.Instance.SpawnExtraAttack()` to immediately spawn the visual attack locally, targeting the opponent.
+    2.  If the kill was by the *local player*, it calls `PlayerExtraAttackRelay.LocalInstance.InformServerOfExtraAttackTriggerServerRpc()`.
+*   **Server Relay:** The server-side `PlayerExtraAttackRelay` receives the RPC and calls `ClientExtraAttackManager.Instance.RelayExtraAttackToClientsClientRpc()` on all clients, passing the original killer's character, role, and ClientId.
+*   **Remote Activation (Other Clients):** `ClientExtraAttackManager` on other clients receives the `ClientRpc`. If they are not the original killer, they also call `SpawnExtraAttack()` to display the attack.
+*   **Client-Side Attack Scripts:** `ReimuExtraAttackOrb_Client.cs` and `MarisaExtraAttackLaser_Client.cs` handle the specific behavior of the attacks, which are spawned from the `ClientGameObjectPool`.
 
 ## Important Scripts (Updated List)
 

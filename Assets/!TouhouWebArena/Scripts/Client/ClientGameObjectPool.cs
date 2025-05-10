@@ -140,7 +140,7 @@ public class ClientGameObjectPool : MonoBehaviour
             }
             else
             {
-                pool.objectQueue.Enqueue(objInstance);
+            pool.objectQueue.Enqueue(objInstance);
             }
             
             pool.activeObjectsInPool.Remove(objInstance);
