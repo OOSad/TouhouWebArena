@@ -32,11 +32,15 @@ public class ClientSpiritSpawnHandler : NetworkBehaviour
 
     // This RPC will be called by the server's SpiritSpawner
     [ClientRpc]
-    public void SpawnSpiritClientRpc(string spiritPrefabID, Vector3 position, bool shouldAim, ulong targetPlayerClientId, bool isRevengeSpawn, float initialVelocity, int spiritType /* For future variations */)
+    public void SpawnSpiritClientRpc(PlayerRole owningSide,
+                                   string spiritPrefabID, Vector3 position, 
+                                   bool shouldAim, ulong targetPlayerClientId, 
+                                   bool isRevengeSpawn, float initialVelocity, 
+                                   int spiritType /* For future variations */)
     {
         if (!IsClient) return; // Should only execute on clients
 
-        Debug.Log($"[ClientSpiritSpawnHandler] Received SpawnSpiritClientRpc: PrefabID={spiritPrefabID}, Pos={position}, Aim={shouldAim}, TargetCID={targetPlayerClientId}, Revenge={isRevengeSpawn}, Vel={initialVelocity}, Type={spiritType}");
+        Debug.Log($"[ClientSpiritSpawnHandler] Received SpawnSpiritClientRpc: PrefabID={spiritPrefabID}, Pos={position}, Aim={shouldAim}, TargetCID={targetPlayerClientId}, Revenge={isRevengeSpawn}, Vel={initialVelocity}, Type={spiritType}, OwningSide={owningSide}");
 
         GameObject spiritInstance = ClientGameObjectPool.Instance.GetObject(spiritPrefabID);
         if (spiritInstance == null)
@@ -53,7 +57,7 @@ public class ClientSpiritSpawnHandler : NetworkBehaviour
         if (controller != null)
         {
             // Pass spiritInstance.transform for the originTransform parameter, though it's not strictly used by ClientSpiritController yet.
-            controller.Initialize(shouldAim, targetPlayerClientId, isRevengeSpawn, initialVelocity, spiritType, spiritInstance.transform);
+            controller.Initialize(owningSide, shouldAim, targetPlayerClientId, isRevengeSpawn, initialVelocity, spiritType, spiritInstance.transform);
         }
         else
         {

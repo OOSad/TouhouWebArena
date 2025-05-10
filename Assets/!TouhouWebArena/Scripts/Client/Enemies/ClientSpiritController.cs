@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
+using System.Collections;
 
 // namespace TouhouWebArena.Client.Enemies // Keeping it in global for now to match ClientSpiritSpawnHandler
 // {
@@ -13,6 +14,8 @@ using Unity.Netcode;
         private int _spiritType;
         private Transform _cachedTransform;
         private Transform _currentTargetTransform; // For homing, used only at init now
+
+        private PlayerRole _owningPlayerRole = PlayerRole.None;
 
         private bool _isActivated = false;
         private float _currentSpeed;
@@ -31,6 +34,14 @@ using Unity.Netcode;
         [SerializeField] private float activatedMaxUpwardSpeed = 3.0f;
         [SerializeField] private float activatedAcceleration = 1.0f; // Units per second per second
 
+        [Header("Normal Spirit Lifetime & Boundaries")]
+        [SerializeField] private float normalSpiritMaxLifetime = 15f;
+        [SerializeField] private float offScreenLimitTop = 7f;
+        [SerializeField] private float offScreenLimitBottom = -7f;
+        [SerializeField] private float offScreenLimitHorizontal = 10f;
+
+        private Coroutine _normalLifetimeCoroutine;
+
         void Awake()
         {
             _cachedTransform = transform;
@@ -42,9 +53,11 @@ using Unity.Netcode;
             if (activatedSpiritVisual != null) activatedSpiritVisual.SetActive(false);
         }
 
-        public void Initialize(bool shouldAim, ulong targetPlayerClientId, bool isRevengeSpawn, 
+        public void Initialize(PlayerRole owningPlayerRole,
+                               bool shouldAim, ulong targetPlayerClientId, bool isRevengeSpawn, 
                                float initialVelocity, int spiritType, Transform originTransform /* Not used currently, but good for consistency */)
         {
+            _owningPlayerRole = owningPlayerRole;
             _shouldAim = shouldAim;
             _targetPlayerClientId = targetPlayerClientId;
             _isRevengeSpawn = isRevengeSpawn;
@@ -57,6 +70,15 @@ using Unity.Netcode;
             // Reset visuals to normal on initialize/reuse
             if (normalSpiritVisual != null) normalSpiritVisual.SetActive(true);
             if (activatedSpiritVisual != null) activatedSpiritVisual.SetActive(false);
+
+            // Stop any previous lifetime coroutine if re-initializing from pool
+            if (_normalLifetimeCoroutine != null)
+            {
+                StopCoroutine(_normalLifetimeCoroutine);
+                _normalLifetimeCoroutine = null;
+            }
+            // Start lifetime for normal spirits (will be stopped if activated)
+            _normalLifetimeCoroutine = StartCoroutine(NormalLifetimeCoroutine());
 
             // Resolve target transform if aiming and set initial direction
             if (_shouldAim && _targetPlayerClientId != 0 && NetworkManager.Singleton != null)
@@ -86,6 +108,17 @@ using Unity.Netcode;
             // Debug.Log($"[ClientSpiritController] Initialized: Vel={_initialVelocity}, Aim={_shouldAim}, TargetCID={_targetPlayerClientId}", this);
         }
 
+        private IEnumerator NormalLifetimeCoroutine()
+        {
+            yield return new WaitForSeconds(normalSpiritMaxLifetime);
+            if (!_isActivated && _isInitialized && gameObject.activeInHierarchy) 
+            {
+                // Debug.Log($"[ClientSpiritController] Normal spirit {gameObject.name} reached max lifetime. Returning to pool.");
+                if (_spiritHealth != null) _spiritHealth.ForceReturnToPool(); 
+                else if (ClientGameObjectPool.Instance != null) ClientGameObjectPool.Instance.ReturnObject(gameObject);
+            }
+        }
+
         void Update()
         {
             if (!_isInitialized || !NetworkManager.Singleton.IsClient) // Ensure it runs only on clients and is initialized
@@ -104,13 +137,34 @@ using Unity.Netcode;
             
             _cachedTransform.Translate(_currentDirection * _currentSpeed * Time.deltaTime);
 
-            // TODO: Add logic for despawn if it goes off-screen (handled by ClientProjectileLifetime usually, but spirits aren't projectiles)
-            // This might need a separate component or logic here.
+            if (!_isActivated) // Off-screen check for non-activated spirits
+            {
+                Vector3 pos = _cachedTransform.position;
+                if (pos.y < offScreenLimitBottom || pos.y > offScreenLimitTop || 
+                    pos.x < -offScreenLimitHorizontal || pos.x > offScreenLimitHorizontal)
+                {
+                    // Debug.Log($"[ClientSpiritController] Normal spirit {gameObject.name} went off-screen. Returning to pool.");
+                    if (_normalLifetimeCoroutine != null) 
+                    {
+                        StopCoroutine(_normalLifetimeCoroutine);
+                        _normalLifetimeCoroutine = null;
+                    }
+                    if (_spiritHealth != null) _spiritHealth.ForceReturnToPool();
+                    else if (ClientGameObjectPool.Instance != null) ClientGameObjectPool.Instance.ReturnObject(gameObject);
+                    return; 
+                }
+            }
         }
 
         public void ActivateSpirit()
         {
             if (_isActivated) return;
+
+            if (_normalLifetimeCoroutine != null) // Stop normal lifetime if activated
+            {
+                StopCoroutine(_normalLifetimeCoroutine);
+                _normalLifetimeCoroutine = null;
+            }
 
             _isActivated = true;
             _currentSpeed = activatedInitialUpwardSpeed; // Set to initial upward speed
@@ -139,6 +193,12 @@ using Unity.Netcode;
             // Reset visuals on deinitialize
             if (normalSpiritVisual != null) normalSpiritVisual.SetActive(true);
             if (activatedSpiritVisual != null) activatedSpiritVisual.SetActive(false);
+
+            if (_normalLifetimeCoroutine != null)
+            {
+                StopCoroutine(_normalLifetimeCoroutine);
+                _normalLifetimeCoroutine = null;
+            }
         }
 
         void OnDisable()
@@ -146,6 +206,11 @@ using Unity.Netcode;
             // When returned to pool, deinitialize
             Deinitialize();
             if (_timeoutAttack != null) _timeoutAttack.StopTimeoutAttack(); // Also ensure timeout is stopped
+        }
+
+        public PlayerRole GetOwningPlayerRole()
+        {
+            return _owningPlayerRole;
         }
     }
 // } 

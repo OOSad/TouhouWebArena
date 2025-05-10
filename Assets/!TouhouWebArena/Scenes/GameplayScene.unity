@@ -8624,6 +8624,14 @@ MonoBehaviour:
     prefab: {fileID: 968588019201452436, guid: d55328e027b60974d97980e25f687443, type: 3}
     initialSize: 600
     activeObjectsInPool: []
+  - prefabId: MarisaChargeLaser_Client
+    prefab: {fileID: 4280080153862268507, guid: 27caa464793fc9e4fb8ecdaac521476a, type: 3}
+    initialSize: 10
+    activeObjectsInPool: []
+  - prefabId: ReimuChargeTalisman_Client
+    prefab: {fileID: 3646520139153876449, guid: 3ec2a5d1f99b35844b76285fbcca410d, type: 3}
+    initialSize: 40
+    activeObjectsInPool: []
 --- !u!1 &1656017467
 GameObject:
   m_ObjectHideFlags: 0

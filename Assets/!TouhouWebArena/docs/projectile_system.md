@@ -147,6 +147,37 @@ Client-side projectiles are removed from the game world and returned to the `Cli
 
 ## Other Projectile Types (If Applicable)
 
+### Player Charge Attacks (Client-Simulated)
+
+Player charge attacks are special abilities unique to each character, triggered by the server but simulated on all clients. They use dedicated client-side scripts and handlers.
+
+*   **Triggering:** Initiated by `ServerChargeAttackSpawner.cs`, which calls a `ClientRpc` on the character-specific handler (e.g., `ReimuChargeAttackHandler_Client`) on the player's prefab. This RPC is broadcast to all clients.
+*   **Client-Side Handling:** The specific handler (e.g., `ReimuChargeAttackHandler_Client` or `MarisaChargeAttackHandler_Client`) receives the RPC, retrieves the necessary projectile prefab(s) from `ClientGameObjectPool`, and initializes them.
+
+#### Reimu's Homing Talismans
+
+*   **Handler:** `ReimuChargeAttackHandler_Client.cs` (on Reimu's player prefab).
+*   **Projectile Script:** `HomingTalisman_Client.cs` (on the talisman prefab, e.g., "ReimuChargeTalisman_Client").
+*   **Behavior:** 
+    *   `ReimuChargeAttackHandler_Client` spawns a configurable number of talismans (e.g., 4) in a circular pattern around the player.
+    *   Each `HomingTalisman_Client` instance is initialized with the `ownerRole` and a slight initial delay (for staggered appearance/homing).
+    *   The script manages the talisman's movement, actively seeking the nearest enemy (Spirit or Fairy) that matches its `_ownerPlayerRole` (determined by `ClientSpiritController.GetOwningPlayerRole()` or `ClientFairyController.GetOwningPlayerRole()`).
+    *   On collision with a valid enemy, it calls `TakeDamage(damage, 0)` on the enemy's `ClientSpiritHealth` or `ClientFairyHealth` component.
+    *   It returns itself to the `ClientGameObjectPool` after a set lifetime or upon successful collision leading to its destruction (if applicable, current logic returns on lifetime end or after dealing damage once if it were to destroy itself - needs confirmation if it pierces or not based on HomingTalisman_Client logic).
+
+#### Marisa's Laser
+
+*   **Handler:** `MarisaChargeAttackHandler_Client.cs` (on Marisa's player prefab).
+*   **Projectile Script:** `IllusionLaser_Client.cs` (on the laser prefab, e.g., "MarisaChargeLaser_Client"). This script is also used by Illusions for their laser attacks but is configured differently for Marisa's charge attack.
+*   **Behavior:**
+    *   `MarisaChargeAttackHandler_Client` spawns one laser instance.
+    *   The laser is positioned using a dedicated child `Transform` on Marisa's prefab, assigned to the `marisaLaserSpawnPoint` field in `MarisaChargeAttackHandler_Client`. This ensures the laser originates from the correct visual point (e.g., respecting sprite pivots).
+    *   `IllusionLaser_Client` is initialized with `ownerRole`, the initial player position (for reference), and the `_ownerTransform` (Marisa's player object transform, for following).
+    *   The laser visually scales to a fixed `laserLength` (defined in `IllusionLaser_Client`'s Inspector fields) upwards from its spawn point. Its sprite pivot should be at its visual bottom for correct scaling.
+    *   The base of the laser (its `transform.position`) follows the `_ownerTransform`'s X and Y position dynamically, plus any `followOffsetX`.
+    *   It deals damage over time to client-side enemies (`ClientSpiritHealth`, `ClientFairyHealth`) that match its `_ownerPlayerRole` and are within its collider.
+    *   Returns to the `ClientGameObjectPool` after its `duration` (also an Inspector field on `IllusionLaser_Client`).
+
 ### Basic Player Shots (Legacy or Current?)
 
 *   *This section needs to be reviewed based on whether basic player shots still use a separate system (e.g., the old `BulletMovement.cs` and `PlayerShootingController.FireShotServerRpc` flow) or if they have been integrated into the `ServerAttackSpawner` -> `ClientSpellcardActionRunner` -> `ClientBulletConfigurer` model (perhaps by defining them as very simple `SpellcardData` assets).*
@@ -179,6 +210,11 @@ Client-side projectiles are removed from the game world and returned to the `Cli
 *   **`PlayerAttackRelay.cs` & `EffectNetworkHandler.cs`:** (If still used for stage/retaliation bullets) Handle their server-side initiation and RPC dispatch.
 *   **`ClientSpiritTimeoutAttack.cs`:** Client-side; handles activated spirit timeout, spawns "StageLargeBullet" from pool, and initializes their `StageSmallBulletMoverScript` for movement and lifetime.
 *   **`StageSmallBulletMoverScript.cs`:** Client-side movement script for stage-type bullets, including those spawned by `EffectNetworkHandler` (retaliation) and `ClientSpiritTimeoutAttack`.
+*   **`HomingTalisman_Client.cs`:** Client-side script for Reimu's charge attack talismans. Manages seeking behavior, targeting based on `ownerRole`, collision with client-side enemies, and its own lifetime/pooling.
+*   **`IllusionLaser_Client.cs`:** Client-side script used for Marisa's charge attack laser (and illusion lasers). For Marisa, it spawns from a defined point, has a fixed `laserLength`, follows the owner's X/Y position, deals damage over time, and manages its lifetime/pooling.
+*   **`ReimuChargeAttackHandler_Client.cs`:** (New) On Reimu's prefab. Receives RPC to spawn client-side Homing Talismans.
+*   **`MarisaChargeAttackHandler_Client.cs`:** (New) On Marisa's prefab. Receives RPC to spawn client-side Master Spark laser, utilizing a `marisaLaserSpawnPoint` for precise origin.
+*   **`ServerAttackSpawner.cs`:** Server-side; initiates L1-3 spellcards by sending RPCs to `SpellcardNetworkHandler`. Spawns L4 illusion prefabs. For charge attacks, gets character-specific client handlers and calls their `SpawnChargeAttackClientRpc`.
 
 ## Outstanding Questions / Areas for Code Review:
 

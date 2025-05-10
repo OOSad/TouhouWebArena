@@ -86,11 +86,16 @@ public class FairySpawnNetworkHandler : NetworkBehaviour
             return;
         }
 
+        // Determine owning side based on PlayerAreaIdentifier
+        PlayerRole owningSide = (waveData.PlayerAreaIdentifier == 0) ? PlayerRole.Player1 : PlayerRole.Player2;
+        // Assuming PlayerAreaIdentifier 0 is P1, 1 is P2. Adjust if this mapping is different.
+        // If PlayerAreaIdentifier could be other values, add more robust mapping or error handling.
+
         // Debug.Log($"Client {NetworkManager.Singleton.LocalClientId} received SpawnFairyWaveClientRpc for player area {waveData.PlayerAreaIdentifier}, path {waveData.PathId}, count {waveData.FairyCount}");
-        StartCoroutine(SpawnFairiesRoutine(waveData));
+        StartCoroutine(SpawnFairiesRoutine(waveData, owningSide));
     }
 
-    private IEnumerator SpawnFairiesRoutine(FairyWaveData waveData)
+    private IEnumerator SpawnFairiesRoutine(FairyWaveData waveData, PlayerRole owningSide)
     {
         // Get the list of paths for the specified player area from PathManager
         List<BezierSpline> pathsForArea = _pathManager.GetPathsForPlayer(waveData.PlayerAreaIdentifier); 
@@ -140,6 +145,7 @@ public class FairySpawnNetworkHandler : NetworkBehaviour
             ClientFairyController fairyController = fairyInstance.GetComponent<ClientFairyController>();
             if (fairyController != null)
             {
+                fairyController.SetOwningPlayerRole(owningSide);
                 bool isTrigger = (i == waveData.TriggerFairyIndex);
                 // Example: if ClientFairyController has an Init method:
                 // fairyController.InitializeWaveData(isTrigger /*, other relevant data from waveData */);

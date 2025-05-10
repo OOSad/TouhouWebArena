@@ -42,6 +42,25 @@ Netcode for GameObjects provides several building blocks for networked applicati
             *   Initialize its client-side components (`ClientSpiritController`, `ClientSpiritHealth`, `ClientSpiritTimeoutAttack`) using the RPC parameters.
             *   Activate the Spirit GameObject.
             *   All subsequent spirit logic (movement, activation, timeout attack, health, death) is handled client-side.
+    *   **NEW: Common Flow for Player Charge Attacks (Server-Triggered, Client-Simulated):**
+        1.  **Client (`PlayerShootingController.cs`):** Detects charge attack input.
+        2.  Client: Calls `RequestChargeAttackServerRpc()` on its `PlayerShootingController` to the server.
+        3.  **Server (`ServerChargeAttackSpawner.cs`):** Receives the `RequestChargeAttackServerRpc`.
+        4.  Server: Validates the request (e.g., character has charge, cooldowns - future implementation detail).
+        5.  Server: Gets the `requesterClientId`'s `PlayerObject` and its `CharacterStats` to determine `characterName`.
+        6.  Server: Based on `characterName`:
+            *   Gets the appropriate character-specific handler component from the `PlayerObject` (e.g., `playerNetworkObject.GetComponent<ReimuChargeAttackHandler_Client>()` or `playerNetworkObject.GetComponent<MarisaChargeAttackHandler_Client>()`).
+        7.  Server: Calls the `SpawnChargeAttackClientRpc` on the specific handler, passing necessary parameters (e.g., player's current position, owner role, and for Marisa, the `PlayerObject.NetworkObjectId` for laser following). This RPC is broadcast to all clients.
+            *   Example Reimu: `reimuHandler.SpawnChargeAttackClientRpc(playerTransform.position, ownerRole);`
+            *   Example Marisa: `marisaHandler.SpawnChargeAttackClientRpc(playerTransform.position, ownerRole, playerNetworkObject.NetworkObjectId);`
+        8.  **All Clients (Specific Handler e.g., `MarisaChargeAttackHandler_Client.cs`):**
+            *   The character-specific handler receives the `SpawnChargeAttackClientRpc`.
+            *   It gets the charge attack projectile GameObject(s) from `ClientGameObjectPool.Instance` using a prefab ID (e.g., "ReimuChargeTalisman_Client", "MarisaChargeLaser_Client").
+            *   It sets the projectile's initial position (e.g., in a pattern for Reimu, or from `marisaLaserSpawnPoint` for Marisa).
+            *   It initializes the client-side projectile script (e.g., `HomingTalisman_Client.cs` or `IllusionLaser_Client.cs`) with parameters like `ownerRole`, initial delay, or the transform to follow.
+            *   The projectile GameObject is set active.
+        9.  **All Clients (Projectile Script e.g., `IllusionLaser_Client.cs`):**
+            *   The projectile's client-side script now manages its behavior (movement, collision, lifetime) and returns itself to the pool when done.
     *   **NEW: Common Flow for Level 4 Illusion Lifecycle & Attacks:**
         *   **Illusion Spawning (Server-Side):**
             1.  `ServerAttackSpawner.ExecuteSpellcard` (for Level 4) loads `Level4SpellcardData`.
@@ -108,7 +127,9 @@ Here's how major game systems interact with the network:
     *   Server (`PlayerAttackRelay.ReportFairyKillServerRpc`) receives report, determines opponent, calculates bullet parameters (prefabId, position, speed, angle).
     *   Server calls `EffectNetworkHandler.Instance.SpawnStageBulletClientRpc(opponentClientId, params...)` targeting *all* clients.
     *   All clients receive RPC, use `opponentClientId` to find the correct player's spawn area via `SpawnAreaManager`, get bullet from `ClientGameObjectPool`, set position, initialize `StageSmallBulletMoverScript` with parameters, activate.
-*   **Charge Attacks & Spellcard Activation:** Client (`PlayerShootingController`) sends `ServerRpc` requests (`RequestChargeAttackServerRpc`, `RequestSpellcardServerRpc`). Server (`SpellBarManager`, `ServerAttackSpawner`) validates, consumes costs, and orchestrates effects. Visualization likely involves server sending `ClientRpc`s to instruct clients to spawn specific effects/projectiles locally via `ClientGameObjectPool`, similar to retaliation bullets.
+*   **Charge Attacks & Spellcard Activation:** Client (`PlayerShootingController`) sends `ServerRpc` requests (`RequestChargeAttackServerRpc`, `RequestSpellcardServerRpc`). 
+    *   **Charge Attacks:** Server (`ServerChargeAttackSpawner`) validates, then calls a `ClientRpc` on the requesting player's character-specific charge attack handler (e.g., `ReimuChargeAttackHandler_Client` or `MarisaChargeAttackHandler_Client`). This handler then spawns and initializes the client-simulated charge attack projectiles (e.g., `HomingTalisman_Client`, `IllusionLaser_Client`) from the `ClientGameObjectPool`. These attacks are visible to all clients.
+    *   **Spellcards:** Server (`SpellBarManager`, `ServerAttackSpawner`) validates, consumes costs, and orchestrates effects. Visualization for L1-3 spellcards involves server sending `ClientRpc`s to instruct clients to spawn specific effects/projectiles locally via `ClientGameObjectPool` using `SpellcardNetworkHandler` and `ClientSpellcardActionRunner`. L4 spellcards involve spawning server-authoritative Illusions.
 *   **Spellcard Activation & Execution (Levels 1-3 - Server Triggered, Client Simulated):**
     *   Client (`PlayerShootingController`) sends `RequestSpellcardServerRpc` (passing spell level).
     *   Server (`SpellBarManager`) validates cost based on level.
@@ -182,5 +203,9 @@ Here's how major game systems interact with the network:
 *   **`ClientSpellcardActionRunner.cs`:** Client-side helper. Executes sequences of `SpellcardAction`s, spawns bullets from pool, and calls `ClientBulletConfigurer`.
 *   **`ClientBulletConfigurer.cs`:** Client-side static helper. Configures individual bullets (lifetime, movement behavior) based on `SpellcardAction` data.
 *   **`FairySpawner.cs`:** Server-side. Calculates waves, calls `FairySpawnNetworkHandler`.
+*   **`ServerChargeAttackSpawner.cs`:** Server-side. Receives charge attack requests. Gets the character-specific client-side handler (e.g., `ReimuChargeAttackHandler_Client`) on the player's object and calls its `SpawnChargeAttackClientRpc` to trigger client-simulated charge attacks. (Manages spell costs with `SpellBarManager` for spellcards).
+*   **`ReimuChargeAttackHandler_Client.cs`:** Client-side `NetworkBehaviour` on Reimu's player prefab. Receives an RPC from `ServerChargeAttackSpawner` to spawn and initialize Reimu's homing talismans (using `HomingTalisman_Client`) from the `ClientGameObjectPool`.
+*   **`MarisaChargeAttackHandler_Client.cs`:** Client-side `NetworkBehaviour` on Marisa's player prefab. Receives an RPC from `ServerChargeAttackSpawner` to spawn and initialize Marisa's laser (using `IllusionLaser_Client`) from the `ClientGameObjectPool`. The laser is spawned at a designated `marisaLaserSpawnPoint` child transform.
+*   **`SpellBarManager.cs`:** Server-side. Still needed for managing spell costs.
+*   **~~`ClientChargeAttackHandler.cs`~~:** DEPRECATED. Replaced by character-specific handlers (`ReimuChargeAttackHandler_Client`, `MarisaChargeAttackHandler_Client`).
 *   **~~`NetworkObjectPool.cs`~~:** Likely Deprecated/Unused.
-*   **~~`ServerBasicShotSpawner.cs`~~:** Deprecated for player shots.

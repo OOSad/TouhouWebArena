@@ -168,7 +168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultSpeed: 3
   maxLifetime: 15
-  isNormallyClearable: 1
+  isNormallyClearable: 0
 --- !u!114 &8992595779876698595
 MonoBehaviour:
   m_ObjectHideFlags: 0

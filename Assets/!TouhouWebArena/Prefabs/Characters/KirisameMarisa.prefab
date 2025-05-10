@@ -186,6 +186,7 @@ GameObject:
   - component: {fileID: 3185901584900274323}
   - component: {fileID: 6848750692035792943}
   - component: {fileID: -2061277542332727035}
+  - component: {fileID: 5447998575892992435}
   m_Layer: 0
   m_Name: KirisameMarisa
   m_TagString: Player
@@ -512,6 +513,21 @@ MonoBehaviour:
   minStageBulletSpeed: 0.5
   maxStageBulletSpeed: 1.5
   maxStageBulletAngleOffset: 15
+--- !u!114 &5447998575892992435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4454703587389584321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdac1286c8c177c41910a74a85f3dfe6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  marisaLaserPrefabId: MarisaChargeLaser_Client
+  marisaLaserSpawnPoint: {fileID: 2540291773711658504}
 --- !u!1 &6177183962902356688
 GameObject:
   m_ObjectHideFlags: 0

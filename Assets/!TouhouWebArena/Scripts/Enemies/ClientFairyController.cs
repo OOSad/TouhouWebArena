@@ -16,6 +16,8 @@ public class ClientFairyController : MonoBehaviour
     private ClientFairyHealth _clientFairyHealth;
     private Collider2D _collider;
 
+    private PlayerRole _owningPlayerRole = PlayerRole.None;
+
     // To identify player shots. Could be a tag, a layer, or a specific component.
     private const string PLAYER_SHOT_TAG = "PlayerShot"; // Example tag
 
@@ -146,4 +148,14 @@ public class ClientFairyController : MonoBehaviour
     //     if (_clientFairyHealth != null) _clientFairyHealth.SetMaxHealth(health, true);
     //     if (_splineWalker != null) _splineWalker.moveSpeed = moveSpeed; 
     // }
+
+    public void SetOwningPlayerRole(PlayerRole ownerRole)
+    {
+        _owningPlayerRole = ownerRole;
+    }
+
+    public PlayerRole GetOwningPlayerRole()
+    {
+        return _owningPlayerRole;
+    }
 } 
