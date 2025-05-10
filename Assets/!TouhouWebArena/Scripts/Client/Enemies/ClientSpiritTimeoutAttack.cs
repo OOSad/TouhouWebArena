@@ -25,10 +25,11 @@ using Unity.Netcode;
         [Tooltip("Lifetime of the timeout bullets in seconds.")]
         [SerializeField] private float timeoutBulletLifetime = 5f;
 
-        [Tooltip("The X-coordinate that divides Player 1's side (less than) from Player 2's side (greater than or equal to).")]
-        [SerializeField] private float stageCenterXCoordinate = 0f;
+        // [Tooltip("The X-coordinate that divides Player 1's side (less than) from Player 2's side (greater than or equal to).")]
+        // [SerializeField] private float stageCenterXCoordinate = 0f; // No longer primary targeting method
 
         private Coroutine _timeoutCoroutine;
+        private ulong _currentTargetNetworkObjectId; // Store the target ID for the coroutine
 
         void Awake()
         {
@@ -36,9 +37,7 @@ using Unity.Netcode;
             _pooledObjectInfo = GetComponent<PooledObjectInfo>();
         }
 
-        // The targetPlayerId from ClientSpiritController is now less relevant for targeting,
-        // but kept for potential debugging or other uses if StartTimeout is called from elsewhere.
-        public void StartTimeout(float duration, ulong initialTargetPlayerId_UnusedForTargeting)
+        public void StartTimeout(float duration, ulong targetNetworkObjectIdToAttack)
         {
             if (!gameObject.activeInHierarchy || !enabled) return;
 
@@ -46,11 +45,11 @@ using Unity.Netcode;
             {
                 StopCoroutine(_timeoutCoroutine);
             }
-            // Pass the original target ID for logging, but the coroutine will re-determine the actual target.
-            _timeoutCoroutine = StartCoroutine(TimeoutAttackCoroutine(duration, initialTargetPlayerId_UnusedForTargeting));
+            _currentTargetNetworkObjectId = targetNetworkObjectIdToAttack;
+            _timeoutCoroutine = StartCoroutine(TimeoutAttackCoroutine(duration));
         }
 
-        private IEnumerator TimeoutAttackCoroutine(float duration, ulong loggedSpawnTargetPlayerId)
+        private IEnumerator TimeoutAttackCoroutine(float duration)
         {
             yield return new WaitForSeconds(duration);
 
@@ -59,42 +58,31 @@ using Unity.Netcode;
                 yield break; 
             }
 
-            // Determine target based on current position
-            PlayerRole determinedSideRole = (transform.position.x < stageCenterXCoordinate) ? PlayerRole.Player1 : PlayerRole.Player2;
-            ulong actualTargetPlayerId = 0;
             Transform targetTransform = null;
-
-            if (PlayerDataManager.Instance != null)
+            // Try to get target transform using the NetworkObjectId passed from ClientSpiritController
+            if (_currentTargetNetworkObjectId != 0 && NetworkManager.Singleton != null && NetworkManager.Singleton.SpawnManager != null)
             {
-                PlayerData? playerData = PlayerDataManager.Instance.GetPlayerDataByRole(determinedSideRole);
-                if (playerData.HasValue && playerData.Value.ClientId != 0)
+                if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(_currentTargetNetworkObjectId, out NetworkObject playerNetObj))
                 {
-                    actualTargetPlayerId = playerData.Value.ClientId;
-                    // Now find the NetworkObject for this actualTargetPlayerId
-                    if (NetworkManager.Singleton != null)
-                    {
-                        foreach (NetworkObject netObj in NetworkManager.Singleton.SpawnManager.SpawnedObjects.Values)
-                        {
-                            if (netObj.OwnerClientId == actualTargetPlayerId && netObj.GetComponent<CharacterStats>() != null)
-                            {
-                                targetTransform = netObj.transform;
-                                break;
-                            }
-                        }
-                    }
+                    targetTransform = playerNetObj.transform;
+                    // Debug.Log($"[ClientSpiritTimeoutAttack] Spirit timeout! Successfully found target by NetworkObjectId: {_currentTargetNetworkObjectId} ({playerNetObj.name})", this);
+                }
+                else
+                {
+                    Debug.LogWarning($"[ClientSpiritTimeoutAttack] Spirit timeout! Could not find NetworkObject for targetNetworkObjectId {_currentTargetNetworkObjectId}. Firing downwards.", this);
                 }
             }
-
-            Debug.Log($"[ClientSpiritTimeoutAttack] Spirit timeout! Determined side: {determinedSideRole}, Attempting to target CID: {actualTargetPlayerId} (Spawn-time CID was: {loggedSpawnTargetPlayerId})", this);
-
-            if (targetTransform == null)
+            else
             {
-                Debug.LogWarning($"[ClientSpiritTimeoutAttack] Could not find/resolve player on side {determinedSideRole} (Target CID: {actualTargetPlayerId}). Timeout attack will fire downwards.", this);
+                // Debug.LogWarning($"[ClientSpiritTimeoutAttack] Spirit timeout! No valid targetNetworkObjectId ({_currentTargetNetworkObjectId}) provided or NetworkManager unavailable. Firing downwards.", this);
+                // No specific target ID, or couldn't find it, default to firing downwards.
             }
 
             Vector2 directionToTarget = (targetTransform != null) ? 
                                         ((Vector3)targetTransform.position - transform.position).normalized :
                                         Vector2.down; 
+
+            // Debug.Log($"[ClientSpiritTimeoutAttack] Firing timeout bullets. TargetFound: {targetTransform != null}, Direction: {directionToTarget}");
 
             foreach (float angleOffset in clawPatternAngles)
             {

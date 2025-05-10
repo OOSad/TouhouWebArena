@@ -8,7 +8,7 @@ using System.Collections;
     {
         private bool _isInitialized = false;
         private bool _shouldAim;
-        private ulong _targetPlayerClientId;
+        private ulong _targetNetworkObjectId;
         private bool _isRevengeSpawn;
         private float _initialVelocity;
         private int _spiritType;
@@ -54,12 +54,12 @@ using System.Collections;
         }
 
         public void Initialize(PlayerRole owningPlayerRole,
-                               bool shouldAim, ulong targetPlayerClientId, bool isRevengeSpawn, 
-                               float initialVelocity, int spiritType, Transform originTransform /* Not used currently, but good for consistency */)
+                               bool shouldAim, ulong targetNetworkObjId, bool isRevengeSpawn, 
+                               float initialVelocity, int spiritType, Transform originTransform)
         {
             _owningPlayerRole = owningPlayerRole;
             _shouldAim = shouldAim;
-            _targetPlayerClientId = targetPlayerClientId;
+            _targetNetworkObjectId = targetNetworkObjId;
             _isRevengeSpawn = isRevengeSpawn;
             _initialVelocity = initialVelocity;
             _spiritType = spiritType;
@@ -81,31 +81,31 @@ using System.Collections;
             _normalLifetimeCoroutine = StartCoroutine(NormalLifetimeCoroutine());
 
             // Resolve target transform if aiming and set initial direction
-            if (_shouldAim && _targetPlayerClientId != 0 && NetworkManager.Singleton != null)
+            _currentTargetTransform = null; // Clear previous target
+            if (_shouldAim && _targetNetworkObjectId != 0 && NetworkManager.Singleton != null && NetworkManager.Singleton.SpawnManager != null)
             {
-                NetworkObject playerNetObj = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(_targetPlayerClientId);
-                if (playerNetObj != null)
+                // Use NetworkObjectId to get the NetworkObject
+                if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(_targetNetworkObjectId, out NetworkObject playerNetObj))
                 {
-                    _currentTargetTransform = playerNetObj.transform; // Still useful to store for debugging or future use
-                    // Calculate initial direction towards player at spawn time
+                    _currentTargetTransform = playerNetObj.transform; 
                     _currentDirection = (_currentTargetTransform.position - originTransform.position).normalized;
-                    Debug.Log($"[ClientSpiritController] Initialized for AIMING. Target: {playerNetObj.name}, Initial Direction: {_currentDirection}", this);
+                    // Debug.Log($"[ClientSpiritController] Initialized for AIMING. Target NO ID: {_targetNetworkObjectId} ({playerNetObj.name}), Initial Direction: {_currentDirection}", this);
                 }
                 else
                 {
-                    Debug.LogWarning($"[ClientSpiritController] Could not find NetworkObject for target Player CID {_targetPlayerClientId}. Will move straight down.", this);
+                    Debug.LogWarning($"[ClientSpiritController] Could not find NetworkObject for targetNetworkObjectId {_targetNetworkObjectId}. Will move straight down.", this);
                     _shouldAim = false; // Fallback to non-homing
                 }
             }
             else if (_shouldAim) // _shouldAim was true but other conditions failed
             {
-                 Debug.LogWarning($"[ClientSpiritController] Told to aim but targetPlayerClientId is 0 or NetworkManager is unavailable. Will move straight down.", this);
+                 Debug.LogWarning($"[ClientSpiritController] Told to aim but targetNetworkObjectId is 0 or NetworkManager/SpawnManager is unavailable. Will move straight down.", this);
                 _shouldAim = false; // Fallback to non-homing
             }
             // If not aiming, _currentDirection remains Vector2.down
 
             _isInitialized = true;
-            // Debug.Log($"[ClientSpiritController] Initialized: Vel={_initialVelocity}, Aim={_shouldAim}, TargetCID={_targetPlayerClientId}", this);
+            // Debug.Log($"[ClientSpiritController] Initialized: Vel={_initialVelocity}, Aim={_shouldAim}, TargetNetObjID={_targetNetworkObjectId}", this);
         }
 
         private IEnumerator NormalLifetimeCoroutine()
@@ -178,7 +178,15 @@ using System.Collections;
             if (_spiritHealth != null) _spiritHealth.OnActivated();
 
             // Notify TimeoutAttack to start its timer
-            if (_timeoutAttack != null) _timeoutAttack.StartTimeout(1.5f, _targetPlayerClientId); // Assuming 1.5s timeout NOW
+            if (_timeoutAttack != null)
+            {
+                // Pass the NetworkObjectId if the timeout attack also needs to target.
+                // This assumes ClientSpiritTimeoutAttack is updated to handle NetworkObjectId.
+                // If it still expects ClientId, this needs further refactoring there.
+                // For now, let's assume it will be updated or can work with 0 if not targeting directly.
+                ulong timeoutTargetId = _shouldAim ? _targetNetworkObjectId : 0; // Pass the ID if aiming, else 0
+                _timeoutAttack.StartTimeout(1.5f, timeoutTargetId); 
+            }
         }
 
         // Call this before returning to pool to reset state

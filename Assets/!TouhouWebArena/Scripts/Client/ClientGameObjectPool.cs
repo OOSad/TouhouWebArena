@@ -29,6 +29,7 @@ public class ClientGameObjectPool : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
+            Debug.Log($"[ClientGameObjectPool] Destroying duplicate instance on {gameObject.name}");
             Destroy(gameObject);
             return;
         }
@@ -47,13 +48,12 @@ public class ClientGameObjectPool : MonoBehaviour
                 Debug.LogError($"[ClientGameObjectPool] Prefab is null for ID: {poolConfig.prefabId}. Skipping this pool.");
                 continue;
             }
-
+            Debug.Log($"[ClientGameObjectPool] Initializing pool for ID: '{poolConfig.prefabId}' with initial size: {poolConfig.initialSize}");
             poolConfig.activeObjectsInPool.Clear(); // Ensure list is empty on init
             for (int i = 0; i < poolConfig.initialSize; i++)
             {
                 GameObject obj = Instantiate(poolConfig.prefab, transform); // Parent to the pool manager for organization
                 obj.SetActive(false);
-                // Add PooledObjectInfo if it doesn't exist, or ensure it has the correct ID
                 PooledObjectInfo poi = obj.GetComponent<PooledObjectInfo>();
                 if (poi == null) poi = obj.AddComponent<PooledObjectInfo>();
                 poi.PrefabID = poolConfig.prefabId;
@@ -67,6 +67,7 @@ public class ClientGameObjectPool : MonoBehaviour
             {
                 Debug.LogWarning($"[ClientGameObjectPool] Duplicate PrefabID found: {poolConfig.prefabId}. Check configuration.");
             }
+            Debug.Log($"[ClientGameObjectPool] Pool for '{poolConfig.prefabId}' initialized. Queue count: {poolConfig.objectQueue.Count}");
         }
     }
 
@@ -74,47 +75,83 @@ public class ClientGameObjectPool : MonoBehaviour
     {
         if (!poolDictionary.TryGetValue(prefabId, out Pool pool))
         {
-            Debug.LogWarning($"[ClientGameObjectPool] Pool with ID '{prefabId}' doesn't exist.");
+            Debug.LogWarning($"[ClientGameObjectPool] GetObject: Pool with ID '{prefabId}' doesn't exist.");
             return null;
+        }
+
+        if (prefabId == "Spirit")
+        {
+            Debug.Log($"[ClientGameObjectPool] GetObject attempting for ID 'Spirit'. Current queue count: {pool.objectQueue.Count}");
         }
 
         if (pool.objectQueue.Count > 0)
         {
             GameObject obj = pool.objectQueue.Dequeue();
             pool.activeObjectsInPool.Add(obj); // NEW: Add to active list
-            // obj.SetActive(true); // Activation will be handled by the requesting script
+            if (prefabId == "Spirit")
+            {
+                Debug.Log($"[ClientGameObjectPool] GetObject DEQUEUED for ID 'Spirit'. New queue count: {pool.objectQueue.Count}. Object: {obj.name}", obj);
+            }
             return obj;
         }
         else
         {
-            // No expansion for now, as per previous design. Could be added here.
-            Debug.LogWarning($"[ClientGameObjectPool] Pool with ID '{prefabId}' is empty and expansion is not implemented.");
+            Debug.LogWarning($"[ClientGameObjectPool] GetObject: Pool with ID '{prefabId}' is empty and expansion is not implemented.");
             return null;
         }
     }
 
     public void ReturnObject(GameObject objInstance)
     {
-        if (objInstance == null) return;
+        if (objInstance == null)
+        {
+            Debug.LogWarning("[ClientGameObjectPool] ReturnObject: objInstance is null.");
+            return;
+        }
 
         PooledObjectInfo poi = objInstance.GetComponent<PooledObjectInfo>();
         if (poi == null || string.IsNullOrEmpty(poi.PrefabID))
         {
-            Debug.LogError("[ClientGameObjectPool] Returned object is missing PooledObjectInfo or PrefabID. Destroying instead.", objInstance);
+            Debug.LogError("[ClientGameObjectPool] ReturnObject: Returned object is missing PooledObjectInfo or PrefabID. Destroying instead.", objInstance);
             Destroy(objInstance);
             return;
         }
 
-        if (poolDictionary.TryGetValue(poi.PrefabID, out Pool pool))
+        string prefabIdForReturn = poi.PrefabID;
+        if (prefabIdForReturn == "Spirit")
         {
+            Debug.Log($"[ClientGameObjectPool] ReturnObject attempting for ID 'Spirit'. Object: {objInstance.name}. Current active state: {objInstance.activeSelf}", objInstance);
+        }
+
+        if (poolDictionary.TryGetValue(prefabIdForReturn, out Pool pool))
+        {
+            if (prefabIdForReturn == "Spirit")
+            {
+                 Debug.Log($"[ClientGameObjectPool] ReturnObject for 'Spirit': Found pool. Current queue count BEFORE SetActive/Enqueue: {pool.objectQueue.Count}");
+            }
+
             objInstance.SetActive(false);
-            objInstance.transform.SetParent(transform); // Re-parent to pool manager
-            pool.objectQueue.Enqueue(objInstance);
-            pool.activeObjectsInPool.Remove(objInstance); // NEW: Remove from active list
+            objInstance.transform.SetParent(transform, true); // Re-parent to pool manager, ensure world position stays for a moment if it matters
+            
+            // Check if already in queue to prevent duplicates, though this hides the symptom not the cause of double return
+            if (pool.objectQueue.Contains(objInstance))
+            {
+                Debug.LogWarning($"[ClientGameObjectPool] ReturnObject for '{prefabIdForReturn}': Object {objInstance.name} is already in the queue. This might indicate a double return.", objInstance);
+            }
+            else
+            {
+                pool.objectQueue.Enqueue(objInstance);
+            }
+            
+            pool.activeObjectsInPool.Remove(objInstance);
+            if (prefabIdForReturn == "Spirit")
+            {
+                Debug.Log($"[ClientGameObjectPool] ReturnObject for 'Spirit': ENQUEUED {objInstance.name}. New queue count: {pool.objectQueue.Count}. Active list count: {pool.activeObjectsInPool.Count}");
+            }
         }
         else
         {
-            Debug.LogError($"[ClientGameObjectPool] Attempted to return object with unknown PrefabID: {poi.PrefabID}. Destroying instead.", objInstance);
+            Debug.LogError($"[ClientGameObjectPool] ReturnObject: Attempted to return object with unknown PrefabID: '{prefabIdForReturn}'. Destroying {objInstance.name} instead.", objInstance);
             Destroy(objInstance);
         }
     }

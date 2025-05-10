@@ -153,7 +153,7 @@ public class SpiritSpawner : NetworkBehaviour
         PlayerRole targetRole = (zoneCenter == spawnZone1) ? PlayerRole.Player1 : PlayerRole.Player2;
         PlayerRole owningSide = targetRole; // For normal spawns, the owning side is the same as the target role's side
         bool shouldAim = Random.value < aimAtPlayerChance;
-        ulong targetPlayerClientId = 0;
+        ulong targetNetworkObjectId = 0;
 
         if (shouldAim)
         {
@@ -162,7 +162,16 @@ public class SpiritSpawner : NetworkBehaviour
                 PlayerData? playerData = PlayerDataManager.Instance.GetPlayerDataByRole(targetRole);
                 if (playerData.HasValue)
                 {
-                    targetPlayerClientId = playerData.Value.ClientId;
+                    NetworkObject playerNO = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerData.Value.ClientId);
+                    if (playerNO != null)
+                    {
+                        targetNetworkObjectId = playerNO.NetworkObjectId;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[SpiritSpawner] SpawnSpiritInZone: Could not find Player NetworkObject for ClientId {playerData.Value.ClientId} (Role {targetRole}). Spirit will not aim.", this);
+                        shouldAim = false;
+                    }
                 }
                 else
                 {
@@ -180,11 +189,11 @@ public class SpiritSpawner : NetworkBehaviour
         if (ClientSpiritSpawnHandler.Instance != null)
         {
             ClientSpiritSpawnHandler.Instance.SpawnSpiritClientRpc(
-                owningSide, // <<< ADDED
+                owningSide, 
                 spiritPrefabID, 
                 spawnPosition, 
                 shouldAim, 
-                targetPlayerClientId, 
+                targetNetworkObjectId,
                 false /*isRevengeSpawn*/, 
                 2.0f, // initialVelocity
                 0     // spiritType
@@ -241,38 +250,54 @@ public class SpiritSpawner : NetworkBehaviour
         float randomY = Random.Range(-revengeSpawnZoneSize.y / 2f, revengeSpawnZoneSize.y / 2f);
         Vector3 spawnPosition = new Vector3(center.x + randomX, center.y + randomY, center.z);
 
-        ulong targetPlayerClientId = 0;
-        bool shouldAimAtTarget = true; // Revenge spirits should always aim
+        ulong targetNetworkObjectId = 0;
+        bool shouldAimAtTarget = Random.value < aimAtPlayerChance;
 
-        if (PlayerDataManager.Instance != null)
+        if (shouldAimAtTarget)
         {
-            PlayerData? playerData = PlayerDataManager.Instance.GetPlayerDataByRole(targetPlayerRole);
-            if (playerData.HasValue && playerData.Value.ClientId != 0)
+            if (PlayerDataManager.Instance != null)
             {
-                targetPlayerClientId = playerData.Value.ClientId;
+                PlayerData? playerData = PlayerDataManager.Instance.GetPlayerDataByRole(targetPlayerRole);
+                if (playerData.HasValue && playerData.Value.ClientId != 0)
+                {
+                    NetworkObject playerNO = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerData.Value.ClientId);
+                    if (playerNO != null)
+                    {
+                        targetNetworkObjectId = playerNO.NetworkObjectId;
+                    }
+                    else
+                    {
+                        Debug.LogError($"[SpiritSpawner] SpawnRevengeSpirit: Could not find Player NetworkObject for ClientId {playerData.Value.ClientId} (Role {targetPlayerRole}). Revenge spirit will not aim.", this);
+                        shouldAimAtTarget = false;
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"[SpiritSpawner] SpawnRevengeSpirit: Could not find PlayerData or ClientId for Role {targetPlayerRole}. Revenge spirit will not aim.", this);
+                    shouldAimAtTarget = false;
+                }
             }
             else
             {
-                Debug.LogError($"[SpiritSpawner] SpawnRevengeSpirit: Could not get valid PlayerData (or ClientId is 0) for role {targetPlayerRole}. Revenge spirit will not be spawned or will not aim correctly.", this);
-                shouldAimAtTarget = false; // Cannot aim if no valid client ID
-                // Do not return early, let it spawn without aiming if necessary, or client handler can decide.
+                Debug.LogError("[SpiritSpawner] SpawnRevengeSpirit: PlayerDataManager not available. Revenge spirit will not aim.", this);
+                shouldAimAtTarget = false;
             }
         }
-        else
+
+        if (!shouldAimAtTarget)
         {
-            Debug.LogError("[SpiritSpawner] SpawnRevengeSpirit: PlayerDataManager not available. Revenge spirit will not aim correctly.", this);
-            shouldAimAtTarget = false;
+            targetNetworkObjectId = 0;
         }
 
         if (ClientSpiritSpawnHandler.Instance != null)
         {
             ClientSpiritSpawnHandler.Instance.SpawnSpiritClientRpc(
-                owningSideOfRevengeSpirit, // <<< ADDED
-                spiritPrefabID, 
-                spawnPosition, 
-                shouldAimAtTarget, 
-                targetPlayerClientId, 
-                true /*isRevengeSpawn*/, 
+                owningSideOfRevengeSpirit,
+                spiritPrefabID,
+                spawnPosition,
+                shouldAimAtTarget,
+                targetNetworkObjectId,
+                true /*isRevengeSpawn*/,
                 2.0f, // initialVelocity
                 0     // spiritType (0 for normal, could add a revenge-specific type later)
             );
