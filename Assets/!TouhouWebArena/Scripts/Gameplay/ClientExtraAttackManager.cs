@@ -66,7 +66,7 @@ public class ClientExtraAttackManager : NetworkBehaviour // Inherit from Network
         string killerCharacterName = attackerPlayerData.SelectedCharacter.ToString();
         PlayerRole killerPlayerRole = attackerPlayerData.Role;
 
-        Debug.Log($"[ClientExtraAttackManager] Trigger fairy killed by {killerCharacterName} (Role: {killerPlayerRole}, ClientId: {attackerOwnerClientId}) on this client's simulation.");
+        // Debug.Log($"[ClientExtraAttackManager] Trigger fairy killed by {killerCharacterName} (Role: {killerPlayerRole}, ClientId: {attackerOwnerClientId}) on this client's simulation.");
 
         // If the local player *is* the attacker, generate random values and inform the server.
         // All clients (including this one) will spawn the attack when the Relay RPC is received.
@@ -98,16 +98,20 @@ public class ClientExtraAttackManager : NetworkBehaviour // Inherit from Network
                     marisaTiltAngle = Random.Range(-marisaLaserMaxTiltAngle, marisaLaserMaxTiltAngle);
                 }
 
-                Debug.Log($"[ClientExtraAttackManager] Local player {NetworkManager.Singleton.LocalClientId} ({killerCharacterName}) killed trigger. Informing server with generated params.");
+                // Debug.Log($"[ClientExtraAttackManager] Local player {NetworkManager.Singleton.LocalClientId} ({killerCharacterName}) killed trigger. Informing server with generated params.");
+                
+                Vector2 reimuActualSpawnPos = new Vector2(reimuSpawnX, reimuSpawnY);
+                // Note: marisaSpawnXOffset is used by RelayExtraAttackToClientsClientRpc, which is called by the server
+                // after this ServerRpc. The PlayerExtraAttackRelay.InformServerOfExtraAttackTriggerServerRpc signature
+                // was changed to only take Vector2 spawnPos (for Reimu), reimuSidewaysForce, and marisaTiltAngle.
+
                 PlayerExtraAttackRelay.LocalInstance.InformServerOfExtraAttackTriggerServerRpc(
                     killerCharacterName, 
                     killerPlayerRole, 
                     attackerOwnerClientId,
-                    reimuSpawnX,
-                    reimuSpawnY,
-                    reimuSidewaysForce,
-                    marisaSpawnXOffset,
-                    marisaTiltAngle
+                    reimuActualSpawnPos,    // ARG 4: Vector2 for Reimu's spawn
+                    reimuSidewaysForce,     // ARG 5: Reimu's sideways force
+                    marisaTiltAngle         // ARG 6: Marisa's tilt angle
                 );
             }
             else
@@ -124,7 +128,7 @@ public class ClientExtraAttackManager : NetworkBehaviour // Inherit from Network
                                                  float pReimuSpawnX, float pReimuSpawnY, float pReimuSidewaysForce,
                                                  float pMarisaSpawnXOffset, float pMarisaTiltAngle)
     {
-        Debug.Log($"[ClientExtraAttackManager] Received RelayExtraAttackToClientsClientRpc. Killer: {characterName} ({attackerPlayerRole}), Original Attacker CID: {originalAttackerClientId}, My CID: {NetworkManager.Singleton.LocalClientId}. Using provided params.");
+        // Debug.Log($"[ClientExtraAttackManager] Received RelayExtraAttackToClientsClientRpc. Killer: {characterName} ({attackerPlayerRole}), Original Attacker CID: {originalAttackerClientId}, My CID: {NetworkManager.Singleton.LocalClientId}. Using provided params.");
         
         SpawnExtraAttackInternal(characterName, attackerPlayerRole, originalAttackerClientId, 
                                  pReimuSpawnX, pReimuSpawnY, pReimuSidewaysForce, 
@@ -146,7 +150,7 @@ public class ClientExtraAttackManager : NetworkBehaviour // Inherit from Network
 
         if (targetSpawnCenterTransform == null) { Debug.LogError($"[CEA MGR] TargetSpawnCenterTransform null for {targetPlayerRole}"); return; }
 
-        Debug.Log($"[ClientExtraAttackManager] Spawning INTERNAL EA for char '{characterName}' targeting {targetPlayerRole}. Original attacker {attackerPlayerRole} (CID: {actualAttackerClientId}).");
+        // Debug.Log($"[ClientExtraAttackManager] Spawning INTERNAL EA for char '{characterName}' targeting {targetPlayerRole}. Original attacker {attackerPlayerRole} (CID: {actualAttackerClientId}).");
 
         if (characterName == "HakureiReimu")
         {
@@ -185,7 +189,7 @@ public class ClientExtraAttackManager : NetworkBehaviour // Inherit from Network
         ReimuExtraAttackOrb_Client orbScript = orbGO.GetComponent<ReimuExtraAttackOrb_Client>();
         if (orbScript != null) { orbScript.Initialize(attackerClientId, sidewaysForce); } // Use predeterminedSidewaysForce
         else { Debug.LogError("Reimu Extra Attack Orb prefab is missing ReimuExtraAttackOrb_Client script!"); }
-        Debug.Log($"[CEA MGR] Spawned Reimu EA Orb INTERNAL at {spawnPosition} with force {sidewaysForce}");
+        // Debug.Log($"[CEA MGR] Spawned Reimu EA Orb INTERNAL at {spawnPosition} with force {sidewaysForce}");
     }
 
     private void SpawnMarisaExtraAttackInternal(Transform specificLaserSpawnAnchor, PlayAreaBounds targetPlayAreaBounds, ulong attackerClientId,
@@ -206,6 +210,6 @@ public class ClientExtraAttackManager : NetworkBehaviour // Inherit from Network
         MarisaExtraAttackLaser_Client laserScript = laserGO.GetComponent<MarisaExtraAttackLaser_Client>();
         if (laserScript != null) { laserScript.Initialize(attackerClientId, targetPlayAreaBounds, predeterminedTiltAngle); }
         else { Debug.LogError("Marisa Extra Attack (EarthlightRay) prefab is missing MarisaExtraAttackLaser_Client script!"); }
-        Debug.Log($"[CEA MGR] Spawned Marisa EA Laser INTERNAL at {spawnPosition}, Tilt Angle: {predeterminedTiltAngle}");
+        // Debug.Log($"[CEA MGR] Spawned Marisa EA Laser INTERNAL at {spawnPosition}, Tilt Angle: {predeterminedTiltAngle}");
     }
 } 

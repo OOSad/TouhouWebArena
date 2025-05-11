@@ -25,6 +25,12 @@ public class ClientAuthMovement : NetworkBehaviour
     private CharacterAnimation characterAnimation;
     private Rigidbody2D rb;
 
+    // --- ADDED for AI Control ---
+    private PlayerAIController playerAIController;
+    private float aiHorizontalInput = 0f;
+    private float aiVerticalInput = 0f; // Though PlayerAIController doesn't set this yet
+    // --------------------------
+
     // Input State
     private float horizontalInput;
     private float verticalInput;
@@ -36,6 +42,10 @@ public class ClientAuthMovement : NetworkBehaviour
         NetworkVariableReadPermission.Everyone, 
         NetworkVariableWritePermission.Owner
     );
+
+    // --- ADDED for PlayerRole ---
+    private PlayerRole role = PlayerRole.None;
+    // ----------------------------
 
     // [SerializeField] private float interpolationSpeed = 15f; // REMOVED - No interpolation for now
 
@@ -50,6 +60,9 @@ public class ClientAuthMovement : NetworkBehaviour
         playerFocusController = GetComponent<PlayerFocusController>();
         characterAnimation = GetComponent<CharacterAnimation>();
         rb = GetComponent<Rigidbody2D>();
+        // --- ADDED for AI Control ---
+        playerAIController = GetComponent<PlayerAIController>(); // Get reference to AI controller
+        // --------------------------
 
         if (rb != null)
         {
@@ -78,6 +91,9 @@ public class ClientAuthMovement : NetworkBehaviour
                 PlayerData? myData = playerDataManager.GetPlayerData(OwnerClientId);
                 if (myData.HasValue)
                 {
+                    // --- ADDED: Store PlayerRole ---
+                    this.role = myData.Value.Role;
+                    // -----------------------------
                     if (myData.Value.Role == PlayerRole.Player1) currentBounds = player1Bounds;
                     else if (myData.Value.Role == PlayerRole.Player2) currentBounds = player2Bounds;
                     else { currentBounds = new Rect(); Debug.LogWarning($"Owner {OwnerClientId} has unexpected Role {myData.Value.Role}. Movement may be unbounded."); }
@@ -106,8 +122,19 @@ public class ClientAuthMovement : NetworkBehaviour
                 return; // Skip reading new input
             }
 
+            // --- MODIFIED: Use AI input if AI is active, otherwise use player input ---
+            if (playerAIController != null && playerAIController.IsAIActive())
+            {
+                horizontalInput = aiHorizontalInput;
+                verticalInput = aiVerticalInput;
+            }
+            else
+            {
             horizontalInput = Input.GetAxisRaw("Horizontal");
             verticalInput = Input.GetAxisRaw("Vertical");
+            }
+            // ----------------------------------------------------------------------
+            
             isFocusing = playerFocusController.IsFocusingNetworked;
 
             if (characterAnimation != null)
@@ -163,4 +190,71 @@ public class ClientAuthMovement : NetworkBehaviour
     {
         return currentBounds;
     }
+
+    // --- ADDED for AI Control ---
+    public void SetAIHorizontalInput(float input)
+    {
+        aiHorizontalInput = input;
+    }
+
+    public void SetAIVerticalInput(float input) // Though PlayerAIController doesn't set this yet
+    {
+        aiVerticalInput = input;
+    }
+    // --------------------------
+
+    // --- ADDED for PlayerRole ---
+    public PlayerRole GetPlayerRole()
+    {
+        return this.role;
+    }
+    // ----------------------------
+
+    // --- ADDED for Server-Initiated Teleport ---
+    /// <summary>
+    /// Called by a ClientRpc to force the client's representation to a new position and rotation.
+    /// Also resets relevant internal movement states.
+    /// </summary>
+    public void ServerForceTeleport(Vector3 newPosition, Quaternion newRotation)
+    {
+        if (!IsOwner) 
+        {
+            // This method should only be called on the owner client via a targeted RPC.
+            // If somehow invoked on a non-owner, log a warning and return.
+            Debug.LogWarning($"[ClientAuthMovement] ServerForceTeleport called on non-owner {gameObject.name}. This should not happen.", this);
+            return;
+        }
+
+        transform.position = newPosition;
+        transform.rotation = newRotation;
+
+        // Update Rigidbody2D position if it's being used, to ensure it's in sync.
+        if (rb != null)
+        {
+            rb.position = newPosition;
+        }
+
+        // Update NetworkedPosition immediately to reflect the teleport.
+        // This is crucial because FixedUpdate might run after this frame and try to use a stale rb.position
+        // if NetworkedPosition wasn't updated here.
+        NetworkedPosition.Value = newPosition; 
+
+        // Reset any other internal state if necessary (e.g., velocity if physics-based, input buffers)
+        horizontalInput = 0f;
+        verticalInput = 0f;
+        aiHorizontalInput = 0f;
+        aiVerticalInput = 0f;
+        // If you have more complex prediction or reconciliation, reset those states here.
+
+        Debug.Log($"[ClientAuthMovement {OwnerClientId}] ServerForceTeleport: Position set to {newPosition}, Rotation to {newRotation.eulerAngles}", this);
+    }
+
+    [ClientRpc]
+    public void TeleportClientRpc(Vector3 newPosition, Quaternion newRotation, ClientRpcParams clientRpcParams = default)
+    {
+        // This RPC will be sent from the server to a specific client (the owner of this player object).
+        // Debug.Log($"[ClientAuthMovement {OwnerClientId}] TeleportClientRpc received. Pos: {newPosition}", this);
+        ServerForceTeleport(newPosition, newRotation);
+    }
+    // -----------------------------------------
 } 

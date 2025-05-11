@@ -226,6 +226,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 3
   deathShockwavePrefabId: FairyShockwave
-  deathShockwaveMaxRadius: 2
-  deathShockwaveDuration: 1
+  deathShockwaveMaxRadius: 2.5
+  deathShockwaveDuration: 0.5
   deathShockwaveDamage: 1

@@ -92,12 +92,41 @@ namespace TouhouWebArena.Helpers
         /// </summary>
         private static void ResetPlayerPosition(NetworkObject playerNetObj, Transform spawnPoint, PlayerRole role)
         {
-            if (spawnPoint != null && playerNetObj != null && playerNetObj.TryGetComponent<NetworkTransform>(out var playerTransform)) { 
-                Vector3 currentScale = playerTransform.transform.localScale; // Preserve scale
-                playerTransform.Teleport(spawnPoint.position, spawnPoint.rotation, currentScale);
-                Debug.Log($"[ServerPlayerResetHelper] Reset {role} position.");
+            if (spawnPoint != null && playerNetObj != null) 
+            {
+                playerNetObj.transform.position = spawnPoint.position;
+                playerNetObj.transform.rotation = spawnPoint.rotation;
+                
+                Debug.Log($"[ServerPlayerResetHelper] Directly set {role} server position to {spawnPoint.position} and rotation to {spawnPoint.rotation.eulerAngles}.");
+
+                // Inform the client to update its state
+                if (playerNetObj.TryGetComponent<ClientAuthMovement>(out var clientAuthMovement))
+                {
+                    // Always send to the owner of the playerNetObj.
+                    // The IsOwner check within ServerForceTeleport on the client side handles ensuring only the owner processes it.
+                    ClientRpcParams clientRpcParams = new ClientRpcParams
+                    {
+                        Send = new ClientRpcSendParams
+                        {
+                            TargetClientIds = new ulong[] { playerNetObj.OwnerClientId }
+                        }
+                    };
+                    clientAuthMovement.TeleportClientRpc(spawnPoint.position, spawnPoint.rotation, clientRpcParams);
+                    Debug.Log($"[ServerPlayerResetHelper] Sent TeleportClientRpc to {role} (Client ID: {playerNetObj.OwnerClientId}).");
+                }
+                else
+                {
+                    Debug.LogWarning($"[ServerPlayerResetHelper] Could not find ClientAuthMovement component on {role} to send TeleportClientRpc.");
+                }
             }
-            else { Debug.LogWarning($"[ServerPlayerResetHelper] Could not reset {role} position (missing spawn point, NetworkObject, or NetworkTransform?)."); }
+            else 
+            {
+                string reason = "";
+                if (spawnPoint == null) reason += "spawnPoint is null. ";
+                if (playerNetObj == null) reason += "playerNetObj is null. ";
+                // If NetworkTransform was required, we'd check it here too.
+                Debug.LogWarning($"[ServerPlayerResetHelper] Could not reset {role} position. Reason: {reason}");
+            }
         }
 
         /// <summary>

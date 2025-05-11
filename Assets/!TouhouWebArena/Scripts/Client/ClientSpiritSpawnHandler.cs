@@ -87,6 +87,6 @@ public class ClientSpiritSpawnHandler : NetworkBehaviour
         }
 
         // spiritInstance.SetActive(true); // MOVED UP
-        Debug.Log($"[ClientSpiritSpawnHandler] Successfully initialized spirit '{spiritPrefabID}' at {position}", spiritInstance);
+        // Debug.Log($"[ClientSpiritSpawnHandler] Successfully initialized spirit '{spiritPrefabID}' at {position}", spiritInstance);
     }
 } 

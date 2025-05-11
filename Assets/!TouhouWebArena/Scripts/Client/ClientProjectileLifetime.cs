@@ -56,8 +56,8 @@ public class ClientProjectileLifetime : MonoBehaviour
             // Log if it's about to despawn (and wasn't just logged by periodic check)
             if (_isInitialized && _timeActive >= _lifetime && (updateLogCounter % UPDATE_LOG_INTERVAL != 1) )
             {
-                 Debug.Log($"[CPL UPDATE PRE-DESPAWN]: {gameObject.name} (ID: {gameObject.GetInstanceID()}) | " +
-                          $"isInit: {_isInitialized} | timeActive: {_timeActive:F3} | lifetime: {_lifetime:F3}");
+                 // Debug.Log($"[CPL UPDATE PRE-DESPAWN]: {gameObject.name} (ID: {gameObject.GetInstanceID()}) | " +
+                 //           $"isInit: {_isInitialized} | timeActive: {_timeActive:F3} | lifetime: {_lifetime:F3}");
             }
         }
 
@@ -66,8 +66,8 @@ public class ClientProjectileLifetime : MonoBehaviour
         _timeActive += Time.deltaTime;
         if (_timeActive >= _lifetime)
         {
-            Debug.Log($"[ClientProjectileLifetime] LIFETIME REACHED: {gameObject.name} (ID: {gameObject.GetInstanceID()}). " +
-                      $"Lifetime was: {_lifetime:F3}s, TimeActive was: {_timeActive:F3}s. Returning to pool.");
+            // Debug.Log($"[ClientProjectileLifetime] LIFETIME REACHED: {gameObject.name} (ID: {gameObject.GetInstanceID()}). " +
+            //           $"Lifetime was: {_lifetime:F3}s, TimeActive was: {_timeActive:F3}s. Returning to pool.");
             ReturnToPool();
         }
     }

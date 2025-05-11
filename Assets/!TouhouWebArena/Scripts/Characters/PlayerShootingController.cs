@@ -262,7 +262,7 @@ public class PlayerShootingController : NetworkBehaviour
 
     private void SpawnAndNetworkBullet(string prefabId, Vector3 position, Quaternion rotation, float speed, float lifetime)
     {
-        Debug.Log($"[Firing Client {OwnerClientId}] SpawnAndNetworkBullet: Spawning local {prefabId} at {position}");
+        // Debug.Log($"[Firing Client {OwnerClientId}] SpawnAndNetworkBullet: Spawning local {prefabId} at {position}");
         GameObject bulletInstance = ClientGameObjectPool.Instance.GetObject(prefabId);
 
         if (bulletInstance != null)
@@ -294,7 +294,13 @@ public class PlayerShootingController : NetworkBehaviour
     [ServerRpc]
     private void FireShotServerRpc(string prefabId, Vector3 spawnPosition, Quaternion spawnRotation, float speed, float lifetime, ServerRpcParams rpcParams = default)
     {
-        Debug.Log($"[SERVER GO:{this.gameObject.name}] FireShotServerRpc: RECEIVED from Client {rpcParams.Receive.SenderClientId} for {prefabId}. Forwarding to FireShotClientRpc.");
+        if (!IsServer) return;
+
+        // Server log for receiving the shot request
+        // Debug.Log($"[SERVER GO:{this.gameObject.name}] FireShotServerRpc: RECEIVED from Client {rpcParams.Receive.SenderClientId} for {prefabId}. Forwarding to FireShotClientRpc.");
+
+        // Prepare ClientRpcParams to send to all clients EXCEPT the one who sent this ServerRpc,
+        // as that client already spawned their own shot locally.
         FireShotClientRpc(prefabId, spawnPosition, spawnRotation, speed, lifetime);
     }
 
@@ -302,7 +308,7 @@ public class PlayerShootingController : NetworkBehaviour
     private void FireShotClientRpc(string prefabId, Vector3 spawnPosition, Quaternion spawnRotation, float speed, float lifetime, ClientRpcParams clientRpcParams = default)
     {
         // Log Entry with more details, including who is executing this RPC.
-        Debug.Log($"[Client {NetworkManager.Singleton.LocalClientId} GO:{this.gameObject.name}] FireShotClientRpc: ENTRY. IsOwner: {IsOwner}, PrefabID: {prefabId}, Pos: {spawnPosition}");
+        // Debug.Log($"[Client {NetworkManager.Singleton.LocalClientId} GO:{this.gameObject.name}] FireShotClientRpc: ENTRY. IsOwner: {IsOwner}, PrefabID: {prefabId}, Pos: {spawnPosition}");
 
         if (ClientGameObjectPool.Instance == null)
         {
@@ -322,7 +328,7 @@ public class PlayerShootingController : NetworkBehaviour
         }
 
         // Non-owner clients spawn the bullet visuals.
-        Debug.Log($"[REMOTE Client {NetworkManager.Singleton.LocalClientId} GO:{this.gameObject.name}] FireShotClientRpc: PROCESSING for {prefabId}. Attempting to spawn visual only.");
+        // Debug.Log($"[REMOTE Client {NetworkManager.Singleton.LocalClientId} GO:{this.gameObject.name}] FireShotClientRpc: PROCESSING for {prefabId}. Attempting to spawn visual only.");
 
         GameObject bulletInstance = ClientGameObjectPool.Instance.GetObject(prefabId);
         if (bulletInstance != null)
@@ -341,7 +347,7 @@ public class PlayerShootingController : NetworkBehaviour
             {
                 Debug.LogError($"[REMOTE Client {NetworkManager.Singleton.LocalClientId} GO:{this.gameObject.name}] Bullet {prefabId} is missing BulletMovement script after being pooled!");
             }
-            Debug.Log($"[Remote Client {NetworkManager.Singleton.LocalClientId}] FireShotClientRpc: Successfully got {prefabId} from pool. Activating and initializing.");
+            // Debug.Log($"[Remote Client {NetworkManager.Singleton.LocalClientId}] FireShotClientRpc: Successfully got {prefabId} from pool. Activating and initializing.");
         }
         else
         {

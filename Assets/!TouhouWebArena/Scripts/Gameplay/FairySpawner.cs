@@ -109,6 +109,14 @@ public class FairySpawner : MonoBehaviour
             }
 
             yield return new WaitForSeconds(spawnInterval);
+
+            // ADDED: Re-check flag after spawnInterval before proceeding
+            if (!isDebugSpawningEnabled) 
+            {
+                // Debug.Log($"[FairySpawner P{playerIndex}] Spawning PAUSED after interval, skipping wave."); // Optional log
+                continue; // Skip this iteration if spawning was disabled during the interval
+            }
+
             if (paths.Count == 0) continue;
 
             waveCounter++;

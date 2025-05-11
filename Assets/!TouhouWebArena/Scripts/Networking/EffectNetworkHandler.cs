@@ -34,7 +34,7 @@ public class EffectNetworkHandler : NetworkBehaviour
     {
         // All clients execute this to spawn the visual. 
         // explicitTargetClientId indicates ON WHOSE FIELD the bullet should appear.
-        Debug.Log($"[EffectNetworkHandler Client {NetworkManager.Singleton.LocalClientId}] Received SpawnStageBulletClientRpc. Bullet for player {explicitTargetClientId}'s field. Prefab: {bulletPrefabID}, NormPos: {normalizedSpawnPosition}, Speed: {actualSpeed}, Dir: {direction}.");
+        // Debug.Log($"[EffectNetworkHandler Client {NetworkManager.Singleton.LocalClientId}] Received SpawnStageBulletClientRpc. Bullet for player {explicitTargetClientId}'s field. Prefab: {bulletPrefabID}, NormPos: {normalizedSpawnPosition}, Speed: {actualSpeed}, Dir: {direction}.");
 
         PlayerData? targetedPlayerData = PlayerDataManager.Instance?.GetPlayerData(explicitTargetClientId);
         if (targetedPlayerData == null || !targetedPlayerData.HasValue)

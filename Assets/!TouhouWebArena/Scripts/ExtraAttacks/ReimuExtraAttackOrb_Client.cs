@@ -5,8 +5,8 @@ public class ReimuExtraAttackOrb_Client : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float initialUpwardForce = 5f;
-    [SerializeField] private float initialSidewaysForceMin = 2f;
-    [SerializeField] private float initialSidewaysForceMax = 4f;
+    // [SerializeField] private float initialSidewaysForceMin = 2f;
+    // [SerializeField] private float initialSidewaysForceMax = 4f;
     [SerializeField] private float lifetime = 5f; // Seconds before returning to pool
 
     private Rigidbody2D rb;

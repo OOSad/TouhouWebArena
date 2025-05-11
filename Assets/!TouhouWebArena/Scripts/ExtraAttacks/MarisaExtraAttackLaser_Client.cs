@@ -10,7 +10,7 @@ public class MarisaExtraAttackLaser_Client : MonoBehaviour
     [SerializeField] private float activeDuration = 2f; // How long the laser stays active
     [SerializeField] private float activationDelay = 0.5f; // Time before the laser becomes damaging
     [SerializeField] private int damageAmount = 1; // Damage dealt per hit
-    [SerializeField] private float maxTiltAngle = 10f; // Max degrees for slight tilt
+    // [SerializeField] private float maxTiltAngle = 10f; // Max degrees for slight tilt
 
     private SpriteRenderer spriteRenderer;
     private BoxCollider2D boxCollider;

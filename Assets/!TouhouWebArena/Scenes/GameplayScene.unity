@@ -2339,6 +2339,7 @@ GameObject:
   - component: {fileID: 394317611}
   - component: {fileID: 394317618}
   - component: {fileID: 394317614}
+  - component: {fileID: 394317619}
   - component: {fileID: 394317615}
   - component: {fileID: 394317616}
   - component: {fileID: 394317617}
@@ -2472,6 +2473,22 @@ MonoBehaviour:
   marisaLaserSpawnAnchorP1: {fileID: 474647436}
   marisaLaserSpawnAnchorP2: {fileID: 881664902}
   marisaLaserXSpread: 7
+  reimuOrbInitialSidewaysForceMin: 2
+  reimuOrbInitialSidewaysForceMax: 4
+  marisaLaserMaxTiltAngle: 10
+--- !u!114 &394317619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 394317610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddebf3f3b87875c4aa41dba3db283c5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &422618548
 GameObject:
   m_ObjectHideFlags: 0
@@ -9739,6 +9756,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d17fbb6cfffeaf42a65177ca714e32b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   debugPanel: {fileID: 1773008108}
 --- !u!1 &1808353385
 GameObject:
@@ -10795,7 +10813,6 @@ MonoBehaviour:
   spawnZone1: {fileID: 1559253378}
   spawnZone2: {fileID: 2008785425}
   spiritPrefab: {fileID: 1241426470714071119, guid: ab6e43f2a705add4f8928d6b3a7393df, type: 3}
-  maxSpiritsPerSide: 10
   spawnZoneSize: {x: 6, y: 1}
   revengeSpawnZoneSize: {x: 7, y: 1}
   spawnInterval: 2

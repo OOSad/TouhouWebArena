@@ -65,7 +65,7 @@ public class BulletMovement : MonoBehaviour // CHANGED from NetworkBehaviour
             ClientFairyHealth fairyHealth = other.GetComponent<ClientFairyHealth>();
             if (fairyHealth != null) // Removed .IsAlive check, TakeDamage should handle if already dead
             {
-                Debug.Log($"Bullet {this.name} hit Fairy {other.name}. Attempting to deal damage.");
+                // Debug.Log($"Bullet {this.name} hit Fairy {other.name}. Attempting to deal damage.");
                 int damageToDeal = GetComponent<ProjectileDamager>()?.damage ?? 1;
                 fairyHealth.TakeDamage(damageToDeal, this.FiredByOwnerClientId); 
                 hitSomething = true;
@@ -76,7 +76,7 @@ public class BulletMovement : MonoBehaviour // CHANGED from NetworkBehaviour
             ClientSpiritHealth spiritHealth = other.GetComponent<ClientSpiritHealth>();
             if (spiritHealth != null)
             {
-                Debug.Log($"Bullet {this.name} hit Spirit {other.name}. Attempting to deal damage.");
+                // Debug.Log($"Bullet {this.name} hit Spirit {other.name}. Attempting to deal damage.");
                 int damageToDeal = GetComponent<ProjectileDamager>()?.damage ?? 1;
                 spiritHealth.TakeDamage(damageToDeal, this.FiredByOwnerClientId);
                 hitSomething = true;

@@ -122,7 +122,8 @@ When running the game locally for development or testing using the Unity editor 
 
 Here's how major game systems interact with the network:
 
-*   **Player Movement:** Player movement is **client-authoritative** (`ClientAuthMovement.cs`). Owner writes position to `NetworkedPosition` (`NetworkVariable<Vector2>`), remotes read and apply. `NetworkTransform` is not used.
+*   **Player Movement:** Player movement is **client-authoritative** (`ClientAuthMovement.cs`). The owner client reads input and directly moves its character. It synchronizes its position to other clients via a `NetworkVariable<Vector2>` named `NetworkedPosition`. `NetworkTransform` is not used for general player movement.
+    *   **Round Reset Teleport:** During a round reset, player positions are handled differently. The server-side `ServerPlayerResetHelper.cs` directly sets the player's `transform.position` and `transform.rotation` to the designated spawn points. To ensure the client's `ClientAuthMovement` script is aware of this authoritative change and doesn't conflict, the server then sends a `TeleportClientRpc` to the specific client. This RPC calls the `ServerForceTeleport` method on the client's `ClientAuthMovement` script, which updates the client's local position and resets relevant internal movement states.
 *   **Shooting / Basic Attacks (Client-Side Simulation):**
     *   Owning `PlayerShootingController.cs` detects input.
     *   Spawns projectile locally from `ClientGameObjectPool.cs`, initializes `BulletMovement` (passing `OwnerClientId`).
@@ -177,10 +178,23 @@ Here's how major game systems interact with the network:
     *   `ClientIllusionView` then uses `ClientSpellcardActionRunner` (passing its own transform if the illusion is moving during the attack, for dynamic bullet origins) to execute the attack pattern. This involves spawning client-simulated projectiles that are configured by `ClientBulletConfigurer`.
     *   Illusion health is managed by `IllusionHealth.cs` (a `NetworkBehaviour` on the Illusion prefab). Client-side detection of hits (on the client responsible for that illusion) can lead to `TakeDamageClientSide`. If health is depleted, `ReportDeathToServerRpc` is sent to the server. The server-side `IllusionHealth` then calls `ProcessClientDeathReport` on its `ServerIllusionOrchestrator`, which handles the despawn process (including notifying `ServerIllusionManager`).
     *   Illusions can also be despawned by direct server logic, such as when an opposing player casts a Level 4 spell (handled in `ServerAttackSpawner`).
-*   **Game State (Score, Rounds):** Managed by a server-authoritative `RoundManager`.
+*   **Game State (Score, Rounds):** Managed by a server-authoritative `RoundManager.cs`. This script orchestrates the overall game flow, including transitions between rounds.
+    *   **Round Reset Sequence:** When a round ends (e.g., a player reaches zero health), `RoundManager.RoundResetCoroutine()` initiates the following server-side sequence:
+        1.  `IsRoundActive` is set to `false`.
+        2.  All entity spawners are paused via `ServerSpawnerManager.Instance.PauseAllSpawners()`. This prevents new entities like fairies and spirits from starting their spawn routines. The individual spawners (`FairySpawner.cs`, `SpiritSpawner.cs`) have checks to honor this paused state immediately after their spawn interval yields.
+        3.  A very brief delay (`0.2f` seconds) occurs.
+        4.  `ServerEntityCleanupHelper.CleanupAllEntitiesServer()` is called. Its primary role now is to find and despawn server-authoritative `NetworkObject`s like active Illusions (by finding `IllusionHealth` components).
+        5.  `ClientEntityCleanupHandler.Instance.ClearAllClientSideVisualsClientRpc()` is sent to all clients. This is crucial for clearing the majority of game entities, which are client-simulated:
+            *   It iterates through a predefined list of client-pooled prefab IDs (e.g., "Spirit", "ReimuExtraAttackOrb", "MarisaChargeLaser_Client", "NormalFairy", "StageSmallBullet", various spellcard bullets) and calls `ClientGameObjectPool.Instance.ReturnAllActiveObjectsById()` for each.
+            *   It also calls `FairySpawnNetworkHandler.Instance.StopAllActiveFairySpawningCoroutines()` to immediately halt any client-side coroutines that are in the process of spawning individual fairies from a wave that was already commanded.
+        6.  Player states are reset by `ServerPlayerResetHelper.ResetPlayersServer()`:
+            *   Health is restored to full via `PlayerHealth.SetHealthDirectlyServer()`.
+            *   Player positions are reset: the server directly sets the `playerNetObj.transform.position` and `rotation` to the designated spawn points. It then sends a targeted `TeleportClientRpc` to the `ClientAuthMovement` script on the owning client, which calls `ServerForceTeleport()` to update the client's local state and prevent movement conflicts.
+        7.  A configurable delay (`roundResetDelay`, typically 3 seconds) occurs, during which players can get their bearings. Spawning remains paused.
+        8.  After the delay, `ServerSpawnerManager.Instance.ResumeAllSpawners()` is called, `RoundTime` is reset, and `IsRoundActive` is set to `true`, starting the next round.
 *   **Object Pooling:**
-    *   **`ClientGameObjectPool.cs`:** Primary pool used by all clients for non-NetworkObject entities spawned via RPC commands or local actions (player bullets, enemy bullets, fairies, spirits, shockwaves, VFX).
-    *   **`NetworkObjectPool.cs`:** Likely **DEPRECATED/UNUSED** unless specific server-authoritative `NetworkObject`s (e.g., a complex boss segment) require pooling.
+    *   **`ClientGameObjectPool.cs`:** Primary pool used by all clients for non-NetworkObject entities spawned via RPC commands or local actions (player bullets, enemy bullets, fairies, spirits, shockwaves, VFX, charge attacks, spellcard projectiles). These objects are identified by string `PrefabID`s stored in their `PooledObjectInfo.cs` component.
+    *   **`NetworkObjectPool.cs`:** Likely **DEPRECATED/UNUSED**. If it were to be used, `NetworkObject.Despawn()` would attempt to return objects to this pool if they were registered. Currently, server-authoritative objects like Illusions are despawned via `NetworkObject.Despawn()`, which will destroy them if no `NetworkObjectPool` is handling their prefab.
 
 ## NEW: Extra Attacks (Client-Authoritative Trigger & Simulation)
 
@@ -222,10 +236,12 @@ Here's how major game systems interact with the network:
 *   **`SpellcardNetworkHandler.cs`:** Server singleton for sending, and client-side receiver for, `ExecuteSpellcardClientRpc` for Level 1-3 spellcards. Client-side, it loads data and passes it to `ClientSpellcardActionRunner`.
 *   **`ClientSpellcardActionRunner.cs`:** Client-side helper. Executes sequences of `SpellcardAction`s, spawns bullets from pool, and calls `ClientBulletConfigurer`.
 *   **`ClientBulletConfigurer.cs`:** Client-side static helper. Configures individual bullets (lifetime, movement behavior) based on `SpellcardAction` data.
-*   **`FairySpawner.cs`:** Server-side. Calculates waves, calls `FairySpawnNetworkHandler`.
+*   **`FairySpawner.cs`:** Server-side. Calculates waves, calls `FairySpawnNetworkHandler`. The `ServerSpawnLoop` now re-checks its `isDebugSpawningEnabled` flag after its `spawnInterval` yield to ensure it doesn't start a new wave if paused during the interval.
 *   **`ServerChargeAttackSpawner.cs`:** Server-side. Receives charge attack requests. Gets the character-specific client-side handler (e.g., `ReimuChargeAttackHandler_Client`) on the player's object and calls its `SpawnChargeAttackClientRpc` to trigger client-simulated charge attacks. (Manages spell costs with `SpellBarManager` for spellcards).
 *   **`ReimuChargeAttackHandler_Client.cs`:** Client-side `NetworkBehaviour` on Reimu's player prefab. Receives an RPC from `ServerChargeAttackSpawner` to spawn and initialize Reimu's homing talismans (using `HomingTalisman_Client`) from the `ClientGameObjectPool`.
 *   **`MarisaChargeAttackHandler_Client.cs`:** Client-side `NetworkBehaviour` on Marisa's player prefab. Receives an RPC from `ServerChargeAttackSpawner` to spawn and initialize Marisa's laser (using `IllusionLaser_Client`) from the `ClientGameObjectPool`. The laser is spawned at a designated `marisaLaserSpawnPoint` child transform.
+*   **`ClientEntityCleanupHandler.cs`:** Client-side `NetworkBehaviour`. Receives `ClearAllClientSideVisualsClientRpc` from `RoundManager`. Clears a wide range of client-pooled objects (bullets, enemies, effects) by calling `ClientGameObjectPool.ReturnAllActiveObjectsById()`. Also calls `FairySpawnNetworkHandler.StopAllActiveFairySpawningCoroutines()` to halt in-progress fairy wave spawning.
+*   **`ServerPlayerResetHelper.cs`:** Server-side static helper class. Used by `RoundManager` to reset player health and positions. Position reset involves directly setting the player's server-side transform and then sending a `TeleportClientRpc` to the client's `ClientAuthMovement` script.
 *   **`SpellBarManager.cs`:** Server-side. Still needed for managing spell costs.
 *   **~~`ClientChargeAttackHandler.cs`~~:** DEPRECATED. Replaced by character-specific handlers (`ReimuChargeAttackHandler_Client`, `MarisaChargeAttackHandler_Client`).
 *   **~~`NetworkObjectPool.cs`~~:** Likely Deprecated/Unused.

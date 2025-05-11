@@ -96,7 +96,7 @@ public class MatchEndUIController : MonoBehaviour
         { 
             rematchButton.interactable = true; 
         }
-        Debug.Log("[MatchEndUIController] Hiding Match End Screen.");
+        // Debug.Log("[MatchEndUIController] Hiding Match End Screen.");
     }
 
     private void OnRematchButtonClicked()

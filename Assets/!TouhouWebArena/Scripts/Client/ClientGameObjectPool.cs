@@ -81,7 +81,7 @@ public class ClientGameObjectPool : MonoBehaviour
 
         if (prefabId == "Spirit")
         {
-            Debug.Log($"[ClientGameObjectPool] GetObject attempting for ID 'Spirit'. Current queue count: {pool.objectQueue.Count}");
+            // Debug.Log($"[ClientGameObjectPool] GetObject attempting for ID 'Spirit'. Current queue count: {pool.objectQueue.Count}");
         }
 
         if (pool.objectQueue.Count > 0)
@@ -90,7 +90,7 @@ public class ClientGameObjectPool : MonoBehaviour
             pool.activeObjectsInPool.Add(obj); // NEW: Add to active list
             if (prefabId == "Spirit")
             {
-                Debug.Log($"[ClientGameObjectPool] GetObject DEQUEUED for ID 'Spirit'. New queue count: {pool.objectQueue.Count}. Object: {obj.name}", obj);
+                // Debug.Log($"[ClientGameObjectPool] GetObject DEQUEUED for ID 'Spirit'. New queue count: {pool.objectQueue.Count}. Object: {obj.name}", obj);
             }
             return obj;
         }
@@ -120,14 +120,14 @@ public class ClientGameObjectPool : MonoBehaviour
         string prefabIdForReturn = poi.PrefabID;
         if (prefabIdForReturn == "Spirit")
         {
-            Debug.Log($"[ClientGameObjectPool] ReturnObject attempting for ID 'Spirit'. Object: {objInstance.name}. Current active state: {objInstance.activeSelf}", objInstance);
+            // Debug.Log($"[ClientGameObjectPool] ReturnObject attempting for ID 'Spirit'. Object: {objInstance.name}. Current active state: {objInstance.activeSelf}", objInstance);
         }
 
         if (poolDictionary.TryGetValue(prefabIdForReturn, out Pool pool))
         {
             if (prefabIdForReturn == "Spirit")
             {
-                 Debug.Log($"[ClientGameObjectPool] ReturnObject for 'Spirit': Found pool. Current queue count BEFORE SetActive/Enqueue: {pool.objectQueue.Count}");
+                 // Debug.Log($"[ClientGameObjectPool] ReturnObject for 'Spirit': Found pool. Current queue count BEFORE SetActive/Enqueue: {pool.objectQueue.Count}");
             }
 
             objInstance.SetActive(false);
@@ -146,7 +146,7 @@ public class ClientGameObjectPool : MonoBehaviour
             pool.activeObjectsInPool.Remove(objInstance);
             if (prefabIdForReturn == "Spirit")
             {
-                Debug.Log($"[ClientGameObjectPool] ReturnObject for 'Spirit': ENQUEUED {objInstance.name}. New queue count: {pool.objectQueue.Count}. Active list count: {pool.activeObjectsInPool.Count}");
+                // Debug.Log($"[ClientGameObjectPool] ReturnObject for 'Spirit': ENQUEUED {objInstance.name}. New queue count: {pool.objectQueue.Count}. Active list count: {pool.activeObjectsInPool.Count}");
             }
         }
         else
@@ -165,6 +165,42 @@ public class ClientGameObjectPool : MonoBehaviour
         // Consolidate all active objects from all pools into one list
         // Using LINQ's SelectMany for conciseness
         return poolDictionary.Values.SelectMany(pool => pool.activeObjectsInPool).ToList();
+    }
+
+    /// <summary>
+    /// Returns all currently active GameObjects of a specific prefabId to their pool.
+    /// </summary>
+    /// <param name="prefabId">The prefab ID to clear active objects for.</param>
+    /// <returns>The number of objects successfully returned to the pool.</returns>
+    public int ReturnAllActiveObjectsById(string prefabId)
+    {
+        if (!poolDictionary.TryGetValue(prefabId, out Pool pool))
+        {
+            Debug.LogWarning($"[ClientGameObjectPool] ReturnAllActiveObjectsById: Pool with ID '{prefabId}' doesn't exist. Cannot clear.");
+            return 0;
+        }
+
+        int returnedCount = 0;
+        // Iterate over a copy of the list, as ReturnObject will modify the original list
+        List<GameObject> activeObjectsToReturn = new List<GameObject>(pool.activeObjectsInPool);
+        
+        if (activeObjectsToReturn.Count > 0)
+        {
+            // Debug.Log($"[ClientGameObjectPool] ReturnAllActiveObjectsById: Attempting to return {activeObjectsToReturn.Count} active objects for ID '{prefabId}'.");
+        }
+
+        foreach (GameObject objToReturn in activeObjectsToReturn)
+        {
+            // ReturnObject already handles null checks and setting inactive
+            ReturnObject(objToReturn); 
+            returnedCount++;
+        }
+        
+        if (returnedCount > 0)
+        {
+            // Debug.Log($"[ClientGameObjectPool] ReturnAllActiveObjectsById: Successfully returned {returnedCount} objects for ID '{prefabId}'. Pool '{prefabId}' now has {pool.objectQueue.Count} available and {pool.activeObjectsInPool.Count} active.");
+        }
+        return returnedCount;
     }
 
     // Optional: A more performant way if you only care about a specific type or tag

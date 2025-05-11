@@ -47,8 +47,6 @@ public class IllusionLaser_Client : MonoBehaviour
             // We are scaling localScale.y to be laserLength (if original sprite height was 1).
             // So, the BoxCollider should have size.y = 1 (to match original sprite) and offset.y = 0.5 (if pivot is bottom).
             // If your unscaled sprite is 1 unit high and pivot is at bottom (0), then collider of size 1, offset 0.5 fits it.
-            float colliderLocalHeight = 1f; // Assuming base sprite is 1 unit tall
-            float colliderLocalOffset = 0.5f; // Assuming base sprite pivot is at its bottom
             
             // If your sprite or box collider setup on the prefab already matches its visual base form (e.g. 1 unit high, collider fitted)
             // and the pivot is at the bottom, you might not need to change collider size/offset at all after scaling the transform.

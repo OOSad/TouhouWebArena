@@ -8,6 +8,7 @@ using TouhouWebArena; // For PoolableObjectIdentity, PlayerRole etc.
 using TouhouWebArena.Spellcards.Behaviors; // For NetworkBulletLifetime
 using TouhouWebArena.Spellcards; // Added for IllusionHealth
 using TouhouWebArena.Helpers; // Added
+using TouhouWebArena.Client; // Added for ClientEntityCleanupHandler
 using TMPro; // Added for potential UI references if needed later
 
 namespace TouhouWebArena.Managers
@@ -47,6 +48,9 @@ namespace TouhouWebArena.Managers
         private bool player2WantsRematch = false;
         private bool matchHasEnded = false; // Track if the match conclusion has been reached
 
+        // --- Cached reference for ClientEntityCleanupHandler ---
+        private ClientEntityCleanupHandler clientEntityCleanupHandlerCache;
+
         // --- Add Update method for timer ---
         void Update()
         {
@@ -77,6 +81,16 @@ namespace TouhouWebArena.Managers
 
             // Subscribe to events
             PlayerHealth.OnPlayerDeathServer += HandlePlayerDeathServer;
+
+            // Cache the ClientEntityCleanupHandler instance if we are the server
+            if (IsServer)
+            {
+                clientEntityCleanupHandlerCache = FindObjectOfType<ClientEntityCleanupHandler>();
+                if (clientEntityCleanupHandlerCache == null)
+                {
+                    Debug.LogError("[RoundManager] Could not find ClientEntityCleanupHandler in the scene! Client-side cleanup will not work.");
+                }
+            }
         }
 
         public override void OnNetworkDespawn()
@@ -208,6 +222,22 @@ namespace TouhouWebArena.Managers
 
             // Call the static helper method to clear entities
             ServerEntityCleanupHelper.CleanupAllEntitiesServer();
+
+            // --- ADDED: Tell clients to clear their specific visuals ---
+            if (clientEntityCleanupHandlerCache != null) // Changed from ClientEntityCleanupHandler.Instance
+            {
+                ClientRpcParams allClientsParamsForCleanup = new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds }
+                };
+                clientEntityCleanupHandlerCache.ClearAllClientSideVisualsClientRpc(allClientsParamsForCleanup); // Changed from ClientEntityCleanupHandler.Instance
+                Debug.Log("[RoundManager] Sent ClearAllClientSideVisualsClientRpc to all clients via cached reference.");
+            }
+            else
+            {
+                Debug.LogWarning("[RoundManager] Cached ClientEntityCleanupHandler is null. Cannot send RPC to clear client visuals.");
+            }
+            // ---------------------------------------------------------
 
             // --- 3. Reset Players ---
             // Call the static helper method to reset players

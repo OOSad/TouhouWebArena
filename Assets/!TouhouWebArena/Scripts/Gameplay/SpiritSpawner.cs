@@ -20,8 +20,6 @@ public class SpiritSpawner : NetworkBehaviour
     [SerializeField] private GameObject spiritPrefab;
 
     [Header("Spawning Configuration")]
-    [Tooltip("Maximum number of spirits allowed per player side (checked during revenge spawns).")]
-    [SerializeField] private int maxSpiritsPerSide = 10; // Default value
     [Tooltip("The dimensions (Width, Height) of the rectangular spawn zones centered on the spawnZone transforms.")]
     [SerializeField] private Vector2 spawnZoneSize = new Vector2(2f, 1f);
     [Tooltip("The dimensions (Width, Height) of the zone used for placing revenge-spawned spirits, centered on the target player's spawn zone.")]
@@ -84,13 +82,12 @@ public class SpiritSpawner : NetworkBehaviour
             return false;
         }
 
-        if (spiritPrefab.GetComponent<SpiritController>() == null)
-        {
-            Debug.LogWarning("SpiritSpawner: Spirit Prefab is missing a SpiritController component. This might be intended if it's purely client-side.", this);
-            // We might not need a server-side controller anymore.
-            // enabled = false;
-            // return false;
-        }
+        // Get reference to the SpiritController component on the prefab for later use.
+        // if (spiritPrefab.GetComponent<SpiritController>() == null)
+        // {
+        //     // This is a warning, not an error, as client-side spirits might not have this.
+        //     Debug.LogWarning("SpiritSpawner: Spirit Prefab is missing a SpiritController component. This might be intended if it's purely client-side.", this);
+        // }
         // Also check for PoolableObjectIdentity
         // if (spiritPrefab.GetComponent<PoolableObjectIdentity>() == null || string.IsNullOrEmpty(spiritPrefab.GetComponent<PoolableObjectIdentity>().PrefabID))
         // {

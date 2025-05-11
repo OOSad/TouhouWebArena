@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace TouhouWebArena.DevTools
 {
-    public class DebugMenuController : MonoBehaviour
+    public class DebugMenuController : NetworkBehaviour
     {
         [SerializeField] private GameObject debugPanel;
 
@@ -17,11 +17,11 @@ namespace TouhouWebArena.DevTools
 
         void Start()
         {
-            // Ensure the panel is hidden initially, regardless of its state in the editor
+            // Ensure the panel is hidden initially on clients, and shown/hidden based on F11 on server
             if (debugPanel != null)
             {
-                debugPanel.SetActive(false);
-                isPanelVisible = false;
+                isPanelVisible = NetworkManager.Singleton.IsServer && debugPanel.activeSelf; // Initial state if server
+                debugPanel.SetActive(isPanelVisible); 
             }
             else
             {
@@ -32,6 +32,10 @@ namespace TouhouWebArena.DevTools
             if (NetworkManager.Singleton.IsServer)
             {
                 FindSpawners();
+
+                // TEMP TEST: Call ClientRpc directly from server's Start
+                // UnityEngine.Debug.Log($"[Server DebugMenuController.Start()] Attempting to call TogglePlayerHitboxClientRpc for Player1, Enabled: False");
+                // TogglePlayerHitboxClientRpc(PlayerRole.Player1, false); // Test P1 off // REMOVED - Was for testing
             }
         }
 
@@ -71,30 +75,6 @@ namespace TouhouWebArena.DevTools
                 FindSpawners(); 
                 spiritSpawnerInstance?.SetSpawningEnabledServer(value);
             }
-
-            // If disabling, find and despawn all existing spirits
-            if (!value) 
-            {
-                UnityEngine.Debug.Log("Despawning all active spirits due to debug toggle...");
-                SpiritController[] activeSpirits = FindObjectsByType<SpiritController>(FindObjectsSortMode.None);
-                int despawnCount = 0;
-                foreach (SpiritController spirit in activeSpirits)
-                {
-                    NetworkObject netObj = spirit.GetComponent<NetworkObject>();
-                    if (netObj != null && NetworkObjectPool.Instance != null)
-                    {
-                        NetworkObjectPool.Instance.ReturnNetworkObject(netObj); // Pool handles despawn
-                        despawnCount++;
-                    }
-                    else
-                    {
-                         UnityEngine.Debug.LogWarning($"Could not return spirit {spirit.gameObject.name} to pool (Missing NetworkObject or Pool Instance?). Destroying instead.", spirit.gameObject);
-                         // Fallback: Destroy directly if pooling fails? Or just disable?
-                         // Destroy(spirit.gameObject); 
-                    }
-                }
-                UnityEngine.Debug.Log($"Returned {despawnCount} spirits to the pool.");
-            }
         }
 
         public void ToggleFairySpawners(bool value)
@@ -118,24 +98,26 @@ namespace TouhouWebArena.DevTools
 
         void Update()
         {
-            // Only allow toggling on the server and if the panel is assigned
-            if (debugPanel == null || !NetworkManager.Singleton.IsServer)
-            {
-                // If not server and panel is somehow visible, hide it.
-                if (isPanelVisible)
-                {
-                    debugPanel.SetActive(false);
-                    isPanelVisible = false;
-                }
-                return;
-            }
+            // ADDED DIAGNOSTIC LOG - Appears on server and ALL clients if script is active
+            // if (Time.frameCount % 300 == 0) // Log every 300 frames (approx every 5 seconds) to avoid spam
+            // {
+            //     UnityEngine.Debug.Log($"[DebugMenuController UPDATE on {gameObject.name}] IsServer: {NetworkManager.Singleton?.IsServer}, IsClient: {NetworkManager.Singleton?.IsClient}, LocalClientId: {NetworkManager.Singleton?.LocalClientId}");
+            // }
 
-            if (Input.GetKeyDown(KeyCode.F11))
+            if (debugPanel == null) return;
+
+            // Only server can toggle the debug panel visibility
+            if (NetworkManager.Singleton.IsServer)
             {
-                isPanelVisible = !isPanelVisible;
-                debugPanel.SetActive(isPanelVisible);
-                // Potentially add cursor locking/unlocking logic here later
+                if (Input.GetKeyDown(KeyCode.F11))
+                {
+                    isPanelVisible = !isPanelVisible;
+                    debugPanel.SetActive(isPanelVisible);
+                    UnityEngine.Debug.Log($"[Server DebugMenuController UPDATE on {gameObject.name}] Toggled panel visibility to {isPanelVisible}");
+                    // Potentially add cursor locking/unlocking logic here later
+                }
             }
+            // Clients do not process F11 or other server-side logic
         }
 
         // --- Placeholder Methods for UI Elements ---
@@ -191,37 +173,40 @@ namespace TouhouWebArena.DevTools
         [ClientRpc]
         private void TogglePlayerHitboxClientRpc(PlayerRole role, bool enabled)
         {
+            UnityEngine.Debug.Log($"[Client {NetworkManager.Singleton.LocalClientId}] Entered TogglePlayerHitboxClientRpc for Role: {role}, Enabled: {enabled}. IsClient: {NetworkManager.Singleton.IsClient}");
+
             // This code runs on all clients
-            UnityEngine.Debug.Log($"[Client] Received TogglePlayerHitboxClientRpc for Role: {role}, Enabled: {enabled}");
+            // UnityEngine.Debug.Log($"[Client] Received TogglePlayerHitboxClientRpc for Role: {role}, Enabled: {enabled}"); // LOG A - Redundant with above
 
             // Find the correct player object locally based on role
             ClientAuthMovement targetPlayerComponent = null;
-            ClientAuthMovement[] allPlayerComponents = FindObjectsByType<ClientAuthMovement>(FindObjectsSortMode.None);
-            foreach (ClientAuthMovement cam in allPlayerComponents)
+            var playerObjects = FindObjectsByType<ClientAuthMovement>(FindObjectsSortMode.None);
+            foreach (var pNet in playerObjects)
             {
-                PlayerRole currentComponentRole = PlayerRole.None;
-                if (cam.NetworkObject != null && PlayerDataManager.Instance != null)
+                PlayerData? pd = PlayerDataManager.Instance?.GetPlayerData(pNet.OwnerClientId);
+                if (pd != null && pd.Value.Role == role)
                 {
-                    PlayerData? pd = PlayerDataManager.Instance.GetPlayerData(cam.NetworkObject.OwnerClientId);
-                    if (pd.HasValue)
-                    {
-                        currentComponentRole = pd.Value.Role;
-                    }
-                }
-
-                if (currentComponentRole == role)
-                {
-                    targetPlayerComponent = cam;
+                    targetPlayerComponent = pNet;
                     break;
                 }
             }
 
             if (targetPlayerComponent != null)
             {
-                Transform hitboxTransform = targetPlayerComponent.transform.Find("Hitbox");
-                if (hitboxTransform != null)
+                Transform hitboxGameObjectTransform = targetPlayerComponent.transform.Find("Hitbox");
+                if (hitboxGameObjectTransform != null)
                 {
-                    hitboxTransform.gameObject.SetActive(enabled);
+                    // PlayerHitbox playerHitboxScript = hitboxGameObjectTransform.GetComponent<PlayerHitbox>();
+                    // if (playerHitboxScript != null)
+                    // {
+                    //     playerHitboxScript.enabled = enabled;
+                    //     UnityEngine.Debug.Log($"[Client] Set Player {role} (Owner: {targetPlayerComponent.OwnerClientId}) PlayerHitbox SCRIPT enabled state to: {enabled}");
+                    // }
+                    // else
+                    // {
+                    //     UnityEngine.Debug.LogWarning($"[Client] Could not find 'PlayerHitbox' script on 'Hitbox' child for player with role {role}.");
+                    // }
+                    hitboxGameObjectTransform.gameObject.SetActive(enabled);
                     UnityEngine.Debug.Log($"[Client] Set Player {role} (Owner: {targetPlayerComponent.OwnerClientId}) Hitbox GameObject active state to: {enabled}");
                 }
                 else
@@ -231,7 +216,7 @@ namespace TouhouWebArena.DevTools
             }
             else
             {
-                UnityEngine.Debug.LogWarning($"[Client] Could not find player component with role {role} to toggle hitbox.");
+                UnityEngine.Debug.LogWarning($"[Client] Could not find player with role {role} to toggle hitbox.");
             }
         }
 

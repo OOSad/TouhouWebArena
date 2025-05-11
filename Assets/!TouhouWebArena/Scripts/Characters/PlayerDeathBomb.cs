@@ -133,6 +133,6 @@ public class PlayerDeathBomb : NetworkBehaviour
             }
         }
         // Log total objects affected by the bomb
-        if (objectsClearedCount > 0) Debug.Log($"[Client {NetworkManager.Singleton.LocalClientId} DeathBomb] Processed {objectsClearedCount} objects (bullets/enemies) in bomb radius.");
+        // if (objectsClearedCount > 0) Debug.Log($"[Client {NetworkManager.Singleton.LocalClientId} DeathBomb] Processed {objectsClearedCount} objects (bullets/enemies) in bomb radius.");
     }
 } 
