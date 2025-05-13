@@ -49,9 +49,9 @@ public class ClientProjectileLifetime : MonoBehaviour
             // Log periodically to check state
             if (updateLogCounter % UPDATE_LOG_INTERVAL == 1)
             {
-                Debug.Log($"[CPL UPDATE PERIODIC]: {gameObject.name} (ID: {gameObject.GetInstanceID()}) | " +
-                          $"isInit: {_isInitialized} | activeInHierarchy: {gameObject.activeInHierarchy} | " +
-                          $"timeActive: {_timeActive:F3} | lifetime: {_lifetime:F3} | deltaTime: {Time.deltaTime:F5}");
+                // Debug.Log($"[CPL UPDATE PERIODIC]: {gameObject.name} (ID: {gameObject.GetInstanceID()}) | " +
+                //           $"isInit: {_isInitialized} | activeInHierarchy: {gameObject.activeInHierarchy} | " +
+                //           $"timeActive: {_timeActive:F3} | lifetime: {_lifetime:F3} | deltaTime: {Time.deltaTime:F5}");
             }
             // Log if it's about to despawn (and wasn't just logged by periodic check)
             if (_isInitialized && _timeActive >= _lifetime && (updateLogCounter % UPDATE_LOG_INTERVAL != 1) )
@@ -70,6 +70,18 @@ public class ClientProjectileLifetime : MonoBehaviour
             //           $"Lifetime was: {_lifetime:F3}s, TimeActive was: {_timeActive:F3}s. Returning to pool.");
             ReturnToPool();
         }
+
+        // Optional: Add periodic debugging if needed - REMOVED as log was commented out
+        /*
+        if (_debugPeriodic && Time.time >= _nextPeriodicLogTime)
+        {
+            // Commented out noisy log
+            // Debug.Log($"[CPL UPDATE PERIODIC]: {gameObject.name} (ID: {gameObject.GetInstanceID()}) | " +
+            //          $"isInit: {_isInitialized} | activeInHierarchy: {gameObject.activeInHierarchy} | " +
+            //          $"timeActive: {_timeActive:F3} | lifetime: {_lifetime:F3} | deltaTime: {deltaTime:F5}");
+            _nextPeriodicLogTime = Time.time + _periodicLogInterval;
+        }
+        */
     }
 
     /// <summary>

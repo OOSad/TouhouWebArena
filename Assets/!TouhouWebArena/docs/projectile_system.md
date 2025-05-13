@@ -53,22 +53,28 @@ Projectiles for Level 1-4 spellcards, including those fired by Level 4 Illusions
     *   Loads the specified `AttackPatternData`.
     *   If the illusion is performing movement *during* the attack (`isMovingWithAttack = true`):
         *   It starts its `AnimateIllusionMovementAndAttack` coroutine. This coroutine Lerps the illusion's visual position/orientation on the client.
-        *   It calls `ClientSpellcardActionRunner.RunSpellcardActionsDynamicOrigin`, passing its own `transform` as the `originTransform`. This allows bullets to spawn from the moving illusion.
+        *   It calls `ClientSpellcardActionRunner.RunSpellcardActionsDynamicOrigin`, passing its own `transform` as the `originTransform`, and crucially, the **original caster's PlayerRole** (obtained from the illusion NetworkObject's OwnerClientId, which is set by the server during illusion spawn). This allows bullets to spawn from the moving illusion and inherit the correct ownership.
     *   If the illusion is static for the attack:
-        *   It calls `ClientSpellcardActionRunner.RunSpellcardActions` using its current (static) transform.
+        *   It calls `ClientSpellcardActionRunner.RunSpellcardActions` using its current (static) transform and passing the **original caster's PlayerRole**.
 *   **`ClientSpellcardActionRunner.cs`:**
+    *   Receives the list of actions, origin info (static or dynamic), and the appropriate **`PlayerRole`** (either the direct caster for L1-3, or the original caster passed via `ClientIllusionView` for L4 illusions).
     *   Iterates through the `SpellcardAction` list from the data.
     *   For each action that spawns bullets:
         *   Obtains a bullet prefab instance from `ClientGameObjectPool.Instance.GetObject()`.
         *   Sets initial position and orientation (potentially from a dynamic origin for moving illusions).
-        *   **Crucially, calls `ClientBulletConfigurer.ConfigureBullet()` for each spawned instance.**
+        *   **Calls `ClientBulletConfigurer.ConfigureBullet()`**, passing the bullet instance, action data, and potentially the **received `PlayerRole`** to assign ownership.
+        *   Activates the bullet (`SetActive(true)`).
 
 ### 3. Bullet Configuration (`ClientBulletConfigurer.cs`)
 
 This static helper class is vital for setting up individual bullets:
 
-*   Takes the `GameObject bulletInstance`, `SpellcardAction action`, `casterClientId`, `targetClientId`, and `bulletIndex` as parameters.
-*   **Lifetime:** Initializes `ClientProjectileLifetime` on the bullet using `action.lifetime` (or a default if not specified). This must happen *after* the bullet GameObject is set active.
+*   Takes the `GameObject bulletInstance`, `SpellcardAction action`, `casterClientId`, `targetClientId`, the **`owningPlayerRole` (PlayerRole)**, and `bulletIndex` as parameters (parameter list updated to include role).
+*   **Ownership Assignment:**
+    *   If the `bulletInstance` has a component that tracks ownership (like `StageSmallBulletMoverScript`), this is where the `owningPlayerRole` parameter would be used to set that component's role (e.g., `bulletInstance.GetComponent<StageSmallBulletMoverScript>()?.InitializeOwnerRole(owningPlayerRole)`). Note that many spellcard bullet prefabs may *not* have `StageSmallBulletMoverScript`, relying instead on their layer for interactions.
+    *   This ensures bullets fired by spellcards (including illusions) are correctly associated with the player who cast the original spell.
+    *   Crucially, the role reset that used to occur in `StageSmallBulletMoverScript.OnEnable()` has been removed, ensuring this explicitly set role persists.
+*   **Lifetime:** Initializes `ClientProjectileLifetime` on the bullet using `action.lifetime` (or a default if not specified).
 *   **Movement Behavior Reset:** Deactivates all potential movement behavior scripts attached to the bullet prefab (e.g., `ClientLinearMovement`, `ClientHomingMovement`, etc.) to ensure a clean state.
 *   **Specific Behavior Activation:** Based on `action.behavior` (e.g., `BehaviorType.Linear`, `BehaviorType.Homing`):
     *   Gets the corresponding movement script (e.g., `bulletInstance.GetComponent<ClientLinearMovement>()`).
@@ -109,14 +115,35 @@ Client-side projectiles are removed from the game world and returned to the `Cli
 
 ### 3. Explicit Clearing Effects (e.g., Bombs, Special Abilities)
 
-*   Mechanisms like player "death bombs" or other special spellcard effects might need to clear a large number of bullets from the screen.
-*   **Server Initiation:** Typically, the server determines such an event occurs (e.g., `PlayerDeathBomb.cs` logic).
-*   **RPC to Clients:** The server sends a `ClientRpc` to all clients (e.g., `EffectNetworkHandler.Instance.ClearBulletsInAreaClientRpc(areaParameters)`).
-*   **Client-Side Execution:**
-    *   Each client iterates through relevant active projectiles. This could be all active objects in `ClientGameObjectPool.Instance.GetAllActiveObjects()`, or a more targeted list.
-    *   For each projectile in the specified area:
-        *   It calls `ForceReturnToPool()` on the projectile's `ClientProjectileLifetime` component.
-*   The `IClearable` interface or specific methods on projectile scripts (as mentioned in previous versions of this document for `StageSmallBulletMoverScript`) can be seen as conventions leading to this `ForceReturnToPool()` call on `ClientProjectileLifetime`.
+Projectiles can be cleared by various game mechanics, such as player deathbombs or spellcard activation. The implementation details vary based on the effect.
+
+*   **Spellcard Activation Clear (Levels 2, 3, 4):**
+    *   **Server Initiation:** `ServerAttackSpawner.TriggerSpellcardClear` calculates clear parameters (caster position, radius scaled by spell level, caster role) and sends them to all clients via `TriggerLocalClearEffectClientRpc`.
+    *   **Client-Side Execution (`ClientSpellcardExecutor.TriggerLocalClearEffectClientRpc`):**
+        *   Each client performs a local `Physics2D.OverlapCircleAll` using the received parameters.
+        *   It iterates through colliders:
+            *   If `collider.gameObject.layer == LayerMask.NameToLayer("EnemyProjectiles")`, it gets the `ClientProjectileLifetime` component from the bullet and calls `ForceReturnToPool()`. This clears all bullet types on this layer within the radius, regardless of their original owner.
+            *   It also checks for `ClientFairyHealth` or `ClientSpiritController` components to clear the caster's own entities if their `OwningPlayerRole` matches the caster's role.
+            *   Additionally, it checks for `ReimuExtraAttackOrb_Client` and `MarisaExtraAttackLaser_Client` components. If found and their `AttackerClientId` does *not* match the caster's resolved client ID, their `ClientProjectileLifetime` is retrieved and `ForceReturnToPool()` is called to clear these hostile extra attacks.
+    *   Level 2/3 spellcard activations do *not* clear illusions via this client-side RPC. Level 4 activations have an additional server-side step to despawn enemy illusions targeting the caster.
+
+*   **Enemy Death Shockwave Clear (e.g., `ClientFairyShockwave`):**
+    *   When an enemy (like a Fairy) dies, it can emit a shockwave (`ClientFairyShockwave`).
+    *   This shockwave's `OnTriggerStay2D` checks for collisions with other entities.
+    *   If it collides with a projectile that has a `StageSmallBulletMoverScript` component:
+        *   It checks if `bullet.OwningPlayerRole != shockwaveOwnerRole && bullet.OwningPlayerRole != PlayerRole.None`.
+        *   If the bullet belongs to the opposing player, the shockwave script will typically get the bullet's `ClientProjectileLifetime` component and call `ForceReturnToPool()` on it.
+    *   This ensures enemy shockwaves only clear the *other* player's projectiles (and other entities like fairies/spirits based on similar ownership checks).
+
+*   **Player Deathbomb Clear:**
+    *   The player deathbomb (`PlayerDeathBomb.ClearObjectsInRadiusClientRpc`) uses a similar mechanism to the spellcard activation clear.
+    *   It performs a local `Physics2D.OverlapCircleAll`.
+    *   It clears objects based on ownership:
+        *   `ClientFairyHealth` or `ClientSpiritController`: Clears if `OwningPlayerRole == bombingPlayerRole`.
+        *   `StageSmallBulletMoverScript`: Clears if `OwningPlayerRole == bombingPlayerRole`.
+    *   This is designed to clear the bombing player's *own* entities and hostile projectiles attributed to them.
+
+In all cases, the end result for a cleared projectile is that its `ClientProjectileLifetime.ForceReturnToPool()` method is called, deactivating it and returning it to the `ClientGameObjectPool`.
 
 ## Collision Detection and Damage Application
 
@@ -209,7 +236,7 @@ Player charge attacks are special abilities unique to each character, triggered 
 *   **`CharacterStats.cs`:** (Assumed) Server-authoritative player health. Client-side scripts would report hits to it.
 *   **`PlayerAttackRelay.cs` & `EffectNetworkHandler.cs`:** (If still used for stage/retaliation bullets) Handle their server-side initiation and RPC dispatch.
 *   **`ClientSpiritTimeoutAttack.cs`:** Client-side; handles activated spirit timeout, spawns "StageLargeBullet" from pool, and initializes their `StageSmallBulletMoverScript` for movement and lifetime.
-*   **`StageSmallBulletMoverScript.cs`:** Client-side movement script for stage-type bullets, including those spawned by `EffectNetworkHandler` (retaliation) and `ClientSpiritTimeoutAttack`.
+*   **`StageSmallBulletMoverScript.cs`:** Client-side movement script for stage-type bullets, including those spawned by `EffectNetworkHandler` (retaliation) and `ClientSpiritTimeoutAttack`. Its `Initialize()` method (or a dedicated `InitializeOwnerRole` method) should be used to set the `OwningPlayerRole` for these bullets. Spellcard bullets typically do not use this script for movement or role assignment, relying on `ClientBulletConfigurer` and layer checks instead. Note the `OnEnable()` method no longer resets the role.
 *   **`HomingTalisman_Client.cs`:** Client-side script for Reimu's charge attack talismans. Manages seeking behavior, targeting based on `ownerRole`, collision with client-side enemies, and its own lifetime/pooling.
 *   **`IllusionLaser_Client.cs`:** Client-side script used for Marisa's charge attack laser (and illusion lasers). For Marisa, it spawns from a defined point, has a fixed `laserLength`, follows the owner's X/Y position, deals damage over time, and manages its lifetime/pooling.
 *   **`ReimuChargeAttackHandler_Client.cs`:** (New) On Reimu's prefab. Receives RPC to spawn client-side Homing Talismans.
@@ -220,7 +247,7 @@ Player charge attacks are special abilities unique to each character, triggered 
 
 *   How are basic player direct attacks (non-spellcard shots) handled? Do they use the old `BulletMovement.cs` or are they now a type of `SpellcardAction`?
 *   How do illusion-fired bullets register damage against a player? Which client-side script on the player detects the hit, and what RPC does it send to the server?
-*   Are stage-specific/retaliation bullets (from `PlayerAttackRelay`) still using bespoke movement scripts (e.g., `StageSmallBulletMoverScript`), or do they also leverage `ClientBulletConfigurer`?
+*   Are stage-specific/retaliation bullets (from `PlayerAttackRelay`) still using bespoke movement scripts (e.g., `StageSmallBulletMoverScript`), or do they also leverage `ClientBulletConfigurer`? (Answered: Yes, `StageSmallBulletMoverScript` is used. Ensure its initialization includes setting `OwningPlayerRole`).
 *   Review `PlayerHitbox` and related scripts to confirm the illusion-to-player damage pathway.
 
 This rewrite should align `projectile_system.md` much better with the recent refactoring. 

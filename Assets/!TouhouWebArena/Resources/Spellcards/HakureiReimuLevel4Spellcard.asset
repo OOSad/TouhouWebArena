@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   illusionPrefab: {fileID: 6341418190357833515, guid: ea724cabd1330d84f89e40ac7c7d24bb, type: 3}
   duration: 15
-  health: 10
+  health: 75
   movementAreaHeight: 2
   minMoveDelay: 2
   maxMoveDelay: 3.5

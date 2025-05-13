@@ -26,18 +26,21 @@ public class ClientExtraAttackManager : NetworkBehaviour // Inherit from Network
     [SerializeField] private Transform marisaLaserSpawnAnchorP1;
     [Tooltip("Assign the Transform that marks the bottom-center spawn point for Marisa's laser when targeting Player 2.")]
     [SerializeField] private Transform marisaLaserSpawnAnchorP2;
-    [Tooltip("The horizontal random spread (total width) for Marisa's laser spawn point around its anchor.")]
-    [SerializeField] private float marisaLaserXSpread = 0.5f;
+    
+    // This is now primarily used by the server if it needs a reference spread for its own calculations,
+    // but the primary width will come from MarisaExtraAttackSpawner.
+    [Tooltip("Reference horizontal random spread (total width) for Marisa's laser. Server might use its own source of truth from MarisaExtraAttackSpawner.")]
+    [SerializeField] public float marisaLaserXSpread = 0.5f; // Made public for server access if needed, though server should use its own spawner's width
 
     [Header("Reimu Orb Specific Parameters (for sync)")]
     [Tooltip("Min initial sideways force for Reimu's Orb. Should match prefab.")]
-    [SerializeField] private float reimuOrbInitialSidewaysForceMin = 2f;
+    [SerializeField] public float reimuOrbInitialSidewaysForceMin = 2f; // Made public
     [Tooltip("Max initial sideways force for Reimu's Orb. Should match prefab.")]
-    [SerializeField] private float reimuOrbInitialSidewaysForceMax = 4f;
+    [SerializeField] public float reimuOrbInitialSidewaysForceMax = 4f; // Made public
 
     [Header("Marisa Laser Specific Parameters (for sync)")]
     [Tooltip("Max tilt angle for Marisa's Laser. Should match prefab.")]
-    [SerializeField] private float marisaLaserMaxTiltAngle = 10f;
+    [SerializeField] public float marisaLaserMaxTiltAngle = 10f; // Made public
 
     private void Awake()
     {
@@ -66,10 +69,6 @@ public class ClientExtraAttackManager : NetworkBehaviour // Inherit from Network
         string killerCharacterName = attackerPlayerData.SelectedCharacter.ToString();
         PlayerRole killerPlayerRole = attackerPlayerData.Role;
 
-        // Debug.Log($"[ClientExtraAttackManager] Trigger fairy killed by {killerCharacterName} (Role: {killerPlayerRole}, ClientId: {attackerOwnerClientId}) on this client's simulation.");
-
-        // If the local player *is* the attacker, generate random values and inform the server.
-        // All clients (including this one) will spawn the attack when the Relay RPC is received.
         if (attackerOwnerClientId == NetworkManager.Singleton.LocalClientId)
         {
             if (PlayerExtraAttackRelay.LocalInstance != null)
@@ -86,32 +85,30 @@ public class ClientExtraAttackManager : NetworkBehaviour // Inherit from Network
 
                 // Generate random values for Reimu's attack
                 float reimuSpawnX = Random.Range(targetPlayAreaBounds.min.x + 0.5f, targetPlayAreaBounds.max.x - 0.5f);
-                float reimuSpawnY = targetPlayAreaBounds.max.y - Random.Range(0.5f, 1.5f);
+                float reimuSpawnY = targetPlayAreaBounds.max.y - Random.Range(0.5f, 1.5f); // Spawn near top of target area
                 float reimuSidewaysForce = Random.Range(reimuOrbInitialSidewaysForceMin, reimuOrbInitialSidewaysForceMax);
                 if (Random.value < 0.5f) reimuSidewaysForce *= -1;
 
                 // Generate random values for Marisa's attack
+                // The marisaSpawnXOffset is an OFFSET from the target's play area center.
                 float marisaSpawnXOffset = Random.Range(-marisaLaserXSpread / 2f, marisaLaserXSpread / 2f);
                 float marisaTiltAngle = 0f;
-                if (Random.value < 0.3f)
+                if (Random.value < 0.3f) // 30% chance of tilt
                 {
                     marisaTiltAngle = Random.Range(-marisaLaserMaxTiltAngle, marisaLaserMaxTiltAngle);
                 }
 
                 // Debug.Log($"[ClientExtraAttackManager] Local player {NetworkManager.Singleton.LocalClientId} ({killerCharacterName}) killed trigger. Informing server with generated params.");
                 
-                Vector2 reimuActualSpawnPos = new Vector2(reimuSpawnX, reimuSpawnY);
-                // Note: marisaSpawnXOffset is used by RelayExtraAttackToClientsClientRpc, which is called by the server
-                // after this ServerRpc. The PlayerExtraAttackRelay.InformServerOfExtraAttackTriggerServerRpc signature
-                // was changed to only take Vector2 spawnPos (for Reimu), reimuSidewaysForce, and marisaTiltAngle.
-
                 PlayerExtraAttackRelay.LocalInstance.InformServerOfExtraAttackTriggerServerRpc(
                     killerCharacterName, 
                     killerPlayerRole, 
                     attackerOwnerClientId,
-                    reimuActualSpawnPos,    // ARG 4: Vector2 for Reimu's spawn
-                    reimuSidewaysForce,     // ARG 5: Reimu's sideways force
-                    marisaTiltAngle         // ARG 6: Marisa's tilt angle
+                    reimuSpawnX,          // Reimu's absolute spawn X
+                    reimuSpawnY,          // Reimu's absolute spawn Y
+                    reimuSidewaysForce,   // Reimu's sideways force
+                    marisaSpawnXOffset,   // Marisa's X *OFFSET*
+                    marisaTiltAngle       // Marisa's tilt angle
                 );
             }
             else
@@ -119,25 +116,23 @@ public class ClientExtraAttackManager : NetworkBehaviour // Inherit from Network
                 Debug.LogError("[ClientExtraAttackManager] PlayerExtraAttackRelay.LocalInstance is null. Cannot inform server.");
             }
         }
-        // The local spawn that was here previously: SpawnExtraAttack(killerCharacterName, killerPlayerRole, attackerOwnerClientId);
-        // is REMOVED. All spawning now happens via RelayExtraAttackToClientsClientRpc to ensure synchronized parameters.
     }
 
     [ClientRpc]
     public void RelayExtraAttackToClientsClientRpc(string characterName, PlayerRole attackerPlayerRole, ulong originalAttackerClientId,
                                                  float pReimuSpawnX, float pReimuSpawnY, float pReimuSidewaysForce,
-                                                 float pMarisaSpawnXOffset, float pMarisaTiltAngle)
+                                                 float pMarisaSpawnXOffset, float pMarisaTiltAngle) // Parameter is Marisa's X OFFSET
     {
         // Debug.Log($"[ClientExtraAttackManager] Received RelayExtraAttackToClientsClientRpc. Killer: {characterName} ({attackerPlayerRole}), Original Attacker CID: {originalAttackerClientId}, My CID: {NetworkManager.Singleton.LocalClientId}. Using provided params.");
         
         SpawnExtraAttackInternal(characterName, attackerPlayerRole, originalAttackerClientId, 
                                  pReimuSpawnX, pReimuSpawnY, pReimuSidewaysForce, 
-                                 pMarisaSpawnXOffset, pMarisaTiltAngle);
+                                 pMarisaSpawnXOffset, pMarisaTiltAngle); // Pass Marisa's X OFFSET
     }
 
     private void SpawnExtraAttackInternal(string characterName, PlayerRole attackerPlayerRole, ulong actualAttackerClientId,
                                           float pReimuSpawnX, float pReimuSpawnY, float pReimuSidewaysForce,
-                                          float pMarisaSpawnXOffset, float pMarisaTiltAngle)
+                                          float pMarisaSpawnXOffset, float pMarisaTiltAngle) // Parameter is Marisa's X OFFSET
     {
         PlayerRole targetPlayerRole = (attackerPlayerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
         Transform targetSpawnCenterTransform = SpawnAreaManager.Instance.GetSpawnCenterForTargetedPlayer(targetPlayerRole);
@@ -165,6 +160,7 @@ public class ClientExtraAttackManager : NetworkBehaviour // Inherit from Network
             {
                 Debug.LogError($"[CEA MGR] Marisa laser spawn anchor for {targetPlayerRole} is not assigned!"); return;
             }
+            // Pass pMarisaSpawnXOffset directly
             SpawnMarisaExtraAttackInternal(laserSpecificSpawnAnchor, targetPlayAreaBounds, actualAttackerClientId, pMarisaSpawnXOffset, pMarisaTiltAngle);
         }
         else
@@ -193,16 +189,24 @@ public class ClientExtraAttackManager : NetworkBehaviour // Inherit from Network
     }
 
     private void SpawnMarisaExtraAttackInternal(Transform specificLaserSpawnAnchor, PlayAreaBounds targetPlayAreaBounds, ulong attackerClientId,
-                                                float spawnXOffset, float predeterminedTiltAngle)
+                                                float spawnXOffset, float predeterminedTiltAngle) // Parameter is Marisa's X OFFSET
     {
         if (marisaExtraAttackPrefab.GetComponent<PooledObjectInfo>() == null) { Debug.LogError("Marisa prefab missing PooledObjectInfo"); return; }
         string prefabId = marisaExtraAttackPrefab.GetComponent<PooledObjectInfo>().PrefabID;
         GameObject laserGO = ClientGameObjectPool.Instance.GetObject(prefabId);
         if (laserGO == null) { Debug.LogError($"[CEA MGR] Failed to get Marisa EA Laser ('{prefabId}') from pool."); return; }
 
-        float finalSpawnX = specificLaserSpawnAnchor.position.x + spawnXOffset;
-        finalSpawnX = Mathf.Clamp(finalSpawnX, targetPlayAreaBounds.min.x, targetPlayAreaBounds.max.x); // Still clamp based on overall bounds
+        // Calculate the center of the target's play area for the X coordinate
+        float targetPlayAreaCenterX = (targetPlayAreaBounds.min.x + targetPlayAreaBounds.max.x) / 2f;
+        
+        // Apply the pre-calculated random offset to this center
+        float finalSpawnX = targetPlayAreaCenterX + spawnXOffset; // spawnXOffset is pMarisaSpawnXOffset
 
+        // Ensure the final X position is still clamped within the target's overall play area boundaries
+        // (targetPlayAreaBounds here is the general one from SpawnAreaManager for the opponent)
+        finalSpawnX = Mathf.Clamp(finalSpawnX, targetPlayAreaBounds.min.x, targetPlayAreaBounds.max.x);
+
+        // Use the Y and Z from the specificLaserSpawnAnchor (marisaLaserSpawnAnchorP1 or P2 from this script)
         Vector3 spawnPosition = new Vector3(finalSpawnX, specificLaserSpawnAnchor.position.y, specificLaserSpawnAnchor.position.z);
         laserGO.transform.position = spawnPosition;
         laserGO.SetActive(true);

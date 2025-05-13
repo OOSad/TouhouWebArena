@@ -532,7 +532,6 @@ GameObject:
   m_Component:
   - component: {fileID: 103275579}
   - component: {fileID: 103275581}
-  - component: {fileID: 103275580}
   - component: {fileID: 103275582}
   m_Layer: 0
   m_Name: RegistryService
@@ -556,19 +555,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1110497015}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &103275580
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 103275578}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4f7752d511edbc4e819740023758d07, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &103275581
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6462,6 +6448,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f35a3e9f3192e641ac504ca822a7025, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &1183671269
 GameObject:
   m_ObjectHideFlags: 0
@@ -10737,8 +10724,6 @@ GameObject:
   - component: {fileID: 1941435761}
   - component: {fileID: 1941435766}
   - component: {fileID: 1941435760}
-  - component: {fileID: 1941435759}
-  - component: {fileID: 1941435758}
   - component: {fileID: 1941435762}
   - component: {fileID: 1941435763}
   - component: {fileID: 1941435764}
@@ -10765,38 +10750,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1110497015}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1941435758
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1941435756}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d1fff491341b404e9aa18c90814f517, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  player1TargetExtraAttackSpawnArea: {fileID: 474647436}
-  player2TargetExtraAttackSpawnArea: {fileID: 881664902}
-  extraAttackSpawnWidth: 7
---- !u!114 &1941435759
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1941435756}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 77f62aa7643492b4896804a1b677aee2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  spawnZone1: {fileID: 1559253378}
-  spawnZone2: {fileID: 2008785425}
-  spawnZoneSize: {x: 6, y: 1}
 --- !u!114 &1941435760
 MonoBehaviour:
   m_ObjectHideFlags: 0

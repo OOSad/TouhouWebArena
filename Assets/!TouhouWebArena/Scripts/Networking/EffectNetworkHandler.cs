@@ -76,7 +76,7 @@ public class EffectNetworkHandler : NetworkBehaviour
         StageSmallBulletMoverScript mover = bulletInstance.GetComponent<StageSmallBulletMoverScript>();
         if (mover != null)
         {
-            mover.Initialize(direction, actualSpeed, mover.MaxLifetime);
+            mover.Initialize(direction, actualSpeed, mover.MaxLifetime, targetedPlayerRole);
         }
         else
         {

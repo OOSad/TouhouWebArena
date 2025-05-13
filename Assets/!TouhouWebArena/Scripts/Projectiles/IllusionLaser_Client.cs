@@ -141,7 +141,7 @@ public class IllusionLaser_Client : MonoBehaviour
         ClientSpiritController spiritController = other.GetComponent<ClientSpiritController>();
         if (spiritController != null)
         {
-            enemyOwningSide = spiritController.GetOwningPlayerRole();
+            enemyOwningSide = spiritController.OwningPlayerRole;
             isValidEnemy = true;
         }
         else

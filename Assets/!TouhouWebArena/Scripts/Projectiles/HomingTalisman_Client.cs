@@ -143,7 +143,7 @@ public class HomingTalisman_Client : MonoBehaviour
             ClientSpiritController spiritController = obj.GetComponent<ClientSpiritController>();
             if (spiritController != null)
             {
-                enemyOwningSide = spiritController.GetOwningPlayerRole(); // ASSUMPTION: This method exists
+                enemyOwningSide = spiritController.OwningPlayerRole;
                 isValidEnemyType = true;
             }
             else
@@ -185,7 +185,7 @@ public class HomingTalisman_Client : MonoBehaviour
         if (spiritHealth != null)
         {
             ClientSpiritController spiritController = other.GetComponent<ClientSpiritController>();
-            if (spiritController != null) enemyOwningSide = spiritController.GetOwningPlayerRole(); // ASSUMPTION
+            if (spiritController != null) enemyOwningSide = spiritController.OwningPlayerRole;
             
             if (enemyOwningSide == _ownerPlayerRole)
             {

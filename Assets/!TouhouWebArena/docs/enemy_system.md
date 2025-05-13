@@ -66,10 +66,14 @@ The Spirit system has been refactored to a server-triggered, client-simulated mo
 *   **Core Client-Side Components:**
     *   `PooledObjectInfo.cs`: Stores `PrefabID` for `ClientGameObjectPool`.
     *   `SplineWalker.cs`: Handles movement along a predefined path, initialized by data from the spawn RPC.
-    *   `ClientFairyHealth.cs`: Manages current health. Takes damage from projectiles/shockwaves. On death (health <= 0):
-        *   Spawns a `ClientFairyShockwave` from `ClientGameObjectPool` (passing damage, radius, duration, and original killer's ID).
-        *   If the damage was dealt by a bullet from the *local* player (`attackerOwnerClientId == LocalClientId`), it calls `PlayerAttackRelay.LocalInstance.ReportFairyKillServerRpc()`.
-        *   Notifies `ClientFairyController` of death (optional, if controller needs to stop other logic).
+    *   `ClientFairyHealth.cs`: Manages current health and **ownership**.
+        *   `Initialize(PlayerRole ownerRole)`: Sets the `_owningPlayerRole` field.
+        *   Takes damage from projectiles/shockwaves. When taking damage, it passes its `_owningPlayerRole` to the shockwave if one is spawned.
+        *   On death (health <= 0):
+            *   Spawns a `ClientFairyShockwave` from `ClientGameObjectPool`, passing damage, radius, duration, the original killer's ID, and **its own `_owningPlayerRole`**.
+            *   If the damage was dealt by a bullet from the *local* player (`attackerOwnerClientId == LocalClientId`), it calls `PlayerAttackRelay.LocalInstance.ReportFairyKillServerRpc()`.
+            *   Notifies `ClientFairyController` of death (optional, if controller needs to stop other logic).
+        *   `OwningPlayerRole` (Property): Returns the stored `_owningPlayerRole`.
     *   `ClientFairyController.cs`: Primarily handles `SplineWalker.OnPathCompleted` to return the fairy to `ClientGameObjectPool`. May also handle `OnTriggerEnter2D` for direct collision with player shots as an alternative to `BulletMovement` handling it.
     *   `CircleCollider2D` (Trigger): For detecting collisions with player shots or shockwave areas.
     *   Visuals: `SpriteRenderer`, `Animator`.
@@ -87,11 +91,18 @@ Spirits are client-simulated entities with distinct behaviors before and after a
 *   **Core Client-Side Components (on the Spirit prefab):**
     *   `PooledObjectInfo.cs`: Stores `PrefabID` (e.g., "Spirit") for `ClientGameObjectPool`.
     *   `ClientSpiritController.cs`:
-        *   **Responsibilities:** Manages overall spirit behavior, movement, and activation state.
-        *   `Initialize()`: Sets initial parameters like `owningPlayerRole`, `shouldAim`, `targetNetworkObjectId`, `initialVelocity`. `currentDirection` defaults to `Vector2.down`. If `shouldAim` is true and `targetNetworkObjectId` is valid (not 0), it attempts to find the target's `Transform` using `NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(_targetNetworkObjectId, out NetworkObject playerNetObj)` and aims towards it. If not found, `shouldAim` becomes false.
+        *   **Responsibilities:** Manages overall spirit behavior, movement, activation state, and **ownership**.
+        *   `Initialize()`: Sets initial parameters including the `_owningPlayerRole`. `currentDirection` defaults to `Vector2.down`. If `shouldAim` is true and `targetNetworkObjectId` is valid, it aims towards the target. Stores the `_owningPlayerRole` passed in.
         *   `Update()`:
-            *   If not activated, moves in `_currentDirection` at `_currentSpeed`.
-            *   If activated, moves upwards (`Vector2.up`) and accelerates from `activatedInitialUpwardSpeed` to `activatedMaxUpwardSpeed` using `activatedAcceleration`.
+            *   Calculates potential `nextPosition` based on current velocity and `Time.deltaTime`.
+            *   **Centerline Check:** Determines if `nextPosition.x` would cross the X=0 boundary based on `_owningPlayerRole` (e.g., if role is P1 and `nextPosition.x <= 0`, or role is P2 and `nextPosition.x >= 0`).
+            *   If crossing centerline:
+                *   Stops the timeout coroutine (`_timeoutAttack.StopTimeoutCoroutine()`).
+                *   Calls `_spiritHealth.ForceReturnToPool()` to despawn immediately.
+                *   Returns early from `Update()`.
+            *   If not crossing centerline:
+                *   Updates `transform.position = nextPosition`.
+                *   Handles movement logic (downwards if not activated; upwards with acceleration if activated).
         *   `ActivateSpirit()`:
             *   Called by `ReimuScopeStyleController` or `MarisaScopeStyleController` via `OnTriggerEnter2D`.
             *   Sets `_isActivated = true`.
@@ -100,6 +111,7 @@ Spirits are client-simulated entities with distinct behaviors before and after a
             *   Calls `_spiritHealth.OnActivated()` to set HP to 1.
             *   Calls `_timeoutAttack.StartTimeout(duration, _targetNetworkObjectId)` (duration is e.g., 1.5s). If the spirit was initially aimed, this `_targetNetworkObjectId` is passed; otherwise, `0` is passed.
         *   `Deinitialize()`: Resets state when returned to pool.
+        *   `OwningPlayerRole` (Property): Returns the stored `_owningPlayerRole`.
         *   **Serialized Fields:** `normalSpiritVisual`, `activatedSpiritVisual`, `activatedInitialUpwardSpeed`, `activatedMaxUpwardSpeed`, `activatedAcceleration`.
     *   `ClientSpiritHealth.cs`:
         *   **Responsibilities:** Manages spirit health, damage taking, and death sequence.
@@ -114,7 +126,7 @@ Spirits are client-simulated entities with distinct behaviors before and after a
             *   Gets a shockwave prefab (e.g., "FairyShockwave") from `ClientGameObjectPool`.
             *   Sets its position.
             *   Gets `ClientFairyShockwave` component.
-            *   Initializes it, using `activatedSpiritShockwaveMaxRadius` if `_isActivated` is true, otherwise `normalSpiritShockwaveMaxRadius`.
+            *   Initializes it, passing damage, radius (scaled if activated), duration, killer ID, and importantly, the **Spirit's `_owningPlayerRole`** (retrieved from `ClientSpiritController`).
         *   `ForceReturnToPool()`: Returns object to pool *without* triggering `Die()` (used by timeout).
         *   **Serialized Fields:** `shockwavePrefabId`, `normalSpiritShockwaveMaxRadius`, `activatedSpiritShockwaveMaxRadius`, `shockwaveDuration`, `shockwaveDamage`, `shockwaveInitialRadius`.
     *   `ClientSpiritTimeoutAttack.cs`:
@@ -186,7 +198,7 @@ Enemies are "cleared" by taking lethal damage.
 *   **Related Systems:**
     *   `ClientGameObjectPool.cs`: Pools all client-side enemies (Fairies, Spirits) and their effects (shockwaves, spirit timeout bullets).
     *   `PlayerAttackRelay.cs`: Receives kill reports from `ClientFairyHealth` and `ClientSpiritHealth`.
-    *   `ClientFairyShockwave.cs`: Spawned on fairy death, can damage other enemies. (Also used by spirits for their death shockwave).
+    *   `ClientFairyShockwave.cs`: Spawned on fairy/spirit death. Takes owner's `PlayerRole` on init. `OnTriggerStay2D` checks collided object's `OwningPlayerRole` (from `ClientFairyHealth`, `ClientSpiritController`, `StageSmallBulletMoverScript`) and only applies damage/clearing if roles *do not match*.
     *   `PathManager.cs`: Provides path data to clients for fairies.
     *   `ReimuScopeStyleController.cs` / `MarisaScopeStyleController.cs`: Their `OnTriggerEnter2D` methods call `ClientSpiritController.ActivateSpirit()`.
     *   `BulletMovement.cs`: Modified to apply damage to `ClientSpiritHealth` upon collision with spirits.

@@ -135,8 +135,43 @@ using System.Collections;
                 }
             }
             
-            _cachedTransform.Translate(_currentDirection * _currentSpeed * Time.deltaTime);
+            // --- Calculate desired movement for this frame ---
+            Vector3 desiredMovement = _currentDirection * _currentSpeed * Time.deltaTime;
+            Vector3 potentialPosition = _cachedTransform.position + desiredMovement;
+            float boundaryX = 0.0f; // Centerline boundary
 
+            // --- Boundary Check --- 
+            bool crossedBoundary = false;
+            if (_owningPlayerRole == PlayerRole.Player1 && potentialPosition.x > boundaryX) // P1 spirit crossed right
+            {
+                crossedBoundary = true;
+            }
+            else if (_owningPlayerRole == PlayerRole.Player2 && potentialPosition.x < boundaryX) // P2 spirit crossed left
+            {
+                crossedBoundary = true;
+            }
+
+            // --- Apply translation OR despawn if boundary crossed ---
+            if (crossedBoundary)
+            {
+                // Despawn if boundary is crossed
+                // Debug.Log($"[ClientSpiritController] Spirit {gameObject.name} (Role: {_owningPlayerRole}) hit boundary X=0. Returning to pool.");
+                if (_normalLifetimeCoroutine != null) 
+                {
+                    StopCoroutine(_normalLifetimeCoroutine);
+                    _normalLifetimeCoroutine = null;
+                }
+                if (_spiritHealth != null) _spiritHealth.ForceReturnToPool();
+                else if (ClientGameObjectPool.Instance != null) ClientGameObjectPool.Instance.ReturnObject(gameObject);
+                return; // Exit Update early after despawning
+            }
+            else
+            {
+                // Apply original movement if boundary not crossed
+                _cachedTransform.Translate(desiredMovement);
+            }
+
+            // --- Off-screen check (after movement) ---
             if (!_isActivated) // Off-screen check for non-activated spirits
             {
                 Vector3 pos = _cachedTransform.position;
@@ -216,9 +251,51 @@ using System.Collections;
             if (_timeoutAttack != null) _timeoutAttack.StopTimeoutAttack(); // Also ensure timeout is stopped
         }
 
-        public PlayerRole GetOwningPlayerRole()
+        /// <summary>
+        /// Public method to allow external systems (like the spellcard clear RPC)
+        /// to force this spirit back to the pool.
+        /// Stops the lifetime coroutine and delegates to ClientSpiritHealth.
+        /// </summary>
+        public void ForceReturnToPool()
         {
-            return _owningPlayerRole;
+            if (!_isInitialized) return; // Don't do anything if not initialized
+
+            // Stop lifetime coroutine if running
+            if (_normalLifetimeCoroutine != null) 
+            {
+                StopCoroutine(_normalLifetimeCoroutine);
+                _normalLifetimeCoroutine = null;
+            }
+            
+            // Stop timeout attack coroutine if running
+            if (_timeoutAttack != null) 
+            {
+                _timeoutAttack.StopTimeoutAttack();
+            }
+
+            // Delegate the actual return to the health component
+            if (_spiritHealth != null) 
+            {
+                _spiritHealth.ForceReturnToPool();
+            }
+            else 
+            {
+                // Fallback if health component is missing for some reason
+                Debug.LogWarning($"[ClientSpiritController] ForceReturnToPool called on {gameObject.name}, but _spiritHealth is null. Returning via ClientGameObjectPool directly.");
+                if (ClientGameObjectPool.Instance != null) 
+                {
+                    ClientGameObjectPool.Instance.ReturnObject(gameObject);
+                }
+                else 
+                {
+                    Destroy(gameObject); // Ultimate fallback
+                }
+            }
+
+            // Ensure controller state is reset for potential reuse (though health component handles GO disable)
+            Deinitialize(); 
         }
+
+        public PlayerRole OwningPlayerRole => _owningPlayerRole;
     }
 // } 

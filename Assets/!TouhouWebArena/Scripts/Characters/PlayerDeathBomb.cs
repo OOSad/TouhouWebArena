@@ -56,7 +56,7 @@ public class PlayerDeathBomb : NetworkBehaviour
                 // Existing role check and clear logic for non-stage bullets
                 PlayerRole objectRole = PlayerRole.None;
                 bool roleFound = false;
-                if (clearable is SpiritController spirit) { objectRole = spirit.GetOwnerRole(); roleFound = true; }
+                if (clearable is ClientSpiritController spirit) { roleFound = false; } // Placeholder - This server logic might be outdated
                 else if (clearable is FairyController fairy) { objectRole = fairy.GetOwnerRole(); roleFound = true; }
                 // else if (clearable is TouhouWebArena.Spellcards.Behaviors.NetworkBulletLifetime spellBullet) 
                 // {
@@ -104,19 +104,30 @@ public class PlayerDeathBomb : NetworkBehaviour
                 ClientFairyHealth fairyHealth = activeGO.GetComponent<ClientFairyHealth>();
                 if (fairyHealth != null)
                 {
-                    // Debug.Log($"[Client DeathBomb] Damaging Fairy {activeGO.name} with bomb from client {bombingPlayerClientId}.");
-                    fairyHealth.TakeDamage(BOMB_DAMAGE_TO_ENEMIES, bombingPlayerClientId); // Pass bomber's ID
-                    objectsClearedCount++; // Counting cleared/damaged enemies too
+                    if (fairyHealth.OwningPlayerRole == bombingPlayerRole) 
+                    {
+                        // Debug.Log($"[Client DeathBomb] Damaging Fairy {activeGO.name} (Role: {fairyHealth.OwningPlayerRole}) with bomb from Role: {bombingPlayerRole}.");
+                        fairyHealth.TakeDamage(BOMB_DAMAGE_TO_ENEMIES, bombingPlayerClientId); // Pass bomber's ID
+                        objectsClearedCount++; // Counting cleared/damaged enemies too
+                    }
+                    // else Debug.Log($"[Client DeathBomb] Skipping Fairy {activeGO.name} (Role: {fairyHealth.OwningPlayerRole}) - Bomb from Role: {bombingPlayerRole}.");
                     continue;
                 }
 
-                // ADDED: Logic for ClientSpiritHealth
+                // Logic for ClientSpiritHealth (assuming it also needs a role check)
                 ClientSpiritHealth spiritHealth = activeGO.GetComponent<ClientSpiritHealth>();
                 if (spiritHealth != null)
                 {
-                    // Debug.Log($"[Client DeathBomb] Damaging Spirit {activeGO.name} with bomb from client {bombingPlayerClientId}.");
-                    spiritHealth.TakeDamage(BOMB_DAMAGE_TO_ENEMIES, bombingPlayerClientId);
-                    objectsClearedCount++; // Counting cleared/damaged enemies too
+                    // *** ADDED ROLE CHECK FOR SPIRITS *** 
+                    // Need to get role from ClientSpiritController, assuming ClientSpiritHealth has access or controller ref
+                    ClientSpiritController spiritController = activeGO.GetComponent<ClientSpiritController>(); // Get controller
+                    if (spiritController != null && spiritController.OwningPlayerRole == bombingPlayerRole)
+                    {
+                        // Debug.Log($"[Client DeathBomb] Damaging Spirit {activeGO.name} (Role: {spiritController.OwningPlayerRole}) with bomb from Role: {bombingPlayerRole}.");
+                        spiritHealth.TakeDamage(BOMB_DAMAGE_TO_ENEMIES, bombingPlayerClientId);
+                        objectsClearedCount++; // Counting cleared/damaged enemies too
+                    }
+                    // else Debug.Log($"[Client DeathBomb] Skipping Spirit {activeGO.name} (Role: {spiritController?.OwningPlayerRole}) - Bomb from Role: {bombingPlayerRole}.");
                     continue;
                 }
 

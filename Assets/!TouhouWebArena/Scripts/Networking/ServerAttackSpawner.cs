@@ -3,6 +3,7 @@ using Unity.Netcode;
 using System.Collections;
 using TouhouWebArena;
 using TouhouWebArena.Spellcards;
+using TouhouWebArena.Spellcards.Behaviors;
 using System.Collections.Generic;
 using Unity.Collections; // For FixedString
 
@@ -295,7 +296,10 @@ public class ServerAttackSpawner : NetworkBehaviour
                 return;
             }
 
-            illusionNetworkObject.Spawn(true);
+            // MODIFIED: Spawn with ownership assigned to the casting player
+            illusionNetworkObject.SpawnWithOwnership(senderClientId);
+            // The ServerIllusionOrchestrator on the prefab will then manage the illusion's lifecycle and attacks.
+            // --- END MODIFICATION ---
 
             ServerIllusionOrchestrator orchestrator = illusionInstance.GetComponent<ServerIllusionOrchestrator>();
             if (orchestrator == null)
@@ -334,21 +338,21 @@ public class ServerAttackSpawner : NetworkBehaviour
 
             if (_spellcardNetworkHandler == null)
             {
-                Debug.LogError("[ServerAttackSpawner] SpellcardNetworkHandler is null. Cannot send ExecuteSpellcardClientRpc for Lv{spellLevel}.");
+                Debug.LogError($"[ServerAttackSpawner] SpellcardNetworkHandler Instance is null! Cannot send ExecuteSpellcardClientRpc for Lv{spellLevel}.");
                 return;
             }
 
             ClientRpcParams clientRpcParams = new ClientRpcParams
-            {
-                Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds }
-            };
-
+                { Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds } };
+            // Send the RPC
+            // Assuming targetPlayerId is needed by the client to know who is being attacked
             _spellcardNetworkHandler.ExecuteSpellcardClientRpc(
-                senderClientId,
-                opponentClientId,
-                new FixedString512Bytes(resourcePath),
-                spellLevel,
-                calculatedOffset,
+                senderClientId, // Caster
+                opponentClientId, // Target
+                // SWAPPED spellLevel and resourcePath to fix argument mismatch error
+                resourcePath, // Argument 3: Path (string, likely converted to FixedString internally or receiver handles string)
+                spellLevel, // Argument 4: Level (int)
+                calculatedOffset, // The random offset
                 clientRpcParams
             );
             Debug.Log($"[ServerAttackSpawner] Sent ExecuteSpellcardClientRpc for Lv{spellLevel} from {senderClientId} targeting {opponentClientId}. Path: {resourcePath}, Offset: {calculatedOffset}");
@@ -360,8 +364,10 @@ public class ServerAttackSpawner : NetworkBehaviour
     }
 
     /// <summary>
-    /// **[Server Only]** Triggers a bullet-clearing effect around the player who activated a spellcard.
-    /// The radius scales with the spell level.
+    /// Server-side logic to trigger a positional clear effect around the caster.
+    /// Calculates the clear radius based on the spell level and sends an RPC 
+    /// to all clients (<see cref="ClientSpellcardExecutor.TriggerLocalClearEffectClientRpc"/>) 
+    /// to execute the clear locally.
     /// </summary>
     /// <param name="castingPlayerClientId">The ClientId of the player who cast the spellcard.</param>
     /// <param name="spellLevel">The level (2, 3, or 4) of the spellcard cast.</param>
@@ -369,59 +375,60 @@ public class ServerAttackSpawner : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        // Get caster's player object
-        if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(castingPlayerClientId, out NetworkClient networkClient) || networkClient.PlayerObject == null)
+        PlayerData? casterData = PlayerDataManager.Instance?.GetPlayerData(castingPlayerClientId);
+        if (!casterData.HasValue)
         {
-            Debug.LogError($"[ServerAttackSpawner.TriggerSpellcardClear] Could not find player object for client {castingPlayerClientId}");
+            Debug.LogError($"[ServerAttackSpawner.TriggerSpellcardClear] Could not get PlayerData for caster {castingPlayerClientId}. Cannot determine clear center or role.");
             return;
         }
-        Transform playerTransform = networkClient.PlayerObject.transform;
-        Vector3 playerPosition = playerTransform.position;
+        PlayerRole casterRole = casterData.Value.Role;
 
-        // Determine radius based on spell level
-        float clearRadius = 0f;
+        NetworkObject casterNO = NetworkManager.Singleton.ConnectedClients[castingPlayerClientId].PlayerObject;
+        if (casterNO == null)
+        {
+            Debug.LogError($"[ServerAttackSpawner.TriggerSpellcardClear] Could not find NetworkObject for caster {castingPlayerClientId}. Cannot determine clear center.");
+            return;
+        }
+        Vector3 clearCenter = casterNO.transform.position; 
+
+        // --- MODIFIED: Radius based on spell level ---
+        float clearRadius;
         switch (spellLevel)
         {
-            case 2: clearRadius = 3.0f; break; // Tune these values
-            case 3: clearRadius = 5.0f; break;
-            case 4: clearRadius = 10.0f; break; // Large radius for Lv 4
-            default: 
-                Debug.LogWarning($"[ServerAttackSpawner.TriggerSpellcardClear] Invalid spell level {spellLevel} for clear effect.");
-                return;
+            case 2:
+                clearRadius = 2.5f; // Example radius for Level 2
+                break;
+            case 3:
+                clearRadius = 5.0f; // Example radius for Level 3
+                break;
+            case 4:
+                clearRadius = 10.0f; // Example radius for Level 4 (large screen clear)
+                break;
+            default:
+                Debug.LogWarning($"[ServerAttackSpawner.TriggerSpellcardClear] Unknown spell level {spellLevel}. Defaulting radius to 2.5f.");
+                clearRadius = 2.5f;
+                break;
         }
+        // --- END MODIFICATION ---
 
-        // Determine the role of the player casting the spell
-        PlayerRole castingPlayerRole = PlayerRole.None;
-        if (PlayerDataManager.Instance != null)
-        {
-            PlayerData? data = PlayerDataManager.Instance.GetPlayerData(castingPlayerClientId);
-            if (data.HasValue) { castingPlayerRole = data.Value.Role; }
-        }
-        if (castingPlayerRole == PlayerRole.None)
-        {
-            Debug.LogWarning($"[ServerAttackSpawner.TriggerSpellcardClear] Could not determine PlayerRole for ClientId {castingPlayerClientId}.");
-            // Decide if we should proceed with PlayerRole.None or return
-        }
+        bool forceClear = (spellLevel == 4); 
+        // Currently, the client-side clear for bullets doesn't use 'forceClear' specifically, 
+        // but fairies/spirits are always force-cleared.
+        // This 'forceClear' flag could be used more extensively on the client if needed.
 
-        // Find colliders in radius
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(playerPosition, clearRadius);
-        // Debug.Log($"[ServerAttackSpawner.TriggerSpellcardClear] Level {spellLevel} clear triggered by {castingPlayerClientId}. Found {colliders.Length} colliders in radius {clearRadius}.");
+        // Debug.Log($"[ServerAttackSpawner.TriggerSpellcardClear] Triggering clear for Caster: {casterRole}, Center: {clearCenter}, Radius: {clearRadius}, Level: {spellLevel}, Force: {forceClear}");
 
-        foreach (Collider2D col in colliders)
+        if (ClientSpellcardExecutor.Instance != null)
         {
-            // Check if the collider belongs to a NetworkObject with IClearable
-            NetworkObject netObj = col.GetComponentInParent<NetworkObject>(); // Use GetComponentInParent for flexibility
-            if (netObj != null)
-            {
-                IClearable[] clearables = netObj.GetComponentsInChildren<IClearable>(true); // Include inactive components
-                foreach (IClearable clearable in clearables)
-                {
-                    // Use forced = true for spellcard clear, similar to deathbomb
-                    clearable.Clear(true, castingPlayerRole); 
-                    // Debug.Log($"    Cleared {netObj.name} via IClearable component.");
-                }
-            }
+            ClientRpcParams clientRpcParams = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds } };
+            ClientSpellcardExecutor.Instance.TriggerLocalClearEffectClientRpc(clearCenter, clearRadius, casterRole);
+            // Debug.Log("[ServerAttackSpawner.TriggerSpellcardClear] Sent TriggerLocalClearEffectClientRpc to all clients.");
         }
-        // TODO: Trigger visual effect via ClientRpc?
+        else
+        {
+            Debug.LogError("[ServerAttackSpawner.TriggerSpellcardClear] ClientSpellcardExecutor.Instance is null! Cannot send RPC.");
+        }
     }
+
+    // Method to get the spawn center for the OPPONENT of the caster
 } 

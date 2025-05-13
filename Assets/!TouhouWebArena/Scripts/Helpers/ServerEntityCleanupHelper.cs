@@ -75,7 +75,7 @@ namespace TouhouWebArena.Helpers
             }
 
             // --- Spirits ---
-            SpiritController[] activeSpirits = Object.FindObjectsByType<SpiritController>(FindObjectsSortMode.None);
+            ClientSpiritController[] activeSpirits = Object.FindObjectsByType<ClientSpiritController>(FindObjectsSortMode.None);
             Debug.Log($"[ServerEntityCleanupHelper] Clearing {activeSpirits.Length} spirits.");
             foreach(var spirit in activeSpirits)
             {

@@ -30,7 +30,7 @@ namespace TouhouWebArena.Spellcards.Behaviors
                 return;
             }
 
-            Debug.Log($"[ClientBulletConfigurer] Configuring bullet '{bulletInstance.name}'. Action Lifetime from data: {action.lifetime}");
+            // Debug.Log($"[ClientBulletConfigurer] Configuring bullet '{bulletInstance.name}'. Action Lifetime from data: {action.lifetime}");
 
             ClientProjectileLifetime lifetimeComponent = bulletInstance.GetComponent<ClientProjectileLifetime>();
             if (lifetimeComponent != null)
@@ -54,7 +54,7 @@ namespace TouhouWebArena.Spellcards.Behaviors
 
             DeactivateAllMovementBehaviors(bulletInstance);
 
-            Debug.Log($"[ClientBulletConfigurer] Configuring bullet '{bulletInstance.name}'. Behavior from action: {action.behavior} (Int value: {(int)action.behavior})");
+            // Debug.Log($"[ClientBulletConfigurer] Configuring bullet '{bulletInstance.name}'. Behavior from action: {action.behavior} (Int value: {(int)action.behavior})");
 
             switch (action.behavior)
             {
@@ -76,7 +76,7 @@ namespace TouhouWebArena.Spellcards.Behaviors
                     break;
 
                 case BehaviorType.DelayedHoming:
-                    Debug.Log("[ClientBulletConfigurer] --- Entered DelayedHoming case ---"); 
+                    // Debug.Log("[ClientBulletConfigurer] --- Entered DelayedHoming case ---"); 
                     ClientDelayedHoming delayedHoming = bulletInstance.GetComponent<ClientDelayedHoming>();
                     if (delayedHoming != null)
                     {

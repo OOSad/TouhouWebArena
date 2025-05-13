@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic; // Required for HashSet
+using TouhouWebArena; // For PlayerRole
 
 // Requires ClientShockwaveVisuals
 [RequireComponent(typeof(CircleCollider2D))]
@@ -14,6 +15,7 @@ public class ClientFairyShockwave : MonoBehaviour
     private AnimationCurve _expansionCurve = AnimationCurve.EaseInOut(0, 0, 1, 1); 
     private int _damageToDeal = 5;
     private ulong _ownerIdForChainedDamage; 
+    private PlayerRole _ownerPlayerRole = PlayerRole.None; // Role of the player whose side this shockwave belongs to
 
     [Header("Damage Settings")]
     [Tooltip("How many times per second the shockwave can damage/clear the SAME object.")]
@@ -57,7 +59,7 @@ public class ClientFairyShockwave : MonoBehaviour
     
     public float GetInitialColliderRadiusForVisuals() => 0f; // Visuals start from 0 radius effectively
 
-    public void Initialize(float startRadius, float targetMaxRadius, float duration, AnimationCurve curve, int damage, ulong ownerId)
+    public void Initialize(float startRadius, float targetMaxRadius, float duration, AnimationCurve curve, int damage, ulong ownerId, PlayerRole ownerRole)
     {
         transform.localScale = Vector3.one; 
         // _circleCollider.radius = startRadius; // Collider starts at 0 and expands
@@ -66,6 +68,7 @@ public class ClientFairyShockwave : MonoBehaviour
         _expansionCurve = curve ?? AnimationCurve.EaseInOut(0, 0, 1, 1); 
         _damageToDeal = damage;
         _ownerIdForChainedDamage = ownerId;
+        _ownerPlayerRole = ownerRole;
 
         _currentExpansionTime = 0f;
         _isExpanding = true;
@@ -92,6 +95,7 @@ public class ClientFairyShockwave : MonoBehaviour
         _circleCollider.enabled = false; // Ensure disabled when taken from pool
         _isExpanding = false; 
         _lastHitTime.Clear();
+        _ownerPlayerRole = PlayerRole.None;
         if (_shockwaveVisuals != null)
         {
             _shockwaveVisuals.ResetVisuals();
@@ -144,7 +148,7 @@ public class ClientFairyShockwave : MonoBehaviour
 
     void OnTriggerStay2D(Collider2D other)
     {
-        if (!_isExpanding) return;
+        if (!_isExpanding || _ownerPlayerRole == PlayerRole.None) return; // Don't do checks if not expanding or owner role is invalid
 
         // Check cooldown for this specific collider
         if (_lastHitTime.TryGetValue(other, out float lastHit) && Time.time < lastHit + _damageCooldownDuration)
@@ -154,29 +158,58 @@ public class ClientFairyShockwave : MonoBehaviour
 
         // --- Apply effect and update cooldown ---
         bool processed = false;
+        PlayerRole targetRole = PlayerRole.None;
 
-        // 1. Damage Fairies/Spirits
+        // 1. Check Fairies
         ClientFairyHealth fairyHealth = other.GetComponent<ClientFairyHealth>();
         if (fairyHealth != null && fairyHealth.IsAlive)
         {
-            fairyHealth.TakeDamage(_damageToDeal, _ownerIdForChainedDamage);
-            processed = true;
+            targetRole = fairyHealth.OwningPlayerRole;
+            if (targetRole == _ownerPlayerRole) // Check if target role matches shockwave owner role
+            {
+                fairyHealth.TakeDamage(_damageToDeal, _ownerIdForChainedDamage);
+                processed = true;
+            }
         }
-        // TODO: Add ClientSpiritHealth check
+        
+        // 2. Check Spirits (only if not already processed as a fairy)
+        if (!processed)
+        {
+            ClientSpiritHealth spiritHealth = other.GetComponent<ClientSpiritHealth>();
+            if (spiritHealth != null)
+            {
+                 // Get role via controller
+                 ClientSpiritController spiritController = other.GetComponent<ClientSpiritController>();
+                 if (spiritController != null) 
+                 {
+                    targetRole = spiritController.OwningPlayerRole;
+                    if (targetRole == _ownerPlayerRole) // Check if target role matches shockwave owner role
+                    {
+                        spiritHealth.TakeDamage(_damageToDeal, _ownerIdForChainedDamage);
+                        processed = true;
+                    }
+                 }
+            }
+        }
 
-        // 2. Clear Bullets (only if not already processed as damage)
+        // 3. Clear Bullets (only if not already processed as damage)
         if (!processed)
         {
             StageSmallBulletMoverScript stageMover = other.GetComponent<StageSmallBulletMoverScript>();
             if (stageMover != null)
             {
-                stageMover.ForceReturnToPoolByBomb(); 
-                processed = true;
+                // ASSUMPTION: StageSmallBulletMoverScript will have OwningPlayerRole getter
+                targetRole = stageMover.OwningPlayerRole; 
+                if (targetRole == _ownerPlayerRole) // Check if bullet role matches shockwave owner role
+                {
+                    stageMover.ForceReturnToPoolByBomb(); 
+                    processed = true;
+                }
             }
 
-            // Check for player bullets if needed
+            // Potential check for player bullets (BulletMovement) if they also need role-based clearing
             // BulletMovement playerBulletMover = other.GetComponent<BulletMovement>();
-            // if (playerBulletMover != null) { /* Potentially clear */ processed = true; }
+            // if (playerBulletMover != null) { /* Check role, Potentially clear */ processed = true; }
         }
 
         // If we damaged or cleared something, record the hit time

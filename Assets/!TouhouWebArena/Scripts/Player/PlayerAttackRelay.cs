@@ -187,10 +187,17 @@ public class PlayerAttackRelay : NetworkBehaviour
         StageSmallBulletMoverScript mover = bulletInstance.GetComponent<StageSmallBulletMoverScript>();
         if (mover != null)
         {
+            // Determine the role of the player this bullet belongs to (the owner of this PlayerAttackRelay)
+            PlayerRole ownerRole = PlayerRole.None;
+            if (PlayerDataManager.Instance != null) 
+            {
+                ownerRole = PlayerDataManager.Instance.GetPlayerData(OwnerClientId)?.Role ?? PlayerRole.None;
+            }
+
             // Bullet travels straight down by default
             Vector3 initialDirection = Vector3.down; 
             // Use the bullet's own defined default speed and max lifetime
-            mover.Initialize(initialDirection, mover.DefaultSpeed, mover.MaxLifetime);
+            mover.Initialize(initialDirection, mover.DefaultSpeed, mover.MaxLifetime, ownerRole);
         }
         else
         {

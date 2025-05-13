@@ -171,18 +171,22 @@ namespace TouhouWebArena.Spellcards.Behaviors
         /// </summary>
         /// <param name="forceClear">If true, the bullet is cleared regardless of isNormallyClearable.</param>
         /// <param name="sourceRole">The role of the player causing the clear (ignored by this implementation).</param>
-        public void Clear(bool forceClear, PlayerRole sourceRole)
+        /// <returns>True if the bullet was cleared (returned to pool), false otherwise.</returns>
+        public bool Clear(bool forceClear, PlayerRole sourceRole)
         {
             // Clearing logic only runs on the server
-            if (!IsServer) return;
+            if (!IsServer) return false;
 
-            // If it's a forced clear (player bomb) OR this bullet is normally clearable
-            if (forceClear || isNormallyClearable)
+            bool shouldClear = forceClear || isNormallyClearable;
+
+            if (shouldClear)
             {
                 // Reuse the existing pooling logic
                 ReturnToPool();
+                return true; // Indicate that clear was successful
             }
-            // Else: Normal clear attempt on a bullet that is not normally clearable - do nothing.
+            
+            return false; // Indicate that clear did not happen
         }
         // ------------------------------------
     }

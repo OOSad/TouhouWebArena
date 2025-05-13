@@ -85,7 +85,7 @@ namespace TouhouWebArena.Managers
             // Cache the ClientEntityCleanupHandler instance if we are the server
             if (IsServer)
             {
-                clientEntityCleanupHandlerCache = FindObjectOfType<ClientEntityCleanupHandler>();
+                clientEntityCleanupHandlerCache = FindFirstObjectByType<ClientEntityCleanupHandler>();
                 if (clientEntityCleanupHandlerCache == null)
                 {
                     Debug.LogError("[RoundManager] Could not find ClientEntityCleanupHandler in the scene! Client-side cleanup will not work.");

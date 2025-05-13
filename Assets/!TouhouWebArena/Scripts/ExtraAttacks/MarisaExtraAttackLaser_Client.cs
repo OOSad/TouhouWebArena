@@ -21,6 +21,8 @@ public class MarisaExtraAttackLaser_Client : MonoBehaviour
     private PlayAreaBounds _targetPlayAreaBounds; // Use the defined struct
     private ulong _attackerClientId;
 
+    public ulong AttackerClientId => _attackerClientId; // Public getter
+
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();

@@ -24,16 +24,31 @@ public class PlayerExtraAttackRelay : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = true)]
-    public void InformServerOfExtraAttackTriggerServerRpc(string characterName, PlayerRole attackerPlayerRole, ulong originalAttackerClientId, Vector2 spawnPos, float reimuSidewaysForce, float marisaTiltAngle, ServerRpcParams rpcParams = default)
+    public void InformServerOfExtraAttackTriggerServerRpc(
+        string characterName, 
+        PlayerRole attackerPlayerRole, 
+        ulong originalAttackerClientId, 
+        float reimuSpawnX, 
+        float reimuSpawnY, 
+        float reimuSidewaysForce, 
+        float marisaSpawnXOffset, 
+        float marisaTiltAngle, 
+        ServerRpcParams rpcParams = default)
     {
         if (!IsServer) return;
 
-        if (ClientExtraAttackManager.Instance != null)
+        if (ClientExtraAttackManager.Instance != null) 
         {
-            // Debug.Log($"[Server PlayerExtraAttackRelay] Received InformServerOfExtraAttackTriggerServerRpc from ClientId {originalAttackerClientId} for {characterName} ({attackerPlayerRole}). Relaying to clients with sync params.");
-            ClientExtraAttackManager.Instance.RelayExtraAttackToClientsClientRpc(characterName, attackerPlayerRole, originalAttackerClientId,
-                                                                               spawnPos.x, spawnPos.y, reimuSidewaysForce,
-                                                                               spawnPos.x, marisaTiltAngle);
+            ClientExtraAttackManager.Instance.RelayExtraAttackToClientsClientRpc(
+                characterName, 
+                attackerPlayerRole, 
+                originalAttackerClientId,
+                reimuSpawnX, 
+                reimuSpawnY, 
+                reimuSidewaysForce,
+                marisaSpawnXOffset, 
+                marisaTiltAngle
+            );
         }
         else
         {

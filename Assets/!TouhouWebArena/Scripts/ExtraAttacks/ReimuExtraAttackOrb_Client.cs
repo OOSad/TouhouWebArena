@@ -14,6 +14,8 @@ public class ReimuExtraAttackOrb_Client : MonoBehaviour
     private float currentLifetime;
     private ulong _attackerClientId; // Store the client ID of the player who triggered this attack
 
+    public ulong AttackerClientId => _attackerClientId; // Public getter
+
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();

@@ -9,6 +9,10 @@ using UnityEngine;
 [RequireComponent(typeof(ClientFairyShockwave), typeof(SpriteRenderer))]
 public class ClientShockwaveVisuals : MonoBehaviour
 {
+    [Tooltip("At what progress point (0-1) the fade-out should begin.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float fadeStartProgress = 0.5f; // Start fading out at 50% duration
+
     // Visual properties stored on Awake for true reset
     private Color trueInitialColor;
     private Color trueEndColor;
@@ -59,8 +63,21 @@ public class ClientShockwaveVisuals : MonoBehaviour
         transform.localScale = new Vector3(scaleXY, scaleXY, trueInitialScale.z);
         // --- END Simplified Scaling ---
 
-        // Fade out sprite based on overall progress (0 to 1)
-        _spriteRenderer.color = Color.Lerp(trueInitialColor, trueEndColor, progress);
+        // --- Modified Fade Logic ---
+        // Stay at full opacity until fadeStartProgress, then fade out from that point to the end.
+        if (progress < fadeStartProgress)
+        {
+            _spriteRenderer.color = trueInitialColor;
+        }
+        else
+        {
+            // Calculate fade progress only for the remaining duration
+            float fadeDuration = 1f - fadeStartProgress;
+            float currentFadeTime = progress - fadeStartProgress;
+            float fadeProgress = (fadeDuration > 0.001f) ? Mathf.Clamp01(currentFadeTime / fadeDuration) : 1f; 
+            _spriteRenderer.color = Color.Lerp(trueInitialColor, trueEndColor, fadeProgress);
+        }
+        // --- End Modified Fade Logic ---
     }
 
     void OnDisable()

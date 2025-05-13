@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TouhouWebArena;
 using TouhouWebArena.Spellcards;
 using TouhouWebArena.Spellcards.Behaviors; // For ClientBulletConfigurer
+using Unity.Netcode;
 
 /// <summary>
 /// [Client Only] Handles the client-side execution of spellcard actions defined in `SpellcardAction` objects.
@@ -193,6 +194,37 @@ public class ClientSpellcardActionRunner : MonoBehaviour
                 bulletInstance.SetActive(true);
             }
 
+            // --- ADDED: Set Owner Role on StageSmallBulletMoverScript ---
+            StageSmallBulletMoverScript stageMover = bulletInstance.GetComponent<StageSmallBulletMoverScript>();
+            if (stageMover != null)
+            {
+                // --- MODIFIED: Determine Role based on ORIGINAL Caster (Owner of Illusion) ---
+                // If the casterClientId corresponds to a NetworkObject (e.g., an illusion),
+                // its OwnerClientId (the original player) is used to determine the bullet's OwningPlayerRole.
+                // Otherwise, casterClientId (assumed to be a direct player ID) is used.
+                PlayerRole newBulletOwnerRole = PlayerRole.None;
+                ulong effectiveOwnerId = casterClientId; // Start with the ID passed in
+
+                // Check if the casterId corresponds to a known NetworkObject (like an illusion)
+                if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(casterClientId, out NetworkObject casterNetworkObject))
+                {
+                    // If it's an illusion or other owned object, use the OWNER's ID to find the PlayerRole
+                    effectiveOwnerId = casterNetworkObject.OwnerClientId;
+                    // Debug.Log($"[CSAR] Caster ID {casterClientId} resolved to Owner ID {effectiveOwnerId} (likely an illusion)");
+                }
+                // else: casterClientId likely refers to a player directly, use it as is.
+
+                if (PlayerDataManager.Instance != null) {
+                    PlayerData? ownerData = PlayerDataManager.Instance.GetPlayerData(effectiveOwnerId);
+                    if (ownerData.HasValue) newBulletOwnerRole = ownerData.Value.Role;
+                    else Debug.LogWarning($"[CSAR] Effective Owner PData null for {effectiveOwnerId} (original caster: {casterClientId})");
+                } else Debug.LogWarning("[CSAR] PDMgr null");
+                // --- END MODIFICATION ---
+                
+                stageMover.InitializeOwnerRole(newBulletOwnerRole);
+            }
+            // --- END ADDED SECTION ---
+
             Vector3 spawnPosition = CalculateSpawnPosition(action, i, originPosition, originRotation, targetPlayerRole, sequenceOffset); 
             Quaternion spawnRotation = CalculateSpawnRotation(action, i, originRotation);
 
@@ -325,6 +357,37 @@ public class ClientSpellcardActionRunner : MonoBehaviour
             {
                 bulletInstance.SetActive(true);
             }
+
+            // --- ADDED: Set Owner Role on StageSmallBulletMoverScript (Dynamic Origin) ---
+            StageSmallBulletMoverScript stageMoverDynamic = bulletInstance.GetComponent<StageSmallBulletMoverScript>();
+            if (stageMoverDynamic != null)
+            {
+                 // --- MODIFIED: Determine Role based on ORIGINAL Caster (Owner of Illusion) ---
+                // For bullets spawned by a dynamic origin (typically an illusion via ClientIllusionView),
+                // the casterClientId is the illusion's NetworkObjectId. Its OwnerClientId (the original player)
+                // is used to determine the bullet's OwningPlayerRole.
+                PlayerRole newBulletOwnerRoleDynamic = PlayerRole.None;
+                ulong effectiveOwnerIdDynamic = casterClientId; // Start with the ID passed in (illusion's ID)
+
+                // Check if the casterId corresponds to a known NetworkObject (the illusion)
+                if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(casterClientId, out NetworkObject illusionNetworkObject))
+                {
+                    // If it's an illusion or other owned object, use the OWNER's ID to find the PlayerRole
+                    effectiveOwnerIdDynamic = illusionNetworkObject.OwnerClientId;
+                    // Debug.Log($"[CSAR-Dyn] Caster ID {casterClientId} resolved to Owner ID {effectiveOwnerIdDynamic} (likely an illusion)");
+                }
+                // else: Should not happen for dynamic origin calls from ClientIllusionView, but good failsafe.
+
+                if (PlayerDataManager.Instance != null) {
+                    PlayerData? ownerDataDynamic = PlayerDataManager.Instance.GetPlayerData(effectiveOwnerIdDynamic);
+                    if (ownerDataDynamic.HasValue) newBulletOwnerRoleDynamic = ownerDataDynamic.Value.Role;
+                    else Debug.LogWarning($"[CSAR-Dyn] Effective Owner PData null for {effectiveOwnerIdDynamic} (original caster: {casterClientId})");
+                } else Debug.LogWarning("[CSAR-Dyn] PDMgr null");
+                // --- END MODIFICATION ---
+
+                stageMoverDynamic.InitializeOwnerRole(newBulletOwnerRoleDynamic);
+            }
+            // --- END ADDED SECTION ---
 
             // Fetch current position from the dynamic transform FOR EACH BULLET/SUB-SPAWN
             Vector3 currentOriginPos = originTransform.position;

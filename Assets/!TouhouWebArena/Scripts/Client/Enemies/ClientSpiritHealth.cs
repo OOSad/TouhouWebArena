@@ -111,6 +111,19 @@ using Unity.Netcode;
                 return;
             }
 
+            // Get OwningPlayerRole from ClientSpiritController
+            PlayerRole spiritOwnerRole = PlayerRole.None;
+            ClientSpiritController spiritController = GetComponent<ClientSpiritController>();
+            if (spiritController != null) 
+            {
+                spiritOwnerRole = spiritController.OwningPlayerRole;
+            }
+            else
+            {
+                Debug.LogError($"[ClientSpiritHealth on {gameObject.name}] Cannot find ClientSpiritController to determine owner role for shockwave!");
+                // Potentially default to a role or don't spawn, depending on desired behavior for this edge case
+            }
+
             GameObject shockwaveInstance = ClientGameObjectPool.Instance.GetObject(shockwavePrefabId);
             if (shockwaveInstance != null)
             {
@@ -127,7 +140,8 @@ using Unity.Netcode;
                         shockwaveDuration,
                         null,
                         shockwaveDamage,
-                        killerClientId 
+                        killerClientId,
+                        spiritOwnerRole // Pass the spirit's owner role
                     );
                 }
                 else

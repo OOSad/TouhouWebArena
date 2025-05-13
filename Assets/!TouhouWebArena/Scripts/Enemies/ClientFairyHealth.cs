@@ -1,6 +1,8 @@
 using UnityEngine;
 using System;
 using Unity.Netcode; // Required for NetworkManager
+using TouhouWebArena; // Needed for PlayerRole
+using System.Collections; // ADDED: For IEnumerator
 
 // Basic client-side health management for a fairy.
 public class ClientFairyHealth : MonoBehaviour
@@ -17,9 +19,11 @@ public class ClientFairyHealth : MonoBehaviour
 
     private int _currentHealth;
     private bool _isExtraAttackTrigger = false; // Added for extra attack
+    private PlayerRole _owningPlayerRole = PlayerRole.None; // Added field
 
     public int CurrentHealth => _currentHealth;
     public bool IsAlive => _currentHealth > 0;
+    public PlayerRole OwningPlayerRole => _owningPlayerRole; // Added getter
 
     public event Action<GameObject> OnClientDeath; // Event to signal death, passing the fairy GameObject
 
@@ -28,14 +32,16 @@ public class ClientFairyHealth : MonoBehaviour
         // Reset health when enabled (e.g., when taken from pool)
         _currentHealth = maxHealth;
         _isExtraAttackTrigger = false; // Reset trigger status on enable
+        _owningPlayerRole = PlayerRole.None; // Reset role on enable
     }
 
-    public void Initialize(int startingHealth, bool isTrigger)
+    public void Initialize(int startingHealth, bool isTrigger, PlayerRole ownerRole)
     {
         maxHealth = startingHealth > 0 ? startingHealth : 1;
         _currentHealth = maxHealth;
         _isExtraAttackTrigger = isTrigger;
-        // Debug.Log($"{gameObject.name} initialized. Health: {_currentHealth}, IsTrigger: {_isExtraAttackTrigger}");
+        _owningPlayerRole = ownerRole; // Store the role
+        // Debug.Log($"{gameObject.name} initialized. Health: {_currentHealth}, IsTrigger: {_isExtraAttackTrigger}, Role: {_owningPlayerRole}");
     }
 
     public void SetMaxHealth(int newMaxHealth, bool setCurrentToMax = true)
@@ -142,7 +148,8 @@ public class ClientFairyHealth : MonoBehaviour
                     deathShockwaveDuration,
                     null, 
                     deathShockwaveDamage,
-                    killerClientId 
+                    killerClientId, 
+                    this.OwningPlayerRole
                 );
                 // shockwaveInstance.SetActive(true); // Already set active?
             }
@@ -155,6 +162,42 @@ public class ClientFairyHealth : MonoBehaviour
         else
         {
             Debug.LogWarning($"[ClientFairyHealth on {gameObject.name}] Failed to get shockwave '{deathShockwavePrefabId}' from pool.");
+        }
+    }
+
+    /// <summary>
+    /// Public method to allow external systems (like the spellcard clear RPC) 
+    /// to force this fairy back to the pool.
+    /// </summary>
+    public void ForceReturnToPool()
+    {
+        // Currently, just directly calls the private return method.
+        // Could add specific effects here later if needed.
+        ReturnToPool();
+    }
+
+    private IEnumerator DelayedReturnToPool(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ReturnToPool();
+    }
+
+    private void ReturnToPool()
+    {
+        // Implementation of ReturnToPool method
+        // This method should be implemented to return the fairy to the pool
+        // and handle any necessary cleanup or effects.
+        // Destroy(gameObject); // Fallback if pool is missing
+
+        // ADDED: Actual pooling logic
+        if (ClientGameObjectPool.Instance != null)
+        {
+            ClientGameObjectPool.Instance.ReturnObject(this.gameObject);
+        }
+        else
+        {
+            Debug.LogWarning($"[ClientFairyHealth] ClientGameObjectPool instance missing. Destroying {gameObject.name} instead.", this);
+            Destroy(gameObject); // Fallback
         }
     }
 } 

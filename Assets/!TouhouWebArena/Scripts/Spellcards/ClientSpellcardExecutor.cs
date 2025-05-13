@@ -3,13 +3,14 @@ using Unity.Netcode;
 using TouhouWebArena;
 using TouhouWebArena.Spellcards;
 using System.Collections.Generic; // For List in RunSpellcardActions
+using System.Linq; // Required for Linq operations if used
 
 /// <summary>
 /// [Client Only] Client-side singleton responsible for initiating the local execution 
 /// of spellcards based on commands received from the server via SpellcardNetworkHandler.
 /// It loads the spellcard data and delegates the action sequence execution to ClientSpellcardActionRunner.
 /// </summary>
-public class ClientSpellcardExecutor : MonoBehaviour
+public class ClientSpellcardExecutor : NetworkBehaviour
 {
     public static ClientSpellcardExecutor Instance { get; private set; }
 
@@ -33,9 +34,10 @@ public class ClientSpellcardExecutor : MonoBehaviour
         }
     }
 
-    void OnDestroy()
+    public override void OnDestroy()
     {
         if (Instance == this) Instance = null;
+        base.OnDestroy(); // Call the base class's OnDestroy method
     }
 
     /// <summary>
@@ -44,7 +46,7 @@ public class ClientSpellcardExecutor : MonoBehaviour
     /// </summary>
     public void StartLocalSpellcardExecution(ulong casterClientId, ulong targetClientId, string spellcardDataResourcePath, int spellLevel, Vector2 sharedRandomOffset)
     {
-        Debug.Log($"[ClientSpellcardExecutor] Attempting to start local execution for Lv{spellLevel} spellcard: {spellcardDataResourcePath}. Caster: {casterClientId}, Target: {targetClientId}, Offset: {sharedRandomOffset}");
+        // Debug.Log($\"[ClientSpellcardExecutor] Attempting to start local execution for Lv{spellLevel} spellcard: {spellcardDataResourcePath}. Caster: {casterClientId}, Target: {targetClientId}, Offset: {sharedRandomOffset}\");
 
         if (_actionRunner == null)
         {
@@ -63,7 +65,7 @@ public class ClientSpellcardExecutor : MonoBehaviour
         }
 
         if (spellLevel == 4 && spellcardBaseData is Level4SpellcardData level4Data)
-        {             
+        {
             // TODO: Pass sharedRandomOffset to Level 4 handling if needed
             // HandleLevel4Execution(casterClientId, targetClientId, level4Data, originPosition, originRotation, sharedRandomOffset); // Placeholder for now
             Debug.LogWarning("[ClientSpellcardExecutor] Level 4 spellcard execution initiated, but HandleLevel4Execution is not fully implemented yet.");
@@ -141,5 +143,107 @@ public class ClientSpellcardExecutor : MonoBehaviour
         // Some spellcards might want to aim towards/away from the caster or target.
         // For now, individual bullet rotations are handled by their spawn parameters (action.angle) and behaviors.
         return Quaternion.identity;
+    }
+
+    // --- Client-Side Clearing RPC --- 
+    /// <summary>
+    /// [ClientRpc] Executes the spellcard activation's screen-clearing effect locally.
+    /// This is triggered by the server after a spellcard activation.
+    /// It clears hostile projectiles within the specified radius based on their layer,
+    /// and clears fairies/spirits belonging to the caster based on OwningPlayerRole.
+    /// </summary>
+    /// <param name="casterPosition">World position where the clear originates (caster's position).</param>
+    /// <param name="clearRadius">Radius of the clear effect, determined by the spell level on the server.</param>
+    /// <param name="casterRole">The PlayerRole of the player who activated the spellcard.</param>
+    [ClientRpc]
+    public void TriggerLocalClearEffectClientRpc(Vector3 casterPosition, float clearRadius, PlayerRole casterRole)
+    {
+        Debug.Log($"[ClientSpellcardExecutor] Received TriggerLocalClearEffectClientRpc. Pos: {casterPosition}, Radius: {clearRadius}, Caster: {casterRole}");
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(casterPosition, clearRadius);
+
+        // Resolve Caster Role to ClientId
+        ulong casterPlayerClientId = ulong.MaxValue;
+        if (PlayerDataManager.Instance != null && (casterRole == PlayerRole.Player1 || casterRole == PlayerRole.Player2))
+        {
+            // Iterate through the player list to find the client ID for the caster role
+            // Need to access the player list somehow. Assuming PlayerDataManager has a way, e.g., a public property or method returning the list.
+            // Let's try accessing the NetworkList directly (might need adjustment based on actual implementation)
+            // NetworkList<PlayerData> playerList = PlayerDataManager.Instance.players; // Example: Assuming direct access (unlikely)
+            // Better: Assume PlayerDataManager has a method like GetPlayerDataByRole
+            PlayerData? casterData = PlayerDataManager.Instance.GetPlayerDataByRole(casterRole);
+            if (casterData.HasValue)
+            {
+                casterPlayerClientId = casterData.Value.ClientId;
+            }
+        }
+        
+        if (casterPlayerClientId == ulong.MaxValue && (casterRole == PlayerRole.Player1 || casterRole == PlayerRole.Player2))
+        {
+             Debug.LogWarning($"[ClientSpellcardExecutor] Could not resolve ClientId for casterRole {casterRole}. Cannot reliably clear opponent extra attacks.");
+        }
+
+        foreach (Collider2D col in colliders)
+        {
+            // Clear Enemy Projectiles (Layer Check - Clears regardless of owner)
+            if (col.gameObject.layer == LayerMask.NameToLayer("EnemyProjectiles"))
+            {
+                if (col.TryGetComponent(out ClientProjectileLifetime projectileLifetime))
+                {
+                    projectileLifetime.ForceReturnToPool();
+                }
+                continue;
+            }
+
+            // Clear Caster's Own Fairies/Spirits (Component & Ownership Check)
+            if (col.TryGetComponent(out ClientFairyHealth fairyHealth))
+            {
+                if (fairyHealth.OwningPlayerRole == casterRole)
+                {
+                    fairyHealth.ForceReturnToPool();
+                }
+                continue;
+            }
+
+            if (col.TryGetComponent(out ClientSpiritController spiritController))
+            {
+                if (spiritController.OwningPlayerRole == casterRole)
+                {
+                    if (col.TryGetComponent(out ClientSpiritHealth spiritHealth)) {
+                        spiritHealth.ForceReturnToPool();
+                    }
+                }
+                continue;
+            }
+
+            // --- NEW: Clear Opponent's EXTRA Attacks ---
+            // Clear Opponent's Reimu Orb
+            if (col.TryGetComponent(out ReimuExtraAttackOrb_Client reimuOrb))
+            {
+                // Compare client IDs
+                if (casterPlayerClientId != ulong.MaxValue && reimuOrb.AttackerClientId != casterPlayerClientId && reimuOrb.AttackerClientId != 0)
+                {
+                    if (col.TryGetComponent(out ClientProjectileLifetime projectileLifetime))
+                    {
+                        projectileLifetime.ForceReturnToPool();
+                    }
+                }
+                continue;
+            }
+
+            // Clear Opponent's Marisa Laser
+            if (col.TryGetComponent(out MarisaExtraAttackLaser_Client marisaLaser))
+            {
+                // Compare client IDs
+                if (casterPlayerClientId != ulong.MaxValue && marisaLaser.AttackerClientId != casterPlayerClientId && marisaLaser.AttackerClientId != 0)
+                {
+                     if (col.TryGetComponent(out ClientProjectileLifetime projectileLifetime))
+                    {
+                        projectileLifetime.ForceReturnToPool();
+                    }
+                }
+            }
+            // --- END NEW ---
+        }
+        // TODO: Add visual effect instantiation here?
     }
 } 

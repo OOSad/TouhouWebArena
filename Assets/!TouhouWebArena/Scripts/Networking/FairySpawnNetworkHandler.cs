@@ -226,7 +226,7 @@ public class FairySpawnNetworkHandler : NetworkBehaviour
                 {
                     bool isTriggerFairy = (i == waveData.TriggerFairyIndex && waveData.TriggerFairyIndex != -1);
                     int healthToSet = isGreat ? greatFairyHealth : normalFairyHealth; 
-                    fairyHealth.Initialize(healthToSet, isTriggerFairy);
+                    fairyHealth.Initialize(healthToSet, isTriggerFairy, owningSide);
                 }
 
                 if (i < waveData.FairyCount - 1 && waveData.DelayBetweenFairies > 0.0f)

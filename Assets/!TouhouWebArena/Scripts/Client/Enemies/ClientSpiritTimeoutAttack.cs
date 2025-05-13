@@ -84,6 +84,18 @@ using Unity.Netcode;
 
             // Debug.Log($"[ClientSpiritTimeoutAttack] Firing timeout bullets. TargetFound: {targetTransform != null}, Direction: {directionToTarget}");
 
+            // Get the owning role of the spirit firing these bullets
+            PlayerRole bulletOwnerRole = PlayerRole.None;
+            ClientSpiritController spiritController = GetComponent<ClientSpiritController>();
+            if (spiritController != null) 
+            {
+                bulletOwnerRole = spiritController.OwningPlayerRole;
+            }
+            else
+            {
+                Debug.LogError($"[ClientSpiritTimeoutAttack on {gameObject.name}] Cannot find ClientSpiritController to determine owner role for spawned bullets!");
+            }
+
             foreach (float angleOffset in clawPatternAngles)
             {
                 GameObject bulletInstance = ClientGameObjectPool.Instance.GetObject(timeoutBulletPrefabID);
@@ -100,7 +112,7 @@ using Unity.Netcode;
                 StageSmallBulletMoverScript mover = bulletInstance.GetComponent<StageSmallBulletMoverScript>();
                 if (mover != null)
                 {
-                    mover.Initialize(bulletInstance.transform.up, timeoutBulletSpeed, timeoutBulletLifetime);
+                    mover.Initialize(bulletInstance.transform.up, timeoutBulletSpeed, timeoutBulletLifetime, bulletOwnerRole);
                 }
                 else
                 {

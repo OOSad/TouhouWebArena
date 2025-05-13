@@ -394,17 +394,26 @@ Level 4 spellcards manifest as autonomous "illusion" entities that persist on th
     *   **`Intra Action Delay` (Float):** Seconds to wait between spawning each individual bullet *within* this action (if `Count` > 1). Set to 0 for simultaneous spawn.
     *   **`Lifetime` (Float):** Overrides the default lifetime of the spawned bullet prefab (seconds). <= 0 uses prefab default.
 
-*   **Clearability Note:** Bullet clearability by bombs/shockwaves depends on the **bullet prefab** having a component (like `NetworkBulletLifetime`) that implements `IClearable`, not on `SpellcardAction` data.
+*   **Clearability Note:** Bullet clearability by bombs/shockwaves depends on the **bullet prefab** having components like `ClientProjectileLifetime` that can be returned to the pool, and being on the correct layer (`EnemyProjectiles`) or having identifiable components (`ClientFairyHealth`, `ClientSpiritController`), not specifically on `SpellcardAction` data.
 
 ## Spellcard Clear Effect
 
 When a player successfully activates a spellcard (Level 2, 3, or 4) after the cost is paid:
-*   A bullet-clearing effect is immediately triggered around the **casting player**.
-*   This uses `Physics2D.OverlapCircleAll` to find nearby colliders.
-*   It attempts to find `IClearable` components on the found objects (specifically on their root `NetworkObject`).
-*   It calls `Clear(true, castingPlayerRole)` on any found `IClearable` components, forcing them to clear.
-*   The radius of the clear effect scales with the spell level:
-    *   Level 2: `3.0` units (configurable in `ServerAttackSpawner.TriggerSpellcardClear`)
-    *   Level 3: `5.0` units
-    *   Level 4: `10.0` units
+*   The server (`ServerAttackSpawner.TriggerSpellcardClear`) calculates parameters for the clear effect:
+    *   Caster's current position.
+    *   Caster's `PlayerRole`.
+    *   Clear radius, scaled by spell level:
+        *   Level 2: `3.0` units (configurable)
+        *   Level 3: `5.0` units
+        *   Level 4: `10.0` units
+    *   A `forceClearIllusions` flag (only relevant for server-side logic on Level 4).
+*   The server sends these parameters to all clients via `TriggerLocalClearEffectClientRpc` targeting `ClientSpellcardExecutor.Instance`.
+*   **On each client**, `ClientSpellcardExecutor.TriggerLocalClearEffectClientRpc` executes:
+    *   It performs a local `Physics2D.OverlapCircleAll` at the received caster position with the received radius.
+    *   It iterates through the detected colliders:
+        *   If `collider.gameObject.layer == LayerMask.NameToLayer("EnemyProjectiles")`, it gets the `ClientProjectileLifetime` component and calls `ForceReturnToPool()` on it. This clears all types of bullets on that layer within the radius, regardless of owner.
+        *   If it finds a `ClientFairyHealth` or `ClientSpiritController` component AND that component's `OwningPlayerRole == casterRole`, it calls `ForceReturnToPool()` on that component. (This clears the caster's *own* fairies/spirits).
+        *   If it finds a `ReimuExtraAttackOrb_Client` or `MarisaExtraAttackLaser_Client` component AND its `AttackerClientId` does not match the caster's resolved client ID, it gets the component's `ClientProjectileLifetime` and calls `ForceReturnToPool()` on it. This clears the opponent's active extra attacks.
+*   **Level 2 & 3:** This client-side clear does **not** affect illusions.
+*   **Level 4:** In addition to the client-side clear effect described above, the server-side `ServerAttackSpawner.TriggerSpellcardClear` logic *also* explicitly finds and despawns any active enemy illusions targeting the caster *before* sending the client RPC.
 *   *(TODO: Add visual effect for this clear)*. 

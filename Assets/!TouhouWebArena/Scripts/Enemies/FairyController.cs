@@ -19,7 +19,7 @@ using TouhouWebArena; // Add namespace for IClearable and PlayerRole
 /// managing path following initialization, line/owner information, pooling setup, and death sequence coordination.
 /// Relies on several sibling components for specific functionalities:
 /// <see cref="SplineWalker"/>, <see cref="Collider2D"/>, <see cref="NetworkObject"/>, <see cref="FairyCollisionHandler"/>,
-/// <see cref="FairyDeathEffects"/>, <see cref="FairyPathInitializer"/>, <see cref="FairyExtraAttackTrigger"/>, 
+/// <see cref="FairyDeathEffects"/>, <see cref="FairyPathInitializer"/>, 
 /// <see cref="FairyChainReactionHandler"/>, <see cref="FairyHealth"/>.
 /// Implements <see cref="IClearable"/>, delegating the action to <see cref="FairyHealth"/>.
 /// Designed to be pooled and reused.
@@ -49,7 +49,6 @@ public class FairyController : NetworkBehaviour, IClearable
     // --- Component References --- 
     private FairyDeathEffects deathEffectsHandler;
     private FairyPathInitializer pathInitializer;
-    private FairyExtraAttackTrigger extraAttackTriggerHandler;
     private FairyChainReactionHandler chainReactionHandler;
     private FairyHealth fairyHealth; // Added health reference
     private SplineWalker splineWalker;
@@ -63,7 +62,6 @@ public class FairyController : NetworkBehaviour, IClearable
         fairyCollider = GetComponent<Collider2D>();
         deathEffectsHandler = GetComponent<FairyDeathEffects>();
         pathInitializer = GetComponent<FairyPathInitializer>();
-        extraAttackTriggerHandler = GetComponent<FairyExtraAttackTrigger>(); 
         chainReactionHandler = GetComponent<FairyChainReactionHandler>();
         fairyHealth = GetComponent<FairyHealth>(); // Get health component
     }
@@ -130,11 +128,10 @@ public class FairyController : NetworkBehaviour, IClearable
     /// <param name="startAtBegin">Whether to start at the path beginning or end.</param>
     /// <param name="lineGuid">The Guid identifying the fairy's line.</param>
     /// <param name="index">The fairy's index within its line.</param>
-    /// <param name="isTrigger">Whether this fairy triggers an extra attack.</param>
     /// <param name="owner">The <see cref="PlayerRole"/> owning this fairy.</param>
     public void InitializeForPooling(int ownerIdx, int pIdx, bool startAtBegin, 
                                        System.Guid lineGuid, int index, 
-                                       bool isTrigger, PlayerRole owner)
+                                       PlayerRole owner)
     {
         if (!IsServer) return;
         
@@ -148,7 +145,7 @@ public class FairyController : NetworkBehaviour, IClearable
         ownerRole = owner;
         
         // --- Initialize Handlers/Components --- 
-        extraAttackTriggerHandler?.Initialize(isTrigger, owner);
+        // extraAttackTriggerHandler?.Initialize(isTrigger, owner);
         // FairyHealth is initialized via its own OnNetworkSpawn
         
         // --- Path --- 
@@ -292,7 +289,7 @@ public class FairyController : NetworkBehaviour, IClearable
 
         // Trigger functional death effects (chain reaction, extra attack)
         // These components handle their own logic checks (e.g., isTrigger)
-        extraAttackTriggerHandler?.TriggerExtraAttackIfApplicable(killerRole);
+        // extraAttackTriggerHandler?.TriggerExtraAttackIfApplicable(killerRole);
         chainReactionHandler?.ProcessChainReaction(killerRole, lineId, indexInLine, ownerRole);
         
         // Return to Pool AFTER handling effects/triggers
@@ -322,13 +319,19 @@ public class FairyController : NetworkBehaviour, IClearable
     /// </summary>
     /// <param name="forceClear">Ignored by fairies, as they are always clearable by bomb-like effects.</param>
     /// <param name="sourceRole">The role of the player causing the clear (used for kill attribution).</param>
-    public void Clear(bool forceClear, PlayerRole sourceRole)
+    /// <returns>True if lethal damage was applied, false otherwise.</returns>
+    public bool Clear(bool forceClear, PlayerRole sourceRole)
     {   
         // Clearing logic only runs on the server
-        if (!IsServer) return;
+        if (!IsServer) return false;
 
         // Fairies are always cleared. Apply lethal damage via health component.
-        fairyHealth?.ApplyLethalDamage(sourceRole);
+        if (fairyHealth != null)
+        {
+            fairyHealth.ApplyLethalDamage(sourceRole);
+            return true; // Assume applying lethal damage always counts as a clear
+        }
+        return false; // Failed to apply damage (no health component)
     }
     // ------------------------------------
 } 
