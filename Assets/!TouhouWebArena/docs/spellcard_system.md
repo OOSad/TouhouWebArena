@@ -211,13 +211,14 @@ Level 4 spellcards manifest as autonomous "illusion" entities that persist on th
         *   Else (static attack): Calls `_actionRunner.RunSpellcardActions()` with the illusion's current position and the server-provided `initialOrientation`.
     *   `AnimateIllusionMovementAndAttack()` (Coroutine):
         1.  Sets illusion `transform.position` to `startPos`.
-        2.  Calls `_actionRunner.RunSpellcardActionsDynamicOrigin()`, passing its own `transform` (for dynamic bullet origin) and the `attackOrientationForBullets` (for correct bullet aiming, independent of illusion's visual rotation).
+        2.  Calls `_actionRunner.RunSpellcardActionsDynamicOrigin()`, passing its own `transform` (for dynamic bullet origin) and the `attackOrientationForBullets` (for correct bullet aiming, independent of illusion's visual rotation during movement).
         3.  Lerps the illusion's `transform.position` from `startPos` to `endPos` over `duration`.
+    *   **Damage Flash:** Contains a `FlashRed()` method (called by `IllusionHealth` when damage is taken) that triggers a coroutine to briefly tint the `_illusionSpriteRenderer` (configurable color, duration, intensity) and smoothly fade back to the original color.
 
 *   **`IllusionHealth.cs` (NetworkBehaviour, on Illusion Prefab):**
     *   `Initialize()`: Called by `ClientIllusionView`, sets health, target ID, and `isResponsibleClient` flag (true if this client is the one targeted by the illusion).
     *   `OnTriggerEnter2D()`: If `isResponsibleClient`, detects collisions with "PlayerShot".
-    *   `TakeDamageClientSide()`: Decrements health. If health <= 0, sets `isDead = true` and calls `ReportDeathToServerRpc()`.
+    *   `TakeDamageClientSide()`: Decrements health. Calls `_clientView.FlashRed()` to trigger the visual effect. If health <= 0, sets `isDead = true` and calls `ReportDeathToServerRpc()`.
     *   `ReportDeathToServerRpc()`: ServerRpc that, on the server, calls `_serverOrchestrator.ProcessClientDeathReport()`.
 
 *   **`ClientSpellcardActionRunner.cs` (MonoBehaviour, often a scene service or on ClientIllusionView):**

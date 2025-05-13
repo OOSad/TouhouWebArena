@@ -10,12 +10,24 @@ public class ClientFairyHealth : MonoBehaviour
     [SerializeField] private int maxHealth = 1;
     [Header("Death Effects")][Tooltip("The Pool ID for the shockwave prefab spawned on death.")]
     [SerializeField] private string deathShockwavePrefabId = "FairyShockwave";
-    [Tooltip("The maximum radius this fairy's death shockwave reaches.")]
+    [Tooltip("The maximum radius this fairy's death shockwave reaches visually.")]
     [SerializeField] private float deathShockwaveMaxRadius = 2f;
+    [Tooltip("The maximum EFFECTIVE radius (for damage/clearing) of the death shockwave.")]
+    [SerializeField] private float deathShockwaveEffectiveMaxRadius = 2f; // Default to visual radius
     [Tooltip("The duration of this fairy's death shockwave expansion.")]
     [SerializeField] private float deathShockwaveDuration = 0.5f;
     [Tooltip("The damage dealt by this fairy's death shockwave.")]
     [SerializeField] private int deathShockwaveDamage = 5;
+
+    [Header("Damage Flash")][Tooltip("The color the sprite flashes when taking damage.")]
+    [SerializeField] private Color _flashColor = Color.red;
+    [Tooltip("How long the flash color lasts in seconds.")]
+    [SerializeField] private float _flashDuration = 0.1f;
+    [Tooltip("How strong the flash color tint is (0=no tint, 1=full color).")]
+    [Range(0f, 1f)] [SerializeField] private float _flashIntensity = 0.5f;
+
+    private SpriteRenderer _spriteRenderer;
+    private Coroutine _flashCoroutine;
 
     private int _currentHealth;
     private bool _isExtraAttackTrigger = false; // Added for extra attack
@@ -27,12 +39,29 @@ public class ClientFairyHealth : MonoBehaviour
 
     public event Action<GameObject> OnClientDeath; // Event to signal death, passing the fairy GameObject
 
+    private void Awake()
+    {
+        // Cache the SpriteRenderer
+        _spriteRenderer = GetComponentInChildren<SpriteRenderer>(); // Get it from children in case it's nested
+        if (_spriteRenderer == null)
+        {
+            Debug.LogWarning($"[ClientFairyHealth on {gameObject.name}] SpriteRenderer not found in children.");
+        }
+    }
+
     void OnEnable()
     {
         // Reset health when enabled (e.g., when taken from pool)
         _currentHealth = maxHealth;
         _isExtraAttackTrigger = false; // Reset trigger status on enable
         _owningPlayerRole = PlayerRole.None; // Reset role on enable
+        // Reset color in case it was flashing when disabled
+        if (_spriteRenderer != null) _spriteRenderer.color = Color.white;
+        if (_flashCoroutine != null) 
+        { 
+            StopCoroutine(_flashCoroutine); 
+            _flashCoroutine = null; 
+        }
     }
 
     public void Initialize(int startingHealth, bool isTrigger, PlayerRole ownerRole)
@@ -56,6 +85,9 @@ public class ClientFairyHealth : MonoBehaviour
     public void TakeDamage(int amount, ulong attackerOwnerClientId)
     {
         if (!IsAlive) return;
+
+        // Trigger flash effect
+        FlashRed();
 
         _currentHealth -= amount;
         // Debug.Log($"{gameObject.name} took {amount} damage from Client {attackerOwnerClientId}, health is now {_currentHealth}");
@@ -144,7 +176,8 @@ public class ClientFairyHealth : MonoBehaviour
             {
                 shockwaveScript.Initialize(
                     0.1f, 
-                    deathShockwaveMaxRadius,
+                    deathShockwaveMaxRadius, // Visual radius
+                    deathShockwaveEffectiveMaxRadius, // Effective radius
                     deathShockwaveDuration,
                     null, 
                     deathShockwaveDamage,
@@ -199,5 +232,57 @@ public class ClientFairyHealth : MonoBehaviour
             Debug.LogWarning($"[ClientFairyHealth] ClientGameObjectPool instance missing. Destroying {gameObject.name} instead.", this);
             Destroy(gameObject); // Fallback
         }
+    }
+
+    // --- Damage Flash Logic ---
+
+    private void FlashRed()
+    {
+        if (_spriteRenderer == null || !gameObject.activeInHierarchy) return; // Don't flash if no renderer or disabled
+
+        // Stop any existing flash coroutine
+        if (_flashCoroutine != null)
+        {
+            StopCoroutine(_flashCoroutine);
+            // Ensure color is reset if interrupted
+             _spriteRenderer.color = Color.white; 
+        }
+
+        // Start a new flash coroutine
+        _flashCoroutine = StartCoroutine(FlashCoroutine());
+    }
+
+    private IEnumerator FlashCoroutine()
+    {
+        Color originalColor = Color.white; // Assuming base color is white
+        Color targetFlashColor = Color.Lerp(originalColor, _flashColor, _flashIntensity);
+
+        // Set to tinted flash color instantly
+        _spriteRenderer.color = targetFlashColor;
+
+        // Smoothly fade back to white over the flash duration
+        float elapsedTime = 0f;
+
+        while (elapsedTime < _flashDuration)
+        {
+            if (_spriteRenderer == null) // Object might have been destroyed/disabled
+            {
+                _flashCoroutine = null;
+                yield break; 
+            }
+            // Lerp from the tinted color back to original
+            _spriteRenderer.color = Color.Lerp(targetFlashColor, originalColor, elapsedTime / _flashDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null; // Wait for the next frame
+        }
+
+        // Ensure it ends exactly on the original color
+        if (_spriteRenderer != null) 
+        {
+            _spriteRenderer.color = originalColor;
+        }
+
+        // Coroutine finished
+        _flashCoroutine = null;
     }
 } 

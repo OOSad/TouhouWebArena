@@ -10,7 +10,8 @@ using TouhouWebArena; // For PlayerRole
 public class ClientFairyShockwave : MonoBehaviour
 {
     // Expansion Settings 
-    private float _maxRadius = 2f; 
+    private float _visualMaxRadius = 2f; 
+    private float _effectiveMaxRadius = 2f; // Added for decoupled radius
     private float _expansionDuration = 0.5f; 
     private AnimationCurve _expansionCurve = AnimationCurve.EaseInOut(0, 0, 1, 1); 
     private int _damageToDeal = 5;
@@ -59,11 +60,11 @@ public class ClientFairyShockwave : MonoBehaviour
     
     public float GetInitialColliderRadiusForVisuals() => 0f; // Visuals start from 0 radius effectively
 
-    public void Initialize(float startRadius, float targetMaxRadius, float duration, AnimationCurve curve, int damage, ulong ownerId, PlayerRole ownerRole)
+    public void Initialize(float startRadius, float visualMaxRadius, float effectiveMaxRadius, float duration, AnimationCurve curve, int damage, ulong ownerId, PlayerRole ownerRole)
     {
         transform.localScale = Vector3.one; 
-        // _circleCollider.radius = startRadius; // Collider starts at 0 and expands
-        _maxRadius = targetMaxRadius;
+        _visualMaxRadius = visualMaxRadius;
+        _effectiveMaxRadius = effectiveMaxRadius;
         _expansionDuration = duration;
         _expansionCurve = curve ?? AnimationCurve.EaseInOut(0, 0, 1, 1); 
         _damageToDeal = damage;
@@ -109,12 +110,16 @@ public class ClientFairyShockwave : MonoBehaviour
         _currentExpansionTime += Time.deltaTime;
         float progress = Mathf.Clamp01(_currentExpansionTime / _expansionDuration);
         float curveValue = _expansionCurve.Evaluate(progress); 
-        float currentRadius = Mathf.Lerp(0, _maxRadius, curveValue); 
-        _circleCollider.radius = currentRadius; // Expand the actual collider
+        
+        // Update Collider Radius based on effective max radius
+        float currentEffectiveRadius = Mathf.Lerp(0, _effectiveMaxRadius, curveValue); 
+        _circleCollider.radius = currentEffectiveRadius;
 
         if (_shockwaveVisuals != null)
         {
-            _shockwaveVisuals.UpdateVisuals(progress, currentRadius); // Update visuals based on current radius
+            // Update visuals based on visual max radius
+            float currentVisualRadius = Mathf.Lerp(0, _visualMaxRadius, curveValue); 
+            _shockwaveVisuals.UpdateVisuals(progress, currentVisualRadius); 
         }
 
         if (_currentExpansionTime >= _expansionDuration)

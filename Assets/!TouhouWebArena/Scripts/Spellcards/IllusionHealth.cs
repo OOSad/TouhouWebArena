@@ -19,9 +19,13 @@ public class IllusionHealth : NetworkBehaviour
     // Server-side cache.
     private ServerIllusionOrchestrator _serverOrchestrator; // Cached on server to forward death reports.
 
+    // ADDED: Client-side cache for visuals
+    private ClientIllusionView _clientView;
+
     /// <summary>
     /// Called when the network object is spawned.
     /// On the server, it caches the ServerIllusionOrchestrator component.
+    /// On the client, it caches the ClientIllusionView component.
     /// </summary>
     public override void OnNetworkSpawn()
     {
@@ -33,6 +37,14 @@ public class IllusionHealth : NetworkBehaviour
             {
                 Debug.LogError($"[IllusionHealth] ServerIllusionOrchestrator component not found on {gameObject.name} on the server!");
             }
+        }
+        if (IsClient)
+        {
+             _clientView = GetComponent<ClientIllusionView>();
+             if (_clientView == null)
+             {
+                Debug.LogError($"[IllusionHealth] ClientIllusionView component not found on {gameObject.name} on the client! Flash effect will not work.");
+             }
         }
     }
 
@@ -88,12 +100,15 @@ public class IllusionHealth : NetworkBehaviour
     /// Client-side method to apply damage to the illusion.
     /// Decrements health. If health drops to or below zero, marks the illusion as dead
     /// and calls ReportDeathToServerRpc to notify the server.
-    /// (Client-side death visual effects could be triggered here).
+    /// Calls the flash effect on ClientIllusionView.
     /// </summary>
     /// <param name="amount">The amount of damage to apply.</param>
     private void TakeDamageClientSide(float amount)
     {
         if (isDead) return;
+
+        // ADDED: Trigger flash via ClientIllusionView
+        _clientView?.FlashRed();
 
         currentHealth -= amount;
         currentHealth = Mathf.Max(0, currentHealth);

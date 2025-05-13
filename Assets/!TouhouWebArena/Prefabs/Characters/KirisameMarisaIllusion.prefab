@@ -190,6 +190,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  _illusionSpriteRenderer: {fileID: 6391845667892019718}
+  _flashColor: {r: 1, g: 0, b: 0, a: 1}
+  _flashDuration: 0.1
 --- !u!114 &2912983995515387413
 MonoBehaviour:
   m_ObjectHideFlags: 0

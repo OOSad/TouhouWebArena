@@ -188,6 +188,10 @@ MonoBehaviour:
   activatedInitialUpwardSpeed: 0.5
   activatedMaxUpwardSpeed: 3
   activatedAcceleration: 1
+  normalSpiritMaxLifetime: 15
+  offScreenLimitTop: 7
+  offScreenLimitBottom: -7
+  offScreenLimitHorizontal: 10
 --- !u!114 &1378189848088575343
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -203,9 +207,14 @@ MonoBehaviour:
   shockwavePrefabId: FairyShockwave
   normalSpiritShockwaveMaxRadius: 0.5
   activatedSpiritShockwaveMaxRadius: 1.5
+  normalSpiritShockwaveEffectiveMaxRadius: 0.25
+  activatedSpiritShockwaveEffectiveMaxRadius: 0.5
   shockwaveDuration: 0.5
   shockwaveDamage: 1
   shockwaveInitialRadius: 0.1
+  _flashColor: {r: 1, g: 0, b: 0, a: 1}
+  _flashDuration: 0.1
+  _flashIntensity: 0.5
 --- !u!114 &4357195408721403958
 MonoBehaviour:
   m_ObjectHideFlags: 0

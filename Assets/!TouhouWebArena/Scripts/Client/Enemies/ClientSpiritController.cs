@@ -26,8 +26,8 @@ using System.Collections;
         private ClientSpiritTimeoutAttack _timeoutAttack;
 
         [Header("Visuals")]
-        [SerializeField] private GameObject normalSpiritVisual;
-        [SerializeField] private GameObject activatedSpiritVisual;
+        [SerializeField] public GameObject normalSpiritVisual;
+        [SerializeField] public GameObject activatedSpiritVisual;
 
         [Header("Activated Movement Settings")]
         [SerializeField] private float activatedInitialUpwardSpeed = 0.5f;
@@ -41,6 +41,26 @@ using System.Collections;
         [SerializeField] private float offScreenLimitHorizontal = 10f;
 
         private Coroutine _normalLifetimeCoroutine;
+
+        // ADDED: Helper to reset normal visual color
+        private void ResetNormalVisualColor()
+        {
+            if (normalSpiritVisual != null)
+            {
+                SpriteRenderer sr = normalSpiritVisual.GetComponentInChildren<SpriteRenderer>();
+                if (sr != null) sr.color = Color.white;
+            }
+        }
+
+        // ADDED: Helper to reset activated visual color
+        private void ResetActivatedVisualColor()
+        {
+            if (activatedSpiritVisual != null)
+            {
+                SpriteRenderer sr = activatedSpiritVisual.GetComponentInChildren<SpriteRenderer>();
+                if (sr != null) sr.color = Color.white;
+            }
+        }
 
         void Awake()
         {
@@ -70,6 +90,8 @@ using System.Collections;
             // Reset visuals to normal on initialize/reuse
             if (normalSpiritVisual != null) normalSpiritVisual.SetActive(true);
             if (activatedSpiritVisual != null) activatedSpiritVisual.SetActive(false);
+            ResetNormalVisualColor(); // ADDED: Ensure color is reset
+            ResetActivatedVisualColor(); // ADDED: Ensure color is reset (for safety, though inactive)
 
             // Stop any previous lifetime coroutine if re-initializing from pool
             if (_normalLifetimeCoroutine != null)
@@ -207,7 +229,11 @@ using System.Collections;
             Debug.Log("[ClientSpiritController] Spirit Activated! Moving up with initial speed: " + _currentSpeed, this);
 
             if (normalSpiritVisual != null) normalSpiritVisual.SetActive(false);
-            if (activatedSpiritVisual != null) activatedSpiritVisual.SetActive(true);
+            if (activatedSpiritVisual != null) 
+            {
+                activatedSpiritVisual.SetActive(true);
+                ResetActivatedVisualColor(); // ADDED: Ensure activated visual starts white
+            }
 
             // Notify Health component to reduce HP
             if (_spiritHealth != null) _spiritHealth.OnActivated();
@@ -236,6 +262,8 @@ using System.Collections;
             // Reset visuals on deinitialize
             if (normalSpiritVisual != null) normalSpiritVisual.SetActive(true);
             if (activatedSpiritVisual != null) activatedSpiritVisual.SetActive(false);
+            ResetNormalVisualColor(); // ADDED: Ensure color is reset
+            ResetActivatedVisualColor(); // ADDED: Ensure color is reset
 
             if (_normalLifetimeCoroutine != null)
             {

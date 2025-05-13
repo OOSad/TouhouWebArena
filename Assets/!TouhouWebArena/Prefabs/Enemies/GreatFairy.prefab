@@ -227,5 +227,9 @@ MonoBehaviour:
   maxHealth: 3
   deathShockwavePrefabId: FairyShockwave
   deathShockwaveMaxRadius: 2.5
+  deathShockwaveEffectiveMaxRadius: 1
   deathShockwaveDuration: 0.5
   deathShockwaveDamage: 1
+  _flashColor: {r: 1, g: 0, b: 0, a: 1}
+  _flashDuration: 0.1
+  _flashIntensity: 0.5

@@ -25,8 +25,15 @@ public class ClientIllusionView : NetworkBehaviour
 
     private ClientSpellcardActionRunner _actionRunner; // Component that executes the spellcard actions.
 
+    // ADDED: Visuals and Flash effect
+    [Header("Visuals & Flash")][SerializeField] private SpriteRenderer _illusionSpriteRenderer; 
+    [SerializeField] private Color _flashColor = Color.red;
+    [SerializeField] private float _flashDuration = 0.1f;
+    [Tooltip("How strong the flash color tint is (0=no tint, 1=full color).")]
+    [Range(0f, 1f)] [SerializeField] private float _flashIntensity = 0.5f;
+    private Coroutine _flashCoroutine;
+
     // Example: Visual components (uncomment and assign if using)
-    // [SerializeField] private SpriteRenderer _illusionSpriteRenderer; 
     // [SerializeField] private Animator _illusionAnimator;
 
     /// <summary>
@@ -66,6 +73,16 @@ public class ClientIllusionView : NetworkBehaviour
             Debug.LogWarning($"[ClientIllusionView] IllusionHealth component not found on {gameObject.name} at OnNetworkSpawn. Will try again in InitializeClientRpc.");
         }
         _illusionNetworkId = NetworkObject.NetworkObjectId; // Store our own ID
+
+        // Ensure renderer is found
+        if (_illusionSpriteRenderer == null)
+        {
+             _illusionSpriteRenderer = GetComponentInChildren<SpriteRenderer>();
+             if (_illusionSpriteRenderer == null)
+             {
+                Debug.LogError($"[ClientIllusionView] Illusion SpriteRenderer not assigned and not found in children! Flash effect will not work.");
+             }
+        }
     }
 
     /// <summary>
@@ -237,13 +254,85 @@ public class ClientIllusionView : NetworkBehaviour
         // The actual ServerRpc call will be made from IllusionHealth.cs
     }
 
+    // --- Damage Flash Logic ---
+
     /// <summary>
-    /// Called when the network object is despawned. Stops any active movement coroutines.
+    /// Called by IllusionHealth to trigger the visual flash effect.
+    /// </summary>
+    public void FlashRed()
+    {
+        if (_illusionSpriteRenderer == null || !gameObject.activeInHierarchy) return;
+
+        // Stop any existing flash coroutine
+        if (_flashCoroutine != null)
+        {
+            StopCoroutine(_flashCoroutine);
+            // Ensure color is reset if interrupted
+             _illusionSpriteRenderer.color = Color.white; 
+        }
+
+        // Start a new flash coroutine
+        _flashCoroutine = StartCoroutine(FlashCoroutine());
+    }
+
+    private IEnumerator FlashCoroutine()
+    {
+        Color originalColor = Color.white; // Assuming base color is white
+        Color targetFlashColor = Color.Lerp(originalColor, _flashColor, _flashIntensity);
+
+        // Set to tinted flash color instantly
+        _illusionSpriteRenderer.color = targetFlashColor;
+
+        // Smoothly fade back to white over the flash duration
+        float elapsedTime = 0f;
+
+        while (elapsedTime < _flashDuration)
+        {
+            if (_illusionSpriteRenderer == null || !gameObject.activeInHierarchy) // Object might have been destroyed/disabled
+            {
+                _flashCoroutine = null;
+                yield break; 
+            }
+            // Lerp from the tinted color back to original
+            _illusionSpriteRenderer.color = Color.Lerp(targetFlashColor, originalColor, elapsedTime / _flashDuration);
+            elapsedTime += Time.deltaTime;
+            yield return null; // Wait for the next frame
+        }
+
+        // Ensure it ends exactly on the original color
+        if (_illusionSpriteRenderer != null) 
+        {
+            _illusionSpriteRenderer.color = originalColor;
+        }
+
+        // Coroutine finished
+        _flashCoroutine = null;
+    }
+
+    /// <summary>
+    /// Called when the network object is despawned. Stops any active movement or flash coroutines.
     /// </summary>
     public override void OnNetworkDespawn()
     {
         if (_activeMoveCoroutine != null) { StopCoroutine(_activeMoveCoroutine); _activeMoveCoroutine = null;}
+        if (_flashCoroutine != null) { 
+            StopCoroutine(_flashCoroutine); 
+            _flashCoroutine = null; 
+            // Reset color on despawn just in case
+            if (_illusionSpriteRenderer != null) _illusionSpriteRenderer.color = Color.white;
+        }
         base.OnNetworkDespawn();
+    }
+
+    void OnDisable() // Also handle disabling
+    {
+         if (_activeMoveCoroutine != null) { StopCoroutine(_activeMoveCoroutine); _activeMoveCoroutine = null;}
+         if (_flashCoroutine != null) { 
+            StopCoroutine(_flashCoroutine); 
+            _flashCoroutine = null; 
+            // Reset color on disable
+            if (_illusionSpriteRenderer != null) _illusionSpriteRenderer.color = Color.white;
+        }
     }
 }
 
