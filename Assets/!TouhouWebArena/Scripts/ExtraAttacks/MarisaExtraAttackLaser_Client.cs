@@ -109,6 +109,14 @@ public class MarisaExtraAttackLaser_Client : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Public method called by external systems (like spellcard clear) to force this object back to the pool.
+    /// </summary>
+    public void ForceReturnToPoolByClear()
+    {
+        ReturnToPool();
+    }
+
     private void ReturnToPool()
     {
         // Reset rotation on pool return if it was tilted

@@ -124,7 +124,7 @@ Projectiles can be cleared by various game mechanics, such as player deathbombs 
         *   It iterates through colliders:
             *   If `collider.gameObject.layer == LayerMask.NameToLayer("EnemyProjectiles")`, it gets the `ClientProjectileLifetime` component from the bullet and calls `ForceReturnToPool()`. This clears all bullet types on this layer within the radius, regardless of their original owner.
             *   It also checks for `ClientFairyHealth` or `ClientSpiritController` components to clear the caster's own entities if their `OwningPlayerRole` matches the caster's role.
-            *   Additionally, it checks for `ReimuExtraAttackOrb_Client` and `MarisaExtraAttackLaser_Client` components. If found and their `AttackerClientId` does *not* match the caster's resolved client ID, their `ClientProjectileLifetime` is retrieved and `ForceReturnToPool()` is called to clear these hostile extra attacks.
+            *   Additionally, it checks for `ReimuExtraAttackOrb_Client` and `MarisaExtraAttackLaser_Client` components. If found and their `AttackerClientId` does *not* match the caster's resolved client ID, it **directly calls the component's `ForceReturnToPoolByClear()` method** to clear these hostile extra attacks.
     *   Level 2/3 spellcard activations do *not* clear illusions via this client-side RPC. Level 4 activations have an additional server-side step to despawn enemy illusions targeting the caster.
 
 *   **Enemy Death Shockwave Clear (e.g., `ClientFairyShockwave`):**
@@ -136,12 +136,12 @@ Projectiles can be cleared by various game mechanics, such as player deathbombs 
     *   This ensures enemy shockwaves only clear the *other* player's projectiles (and other entities like fairies/spirits based on similar ownership checks).
 
 *   **Player Deathbomb Clear:**
-    *   The player deathbomb (`PlayerDeathBomb.ClearObjectsInRadiusClientRpc`) uses a similar mechanism to the spellcard activation clear.
-    *   It performs a local `Physics2D.OverlapCircleAll`.
-    *   It clears objects based on ownership:
-        *   `ClientFairyHealth` or `ClientSpiritController`: Clears if `OwningPlayerRole == bombingPlayerRole`.
-        *   `StageSmallBulletMoverScript`: Clears if `OwningPlayerRole == bombingPlayerRole`.
-    *   This is designed to clear the bombing player's *own* entities and hostile projectiles attributed to them.
+    *   The player deathbomb (`PlayerDeathBomb.ClearObjectsInRadiusClientRpc`) iterates through all active objects from `ClientGameObjectPool`.
+    *   It clears objects within the bomb radius based on type and ownership:
+        *   `StageSmallBulletMoverScript`: Clears (calls `ForceReturnToPoolByBomb()`).
+        *   `ClientFairyHealth` or `ClientSpiritController`: Damages if `OwningPlayerRole == bombingPlayerRole`.
+        *   **`ReimuExtraAttackOrb_Client` or `MarisaExtraAttackLaser_Client`**: Clears by **directly calling the component's `ForceReturnToPoolByClear()` method**. (Deathbombs clear extra attacks regardless of owner).
+        *   `ClientProjectileLifetime`: For any other object with this component, calls `ForceReturnToPool()`.
 
 In all cases, the end result for a cleared projectile is that its `ClientProjectileLifetime.ForceReturnToPool()` method is called, deactivating it and returning it to the `ClientGameObjectPool`.
 

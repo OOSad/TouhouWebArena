@@ -131,6 +131,26 @@ public class PlayerDeathBomb : NetworkBehaviour
                     continue;
                 }
 
+                // *** NEW: Check for Extra Attacks BEFORE generic projectile check ***
+                ReimuExtraAttackOrb_Client reimuOrb = activeGO.GetComponent<ReimuExtraAttackOrb_Client>();
+                if (reimuOrb != null)
+                {
+                    // No owner check needed for deathbomb - clear all extra attacks
+                    reimuOrb.ForceReturnToPoolByClear();
+                    objectsClearedCount++;
+                    continue;
+                }
+
+                MarisaExtraAttackLaser_Client marisaLaser = activeGO.GetComponent<MarisaExtraAttackLaser_Client>();
+                if (marisaLaser != null)
+                {
+                    // No owner check needed for deathbomb - clear all extra attacks
+                    marisaLaser.ForceReturnToPoolByClear();
+                    objectsClearedCount++;
+                    continue;
+                }
+                // *** END NEW ***
+
                 // ADDED: Generic projectile clearing using ClientProjectileLifetime
                 // This should catch BaseBullet prefabs if they have this component.
                 ClientProjectileLifetime projectileLifetime = activeGO.GetComponent<ClientProjectileLifetime>();

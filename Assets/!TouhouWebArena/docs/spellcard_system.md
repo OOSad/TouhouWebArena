@@ -413,7 +413,7 @@ When a player successfully activates a spellcard (Level 2, 3, or 4) after the co
     *   It iterates through the detected colliders:
         *   If `collider.gameObject.layer == LayerMask.NameToLayer("EnemyProjectiles")`, it gets the `ClientProjectileLifetime` component and calls `ForceReturnToPool()` on it. This clears all types of bullets on that layer within the radius, regardless of owner.
         *   If it finds a `ClientFairyHealth` or `ClientSpiritController` component AND that component's `OwningPlayerRole == casterRole`, it calls `ForceReturnToPool()` on that component. (This clears the caster's *own* fairies/spirits).
-        *   If it finds a `ReimuExtraAttackOrb_Client` or `MarisaExtraAttackLaser_Client` component AND its `AttackerClientId` does not match the caster's resolved client ID, it gets the component's `ClientProjectileLifetime` and calls `ForceReturnToPool()` on it. This clears the opponent's active extra attacks.
+        *   If it finds a `ReimuExtraAttackOrb_Client` or `MarisaExtraAttackLaser_Client` component AND its `AttackerClientId` does not match the caster's resolved client ID, it **directly calls the component's `ForceReturnToPoolByClear()` method**. This clears the opponent's active extra attacks.
 *   **Level 2 & 3:** This client-side clear does **not** affect illusions.
 *   **Level 4:** In addition to the client-side clear effect described above, the server-side `ServerAttackSpawner.TriggerSpellcardClear` logic *also* explicitly finds and despawns any active enemy illusions targeting the caster *before* sending the client RPC.
 *   *(TODO: Add visual effect for this clear)*. 

@@ -87,7 +87,8 @@ To ensure all clients see the exact same extra attack (e.g., same spawn position
         *   The orb **does not despawn** upon hitting a player. It continues its trajectory.
     *   **Other Collisions:** Despawns (`ReturnToPool()`) if it hits a `ClientFairyHealth` or `ClientSpiritHealth`.
     *   **Lifetime:** Automatically returns to the pool after a set `lifetime` (countdown in `Update()`).
-    *   **Pooling:** Uses `ClientGameObjectPool.Instance.ReturnObject()`.
+    *   **Pooling:** Uses `ClientGameObjectPool.Instance.ReturnObject()` via its internal `ReturnToPool()` method.
+    *   **Clearing:** Has a public `ForceReturnToPoolByClear()` method that calls `ReturnToPool()`, allowing external systems (bombs, spellcard clears) to despawn it.
 
 ### Marisa's Extra Attack: Earthlight Ray (Laser)
 
@@ -107,7 +108,8 @@ To ensure all clients see the exact same extra attack (e.g., same spawn position
                 *   Deals 1 damage per frame of contact by calling `PlayerExtraAttackRelay.LocalInstance.ReportExtraAttackPlayerHitServerRpc()`.
                 *   The player's own invincibility frames (I-frames, handled server-side by `PlayerHealth`) are responsible for preventing multiple damage instances from a single laser pass.
     *   **Lifetime:** Automatically returns to the pool after `activeDuration` (countdown in `Update()`).
-    *   **Pooling:** Resets rotation to identity, then uses `ClientGameObjectPool.Instance.ReturnObject()`.
+    *   **Pooling:** Resets rotation to identity, then uses `ClientGameObjectPool.Instance.ReturnObject()` via its internal `ReturnToPool()` method.
+    *   **Clearing:** Has a public `ForceReturnToPoolByClear()` method that calls `ReturnToPool()`, allowing external systems (bombs, spellcard clears) to despawn it.
 
 ## Damage Application (Server-Authoritative)
 
@@ -146,9 +148,11 @@ While the extra attacks are visually client-simulated, the actual damage to play
 *   **`ReimuExtraAttackOrb_Client.cs` (Client-Side, on Reimu's Orb Prefab):**
     *   Manages orb's physics-based movement, lifetime, collision detection (player damage report, fairy/spirit despawn), and pooling.
     *   `Initialize` method now accepts a `predeterminedSidewaysForce`.
+    *   Has `ForceReturnToPoolByClear()` for external despawning.
 *   **`MarisaExtraAttackLaser_Client.cs` (Client-Side, on Marisa's Laser Prefab):**
     *   Manages laser's visuals (SpriteRenderer), activation delay, continuous damage logic (player damage report), lifetime, and pooling.
     *   `Initialize` method now accepts `playBounds` (for height) and a `predeterminedTiltAngle`.
+    *   Has `ForceReturnToPoolByClear()` for external despawning.
 *   **Supporting Manager Scripts (Client-Side Singletons):**
     *   `PlayerDataManager.cs`: Provides player character/role from `OwnerClientId`.
     *   `SpawnAreaManager.cs`: Provides opponent's play area bounds/transforms for targeting and positioning calculations.

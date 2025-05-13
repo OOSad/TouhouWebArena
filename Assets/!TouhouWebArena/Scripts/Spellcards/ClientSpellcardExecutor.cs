@@ -219,13 +219,13 @@ public class ClientSpellcardExecutor : NetworkBehaviour
             // Clear Opponent's Reimu Orb
             if (col.TryGetComponent(out ReimuExtraAttackOrb_Client reimuOrb))
             {
+                // Debug.Log($"[ClearEffect] Found Reimu Orb: {col.gameObject.name}, AttackerID: {reimuOrb.AttackerClientId}, CasterID: {casterPlayerClientId}"); // DEBUG
                 // Compare client IDs
                 if (casterPlayerClientId != ulong.MaxValue && reimuOrb.AttackerClientId != casterPlayerClientId && reimuOrb.AttackerClientId != 0)
                 {
-                    if (col.TryGetComponent(out ClientProjectileLifetime projectileLifetime))
-                    {
-                        projectileLifetime.ForceReturnToPool();
-                    }
+                    // Debug.Log($"-- Orb belongs to opponent, attempting clear."); // DEBUG
+                    reimuOrb.ForceReturnToPoolByClear(); // MODIFIED: Call new method
+                    // Debug.Log($"--- Called ForceReturnToPoolByClear on Reimu Orb."); // DEBUG
                 }
                 continue;
             }
@@ -233,13 +233,13 @@ public class ClientSpellcardExecutor : NetworkBehaviour
             // Clear Opponent's Marisa Laser
             if (col.TryGetComponent(out MarisaExtraAttackLaser_Client marisaLaser))
             {
+                // Debug.Log($"[ClearEffect] Found Marisa Laser: {col.gameObject.name}, AttackerID: {marisaLaser.AttackerClientId}, CasterID: {casterPlayerClientId}"); // DEBUG
                 // Compare client IDs
                 if (casterPlayerClientId != ulong.MaxValue && marisaLaser.AttackerClientId != casterPlayerClientId && marisaLaser.AttackerClientId != 0)
                 {
-                     if (col.TryGetComponent(out ClientProjectileLifetime projectileLifetime))
-                    {
-                        projectileLifetime.ForceReturnToPool();
-                    }
+                    // Debug.Log($"-- Laser belongs to opponent, attempting clear."); // DEBUG
+                    marisaLaser.ForceReturnToPoolByClear(); // MODIFIED: Call new method
+                    // Debug.Log($"--- Called ForceReturnToPoolByClear on Marisa Laser."); // DEBUG
                 }
             }
             // --- END NEW ---
