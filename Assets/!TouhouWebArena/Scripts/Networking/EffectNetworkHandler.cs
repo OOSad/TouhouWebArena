@@ -30,11 +30,9 @@ public class EffectNetworkHandler : NetworkBehaviour
 
     // Note: ClientRpcParams are passed by the caller (the server)
     [ClientRpc]
-    public void SpawnStageBulletClientRpc(ulong explicitTargetClientId, FixedString64Bytes bulletPrefabID, Vector2 normalizedSpawnPosition, float actualSpeed, Vector2 direction, ClientRpcParams clientRpcParams = default)
+    public void SpawnStageBulletClientRpc(ulong explicitTargetClientId, FixedString64Bytes bulletPrefabID, Vector2 normalizedSpawnPosition, float actualSpeed, Vector2 direction, float bulletLifetime, bool isFromShockwaveClear, ClientRpcParams clientRpcParams = default)
     {
-        // All clients execute this to spawn the visual. 
-        // explicitTargetClientId indicates ON WHOSE FIELD the bullet should appear.
-        // Debug.Log($"[EffectNetworkHandler Client {NetworkManager.Singleton.LocalClientId}] Received SpawnStageBulletClientRpc. Bullet for player {explicitTargetClientId}'s field. Prefab: {bulletPrefabID}, NormPos: {normalizedSpawnPosition}, Speed: {actualSpeed}, Dir: {direction}.");
+        Debug.Log($"[EffectNetworkHandler Client {NetworkManager.Singleton.LocalClientId}] Received SpawnStageBulletClientRpc. Target: P{explicitTargetClientId}, Prefab: {bulletPrefabID}, NormPos: {normalizedSpawnPosition}, Speed: {actualSpeed}, Dir: {direction}, Lifetime: {bulletLifetime}, IsFromShockwaveClear: {isFromShockwaveClear}");
 
         PlayerData? targetedPlayerData = PlayerDataManager.Instance?.GetPlayerData(explicitTargetClientId);
         if (targetedPlayerData == null || !targetedPlayerData.HasValue)
@@ -76,7 +74,7 @@ public class EffectNetworkHandler : NetworkBehaviour
         StageSmallBulletMoverScript mover = bulletInstance.GetComponent<StageSmallBulletMoverScript>();
         if (mover != null)
         {
-            mover.Initialize(direction, actualSpeed, mover.MaxLifetime, targetedPlayerRole);
+            mover.Initialize(direction, actualSpeed, bulletLifetime, targetedPlayerRole);
         }
         else
         {
@@ -84,6 +82,6 @@ public class EffectNetworkHandler : NetworkBehaviour
         }
 
         bulletInstance.SetActive(true);
-        // Debug.Log($"[EffectNetworkHandler Client {NetworkManager.Singleton.LocalClientId}] Successfully spawned stage bullet {bulletPrefabID} at world pos {worldSpawnPos} in area for role {targetedPlayerRole} (Player {explicitTargetClientId}).");
+        // Debug.Log($"[EffectNetworkHandler Client {NetworkManager.Singleton.LocalClientId}] Successfully spawned stage bullet {bulletPrefabID} at world pos {worldSpawnPos} in area for role {targetedPlayerRole} (Player {explicitTargetClientId}). ShockwaveClear: {isFromShockwaveClear}");
     }
 } 

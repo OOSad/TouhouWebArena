@@ -17,11 +17,20 @@ public class ClientFairyShockwave : MonoBehaviour
     private int _damageToDeal = 5;
     private ulong _ownerIdForChainedDamage; 
     private PlayerRole _ownerPlayerRole = PlayerRole.None; // Role of the player whose side this shockwave belongs to
+    private bool _canSpawnCounterBullets = true; // NEW: Flag to control counter bullet spawning
 
     [Header("Damage Settings")]
     [Tooltip("How many times per second the shockwave can damage/clear the SAME object.")]
     [SerializeField] private float damageTickRate = 10f; // e.g., 10 times per second max per object
     private float _damageCooldownDuration; // Calculated from tick rate
+
+    [Header("Opponent Bullet Spawn Settings")]
+    [Tooltip("Prefab ID of the bullet to spawn on the opponent's side when this shockwave clears a bullet.")]
+    [SerializeField] private string opponentBulletPrefabId = "StageSmallBullet";
+    [Tooltip("Speed of the bullet spawned on the opponent's side.")]
+    [SerializeField] private float opponentBulletSpeed = 2.5f;
+    [Tooltip("Lifetime of the bullet spawned on the opponent's side.")]
+    [SerializeField] private float opponentBulletLifetime = 7f;
 
     // Components
     private CircleCollider2D _circleCollider;
@@ -31,6 +40,7 @@ public class ClientFairyShockwave : MonoBehaviour
     // State
     private float _currentExpansionTime = 0f;
     private bool _isExpanding = false;
+    private Color trueInitialColor; // Stores the full alpha color
     private Coroutine _despawnCoroutine;
     private Dictionary<Collider2D, float> _lastHitTime = new Dictionary<Collider2D, float>();
 
@@ -60,7 +70,7 @@ public class ClientFairyShockwave : MonoBehaviour
     
     public float GetInitialColliderRadiusForVisuals() => 0f; // Visuals start from 0 radius effectively
 
-    public void Initialize(float startRadius, float visualMaxRadius, float effectiveMaxRadius, float duration, AnimationCurve curve, int damage, ulong ownerId, PlayerRole ownerRole)
+    public void Initialize(float startRadius, float visualMaxRadius, float effectiveMaxRadius, float duration, AnimationCurve curve, int damage, ulong ownerId, PlayerRole ownerRole, bool canSpawnCounterBullets = true)
     {
         transform.localScale = Vector3.one; 
         _visualMaxRadius = visualMaxRadius;
@@ -70,6 +80,7 @@ public class ClientFairyShockwave : MonoBehaviour
         _damageToDeal = damage;
         _ownerIdForChainedDamage = ownerId;
         _ownerPlayerRole = ownerRole;
+        _canSpawnCounterBullets = canSpawnCounterBullets; // STORE THE FLAG
 
         _currentExpansionTime = 0f;
         _isExpanding = true;
@@ -171,10 +182,10 @@ public class ClientFairyShockwave : MonoBehaviour
         {
             targetRole = fairyHealth.OwningPlayerRole;
             if (targetRole == _ownerPlayerRole) // Check if target role matches shockwave owner role
-            {
-                fairyHealth.TakeDamage(_damageToDeal, _ownerIdForChainedDamage);
-                processed = true;
-            }
+        {
+            fairyHealth.TakeDamage(_damageToDeal, _ownerIdForChainedDamage);
+            processed = true;
+        }
         }
         
         // 2. Check Spirits (only if not already processed as a fairy)
@@ -203,13 +214,46 @@ public class ClientFairyShockwave : MonoBehaviour
             StageSmallBulletMoverScript stageMover = other.GetComponent<StageSmallBulletMoverScript>();
             if (stageMover != null)
             {
-                // ASSUMPTION: StageSmallBulletMoverScript will have OwningPlayerRole getter
-                targetRole = stageMover.OwningPlayerRole; 
-                if (targetRole == _ownerPlayerRole) // Check if bullet role matches shockwave owner role
+                PlayerRole bulletOwnerRole = stageMover.OwningPlayerRole;
+                if (bulletOwnerRole == _ownerPlayerRole) // Only clear bullets on the same side as the shockwave
                 {
-                    stageMover.ForceReturnToPoolByBomb(); 
-                    processed = true;
+                    Debug.Log($"[ClientFairyShockwave] Attempting to clear stage bullet {other.gameObject.name} owned by {bulletOwnerRole} (Shockwave Owner: {_ownerPlayerRole})");
+                stageMover.ForceReturnToPoolByBomb(); 
+                    _lastHitTime[other] = Time.time + _damageCooldownDuration; 
+
+                    if (PlayerAttackRelay.LocalInstance != null)
+                    {
+                        PlayerRole opponentRole = (_ownerPlayerRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
+                        if (_ownerPlayerRole == PlayerRole.None) opponentRole = PlayerRole.None; 
+
+                        if (opponentRole != PlayerRole.None)
+                        {
+                            if (_canSpawnCounterBullets) // CHECK THE FLAG
+                            {
+                                Debug.Log($"[ClientFairyShockwave (Counter Allowed)] Requesting opponent bullet spawn. Opponent: {opponentRole}, Prefab: {opponentBulletPrefabId}, Speed: {opponentBulletSpeed}, Lifetime: {opponentBulletLifetime}");
+                                PlayerAttackRelay.LocalInstance.RequestOpponentStageBulletSpawnServerRpc(
+                                    opponentRole,
+                                    opponentBulletPrefabId,
+                                    opponentBulletSpeed,
+                                    opponentBulletLifetime
+                                );
+            }
+                            else
+                            {
+                                Debug.Log($"[ClientFairyShockwave (Counter NOT Allowed)] Shockwave cleared bullet but will not spawn counter bullet.");
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[ClientFairyShockwave] Shockwave owner role is None, cannot determine opponent role for bullet spawn.", this);
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[ClientFairyShockwave] PlayerAttackRelay.LocalInstance is null. Cannot request opponent bullet spawn.", this);
+                    }
                 }
+                return; // Processed, exit
             }
 
             // Potential check for player bullets (BulletMovement) if they also need role-based clearing

@@ -21,6 +21,8 @@ public class PlayerAttackRelay : NetworkBehaviour
     private const string STAGE_LARGE_BULLET_PREFAB_ID = "StageLargeBullet";
     // --- End Corrected Prefab IDs ---
 
+    private const float DEFAULT_FAIRY_KILL_BULLET_LIFETIME = 7.0f;
+
     [Tooltip("Chance (0.0 to 1.0) of spawning a large bullet instead of a small one.")]
     [SerializeField, Range(0f, 1f)] private float largeBulletChance = 0.2f;
 
@@ -108,7 +110,16 @@ public class PlayerAttackRelay : NetworkBehaviour
                 Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds }
             };
             // Debug.Log($"[Server PlayerAttackRelay for {killerClientId} ({killerRole})] Telling EffectNetworkHandler to send RPC to ALL CLIENTS. Explicit Target for bullet: {opponentClientId} ({opponentRole}). Bullet: {bulletPrefabID}, NormPos: {normalizedSpawnPosition}, Speed: {actualSpeed}, Direction: {direction}.");
-            EffectNetworkHandler.Instance.SpawnStageBulletClientRpc(opponentClientId, bulletPrefabID, normalizedSpawnPosition, actualSpeed, direction, allClientsRpcParams);
+            EffectNetworkHandler.Instance.SpawnStageBulletClientRpc(
+                opponentClientId, 
+                bulletPrefabID, 
+                normalizedSpawnPosition, 
+                actualSpeed, 
+                direction, 
+                DEFAULT_FAIRY_KILL_BULLET_LIFETIME,
+                false, // isFromShockwaveClear
+                allClientsRpcParams
+            );
         }
         else
         {
@@ -226,6 +237,55 @@ public class PlayerAttackRelay : NetworkBehaviour
         }
         Debug.LogWarning("[PlayerAttackRelay GetOpponentClientId] Could not find opponent for Client " + myClientId + ". Connected clients: " + NetworkManager.Singleton.ConnectedClients.Count);
         return ulong.MaxValue;
+    }
+
+    [ServerRpc]
+    public void RequestOpponentStageBulletSpawnServerRpc(PlayerRole targetOpponentRole, FixedString64Bytes bulletPrefabId, float bulletSpeed, float bulletLifetime, ServerRpcParams rpcParams = default)
+    {
+        ulong requesterClientId = rpcParams.Receive.SenderClientId;
+        Debug.Log($"[Server PlayerAttackRelay] Received RequestOpponentStageBulletSpawnServerRpc from {requesterClientId} for opponent {targetOpponentRole}. Bullet: {bulletPrefabId}, InitialSpeedParam: {bulletSpeed}, Lifetime: {bulletLifetime}");
+
+        PlayerData? targetPlayerData = PlayerDataManager.Instance.GetPlayerDataByRole(targetOpponentRole);
+
+        if (!targetPlayerData.HasValue)
+        {
+            Debug.LogWarning($"[Server PlayerAttackRelay] Could not find PlayerData for target role {targetOpponentRole} to spawn shockwave bullet.");
+            return;
+        }
+        ulong targetClientId = targetPlayerData.Value.ClientId;
+
+        // --- Apply randomization similar to ReportFairyKillServerRpc --- 
+        Vector2 normalizedSpawnPosition = new Vector2(Random.value, Random.value); 
+        
+        float actualSpeedToUse = Random.Range(minStageBulletSpeed, maxStageBulletSpeed);
+        float angleOffset = Random.Range(-maxStageBulletAngleOffset, maxStageBulletAngleOffset);
+        Quaternion rotation = Quaternion.AngleAxis(angleOffset, Vector3.forward);
+        Vector2 directionToUse = rotation * Vector2.down;
+        // --- End randomization --- 
+
+        if (EffectNetworkHandler.Instance != null)
+        {
+            ClientRpcParams allClientsRpcParams = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds }
+            };
+            
+            EffectNetworkHandler.Instance.SpawnStageBulletClientRpc(
+                targetClientId, 
+                bulletPrefabId,
+                normalizedSpawnPosition, // Randomized
+                actualSpeedToUse,      // Randomized
+                directionToUse,        // Randomized
+                bulletLifetime, 
+                true, // isFromShockwaveClear
+                allClientsRpcParams
+            );
+             Debug.Log($"[Server PlayerAttackRelay] Called EffectNetworkHandler.SpawnStageBulletClientRpc for Client {targetClientId} ({targetOpponentRole}). Bullet: {bulletPrefabId}, RandomizedPos: {normalizedSpawnPosition}, RandomizedSpeed: {actualSpeedToUse}, RandomizedDir: {directionToUse}, Lifetime: {bulletLifetime}, IsShockwaveClear: true");
+        }
+        else
+        {
+            Debug.LogError($"[Server PlayerAttackRelay] EffectNetworkHandler is null. Cannot send RPC for shockwave bullet spawn.");
+        }
     }
 }
 

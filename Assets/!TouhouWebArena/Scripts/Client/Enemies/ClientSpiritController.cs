@@ -311,7 +311,7 @@ using System.Collections;
                 // Fallback if health component is missing for some reason
                 Debug.LogWarning($"[ClientSpiritController] ForceReturnToPool called on {gameObject.name}, but _spiritHealth is null. Returning via ClientGameObjectPool directly.");
                 if (ClientGameObjectPool.Instance != null) 
-                {
+        {
                     ClientGameObjectPool.Instance.ReturnObject(gameObject);
                 }
                 else 

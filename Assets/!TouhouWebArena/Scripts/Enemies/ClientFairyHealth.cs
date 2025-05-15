@@ -182,7 +182,8 @@ public class ClientFairyHealth : MonoBehaviour
                     null, 
                     deathShockwaveDamage,
                     killerClientId, 
-                    this.OwningPlayerRole
+                    this.OwningPlayerRole,
+                    true // canSpawnCounterBullets
                 );
                 // shockwaveInstance.SetActive(true); // Already set active?
             }

@@ -65,7 +65,7 @@ public class ClientSpellcardExecutor : NetworkBehaviour
         }
 
         if (spellLevel == 4 && spellcardBaseData is Level4SpellcardData level4Data)
-        {
+        {             
             // TODO: Pass sharedRandomOffset to Level 4 handling if needed
             // HandleLevel4Execution(casterClientId, targetClientId, level4Data, originPosition, originRotation, sharedRandomOffset); // Placeholder for now
             Debug.LogWarning("[ClientSpellcardExecutor] Level 4 spellcard execution initiated, but HandleLevel4Execution is not fully implemented yet.");
@@ -165,11 +165,6 @@ public class ClientSpellcardExecutor : NetworkBehaviour
         ulong casterPlayerClientId = ulong.MaxValue;
         if (PlayerDataManager.Instance != null && (casterRole == PlayerRole.Player1 || casterRole == PlayerRole.Player2))
         {
-            // Iterate through the player list to find the client ID for the caster role
-            // Need to access the player list somehow. Assuming PlayerDataManager has a way, e.g., a public property or method returning the list.
-            // Let's try accessing the NetworkList directly (might need adjustment based on actual implementation)
-            // NetworkList<PlayerData> playerList = PlayerDataManager.Instance.players; // Example: Assuming direct access (unlikely)
-            // Better: Assume PlayerDataManager has a method like GetPlayerDataByRole
             PlayerData? casterData = PlayerDataManager.Instance.GetPlayerDataByRole(casterRole);
             if (casterData.HasValue)
             {
@@ -182,14 +177,67 @@ public class ClientSpellcardExecutor : NetworkBehaviour
              Debug.LogWarning($"[ClientSpellcardExecutor] Could not resolve ClientId for casterRole {casterRole}. Cannot reliably clear opponent extra attacks.");
         }
 
+        // Define defaults for revenge bullets spawned by spellcard clear
+        string revengeBulletPrefabId = "StageSmallBullet"; // Default, same as ClientFairyShockwave
+        float revengeBulletSpeed = 2.5f;              // Default, same as ClientFairyShockwave
+        float revengeBulletLifetime = 7f;             // Default, same as ClientFairyShockwave
+
         foreach (Collider2D col in colliders)
         {
+            // --- Handle StageSmallBulletMoverScript ---
+            if (col.TryGetComponent(out StageSmallBulletMoverScript stageBulletMover))
+            {
+                if (stageBulletMover.OwningPlayerRole == casterRole) // Clear bullets on the caster's side
+                {
+                    Debug.Log($"[ClientSpellcardExecutor] Clearing stage bullet {col.gameObject.name} owned by {stageBulletMover.OwningPlayerRole} (Caster: {casterRole})");
+                    stageBulletMover.ForceReturnToPoolByBomb(); // Or use IClearable.Clear(true, casterRole) if appropriate
+
+                    // Trigger revenge bullet
+                    if (PlayerAttackRelay.LocalInstance != null)
+                    {
+                        PlayerRole opponentRole = (casterRole == PlayerRole.Player1) ? PlayerRole.Player2 : PlayerRole.Player1;
+                        if (casterRole == PlayerRole.None) opponentRole = PlayerRole.None; 
+
+                        if (opponentRole != PlayerRole.None)
+                        {
+                            // Spellcard clears should always spawn counter bullets if applicable
+                            Debug.Log($"[ClientSpellcardExecutor] Requesting opponent bullet spawn due to spellcard clear. Opponent: {opponentRole}, Prefab: {revengeBulletPrefabId}, Speed: {revengeBulletSpeed}, Lifetime: {revengeBulletLifetime}");
+                            PlayerAttackRelay.LocalInstance.RequestOpponentStageBulletSpawnServerRpc(
+                                opponentRole,
+                                revengeBulletPrefabId,
+                                revengeBulletSpeed,
+                                revengeBulletLifetime
+                            );
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[ClientSpellcardExecutor] Caster role is None, cannot determine opponent role for bullet spawn.", this);
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[ClientSpellcardExecutor] PlayerAttackRelay.LocalInstance is null. Cannot request opponent bullet spawn.", this);
+                    }
+                }
+                continue; // Move to next collider after processing a stage bullet
+            }
+
             // Clear Enemy Projectiles (Layer Check - Clears regardless of owner)
+            // Note: StageSmallBulletMoverScript might also be on "EnemyProjectiles" layer.
+            // The specific check above handles it with role and revenge logic.
+            // This block will catch other projectiles on this layer that aren't StageSmallBulletMoverScript.
             if (col.gameObject.layer == LayerMask.NameToLayer("EnemyProjectiles"))
             {
                 if (col.TryGetComponent(out ClientProjectileLifetime projectileLifetime))
                 {
-                    projectileLifetime.ForceReturnToPool();
+                    // Check if it's NOT a StageSmallBulletMoverScript to avoid double processing
+                    // or if we want a more generic clear without revenge for other types.
+                    // For now, if it has ClientProjectileLifetime and wasn't a StageSmallBullet, clear it.
+                    if (col.GetComponent<StageSmallBulletMoverScript>() == null) 
+                    {
+                        Debug.Log($"[ClientSpellcardExecutor] Clearing generic EnemyProjectile {col.gameObject.name}");
+                        projectileLifetime.ForceReturnToPool();
+                    }
                 }
                 continue;
             }

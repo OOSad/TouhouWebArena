@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   defaultSpeed: 3
-  maxLifetime: 15
+  maxLifetime: 30
   isNormallyClearable: 1
 --- !u!114 &623010959505179856
 MonoBehaviour:

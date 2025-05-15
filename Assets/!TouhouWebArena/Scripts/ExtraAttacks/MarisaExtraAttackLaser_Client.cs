@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Netcode;
 
 // Assuming PlayerRole is global or in an accessible namespace
 // Assuming PlayAreaBounds is the struct defined in ClientExtraAttackManager or globally
@@ -90,7 +91,9 @@ public class MarisaExtraAttackLaser_Client : MonoBehaviour
                 PlayerHealth victimPlayerHealth = playerHitbox.GetComponentInParent<PlayerHealth>(); 
                 if (victimPlayerHealth != null)
                 {
-                    if (victimPlayerHealth.OwnerClientId != this._attackerClientId)
+                    // Only report hit if it's an opponent AND this client is the victim
+                    if (victimPlayerHealth.OwnerClientId != this._attackerClientId &&
+                        NetworkManager.Singleton.LocalClientId == victimPlayerHealth.OwnerClientId)
                     {
                         // Debug.Log($"{gameObject.name} (Attacker: {this._attackerClientId}) hit OPPONENT PlayerHitbox (Victim: {victimPlayerHealth.OwnerClientId}). Reporting. Dmg: {damageAmount}");
                         

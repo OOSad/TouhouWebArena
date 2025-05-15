@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Netcode;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D), typeof(PooledObjectInfo))]
 public class ReimuExtraAttackOrb_Client : MonoBehaviour
@@ -96,7 +97,9 @@ public class ReimuExtraAttackOrb_Client : MonoBehaviour
                 PlayerHealth victimPlayerHealth = playerHitbox.GetComponentInParent<PlayerHealth>(); 
                 if (victimPlayerHealth != null)
                 {
-                    if (victimPlayerHealth.OwnerClientId != this._attackerClientId)
+                    // Only report hit if it's an opponent AND this client is the victim
+                    if (victimPlayerHealth.OwnerClientId != this._attackerClientId && 
+                        NetworkManager.Singleton.LocalClientId == victimPlayerHealth.OwnerClientId)
                     {
                         int damageAmount = 1; 
                         

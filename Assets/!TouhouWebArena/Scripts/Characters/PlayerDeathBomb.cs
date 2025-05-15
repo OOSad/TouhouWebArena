@@ -107,8 +107,8 @@ public class PlayerDeathBomb : NetworkBehaviour
                     if (fairyHealth.OwningPlayerRole == bombingPlayerRole) 
                     {
                         // Debug.Log($"[Client DeathBomb] Damaging Fairy {activeGO.name} (Role: {fairyHealth.OwningPlayerRole}) with bomb from Role: {bombingPlayerRole}.");
-                        fairyHealth.TakeDamage(BOMB_DAMAGE_TO_ENEMIES, bombingPlayerClientId); // Pass bomber's ID
-                        objectsClearedCount++; // Counting cleared/damaged enemies too
+                    fairyHealth.TakeDamage(BOMB_DAMAGE_TO_ENEMIES, bombingPlayerClientId); // Pass bomber's ID
+                    objectsClearedCount++; // Counting cleared/damaged enemies too
                     }
                     // else Debug.Log($"[Client DeathBomb] Skipping Fairy {activeGO.name} (Role: {fairyHealth.OwningPlayerRole}) - Bomb from Role: {bombingPlayerRole}.");
                     continue;
@@ -124,8 +124,8 @@ public class PlayerDeathBomb : NetworkBehaviour
                     if (spiritController != null && spiritController.OwningPlayerRole == bombingPlayerRole)
                     {
                         // Debug.Log($"[Client DeathBomb] Damaging Spirit {activeGO.name} (Role: {spiritController.OwningPlayerRole}) with bomb from Role: {bombingPlayerRole}.");
-                        spiritHealth.TakeDamage(BOMB_DAMAGE_TO_ENEMIES, bombingPlayerClientId);
-                        objectsClearedCount++; // Counting cleared/damaged enemies too
+                    spiritHealth.TakeDamage(BOMB_DAMAGE_TO_ENEMIES, bombingPlayerClientId);
+                    objectsClearedCount++; // Counting cleared/damaged enemies too
                     }
                     // else Debug.Log($"[Client DeathBomb] Skipping Spirit {activeGO.name} (Role: {spiritController?.OwningPlayerRole}) - Bomb from Role: {bombingPlayerRole}.");
                     continue;

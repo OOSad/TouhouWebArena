@@ -108,7 +108,7 @@ Activation logic remains similar: player input triggers a server request, cost i
 2.  Server (PlayerShootingController RPC Handler) -> Calls `SpellBarManager.ConsumeSpellCost`.
 3.  Server (SpellBarManager) -> If successful, calls `ServerAttackSpawner.ExecuteSpellcard`.
 4.  Server (ServerAttackSpawner):
-    a.  Calls `TriggerSpellcardClear` (local overlap check around caster).
+    a.  Calls `TriggerSpellcardClear`. This method **does not** perform the clear directly. Instead, it calculates the `casterPosition`, `clearRadius` (based on spell level), and `casterRole`, then sends these parameters to all clients via `ClientSpellcardExecutor.Instance.TriggerLocalClearEffectClientRpc`.
     b.  Calls `SpellcardBannerDisplay.ShowBannerClientRpc` (RPC to all clients).
     c.  Loads `SpellcardData` for the *first action* (`actions[0]`) from Resources.
     d.  Checks `actions[0].applyRandomSpawnOffset`. If true, calculates a `sharedRandomOffset` Vector2 using `Random.Range` and `actions[0].randomOffsetMin/Max`. Otherwise, offset is `Vector2.zero`.
@@ -119,10 +119,21 @@ Activation logic remains similar: player input triggers a server request, cost i
     b.  Calls `ClientSpellcardExecutor.Instance.StartLocalSpellcardExecution`, passing all received parameters.
 7.  Client (ClientSpellcardExecutor):
     a.  Logs receipt.
-    b.  Loads the full `SpellcardData` from the resource path.
-    c.  Calculates `originPosition` (target's field center via `SpawnAreaManager`).
-    d.  Calculates `originRotation` (identity).
-    e.  Calls `_actionRunner.RunSpellcardActions`, passing the `spellcardData.actions`, `originPosition`, `originRotation`, and the `sharedRandomOffset`.
+    b.  **(Spellcard Clear Effect Handling - Triggered by `TriggerLocalClearEffectClientRpc` from Server step 4.a):**
+        i.  Receives `casterPosition`, `clearRadius`, and `casterRole`.
+        ii. Performs `Physics2D.OverlapCircleAll(casterPosition, clearRadius)` to find all colliders in the area.
+        iii. Iterates through colliders:
+            *   **`StageSmallBulletMoverScript`:** If found, checks if `stageBulletMover.OwningPlayerRole == casterRole`.
+                *   If true, calls `stageBulletMover.ForceReturnToPoolByBomb()`.
+                *   Then, calls `PlayerAttackRelay.LocalInstance.RequestOpponentStageBulletSpawnServerRpc()` to spawn a "revenge" bullet (defaults: "StageSmallBullet" prefab, 2.5f speed, 7f lifetime).
+            *   **Other "EnemyProjectiles" Layer Objects:** If an object is on the "EnemyProjectiles" layer and *does not* have a `StageSmallBulletMoverScript` (to avoid double processing), and has a `ClientProjectileLifetime` component, `projectileLifetime.ForceReturnToPool()` is called.
+            *   **`ClientFairyHealth`:** If found and `fairyHealth.OwningPlayerRole == casterRole`, calls `fairyHealth.ForceReturnToPool()`.
+            *   **`ClientSpiritController`:** If found and `spiritController.OwningPlayerRole == casterRole`, calls `spiritHealth.ForceReturnToPool()` (after getting `ClientSpiritHealth`).
+            *   **Opponent's Extra Attacks (`ReimuExtraAttackOrb_Client`, `MarisaExtraAttackLaser_Client`):** If found and `AttackerClientId` does not match the `casterPlayerClientId` (resolved from `casterRole`), calls `ForceReturnToPoolByClear()` on the extra attack.
+    c.  Loads the full `SpellcardData` from the resource path (for spellcard bullet spawning, separate from the clear effect).
+    d.  Calculates `originPosition` (target's field center via `SpawnAreaManager`).
+    e.  Calculates `originRotation` (identity).
+    f.  Calls `_actionRunner.RunSpellcardActions`, passing the `spellcardData.actions`, `originPosition`, `originRotation`, and the `sharedRandomOffset`.
 8.  Client (ClientSpellcardActionRunner):
     a.  Starts `ExecuteActionSequenceCoroutine` (passing `sharedRandomOffset`).
     b.  Coroutine iterates through each `action` in `spellcardData.actions`.
@@ -260,161 +271,4 @@ Level 4 spellcards manifest as autonomous "illusion" entities that persist on th
             *   If `isMovingForThisAttack`, `StartCoroutine(DelayedUpdateServerPosition(movementEndPos, movementDur))` is called to update the server's logical position after the client-side visual movement.
 
 4.  **Attack Execution (Client):**
-    *   `ClientIllusionView.ExecuteAttackPatternClientRpc()` receives the call.
-    *   If `isMovingWithAttack`:
-        *   `AnimateIllusionMovementAndAttack` coroutine starts.
-        *   It calls `_actionRunner.RunSpellcardActionsDynamicOrigin(..., this.transform, attackPatternOrientation, ...)`
-        *   It Lerps `this.transform.position` from `movementStartPos` to `movementEndPos`.
-    *   Else (static attack):
-        *   `_actionRunner.RunSpellcardActions(..., transform.position, attackPatternOrientation, ...)` is called.
-    *   `ClientSpellcardActionRunner` then proceeds to execute individual `SpellcardAction`s from the pattern, spawning bullets. If dynamic, it reads `this.transform.position` for each bullet and uses the passed `attackPatternOrientation`.
-
-5.  **Damage & Death:**
-    *   Client (`Player A` shoots, hits illusion targeting `Player A`):
-        *   `IllusionHealth.OnTriggerEnter2D()` on `Player A`'s client (where `isResponsibleClient` is true for this illusion) detects the hit.
-        *   `TakeDamageClientSide()` decrements health.
-        *   If health <= 0, `isDead = true`, `ReportDeathToServerRpc()` is called.
-    *   Server (`IllusionHealth.ReportDeathToServerRpc()` on the illusion object):
-        *   The RPC handler calls `_serverOrchestrator.ProcessClientDeathReport()`.
-    *   Server (`ServerIllusionOrchestrator.ProcessClientDeathReport()`):
-        *   Verifies sender ID matches `_targetPlayerId`.
-        *   Calls `DespawnIllusion()`.
-
-6.  **Despawning:**
-    *   `ServerIllusionOrchestrator.DespawnIllusion()`:
-        *   Notifies `ServerIllusionManager.Instance.ServerNotifyIllusionDespawned(NetworkObject)`.
-        *   Calls `NetworkObject.Despawn()`.
-    *   This can also be triggered by:
-        *   `_illusionLifetimeTimer` in `ServerIllusionOrchestrator.Update()` expiring.
-        *   The counter-mechanic in `ServerAttackSpawner`.
-
-## Bullet Prefab Requirements (Spellcards)
-
-*   Must have `PooledObjectInfo` component with a unique `PrefabID`.
-*   Must have `ClientProjectileLifetime` component.
-*   Must have Collider component (e.g., `CircleCollider2D`) set as Trigger if using physics triggers.
-*   Must have all potential client-side movement behavior scripts attached **AND disabled** by default (e.g., `ClientLinearMovement`, `ClientDelayedHoming`, etc.). `ClientBulletConfigurer` will enable the correct one.
-*   **SHOULD NOT** have `NetworkObject`, `NetworkTransform`, or old server-side behavior scripts if used solely for client-simulated spellcards.
-
-## Adding a New Spellcard (Level 2/3 Refactored)
-
-1.  **Create Bullet Prefabs (if needed):** Ensure prefabs meet the requirements above (PooledObjectInfo, ClientProjectileLifetime, disabled client behaviors). Register prefab with `ClientGameObjectPool` manager in the scene.
-2.  **Create Spellcard Asset:** Right-click -> `Create` -> `TouhouWebArena` -> `Spellcard Data` in `Assets/Resources/Spellcards/`.
-3.  **Rename Asset:** `CharacterNameLevelXSpellcard` (e.g., `HakureiReimuLevel3Spellcard`).
-4.  **Configure Data:** Select the asset.
-    *   Set `Required Charge Level`.
-    *   Add `SpellcardAction`(s) to the `Actions` list.
-    *   For each action:
-        *   Assign `Bullet Prefabs` (ensure these have `PooledObjectInfo` and the ID matches pool configuration).
-        *   Set `Position Offset` (relative to target field center).
-        *   Set `Count`, `Formation`, `Radius`/`Spacing`, `Angle`.
-        *   **If random origin needed for the *whole spellcard*:** On the **first action only**, check `Apply Random Spawn Offset` and set `Random Offset Min/Max`.
-        *   Select the desired `Behavior` (e.g., `Linear`, `DelayedHoming`).
-        *   Configure all relevant parameters for that behavior (`Speed`, `Speed Increment Per Bullet`, `Homing Speed`, `Homing Delay`, etc.).
-        *   Configure timing (`Start Delay`, `Intra Action Delay`, `Lifetime`).
-        *   Configure modifiers (`Skip Every Nth`).
-5.  **Integration:** Automatic via naming convention (`ServerAttackSpawner` loads based on character/level).
-6.  **Test:** Verify visual pattern execution, synchronization across clients, behavior logic, and random offset application.
-
-## Adding a New Level 4 Spellcard (Illusion-based)
-
-1.  **Create Bullet Prefabs (if needed):** Same requirements as for Level 2/3 (PooledObjectInfo, ClientProjectileLifetime, disabled client behaviors). Register with `ClientGameObjectPool`.
-2.  **Create Illusion Prefab:**
-    *   Design the visual appearance of the illusion.
-    *   Attach `NetworkObject` and `ClientAuthoritativeTransform` (or similar if server dictates all movement via RPCs, which is the current model for idle moves).
-    *   Attach `ServerIllusionOrchestrator.cs`.
-    *   Attach `ClientIllusionView.cs`.
-    *   Attach `IllusionHealth.cs`.
-    *   Attach `ClientSpellcardActionRunner.cs` (or ensure `ClientIllusionView` can access a scene instance).
-    *   Add a `Collider2D` (e.g., `BoxCollider2D` or `CircleCollider2D`) set as a trigger for `IllusionHealth` to detect hits.
-    *   Assign any visual components (SpriteRenderer, Animator) if referenced by `ClientIllusionView`.
-3.  **Create Level4SpellcardData Asset:** Right-click -> `Create` -> `TouhouWebArena` -> `Spellcard Data` -> `Level 4 Spellcard Data` in `Assets/Resources/Spellcards/` (or appropriate subfolder).
-4.  **Rename Asset:** `CharacterNameLevel4Spellcard` (e.g., `HakureiReimuLevel4Spellcard`).
-5.  **Configure `Level4SpellcardData`:**
-    *   Assign the `Illusion Prefab` created in step 2.
-    *   Set `Duration` (total lifetime of the illusion).
-    *   Set `Health`.
-    *   Set `Movement Area Height` (for idle vertical movement range).
-    *   Set `Min Move Delay` and `Max Move Delay` (time between idle moves/attack cycles).
-    *   Set `Attacks Per Move` (how many patterns from the pool to fire after each idle move).
-    *   Populate the `Attack Pool` list with `CompositeAttackPattern`(s):
-        *   For each `CompositeAttackPattern`:
-            *   Give it a `Pattern Name`.
-            *   Check `Orient Pattern Towards Target` if bullets should aim at the player.
-            *   Check `Perform Movement During Attack` if the illusion should move while firing this pattern. Set `Attack Movement Vector` (local offset) and `Attack Movement Duration`.
-            *   Add `SpellcardAction`(s) to its `Actions` list, configuring them as needed (bullet prefabs, count, formation, behavior, timing, etc.). `Position Offset` and `Angle` will be relative to the illusion and its calculated attack orientation.
-6.  **Integration:** Automatic via naming convention if `ServerAttackSpawner` loads it based on character/level (ensure `case 4:` in `ServerAttackSpawner.ExecuteSpellcard` correctly loads the `Level4SpellcardData` by name).
-7.  **Test:** Thoroughly test illusion spawning, idle movement, attack selection (randomness, count), attack execution (aiming, movement during attack, dynamic bullet origin), health/damage, and despawning (timed, damage, counter-mechanic).
-
-## Character-Specific Implementations
-
-*(Links remain the same, but the content within should be updated if necessary)*
-
-## Data Structures
-
-*(Content largely remains the same, but ensure descriptions match the refactored usage)*
-
-### `SpellcardAction` (Serializable Class):
-
-*   **Header: Random Spawn Offset (Relative to Calculated Position)**
-    *   **`Apply Random Spawn Offset` (Bool):** If true **on the first action** of a sequence (for Level 2/3) or a `CompositeAttackPattern` (for Level 4 illusions), a single random offset (using Min/Max below) is calculated by the server and applied consistently to the calculated position of **all** bullets across **all** actions in that specific spellcard execution or illusion attack pattern.
-    *   **`Random Offset Min` (Vector2):** Min random offset used if `applyRandomSpawnOffset` is true on the first action.
-    *   **`Random Offset Max` (Vector2):** Max random offset used if `applyRandomSpawnOffset` is true on the first action.
-*   **Header: Spawning**
-    *   **`Bullet Prefabs` (List<GameObject>):** Bullet prefab(s) to spawn. Cycles if multiple are provided.
-    *   **`Position Offset` (Vector2):** Offset relative to the pattern origin point. For Level 2/3, this is the target's field center. For Level 4 illusions, this is relative to the illusion's current position (or a point derived from its attack-specific movement if applicable).
-    *   **`Count` (Int):** Number of bullets to spawn in this action.
-*   **Header: Formation Shape**
-    *   **`Formation` (Enum - `FormationType`):** `Point`, `Circle`, `Line`.
-    *   **`Radius` (Float):** Used for `Circle` formation.
-    *   **`Spacing` (Float):** Used for `Line` formation.
-    *   **`Angle` (Float - Degrees):** Base angle for `Point` or `Circle` formation, or orientation angle for `Line` formation. For Level 2/3, this is relative to an identity rotation. For Level 4 illusions, this is relative to the `attackPatternOrientation` calculated by the server (which includes aiming adjustments towards the target player if `orientPatternTowardsTarget` is true for the `CompositeAttackPattern`).
-*   **Header: Bullet Behavior**
-    *   **`Behavior` (Enum - `BehaviorType`):** `Linear`, `Homing`, `DelayedHoming`, `DoubleHoming`, `Spiral`, `DelayedRandomTurn`. Selects the movement script to activate.
-*   **Header: Behavior Speeds**
-    *   **`Speed` (Float):** Primary speed used by the behavior (linear speed, initial homing speed, forward speed for `Homing`, etc.).
-    *   **`Speed Increment Per Bullet` (Float):** Now directly used by `ClientLinearMovement`.
-    *   **`Homing Speed` (Float):** Speed used when actively homing in `DelayedHoming`/`DoubleHoming`, or the turning rate (degrees/sec) for `Homing`.
-    *   **`Tangential Speed` (Float):** (Spiral Only) Speed moving tangentially.
-*   **Header: Initial Speed Transition (Optional)**
-    *   **`Use Initial Speed` (Bool):** If true, bullet smoothly transitions from `initialSpeed` to `speed`.
-    *   **`Initial Speed` (Float):** Starting speed if `useInitialSpeed` is true.
-    *   **`Speed Transition Duration` (Float):** Time for the speed transition.
-*   **Header: Behavior Timing & Parameters**
-    *   **`Homing Delay` (Float):** Delay used by `DelayedHoming`, `DoubleHoming`, and `DelayedRandomTurn` before the secondary effect (homing/turning) begins.
-    *   **`Second Homing Delay` (Float):** (Double Homing Only) Pause duration between homing phases.
-    *   **`First Homing Duration` (Float):** (Double Homing Only) Duration of the first homing phase.
-    *   **`Second Homing Look Ahead Distance` (Float):** (Double Homing Only) Look-ahead distance for second homing phase target calculation.
-    *   **`Spread Angle` (Float):** (Delayed Random Turn Only) Max angle offset (degrees, +/- half this value) applied randomly to initial bullet rotation.
-    *   **`Min Turn Speed` (Float):** (Delayed Random Turn Only) Minimum angular speed (degrees/sec) for the random turn.
-    *   **`Max Turn Speed` (Float):** (Delayed Random Turn Only) Maximum angular speed (degrees/sec) for the random turn.
-*   **Header: Spawning & Formation Modifiers**
-    *   **`Skip Every Nth` (Int):** If > 0, skips spawning every Nth bullet (e.g., 4 skips the 4th, 8th, 12th...). Useful for creating gaps.
-*   **Header: Timing & Lifetime**
-    *   **`Start Delay` (Float):** Seconds to wait before this Action begins, relative to the start of the pattern it belongs to (`SpellcardData` list or `CompositeAttackPattern` list).
-    *   **`Intra Action Delay` (Float):** Seconds to wait between spawning each individual bullet *within* this action (if `Count` > 1). Set to 0 for simultaneous spawn.
-    *   **`Lifetime` (Float):** Overrides the default lifetime of the spawned bullet prefab (seconds). <= 0 uses prefab default.
-
-*   **Clearability Note:** Bullet clearability by bombs/shockwaves depends on the **bullet prefab** having components like `ClientProjectileLifetime` that can be returned to the pool, and being on the correct layer (`EnemyProjectiles`) or having identifiable components (`ClientFairyHealth`, `ClientSpiritController`), not specifically on `SpellcardAction` data.
-
-## Spellcard Clear Effect
-
-When a player successfully activates a spellcard (Level 2, 3, or 4) after the cost is paid:
-*   The server (`ServerAttackSpawner.TriggerSpellcardClear`) calculates parameters for the clear effect:
-    *   Caster's current position.
-    *   Caster's `PlayerRole`.
-    *   Clear radius, scaled by spell level:
-        *   Level 2: `3.0` units (configurable)
-        *   Level 3: `5.0` units
-        *   Level 4: `10.0` units
-    *   A `forceClearIllusions` flag (only relevant for server-side logic on Level 4).
-*   The server sends these parameters to all clients via `TriggerLocalClearEffectClientRpc` targeting `ClientSpellcardExecutor.Instance`.
-*   **On each client**, `ClientSpellcardExecutor.TriggerLocalClearEffectClientRpc` executes:
-    *   It performs a local `Physics2D.OverlapCircleAll` at the received caster position with the received radius.
-    *   It iterates through the detected colliders:
-        *   If `collider.gameObject.layer == LayerMask.NameToLayer("EnemyProjectiles")`, it gets the `ClientProjectileLifetime` component and calls `ForceReturnToPool()` on it. This clears all types of bullets on that layer within the radius, regardless of owner.
-        *   If it finds a `ClientFairyHealth` or `ClientSpiritController` component AND that component's `OwningPlayerRole == casterRole`, it calls `ForceReturnToPool()` on that component. (This clears the caster's *own* fairies/spirits).
-        *   If it finds a `ReimuExtraAttackOrb_Client` or `MarisaExtraAttackLaser_Client` component AND its `AttackerClientId` does not match the caster's resolved client ID, it **directly calls the component's `ForceReturnToPoolByClear()` method**. This clears the opponent's active extra attacks.
-*   **Level 2 & 3:** This client-side clear does **not** affect illusions.
-*   **Level 4:** In addition to the client-side clear effect described above, the server-side `ServerAttackSpawner.TriggerSpellcardClear` logic *also* explicitly finds and despawns any active enemy illusions targeting the caster *before* sending the client RPC.
-*   *(TODO: Add visual effect for this clear)*. 
+    *   `ClientIllusionView.ExecuteAttackPatternClientRpc()`

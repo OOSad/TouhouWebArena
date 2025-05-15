@@ -59,6 +59,34 @@ The Spirit system has been refactored to a server-triggered, client-simulated mo
             *   The `ClientSpiritTimeoutAttack` is typically initialized implicitly or via `Awake`, but `ClientSpiritController.ActivateSpirit()` will later call its `StartTimeout()` method.
         *   Activates the Spirit GameObject (`SetActive(true)`).
 
+### Retaliation & Counter Stage Bullets
+
+Stage bullets (e.g., `SmallStageBullet`, `LargeStageBullet`) can spawn on a player's opponent's field through two primary mechanisms:
+
+1.  **Fairy Kill Retaliation:**
+    *   When a player kills a Fairy (`ClientFairyHealth.TakeDamage()` called by the local player), `PlayerAttackRelay.LocalInstance.ReportFairyKillServerRpc()` is invoked.
+    *   The server then calls `EffectNetworkHandler.Instance.SpawnStageBulletClientRpc(...)` targeting the opponent.
+    *   These bullets spawn with randomized position, speed (within `minStageBulletSpeed` to `maxStageBulletSpeed` range in `PlayerAttackRelay`), slight angle variation, and a default lifetime (`DEFAULT_FAIRY_KILL_BULLET_LIFETIME` in `PlayerAttackRelay`).
+
+2.  **Shockwave-Cleared Bullet Counter (New Feature):**
+    *   When a `ClientFairyShockwave` (spawned by a dying Fairy or Spirit) clears an existing `StageSmallBulletMoverScript` instance on its owner's side:
+        *   The `ClientFairyShockwave` must have its `_canSpawnCounterBullets` flag set to `true` during its `Initialize` method.
+            *   Standard Fairy and Spirit death shockwaves initialize with this flag as `true`.
+            *   Shockwaves from other sources (e.g., if a future death bomb were to use this script) could set it to `false`.
+        *   If the flag is true, `ClientFairyShockwave.OnTriggerStay2D` calls `PlayerAttackRelay.LocalInstance.RequestOpponentStageBulletSpawnServerRpc(...)`.
+        *   This RPC takes parameters for `bulletPrefabId`, `initialSpeed`, and `lifetime` from configurable fields on the `ClientFairyShockwave` component (e.g., `opponentBulletPrefabId`, `opponentBulletSpeed`, `opponentBulletLifetime`).
+        *   The server, in `PlayerAttackRelay.RequestOpponentStageBulletSpawnServerRpc`, then:
+            *   Spawns the specified `bulletPrefabId`.
+            *   Uses the provided `lifetime`.
+            *   **Overrides** the `initialSpeed` parameter with a randomized speed (within `minStageBulletSpeed` to `maxStageBulletSpeed` range, same as fairy kill retaliation).
+            *   Applies randomized spawn position and slight angle variation (same as fairy kill retaliation).
+        *   It then calls `EffectNetworkHandler.Instance.SpawnStageBulletClientRpc(...)` targeting the opponent. The `isFromShockwaveClear` parameter in this RPC is set to `true` (previously used for debug coloring, now just informational if needed for other client-side distinctions).
+    *   **Recursive Spawning:** These "counter" bullets are themselves `StageSmallBullet` instances. If they are subsequently cleared by another standard shockwave (that has `_canSpawnCounterBullets = true`), they will also trigger a counter bullet on the original player's side, potentially leading to a back-and-forth exchange.
+    *   **Exceptions (No Counter Spawn):**
+        *   **Player Death Bombs:** `PlayerDeathBomb.ClearObjectsInRadiusClientRpc` directly calls `ForceReturnToPoolByBomb()` on `StageSmallBulletMoverScript` instances. It does not use `ClientFairyShockwave` for this clearing, so no counter bullet is spawned.
+        *   **Spellcard Activations:** Server-side spellcard clears (e.g., via `ServerAttackSpawner.TriggerSpellcardClear`) use the `IClearable` interface. `StageSmallBulletMoverScript.Clear()` simply returns the bullet to the pool and does not trigger any counter-spawning logic.
+        *   **Bullet Lifetime Expiration:** When a stage bullet's lifetime naturally expires, it returns to the pool without spawning a counter.
+
 ## Enemy Types & Behavior (Client-Side Simulation)
 
 ### Fairies (`NormalFairy`, `GreatFairy` prefabs)
@@ -71,7 +99,7 @@ The Spirit system has been refactored to a server-triggered, client-simulated mo
         *   `TakeDamage()`: Reduces health. Also triggers a **visual damage flash** (configurable color tint, duration, intensity) via a coroutine.
         *   When taking damage, it passes its `_owningPlayerRole` to the shockwave if one is spawned.
         *   On death (health <= 0):
-            *   Spawns a `ClientFairyShockwave` from `ClientGameObjectPool`, passing damage, visual radius, **effective radius**, duration, the original killer's ID, and **its own `_owningPlayerRole`**.
+            *   Spawns a `ClientFairyShockwave` from `ClientGameObjectPool`, passing damage, visual radius, **effective radius**, duration, the original killer's ID, **its own `_owningPlayerRole`**, and `canSpawnCounterBullets: true`.
             *   If the damage was dealt by a bullet from the *local* player (`attackerOwnerClientId == LocalClientId`), it calls `PlayerAttackRelay.LocalInstance.ReportFairyKillServerRpc()`.
             *   Notifies `ClientFairyController` of death (optional, if controller needs to stop other logic).
         *   `OwningPlayerRole` (Property): Returns the stored `_owningPlayerRole`.
@@ -127,7 +155,7 @@ Spirits are client-simulated entities with distinct behaviors before and after a
             *   Gets a shockwave prefab (e.g., "FairyShockwave") from `ClientGameObjectPool`.
             *   Sets its position.
             *   Gets `ClientFairyShockwave` component.
-            *   Initializes it, passing damage, visual radius, **effective radius** (both scaled if activated), duration, killer ID, and importantly, the **Spirit's `_owningPlayerRole`** (retrieved from `ClientSpiritController`).
+            *   Initializes it, passing damage, visual radius, **effective radius** (both scaled if activated), duration, killer ID, and importantly, the **Spirit's `_owningPlayerRole`** (retrieved from `ClientSpiritController`), and `canSpawnCounterBullets: true`.
         *   `ForceReturnToPool()`: Returns object to pool *without* triggering `Die()` (used by timeout).
         *   **Serialized Fields:** `shockwavePrefabId`, `normalSpiritShockwaveMaxRadius` (Visual), `activatedSpiritShockwaveMaxRadius` (Visual), `normalSpiritShockwaveEffectiveMaxRadius` (Effective), `activatedSpiritShockwaveEffectiveMaxRadius` (Effective), `shockwaveDuration`, `shockwaveDamage`, `shockwaveInitialRadius`.
     *   `ClientSpiritTimeoutAttack.cs`:
@@ -198,13 +226,22 @@ Enemies are "cleared" by taking lethal damage.
     *   `ClientSpiritSpawnHandler.cs`: Client-only singleton that receives an RPC from `SpiritSpawner` to spawn and initialize spirits locally from the `ClientGameObjectPool`.
 *   **Related Systems:**
     *   `ClientGameObjectPool.cs`: Pools all client-side enemies (Fairies, Spirits) and their effects (shockwaves, spirit timeout bullets).
-    *   `PlayerAttackRelay.cs`: Receives kill reports from `ClientFairyHealth` and `ClientSpiritHealth`.
+    *   `PlayerAttackRelay.cs`:
+        *   Receives kill reports from `ClientFairyHealth` and `ClientSpiritHealth`.
+        *   `ReportFairyKillServerRpc`: Handles fairy kill retaliation, calls `EffectNetworkHandler.SpawnStageBulletClientRpc` to spawn a stage bullet on the opponent's side with randomized parameters and a default lifetime.
+        *   `RequestOpponentStageBulletSpawnServerRpc`: Handles counter-bullet requests from shockwave clears. Receives bullet type, initial speed (overridden by randomization on server), and lifetime. Calls `EffectNetworkHandler.SpawnStageBulletClientRpc` to spawn a stage bullet on the opponent's side with randomized parameters (position, speed, direction) and the specified lifetime.
     *   `ClientFairyShockwave.cs`: Spawned on fairy/spirit death. Takes owner's `PlayerRole` on init. Its `Initialize` method now accepts separate `visualMaxRadius` and `effectiveMaxRadius`. In `Update`, it scales its visuals based on `visualMaxRadius` and its `CircleCollider2D` based on `effectiveMaxRadius`. `OnTriggerStay2D` checks collided object's `OwningPlayerRole` (from `ClientFairyHealth`, `ClientSpiritController`, `StageSmallBulletMoverScript`) and only applies damage/clearing if roles *do not match*.
+        *   Now has an `_canSpawnCounterBullets` flag, set during `Initialize`.
+        *   If this flag is true, and the shockwave clears a same-side `StageSmallBulletMoverScript`, it calls `PlayerAttackRelay.LocalInstance.RequestOpponentStageBulletSpawnServerRpc` to trigger a counter bullet on the opponent's side using configurable `opponentBulletPrefabId`, `opponentBulletSpeed` (which gets overridden by randomization on the server), and `opponentBulletLifetime`.
+    *   `EffectNetworkHandler.cs`:
+        *   `SpawnStageBulletClientRpc`: Now takes `bulletLifetime` and an `isFromShockwaveClear` (boolean, informational) parameter. It uses the provided `bulletLifetime` when initializing the `StageSmallBulletMoverScript`.
     *   `PathManager.cs`: Provides path data to clients for fairies.
     *   `ReimuScopeStyleController.cs` / `MarisaScopeStyleController.cs`: Their `OnTriggerEnter2D` methods call `ClientSpiritController.ActivateSpirit()`.
     *   `BulletMovement.cs`: Modified to apply damage to `ClientSpiritHealth` upon collision with spirits.
     *   `PlayerDeathBomb.cs`: Modified to apply damage to `ClientSpiritHealth` for spirits in radius.
     *   `StageSmallBulletMoverScript.cs`: Used by bullets spawned from `ClientSpiritTimeoutAttack`.
+        *   Its `IClearable.Clear()` method simply returns the bullet to the pool, ensuring server-side clears (like spellcards) do not trigger counter-spawns.
+        *   Its `ForceReturnToPoolByBomb()` method (called by player death bombs) also just returns the bullet to the pool, preventing counter-spawns.
 *   **Deprecated/Replaced (Server-Authoritative Components for Fairies & Old Spirit System):**
     *   ~~`FairyPathInitializer.cs`~~
     *   ~~Server-side `FairyController.cs` logic for death/path end~~ (now client-side)

@@ -167,6 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edce8b0e7e007ee489dc7c6e8cfff7dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fadeStartProgress: 0.5
 --- !u!114 &-1924970335501421608
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -180,6 +181,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damageTickRate: 5
+  opponentBulletPrefabId: StageSmallBullet
+  opponentBulletSpeed: 2.5
+  opponentBulletLifetime: 7
 --- !u!114 &-6326470674819376063
 MonoBehaviour:
   m_ObjectHideFlags: 0

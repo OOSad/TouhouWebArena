@@ -387,7 +387,7 @@ public class ServerAttackSpawner : NetworkBehaviour
         if (casterNO == null)
         {
             Debug.LogError($"[ServerAttackSpawner.TriggerSpellcardClear] Could not find NetworkObject for caster {castingPlayerClientId}. Cannot determine clear center.");
-            return;
+                return;
         }
         Vector3 clearCenter = casterNO.transform.position; 
 
@@ -427,8 +427,8 @@ public class ServerAttackSpawner : NetworkBehaviour
         else
         {
             Debug.LogError("[ServerAttackSpawner.TriggerSpellcardClear] ClientSpellcardExecutor.Instance is null! Cannot send RPC.");
-        }
-    }
+                }
+            }
 
     // Method to get the spawn center for the OPPONENT of the caster
 } 

@@ -166,7 +166,8 @@ using System.Collections; // ADDED for coroutine
                         null,
                         shockwaveDamage,
                         killerClientId,
-                        spiritOwnerRole // Pass the spirit's owner role
+                        spiritOwnerRole, // Pass the spirit's owner role
+                        true // canSpawnCounterBullets
                     );
                 }
                 else
