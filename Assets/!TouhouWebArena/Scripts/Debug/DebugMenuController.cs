@@ -410,5 +410,21 @@ namespace TouhouWebArena.DevTools
                 UnityEngine.Debug.LogError("SpellBarManager instance not found!");
             }
         }
+
+        // Method to be called by the new UI Button for Lily White
+        public void DebugSpawnLilyWhite()
+        {
+            if (!NetworkManager.Singleton.IsServer) return;
+
+            if (LilyWhiteSpawner.Instance != null)
+            {
+                LilyWhiteSpawner.Instance.ForceSpawnLilyWhite();
+                UnityEngine.Debug.Log("DebugMenuController: Triggered Lily White spawn.");
+            }
+            else
+            {
+                UnityEngine.Debug.LogWarning("DebugMenuController: LilyWhiteSpawner.Instance is null. Cannot spawn Lily White.");
+            }
+        }
     }
 } 

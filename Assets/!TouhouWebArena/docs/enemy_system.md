@@ -59,147 +59,56 @@ The Spirit system has been refactored to a server-triggered, client-simulated mo
             *   The `ClientSpiritTimeoutAttack` is typically initialized implicitly or via `Awake`, but `ClientSpiritController.ActivateSpirit()` will later call its `StartTimeout()` method.
         *   Activates the Spirit GameObject (`SetActive(true)`).
 
-### Retaliation & Counter Stage Bullets
+### Lily White (`LilyWhite` prefab - Client-Side Simulated)
 
-Stage bullets (e.g., `SmallStageBullet`, `LargeStageBullet`) can spawn on a player's opponent's field through two primary mechanisms:
+Lily White is a client-simulated entity with a predefined movement pattern and attack sequences. **She now has health and can be defeated by player shots.**
 
-1.  **Fairy Kill Retaliation:**
-    *   When a player kills a Fairy (`ClientFairyHealth.TakeDamage()` called by the local player), `PlayerAttackRelay.LocalInstance.ReportFairyKillServerRpc()` is invoked.
-    *   The server then calls `EffectNetworkHandler.Instance.SpawnStageBulletClientRpc(...)` targeting the opponent.
-    *   These bullets spawn with randomized position, speed (within `minStageBulletSpeed` to `maxStageBulletSpeed` range in `PlayerAttackRelay`), slight angle variation, and a default lifetime (`DEFAULT_FAIRY_KILL_BULLET_LIFETIME` in `PlayerAttackRelay`).
-
-2.  **Shockwave-Cleared Bullet Counter (New Feature):**
-    *   When a `ClientFairyShockwave` (spawned by a dying Fairy or Spirit) clears an existing `StageSmallBulletMoverScript` instance on its owner's side:
-        *   The `ClientFairyShockwave` must have its `_canSpawnCounterBullets` flag set to `true` during its `Initialize` method.
-            *   Standard Fairy and Spirit death shockwaves initialize with this flag as `true`.
-            *   Shockwaves from other sources (e.g., if a future death bomb were to use this script) could set it to `false`.
-        *   If the flag is true, `ClientFairyShockwave.OnTriggerStay2D` calls `PlayerAttackRelay.LocalInstance.RequestOpponentStageBulletSpawnServerRpc(...)`.
-        *   This RPC takes parameters for `bulletPrefabId`, `initialSpeed`, and `lifetime` from configurable fields on the `ClientFairyShockwave` component (e.g., `opponentBulletPrefabId`, `opponentBulletSpeed`, `opponentBulletLifetime`).
-        *   The server, in `PlayerAttackRelay.RequestOpponentStageBulletSpawnServerRpc`, then:
-            *   Spawns the specified `bulletPrefabId`.
-            *   Uses the provided `lifetime`.
-            *   **Overrides** the `initialSpeed` parameter with a randomized speed (within `minStageBulletSpeed` to `maxStageBulletSpeed` range, same as fairy kill retaliation).
-            *   Applies randomized spawn position and slight angle variation (same as fairy kill retaliation).
-        *   It then calls `EffectNetworkHandler.Instance.SpawnStageBulletClientRpc(...)` targeting the opponent. The `isFromShockwaveClear` parameter in this RPC is set to `true` (previously used for debug coloring, now just informational if needed for other client-side distinctions).
-    *   **Recursive Spawning:** These "counter" bullets are themselves `StageSmallBullet` instances. If they are subsequently cleared by another standard shockwave (that has `_canSpawnCounterBullets = true`), they will also trigger a counter bullet on the original player's side, potentially leading to a back-and-forth exchange.
-    *   **Exceptions (No Counter Spawn):**
-        *   **Player Death Bombs:** `PlayerDeathBomb.ClearObjectsInRadiusClientRpc` directly calls `ForceReturnToPoolByBomb()` on `StageSmallBulletMoverScript` instances. It does not use `ClientFairyShockwave` for this clearing, so no counter bullet is spawned.
-        *   **Spellcard Activations:** Server-side spellcard clears (e.g., via `ServerAttackSpawner.TriggerSpellcardClear`) use the `IClearable` interface. `StageSmallBulletMoverScript.Clear()` simply returns the bullet to the pool and does not trigger any counter-spawning logic.
-        *   **Bullet Lifetime Expiration:** When a stage bullet's lifetime naturally expires, it returns to the pool without spawning a counter.
-
-## Enemy Types & Behavior (Client-Side Simulation)
-
-### Fairies (`NormalFairy`, `GreatFairy` prefabs)
-
-*   **Core Client-Side Components:**
-    *   `PooledObjectInfo.cs`: Stores `PrefabID` for `ClientGameObjectPool`.
-    *   `SplineWalker.cs`: Handles movement along a predefined path, initialized by data from the spawn RPC.
-    *   `ClientFairyHealth.cs`: Manages current health and **ownership**.
-        *   `Initialize(PlayerRole ownerRole)`: Sets the `_owningPlayerRole` field.
-        *   `TakeDamage()`: Reduces health. Also triggers a **visual damage flash** (configurable color tint, duration, intensity) via a coroutine.
-        *   When taking damage, it passes its `_owningPlayerRole` to the shockwave if one is spawned.
-        *   On death (health <= 0):
-            *   Spawns a `ClientFairyShockwave` from `ClientGameObjectPool`, passing damage, visual radius, **effective radius**, duration, the original killer's ID, **its own `_owningPlayerRole`**, and `canSpawnCounterBullets: true`.
-            *   If the damage was dealt by a bullet from the *local* player (`attackerOwnerClientId == LocalClientId`), it calls `PlayerAttackRelay.LocalInstance.ReportFairyKillServerRpc()`.
-            *   Notifies `ClientFairyController` of death (optional, if controller needs to stop other logic).
-        *   `OwningPlayerRole` (Property): Returns the stored `_owningPlayerRole`.
-    *   `ClientFairyController.cs`: Primarily handles `SplineWalker.OnPathCompleted` to return the fairy to `ClientGameObjectPool`. May also handle `OnTriggerEnter2D` for direct collision with player shots as an alternative to `BulletMovement` handling it.
-    *   `CircleCollider2D` (Trigger): For detecting collisions with player shots or shockwave areas.
-    *   Visuals: `SpriteRenderer`, `Animator`.
-*   **Interaction & Death:**
-    *   **Taking Damage:**
-        *   Player bullets (`BulletMovement.cs`) collide, get `ClientFairyHealth`, call `TakeDamage(damage, bulletOwnerClientId)`.
-        *   Enemy shockwaves (`ClientFairyShockwave.cs`) collide, get `ClientFairyHealth`, call `TakeDamage(damage, shockwaveOriginalKillerId)`.
-    *   **On-Death (handled by `ClientFairyHealth`):** Triggers shockwave and reports kill if applicable (see above).
-    *   **Path End:** `SplineWalker` calls `OnPathCompleted` event. `ClientFairyController` subscribes and returns the fairy to `ClientGameObjectPool`.
-
-### Spirits (`Spirit` prefab)
-
-Spirits are client-simulated entities with distinct behaviors before and after activation.
-
-*   **Core Client-Side Components (on the Spirit prefab):**
-    *   `PooledObjectInfo.cs`: Stores `PrefabID` (e.g., "Spirit") for `ClientGameObjectPool`.
-    *   `ClientSpiritController.cs`:
-        *   **Responsibilities:** Manages overall spirit behavior, movement, activation state, and **ownership**.
-        *   `Initialize()`: Sets initial parameters including the `_owningPlayerRole`. `currentDirection` defaults to `Vector2.down`. If `shouldAim` is true and `targetNetworkObjectId` is valid, it aims towards the target. Stores the `_owningPlayerRole` passed in.
-        *   `Update()`:
-            *   Calculates potential `nextPosition` based on current velocity and `Time.deltaTime`.
-            *   **Centerline Check:** Determines if `nextPosition.x` would cross the X=0 boundary based on `_owningPlayerRole` (e.g., if role is P1 and `nextPosition.x <= 0`, or role is P2 and `nextPosition.x >= 0`).
-            *   If crossing centerline:
-                *   Stops the timeout coroutine (`_timeoutAttack.StopTimeoutCoroutine()`).
-                *   Calls `_spiritHealth.ForceReturnToPool()` to despawn immediately.
-                *   Returns early from `Update()`.
-            *   If not crossing centerline:
-                *   Updates `transform.position = nextPosition`.
-                *   Handles movement logic (downwards if not activated; upwards with acceleration if activated).
-        *   `ActivateSpirit()`:
-            *   Called by `ReimuScopeStyleController` or `MarisaScopeStyleController` via `OnTriggerEnter2D`.
-            *   Sets `_isActivated = true`.
-            *   Changes movement to upward and applies initial activated speed.
-            *   Swaps visual GameObjects (`normalSpiritVisual` off, `activatedSpiritVisual` on).
-            *   Calls `_spiritHealth.OnActivated()` to set HP to 1.
-            *   Calls `_timeoutAttack.StartTimeout(duration, _targetNetworkObjectId)` (duration is e.g., 1.5s). If the spirit was initially aimed, this `_targetNetworkObjectId` is passed; otherwise, `0` is passed.
-        *   `Deinitialize()`: Resets state when returned to pool.
-        *   `OwningPlayerRole` (Property): Returns the stored `_owningPlayerRole`.
-        *   **Serialized Fields:** `normalSpiritVisual`, `activatedSpiritVisual`, `activatedInitialUpwardSpeed`, `activatedMaxUpwardSpeed`, `activatedAcceleration`.
-    *   `ClientSpiritHealth.cs`:
-        *   **Responsibilities:** Manages spirit health, damage taking, and death sequence.
-        *   `Initialize()`: Sets HP to `NORMAL_SPIRIT_HP` (e.g., 5). Resets `_isActivated` flag.
-        *   `TakeDamage(amount, attackerOwnerClientId)`: Reduces HP. Triggers a **visual damage flash** (configurable color tint, duration, intensity) via a coroutine, using the correct sprite renderer (`normal` or `activated`) obtained from `ClientSpiritController`. If HP <= 0, calls `Die()`. Called by `BulletMovement.OnTriggerEnter2D` or `PlayerDeathBomb`.
-        *   `OnActivated()`: Sets HP to `ACTIVATED_SPIRIT_HP` (e.g., 1) and sets `_isActivated = true`.
-        *   `Die(attackerOwnerClientId)`:
-            *   Calls `SpawnDeathShockwave(attackerOwnerClientId)` (see below).
-            *   If `attackerOwnerClientId` is the local player, calls `PlayerAttackRelay.LocalInstance.ReportSpiritKillServerRpc()` to potentially trigger a revenge spawn.
-            *   Returns the spirit GameObject to `ClientGameObjectPool`.
-        *   `SpawnDeathShockwave(killerClientId)`:
-            *   Gets a shockwave prefab (e.g., "FairyShockwave") from `ClientGameObjectPool`.
-            *   Sets its position.
-            *   Gets `ClientFairyShockwave` component.
-            *   Initializes it, passing damage, visual radius, **effective radius** (both scaled if activated), duration, killer ID, and importantly, the **Spirit's `_owningPlayerRole`** (retrieved from `ClientSpiritController`), and `canSpawnCounterBullets: true`.
-        *   `ForceReturnToPool()`: Returns object to pool *without* triggering `Die()` (used by timeout).
-        *   **Serialized Fields:** `shockwavePrefabId`, `normalSpiritShockwaveMaxRadius` (Visual), `activatedSpiritShockwaveMaxRadius` (Visual), `normalSpiritShockwaveEffectiveMaxRadius` (Effective), `activatedSpiritShockwaveEffectiveMaxRadius` (Effective), `shockwaveDuration`, `shockwaveDamage`, `shockwaveInitialRadius`.
-    *   `ClientSpiritTimeoutAttack.cs`:
-        *   **Responsibilities:** Handles the attack pattern when an activated spirit times out.
-        *   `StartTimeout(duration, targetNetworkObjectIdToAttack)`: Called by `ClientSpiritController.ActivateSpirit()`. Stores `targetNetworkObjectIdToAttack` and starts `TimeoutAttackCoroutine`.
-        *   `TimeoutAttackCoroutine(duration)`:
-            *   Waits for `duration`.
-            *   If `targetNetworkObjectIdToAttack` (stored from `StartTimeout`) is valid (not 0), it attempts to find the target `Transform` using `NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetNetworkObjectIdToAttack, out NetworkObject playerNetObj)`.
-            *   If a `targetTransform` is found, `directionToTarget` is calculated towards it.
-            *   If `targetNetworkObjectIdToAttack` was 0 or the target wasn't found, `directionToTarget` defaults to `Vector2.down`.
-            *   Spawns 3 bullets (e.g., "StageLargeBullet" from `ClientGameObjectPool`) in a claw pattern (`clawPatternAngles`) aimed along `directionToTarget`.
-            *   Initializes each bullet's `StageSmallBulletMoverScript.Initialize(direction, timeoutBulletSpeed, timeoutBulletLifetime)`.
-            *   Calls `_spiritHealth.ForceReturnToPool()` to despawn the spirit without a death shockwave.
-        *   **Serialized Fields:** `timeoutBulletPrefabID`, `clawPatternAngles`, `timeoutBulletSpeed`, `timeoutBulletLifetime`.
-    *   Appropriate 2D Colliders (e.g., `BoxCollider2D`) and a `Rigidbody2D` (typically Kinematic).
+*   **Core Client-Side Components (on the LilyWhite prefab):**
+    *   `PooledObjectInfo.cs`: Stores `PrefabID` ("LilyWhite") for `ClientGameObjectPool`.
+    *   `ClientLilyWhiteController.cs`:
+        *   **Responsibilities:** Manages Lily White's entire lifecycle on the client, including her three-phase movement, initiating her attack pattern, and timed/health-based despawn.
+        *   `Initialize()`: Called by `ClientLilyWhiteSpawnHandler`. Sets initial position based on the `spawnX` received. Stores the `PlayerRole` (Player1 or Player2) corresponding to her spawn side. Initializes the `ClientLilyWhiteHealth` component. Activates the GameObject and starts the `MovementLifecycleCoroutine` and a fallback `DespawnTimerCoroutine`.
+        *   `MovementLifecycleCoroutine()`: Handles the sequence:
+            1.  Drift downwards at `initialDriftDownSpeed` to `targetYInCenter`.
+            2.  Wait for `waitDuration`.
+            3.  Float upwards at `floatUpSpeed` until `transform.position.y > offScreenYTop`.
+            *   **Attack Trigger:** When reaching the wait phase, if an `attackPatternHandler` is assigned, it calls `attackPatternHandler.StartAttackSequence()`, passing Lily White's transform and her stored `PlayerRole`.
+        *   `DespawnTimerCoroutine()`: A fallback mechanism that ensures Lily White is returned to the pool after `totalLifetime` seconds, regardless of her movement or health state.
+        *   `HandleDeath()`: New public method called by `ClientLilyWhiteHealth` when health reaches zero. Stops all coroutines and calls `ReturnToPool()`.
+        *   `ReturnToPool()`: Returns the GameObject to `ClientGameObjectPool` using its `PrefabID`.
+        *   **Serialized Fields:** `initialDriftDownSpeed`, `floatUpSpeed`, `waitDuration`, `targetYInCenter`, `offScreenYTop`, `initialSpawnY`, `totalLifetime`, `attackPatternHandler`.
+    *   `ClientLilyWhiteHealth.cs`: (New Component)
+        *   **Responsibilities:** Manages Lily White's health (default 75), handles damage intake from player shots, triggers a visual damage flash, and notifies `ClientLilyWhiteController` upon death.
+        *   `Initialize()`: Sets current health to max health.
+        *   `TakeDamage(amount, attackerOwnerClientId)`: Reduces health, triggers flash. If health <= 0, calls `_lilyWhiteController.HandleDeath()`.
+        *   `ForceReturnToPoolByClear()`: Called by effects like spellcard clears if Lily White needs to be despawned instantly by them. Marks health as 0 and calls `_lilyWhiteController.HandleDeath()`.
+        *   **Serialized Fields:** `maxHealth`, `_flashColor`, `_flashDuration`, `_flashIntensity`.
+    *   `LilyWhiteAttackPattern.cs`:
+        *   **Responsibilities:** Defines and executes Lily White's bullet attack patterns.
+        *   `StartAttackSequence()`: Called by `ClientLilyWhiteController`. Receives Lily White's transform and the target `PlayerRole` (Player1 or Player2) corresponding to her spawn side. Stores the `PlayerRole` and starts coroutines for each configured attack sweep.
+        *   `ExecuteSweepCoroutine()`: Handles the timing and angle interpolation for a single bullet sweep.
+        *   `SpawnClaw()`: Called by `ExecuteSweepCoroutine`. Obtains bullet instances (e.g., "StageSmallBullet") from `ClientGameObjectPool`. Initializes their position and rotation, and crucially, calls `StageSmallBulletMoverScript.Initialize()`, passing the calculated direction, speed, lifetime, and the stored target `PlayerRole`.
+        *   **Serialized Fields:** `attackSweeps` (List of `LilySweepParameters` structs).
+    *   `SpriteRenderer`: For visual representation.
+    *   `Collider2D` (Trigger): **Required.** Must be added to the prefab and set to the **"LilyWhite" tag** to allow player shots (`BulletMovement.cs`) to detect and damage her.
 
 *   **Interaction & Lifecycle:**
-    *   **Spawning:** Triggered by server RPC via `ClientSpiritSpawnHandler`.
-    *   **Movement:**
-        *   Normal: Downwards or one-time aim at spawn.
-        *   Activated: Upwards with acceleration.
-    *   **Activation:** `ClientSpiritController.ActivateSpirit()` called by `OnTriggerEnter2D` of `ReimuScopeStyleController` or `MarisaScopeStyleController` when the spirit overlaps the active zone.
-    *   **Taking Damage:**
-        *   Player bullets (`BulletMovement.cs` modified to check for "Spirit" tag) collide, get `ClientSpiritHealth`, call `TakeDamage(damage, bulletOwnerClientId)`.
-    *   **Death (Normal or Activated, by Damage):**
-        *   `ClientSpiritHealth.Die()` is called.
-        *   A shockwave is spawned (larger if activated).
-        *   Kill is reported to server for revenge spawn if local player killed it.
-        *   Spirit returned to pool.
-    *   **Timeout (Activated Spirit):**
-        *   `ClientSpiritTimeoutAttack.TimeoutAttackCoroutine` completes.
-        *   Fires a 3-bullet claw pattern (targeted at player on its side, or downwards).
-        *   Spirit is returned to pool via `ForceReturnToPool()` (no shockwave).
-    *   **Player Death Bomb:** `PlayerDeathBomb.ClearObjectsInRadiusClientRpc` iterates pooled objects, finds spirits via `ClientSpiritHealth`, and calls `TakeDamage()`.
+    *   **Spawning:** Triggered by server RPC via `LilyWhiteSpawner` -> `ClientLilyWhiteSpawnHandler`.
+    *   **Movement:** Deterministic three-phase movement (down, wait, up) handled by `ClientLilyWhiteController`.
+    *   **Attacks:** Spawns stage bullets during the wait phase, handled by `LilyWhiteAttackPattern`.
+    *   **Despawning:** 
+        *   Primarily by a timer (`totalLifetime` in `ClientLilyWhiteController`).
+        *   **New:** When health reaches zero due to player shots, `ClientLilyWhiteHealth` calls `ClientLilyWhiteController.HandleDeath()`.
+        *   The movement coroutine also has logic to detect when she moves off-screen (though the timer or health depletion are the primary despawn triggers).
+    *   **Taking Damage:** Player bullets with `BulletMovement.cs` check for the "LilyWhite" tag on collision. If matched, `ClientLilyWhiteHealth.TakeDamage()` is called. 
 
 ## Clearing Effects (Client-Side)
 
-Enemies are "cleared" by taking lethal damage.
+Enemies are "cleared" by taking lethal damage. Enemy *projectiles* can also be cleared by specific effects.
 
-*   **Fairy Shockwaves:** `ClientFairyShockwave` deals damage to other enemies within its radius, potentially triggering chain reactions if that damage is lethal.
-*   **Player Death Bomb:** The `ClientRpc` for bomb clearing (`EffectNetworkHandler.ClearBulletsInRadiusClientRpc`) primarily targets bullets. If bombs are also meant to clear enemies, clients receiving this RPC would need to:
-    *   Iterate active GameObjects from `ClientGameObjectPool`.
-    *   Identify enemies (e.g., by tag or component like `ClientFairyHealth`).
-    *   If in radius, call `enemyHealth.TakeDamage(bombDamage, bombingPlayerId)` or a specific `ForceKill()` method on the health component.
+*   **Spellcard Activation Clear:** Player spellcards triggered via `ClientSpellcardExecutor.TriggerLocalClearEffectClientRpc` clear `StageSmallBulletMoverScript` instances (including Lily White's bullets) that are within the spellcard's radius and located on the *caster's side* of the arena (X < 0 for Player 1, X > 0 for Player 2), regardless of the bullet's `OwningPlayerRole`. This is a client-side visual clear based on position.
+*   **Fairy Shockwaves:** `ClientFairyShockwave` instances triggered by dying Fairies or Spirits clear `StageSmallBulletMoverScript` instances (including Lily White's bullets) that are within the shockwave's radius and belong to the *opposing player* (checking `bullet.OwningPlayerRole != shockwaveOwnerRole && bullet.OwningPlayerRole != PlayerRole.None`). This is a client-side clear based on bullet ownership.
+*   **Player Death Bomb:** The `ClientRpc` for bomb clearing (`PlayerDeathBomb.ClearObjectsInRadiusClientRpc`) clears `StageSmallBulletMoverScript` instances (including Lily White's bullets) within the bomb radius by calling `ForceReturnToPoolByBomb()`, regardless of ownership or position. It also damages/clears other entities like fairies and spirits based on ownership. **It may need to be updated to also call `ForceReturnToPoolByClear()` on `ClientLilyWhiteHealth` if Lily White should be cleared by player bombs.**
 
 ## Data Structure / Definition
 
@@ -207,6 +116,9 @@ Enemies are "cleared" by taking lethal damage.
 *   **Server-Side Configuration:**
     *   `FairySpawner.cs`: Defines fairy wave structures, path IDs, timings, and prefab IDs for RPCs.
     *   `PathManager.cs`: Stores spline path data accessible by ID.
+*   **New Components:**
+    *   `LilyWhiteAttackPattern.cs`: Defines attack sweeps, bullet types, timings, angles, speeds, and lifetimes.
+    *   `ClientLilyWhiteHealth.cs`: Manages health and damage for Lily White.
 
 ## Key Scripts
 
@@ -222,8 +134,11 @@ Enemies are "cleared" by taking lethal damage.
     *   `FairySpawner.cs`: Calculates fairy waves and parameters.
     *   `FairySpawnNetworkHandler.cs`: Singleton that sends `SpawnFairyWaveClientRpc` to all clients.
     *   `SpiritSpawner.cs`: Server-only singleton that decides when/where to spawn spirits (periodic or revenge), resolves initial target parameters, and calls an RPC on `ClientSpiritSpawnHandler`.
+    *   `LilyWhiteSpawner.cs`: Server-only singleton that periodically triggers Lily White spawns on all clients via an RPC.
 *   **Client-Side Spawning Handlers:**
     *   `ClientSpiritSpawnHandler.cs`: Client-only singleton that receives an RPC from `SpiritSpawner` to spawn and initialize spirits locally from the `ClientGameObjectPool`.
+    *   `ClientLilyWhiteSpawnHandler.cs`: Client-only singleton that receives an RPC from `LilyWhiteSpawner` to spawn and initialize Lily White locally from the `ClientGameObjectPool`.
+    *   `ClientLilyWhiteHealth.cs`: (New) Manages health, damage, and death notification for Lily White.
 *   **Related Systems:**
     *   `ClientGameObjectPool.cs`: Pools all client-side enemies (Fairies, Spirits) and their effects (shockwaves, spirit timeout bullets).
     *   `PlayerAttackRelay.cs`:
@@ -237,7 +152,7 @@ Enemies are "cleared" by taking lethal damage.
         *   `SpawnStageBulletClientRpc`: Now takes `bulletLifetime` and an `isFromShockwaveClear` (boolean, informational) parameter. It uses the provided `bulletLifetime` when initializing the `StageSmallBulletMoverScript`.
     *   `PathManager.cs`: Provides path data to clients for fairies.
     *   `ReimuScopeStyleController.cs` / `MarisaScopeStyleController.cs`: Their `OnTriggerEnter2D` methods call `ClientSpiritController.ActivateSpirit()`.
-    *   `BulletMovement.cs`: Modified to apply damage to `ClientSpiritHealth` upon collision with spirits.
+    *   `BulletMovement.cs`: Modified to apply damage to `ClientSpiritHealth` upon collision with spirits **and `ClientLilyWhiteHealth` upon collision with entities tagged "LilyWhite"**.
     *   `PlayerDeathBomb.cs`: Modified to apply damage to `ClientSpiritHealth` for spirits in radius.
     *   `StageSmallBulletMoverScript.cs`: Used by bullets spawned from `ClientSpiritTimeoutAttack`.
         *   Its `IClearable.Clear()` method simply returns the bullet to the pool, ensuring server-side clears (like spellcards) do not trigger counter-spawns.

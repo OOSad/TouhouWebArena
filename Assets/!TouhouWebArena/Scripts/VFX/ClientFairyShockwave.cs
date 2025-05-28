@@ -215,9 +215,9 @@ public class ClientFairyShockwave : MonoBehaviour
             if (stageMover != null)
             {
                 PlayerRole bulletOwnerRole = stageMover.OwningPlayerRole;
-                if (bulletOwnerRole == _ownerPlayerRole) // Only clear bullets on the same side as the shockwave
+                if (bulletOwnerRole != _ownerPlayerRole && bulletOwnerRole != PlayerRole.None)
                 {
-                    Debug.Log($"[ClientFairyShockwave] Attempting to clear stage bullet {other.gameObject.name} owned by {bulletOwnerRole} (Shockwave Owner: {_ownerPlayerRole})");
+                    Debug.Log($"[ClientFairyShockwave] Attempting to clear opposing stage bullet {other.gameObject.name} owned by {bulletOwnerRole} (Shockwave Owner: {_ownerPlayerRole})");
                 stageMover.ForceReturnToPoolByBomb(); 
                     _lastHitTime[other] = Time.time + _damageCooldownDuration; 
 

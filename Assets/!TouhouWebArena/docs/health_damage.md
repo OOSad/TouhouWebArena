@@ -28,6 +28,15 @@ This document describes how health is managed and damage is processed. Player he
         *   Finally, it returns the spirit GameObject to `ClientGameObjectPool.Instance`.
     *   **Timeout Despawn:** `ForceReturnToPool()` is called by `ClientSpiritTimeoutAttack` when an activated spirit times out.
         *   This method returns the spirit GameObject directly to the pool *without* calling `Die()`, so no shockwave is produced, and no kill is reported for the timeout event itself.
+*   **`ClientLilyWhiteHealth.cs` (Client-Side):** (New) Attached to the LilyWhite prefab. Manages local health for Lily White.
+    *   **Responsibilities:** Manages Lily White's health (default 75), handles damage intake from player shots, triggers a visual damage flash, and notifies `ClientLilyWhiteController` upon death.
+    *   **Initialization:** `Initialize()` is called by `ClientLilyWhiteController.Initialize()` after Lily White is retrieved from the pool. Sets current health to max health and resets sprite color.
+    *   **Taking Damage:** `TakeDamage(amount, attackerOwnerClientId)` is called by `BulletMovement.cs` when a player shot (collider on "PlayerShot" layer/tag) collides with Lily White (collider on "LilyWhite" tag).
+        *   It decrements local health.
+        *   Triggers a visual flash effect (`_flashColor`, `_flashDuration`, `_flashIntensity`).
+        *   If health drops to 0 or below, it calls `_lilyWhiteController.HandleDeath()` to initiate despawn.
+    *   **Clear Despawn:** `ForceReturnToPoolByClear()` can be called by other systems (e.g., spellcard or bomb effects) if Lily White needs to be despawned instantly. It marks health as 0 and calls `_lilyWhiteController.HandleDeath()`.
+    *   Unlike Fairies or Spirits, Lily White currently does not spawn a death shockwave or report her defeat to the server for any special game logic (e.g., scoring, revenge spawns).
 
 ## Taking Damage & Invincibility Sequence (Player)
 
@@ -120,7 +129,8 @@ Illusions do not have an invincibility period or trigger a "death bomb" effect u
 *   **Enemy Health & Damage (Primarily Client-Side Simulation):**
     *   `ClientFairyHealth.cs`: Manages fairy health, spawns shockwave, reports local player kills.
     *   `ClientSpiritHealth.cs`: Manages spirit health (normal/activated), damage processing, death sequence (shockwave with variable size, reporting kill to server), and forced despawn for timeouts.
-    *   `BulletMovement.cs`: Deals damage to `ClientFairyHealth` and `ClientSpiritHealth`.
+    *   `ClientLilyWhiteHealth.cs`: (New) Manages Lily White's health. Player shots deal damage via `BulletMovement.cs`.
+    *   `BulletMovement.cs`: Deals damage to `ClientFairyHealth`, `ClientSpiritHealth`, and now `ClientLilyWhiteHealth`.
     *   `ClientFairyShockwave.cs`: Deals damage to `ClientFairyHealth` (and its prefab is used by `ClientSpiritHealth` for its shockwave).
 *   **Illusion Health & Damage Cycle:**
     *   `IllusionHealth.cs`: `NetworkBehaviour` for illusion health. Client detects hits, responsible client reports death via RPC. Server receives and tells `ServerIllusionOrchestrator` to despawn.

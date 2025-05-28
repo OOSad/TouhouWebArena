@@ -58,27 +58,33 @@ public class BulletMovement : MonoBehaviour // CHANGED from NetworkBehaviour
     void OnTriggerEnter2D(Collider2D other)
     {
         bool hitSomething = false;
+        int damageToDeal = GetComponent<ProjectileDamager>()?.damage ?? 1;
 
         // Check for collision with Fairy or Spirit tags
         if (other.CompareTag("Fairy")) 
         {
             ClientFairyHealth fairyHealth = other.GetComponent<ClientFairyHealth>();
-            if (fairyHealth != null) // Removed .IsAlive check, TakeDamage should handle if already dead
+            if (fairyHealth != null)
             {
-                // Debug.Log($"Bullet {this.name} hit Fairy {other.name}. Attempting to deal damage.");
-                int damageToDeal = GetComponent<ProjectileDamager>()?.damage ?? 1;
                 fairyHealth.TakeDamage(damageToDeal, this.FiredByOwnerClientId); 
                 hitSomething = true;
             }
         }
-        else if (other.CompareTag("Spirit")) // Added specific check for Spirit tag
+        else if (other.CompareTag("Spirit"))
         {
             ClientSpiritHealth spiritHealth = other.GetComponent<ClientSpiritHealth>();
             if (spiritHealth != null)
             {
-                // Debug.Log($"Bullet {this.name} hit Spirit {other.name}. Attempting to deal damage.");
-                int damageToDeal = GetComponent<ProjectileDamager>()?.damage ?? 1;
                 spiritHealth.TakeDamage(damageToDeal, this.FiredByOwnerClientId);
+                hitSomething = true;
+            }
+        }
+        else if (other.CompareTag("LilyWhite"))
+        {
+            ClientLilyWhiteHealth lilyWhiteHealth = other.GetComponent<ClientLilyWhiteHealth>();
+            if (lilyWhiteHealth != null)
+            {
+                lilyWhiteHealth.TakeDamage(damageToDeal, this.FiredByOwnerClientId);
                 hitSomething = true;
             }
         }

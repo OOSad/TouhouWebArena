@@ -1,0 +1,266 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8208471029591770928
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5521098890898496590}
+  - component: {fileID: 5963029301163834465}
+  - component: {fileID: 7685774365199357607}
+  - component: {fileID: -3736428468192672093}
+  - component: {fileID: 3018276250971146258}
+  - component: {fileID: 4065615795502822878}
+  - component: {fileID: -6303378574558086246}
+  m_Layer: 0
+  m_Name: LilyWhite
+  m_TagString: LilyWhite
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5521098890898496590
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8208471029591770928}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &5963029301163834465
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8208471029591770928}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Sprite: {fileID: -1346409558, guid: b642e68cd3655bd4fa2450692cc33ed5, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 0.6, y: 0.53}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
+--- !u!114 &7685774365199357607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8208471029591770928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9eb1c486d417b1342973f97b174cf6c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  initialDriftDownSpeed: 5
+  floatUpSpeed: 1
+  waitDuration: 1
+  targetYInCenter: 0
+  offScreenYTop: 5.5
+  initialSpawnY: 5.5
+  totalLifetime: 6
+  attackPatternHandler: {fileID: 3018276250971146258}
+--- !u!114 &-3736428468192672093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8208471029591770928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ab14ab97a728e444a665c0ebdebc3c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 75
+  _flashColor: {r: 1, g: 0, b: 0, a: 1}
+  _flashDuration: 0.1
+  _flashIntensity: 0.5
+--- !u!114 &3018276250971146258
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8208471029591770928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 350e393083bf5a14a92eae90bc171fca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackSweeps:
+  - sweepName: Blue Sweep, Small Bullets
+    bulletPrefabId: StageSmallBullet
+    bulletColor: {r: 0.4431373, g: 0.4901961, b: 0.80392164, a: 1}
+    startDelay: 0
+    clawSpawnInterval: 0.1
+    clawAngleOffsetsDegrees:
+    - 0
+    - 15
+    - -15
+    sweepStartAngleDegrees: 60
+    sweepEndAngleDegrees: 120
+    sweepRotationDirection: 2
+    sweepDurationSeconds: 2
+    minBulletSpeed: 1
+    maxBulletSpeed: 3
+    bulletLifetime: 10
+  - sweepName: Blue Sweep, Large Bullets
+    bulletPrefabId: StageLargeBullet
+    bulletColor: {r: 0.4431373, g: 0.4901961, b: 0.80392164, a: 1}
+    startDelay: 0.05
+    clawSpawnInterval: 0.1
+    clawAngleOffsetsDegrees:
+    - 0
+    - 15
+    - -15
+    sweepStartAngleDegrees: 60
+    sweepEndAngleDegrees: 120
+    sweepRotationDirection: 2
+    sweepDurationSeconds: 2
+    minBulletSpeed: 1
+    maxBulletSpeed: 3
+    bulletLifetime: 10
+  - sweepName: Red Sweep, Small Bullets
+    bulletPrefabId: StageSmallBullet
+    bulletColor: {r: 0.7960785, g: 0.62352943, b: 0.6392157, a: 1}
+    startDelay: 0
+    clawSpawnInterval: 0.1
+    clawAngleOffsetsDegrees:
+    - 0
+    - 15
+    - -15
+    sweepStartAngleDegrees: -230
+    sweepEndAngleDegrees: 50
+    sweepRotationDirection: 1
+    sweepDurationSeconds: 2
+    minBulletSpeed: 1
+    maxBulletSpeed: 3
+    bulletLifetime: 10
+  - sweepName: Red Sweep, Large Bullets
+    bulletPrefabId: StageLargeBullet
+    bulletColor: {r: 0.7960785, g: 0.62352943, b: 0.6392157, a: 1}
+    startDelay: 0.05
+    clawSpawnInterval: 0.1
+    clawAngleOffsetsDegrees:
+    - 0
+    - 15
+    - -15
+    sweepStartAngleDegrees: -230
+    sweepEndAngleDegrees: 50
+    sweepRotationDirection: 1
+    sweepDurationSeconds: 2
+    minBulletSpeed: 1
+    maxBulletSpeed: 3
+    bulletLifetime: 10
+--- !u!114 &4065615795502822878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8208471029591770928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c4da763b6c45f642832cb9228d6fbb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PrefabID: LilyWhite
+--- !u!61 &-6303378574558086246
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8208471029591770928}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.6, y: 0.53}
+    newSize: {x: 0.6, y: 0.53}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 0.38, y: 0.53}
+  m_EdgeRadius: 0

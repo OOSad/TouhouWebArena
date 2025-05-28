@@ -26,11 +26,28 @@ public class StageSmallBulletMoverScript : MonoBehaviour, IClearable
     private bool _isReturningToPool = false;
     private PlayerRole _owningPlayerRole = PlayerRole.None; // Added field
 
+    // For color reset
+    private SpriteRenderer spriteRenderer;
+    private Color originalColor;
+
     // --- Public getters for properties that might be needed by the spawner ---
     public float DefaultSpeed => defaultSpeed;
     public float MaxLifetime => maxLifetime;
     public PlayerRole OwningPlayerRole => _owningPlayerRole; // Added getter
     // -----------------------------------------------------------------------
+
+    void Awake() // Added Awake to get SpriteRenderer and originalColor
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            originalColor = spriteRenderer.color;
+        }
+        else
+        {
+            Debug.LogWarning($"[StageSmallBulletMoverScript] SpriteRenderer component not found on {gameObject.name}. Color reset will not work.", this);
+        }
+    }
 
     void OnEnable()
     {
@@ -44,6 +61,12 @@ public class StageSmallBulletMoverScript : MonoBehaviour, IClearable
     void OnDisable()
     {
         _isReturningToPool = false; // Reset flag when disabled
+
+        // Reset color to original
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = originalColor;
+        }
     }
 
     /// <summary>
@@ -89,6 +112,14 @@ public class StageSmallBulletMoverScript : MonoBehaviour, IClearable
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (_isReturningToPool) return;
+
+        // Check for collision with StageWalls
+        if (other.gameObject.layer == LayerMask.NameToLayer("StageWalls"))
+        {
+            Debug.Log($"[StageSmallBulletMoverScript] Hit StageWalls, returning {gameObject.name} to pool.");
+            ReturnToClientPool();
+            return; // Exit after hitting a wall
+        }
 
         // Example: Client-side shockwave clearing
         if (other.CompareTag("FairyShockwave")) // Assuming shockwaves are client-side and tagged

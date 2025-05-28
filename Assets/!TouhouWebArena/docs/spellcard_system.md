@@ -123,10 +123,23 @@ Activation logic remains similar: player input triggers a server request, cost i
         i.  Receives `casterPosition`, `clearRadius`, and `casterRole`.
         ii. Performs `Physics2D.OverlapCircleAll(casterPosition, clearRadius)` to find all colliders in the area.
         iii. Iterates through colliders:
-            *   **`StageSmallBulletMoverScript`:** If found, checks if `stageBulletMover.OwningPlayerRole == casterRole`.
-                *   If true, calls `stageBulletMover.ForceReturnToPoolByBomb()`.
-                *   Then, calls `PlayerAttackRelay.LocalInstance.RequestOpponentStageBulletSpawnServerRpc()` to spawn a "revenge" bullet (defaults: "StageSmallBullet" prefab, 2.5f speed, 7f lifetime).
-            *   **Other "EnemyProjectiles" Layer Objects:** If an object is on the "EnemyProjectiles" layer and *does not* have a `StageSmallBulletMoverScript` (to avoid double processing), and has a `ClientProjectileLifetime` component, `projectileLifetime.ForceReturnToPool()` is called.
+            *   **`StageSmallBulletMoverScript`:** If found,
+                // Spellcard clear should clear enemy bullets on the caster's side.
+                bool isOnCastersSide = (casterRole == PlayerRole.Player1 && col.transform.position.x < 0) || 
+                                       (casterRole == PlayerRole.Player2 && col.transform.position.x > 0);
+
+                if (isOnCastersSide)
+                {
+                    Debug.Log($"[ClientSpellcardExecutor] Clearing stage bullet {col.gameObject.name} on caster's side ({casterRole}).");
+                    stageBulletMover.ForceReturnToPoolByBomb(); // Or use IClearable.Clear(true, casterRole) if appropriate
+
+                    // Trigger revenge bullet - this logic seems tied to clearing opposing bullets,
+                    // which isn't what we want for clearing enemy bullets on our side with a spellcard.
+                    // This is currently commented out in the code.
+                    // PlayerAttackRelay.LocalInstance.RequestOpponentStageBulletSpawnServerRpc(....);
+                }
+            *   **`ClientLilyWhiteHealth`:** (New Check) If found, calls `lilyWhiteHealth.ForceReturnToPoolByClear()`.
+            *   **Other "EnemyProjectiles" Layer Objects:** If an object is on the "EnemyProjectiles" layer and *does not* have a `StageSmallBulletMoverScript` (to avoid double processing) and *does not* have `ClientLilyWhiteHealth` (to avoid double processing), and has a `ClientProjectileLifetime` component, `projectileLifetime.ForceReturnToPool()` is called.
             *   **`ClientFairyHealth`:** If found and `fairyHealth.OwningPlayerRole == casterRole`, calls `fairyHealth.ForceReturnToPool()`.
             *   **`ClientSpiritController`:** If found and `spiritController.OwningPlayerRole == casterRole`, calls `spiritHealth.ForceReturnToPool()` (after getting `ClientSpiritHealth`).
             *   **Opponent's Extra Attacks (`ReimuExtraAttackOrb_Client`, `MarisaExtraAttackLaser_Client`):** If found and `AttackerClientId` does not match the `casterPlayerClientId` (resolved from `casterRole`), calls `ForceReturnToPoolByClear()` on the extra attack.
@@ -267,8 +280,4 @@ Level 4 spellcards manifest as autonomous "illusion" entities that persist on th
             *   Movement parameters (`isMovingForThisAttack`, `movementStartPos`, `movementEndPos`, `movementDur`) are determined.
             *   Aiming orientation (`attackPatternOrientation`) is calculated if `orientPatternTowardsTarget` is true.
             *   `sharedRandomOffset` is calculated.
-            *   `_clientView.ExecuteAttackPatternClientRpc(...)` is called.
-            *   If `isMovingForThisAttack`, `StartCoroutine(DelayedUpdateServerPosition(movementEndPos, movementDur))` is called to update the server's logical position after the client-side visual movement.
-
-4.  **Attack Execution (Client):**
-    *   `ClientIllusionView.ExecuteAttackPatternClientRpc()`
+            *   `
