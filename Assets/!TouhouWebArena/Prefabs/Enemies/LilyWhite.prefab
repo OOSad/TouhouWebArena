@@ -110,7 +110,7 @@ MonoBehaviour:
   targetYInCenter: 0
   offScreenYTop: 5.5
   initialSpawnY: 5.5
-  totalLifetime: 6
+  totalLifetime: 8
   attackPatternHandler: {fileID: 3018276250971146258}
 --- !u!114 &-3736428468192672093
 MonoBehaviour:
@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ab14ab97a728e444a665c0ebdebc3c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 75
+  maxHealth: 100
   _flashColor: {r: 1, g: 0, b: 0, a: 1}
   _flashDuration: 0.1
   _flashIntensity: 0.5

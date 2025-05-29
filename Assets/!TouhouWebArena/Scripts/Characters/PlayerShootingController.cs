@@ -21,6 +21,7 @@ public class PlayerShootingController : NetworkBehaviour
     [Header("Input Settings")]
     [Tooltip("The keyboard key used to trigger shooting actions.")]
     [SerializeField] private KeyCode fireKey = KeyCode.Z;
+    [SerializeField] private KeyCode spellChargeKey = KeyCode.X; // New key for spell charging
 
     // [Header("Debug")] // New Header for Debug field - REMOVING DEBUG MARKER
     // [Tooltip("Assign a simple visible prefab here for RPC testing.")]
@@ -30,9 +31,12 @@ public class PlayerShootingController : NetworkBehaviour
 
     // --- Local State (Owner Client Only) ---
     private SpellBarController spellBarController; // Reference to the owner's spell bar UI component in the scene.
-    private float nextFireTime = 0f; // Timestamp for when the next basic shot burst can start.
+    private float nextBurstStartTime = 0f; // Renamed from nextFireTime // Timestamp for when the next basic shot burst can start.
     private Coroutine burstCoroutine; // Reference to the active basic shot burst coroutine, prevents overlapping bursts.
-    private bool isHoldingChargeKey = false; // Tracks if the fire key is currently held down by the owner client.
+    private Coroutine continuousFireCoroutine; // For continuous fire
+    private bool isHoldingFireKey = false; // Tracks if the fire key is currently held down by the owner client.
+    private float fireKeyDownTime = 0f; // Time Z was pressed
+    private const float TAP_THRESHOLD = 0.2f; // Max duration for a tap
 
     // --- Component References ---
     private CharacterStats characterStats; // Cached reference to this player's CharacterStats.
@@ -63,7 +67,7 @@ public class PlayerShootingController : NetworkBehaviour
         {
             firePoint = transform;
         }
-        // nextFireTime = Time.time; // Already in Awake, probably fine there.
+        // nextBurstStartTime = Time.time; // Already in Awake, probably fine there.
 
 
         // Owner client needs to find its specific spell bar for local charge level checks.
@@ -133,8 +137,9 @@ public class PlayerShootingController : NetworkBehaviour
         {
              Debug.LogError("[PlayerShootingController] CharacterStats component not found! Disabling script.", this);
              enabled = false;
+             return; 
         } else {
-             nextFireTime = Time.time; // Initialize to allow firing immediately
+             nextBurstStartTime = Time.time; // Initialize to allow firing immediately
         }
 
         // Shots will now originate from the player's transform center.
@@ -170,52 +175,82 @@ public class PlayerShootingController : NetworkBehaviour
         // Safety check for required component
         if (characterStats == null) return;
 
-        // --- Input Reading (Owner Client Only) ---
-        isHoldingChargeKey = Input.GetKey(fireKey);
+        // --- Z Key: Firing Logic ---
         bool justPressedFireKey = Input.GetKeyDown(fireKey);
+        bool isHoldingFireKeyNow = Input.GetKey(fireKey); // Current state of Z key
         bool justReleasedFireKey = Input.GetKeyUp(fireKey);
 
-        // --- Send Input State to Server (Owner Client Only) ---
-        // Inform the SpellBarManager about the charge state for server-side calculation.
-        UpdateChargeStateServerRpc(isHoldingChargeKey);
+        if (justPressedFireKey)
+        {
+            fireKeyDownTime = Time.time;
+            isHoldingFireKey = true; // Track that we started holding
+        }
 
-        // --- Check for Action on Release (Owner Client Only) ---
+        if (isHoldingFireKeyNow)
+        {
+            // If Z is held beyond the tap threshold, and continuous fire isn't already running,
+            // and a burst isn't active, start continuous fire.
+            if (Time.time - fireKeyDownTime > TAP_THRESHOLD)
+            {
+                if (continuousFireCoroutine == null && burstCoroutine == null)
+                {
+                    continuousFireCoroutine = StartCoroutine(ContinuousFireSequence());
+                }
+            }
+        }
+        
         if (justReleasedFireKey)
         {
-            if (spellBarController != null)
-            {
-                // Read the LOCAL NetworkVariable value to decide what to request.
-                // The server will perform the authoritative checks.
-                float chargeLevel = spellBarController.currentActiveFill.Value;
-                int spellLevel = Mathf.FloorToInt(chargeLevel);
+            isHoldingFireKey = false; // No longer holding
 
-                if (spellLevel >= 2) // Request Spellcard
-                {
-                    RequestSpellcardServerRpc(spellLevel);
-                }
-                else if (spellLevel >= 1) // Request Charge Attack
-                {
-                    RequestChargeAttackServerRpc();
-                }
-                // Level 0: Nothing to request on release; active bar reset is handled via UpdateChargeStateServerRpc(false).
+            if (continuousFireCoroutine != null)
+            {
+                StopCoroutine(continuousFireCoroutine);
+                continuousFireCoroutine = null;
             }
-            else {
-                 Debug.LogWarning("[PlayerShootingController] Cannot check charge level - SpellBarController reference is missing.");
+            else // If continuous fire didn't start, it might have been a tap
+            {
+                // Check if it was a tap (duration less than threshold)
+                // And if burst cooldown has passed and no burst is currently running.
+                if (Time.time - fireKeyDownTime <= TAP_THRESHOLD)
+                {
+                    if (Time.time >= nextBurstStartTime && burstCoroutine == null)
+                    {                        
+                        burstCoroutine = StartCoroutine(BurstFireSequence());
+                        // Calculate cooldown until next burst can start
+                        float burstDuration = characterStats.GetBurstCount() > 1 ? (characterStats.GetBurstCount() - 1) * characterStats.GetTimeBetweenBurstShots() : 0f;
+                        nextBurstStartTime = Time.time + burstDuration + characterStats.GetBurstCooldown();
+                    }
+                }
             }
         }
 
-        // --- Burst Fire Action (Owner Client Only) ---
-        if (justPressedFireKey)
-        {
-            // Check cooldown and ensure no burst is already active
-            if (Time.time >= nextFireTime && burstCoroutine == null)
-            {
-                // Start the local coroutine to manage burst timing and send fire requests
-                burstCoroutine = StartCoroutine(BurstFireSequence());
+        // --- X Key: Spell Charging and Activation Logic ---
+        bool isHoldingSpellKey = Input.GetKey(spellChargeKey);
+        bool justReleasedSpellKey = Input.GetKeyUp(spellChargeKey);
 
-                // Calculate cooldown until next burst can start, based on stats
-                float burstDuration = characterStats.GetBurstCount() > 1 ? (characterStats.GetBurstCount() - 1) * characterStats.GetTimeBetweenBurstShots() : 0f;
-                nextFireTime = Time.time + burstDuration + characterStats.GetBurstCooldown();
+        // Inform the SpellBarManager about the spell charge key state.
+        UpdateChargeStateServerRpc(isHoldingSpellKey); // Pass the X key's state
+
+        if (justReleasedSpellKey)
+        {
+            if (spellBarController != null)
+            {
+                float chargeLevel = spellBarController.currentActiveFill.Value;
+                int spellLevel = Mathf.FloorToInt(chargeLevel);
+
+                if (spellLevel >= 2)
+                {
+                    RequestSpellcardServerRpc(spellLevel);
+                }
+                else if (spellLevel >= 1)
+                {
+                    RequestChargeAttackServerRpc();
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[PlayerShootingController] Cannot check charge level - SpellBarController reference is missing.");
             }
         }
     }
@@ -258,6 +293,41 @@ public class PlayerShootingController : NetworkBehaviour
             }
         }
         burstCoroutine = null; // Mark coroutine as finished
+    }
+
+    private IEnumerator ContinuousFireSequence()
+    {
+        if (ClientGameObjectPool.Instance == null)
+        {
+            Debug.LogError("[PlayerShootingController] ClientGameObjectPool.Instance is null. Cannot continuously fire.");
+            continuousFireCoroutine = null;
+            yield break;
+        }
+
+        string prefabId = characterStats.GetBasicShotPrefabID();
+        float shotSpeed = characterStats.GetBasicShotSpeed();
+        float shotLifetime = characterStats.GetBasicShotLifetime();
+        float spread = characterStats.GetBulletSpread();
+        float timeBetweenShots = characterStats.GetTimeBetweenBurstShots(); // Reuse this for continuous fire rate
+
+        Vector3 rightOffset = firePoint.right * (spread / 2f);
+        Vector3 leftOffset = -rightOffset;
+
+        float nextShotPairTime = Time.time; // Initialize to allow first shot immediately
+
+        // isHoldingFireKey will be updated by Update() method.
+        // The loop continues as long as this coroutine is not stopped externally (by releasing Z).
+        while (true) 
+        {
+            if (Time.time >= nextShotPairTime)
+            {
+                SpawnAndNetworkBullet(prefabId, firePoint.position + leftOffset, firePoint.rotation, shotSpeed, shotLifetime);
+                SpawnAndNetworkBullet(prefabId, firePoint.position + rightOffset, firePoint.rotation, shotSpeed, shotLifetime);
+                nextShotPairTime = Time.time + timeBetweenShots;
+            }
+            yield return null; // Check each frame
+        }
+        // Note: The external stop of this coroutine will set continuousFireCoroutine = null;
     }
 
     private void SpawnAndNetworkBullet(string prefabId, Vector3 position, Quaternion rotation, float speed, float lifetime)
@@ -458,14 +528,14 @@ public class PlayerShootingController : NetworkBehaviour
         if (characterStats == null) return;
 
         // Check cooldown and ensure no burst is already active
-        if (Time.time >= nextFireTime && burstCoroutine == null)
+        if (Time.time >= nextBurstStartTime && burstCoroutine == null)
         {
             // Start the local timing coroutine which will send RPCs
             burstCoroutine = StartCoroutine(BurstFireSequence());
 
             // Calculate cooldown based on stats
             float burstDuration = characterStats.GetBurstCount() > 1 ? (characterStats.GetBurstCount() - 1) * characterStats.GetTimeBetweenBurstShots() : 0f;
-            nextFireTime = Time.time + burstDuration + characterStats.GetBurstCooldown();
+            nextBurstStartTime = Time.time + burstDuration + characterStats.GetBurstCooldown();
         }
         // else: AI tried to shoot too soon or during burst, do nothing.
     }

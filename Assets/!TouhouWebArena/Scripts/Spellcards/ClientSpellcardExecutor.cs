@@ -199,24 +199,15 @@ public class ClientSpellcardExecutor : NetworkBehaviour
                 continue; 
             }
 
-            // --- Handle Lily White ---
-            if (col.TryGetComponent(out ClientLilyWhiteHealth lilyWhiteHealth)) // New check for Lily White
-            {
-                Debug.Log($"[ClientSpellcardExecutor] Clearing Lily White {col.gameObject.name} due to spellcard.");
-                lilyWhiteHealth.ForceReturnToPoolByClear();
-                continue; // Processed Lily White, move to next collider
-            }
-
             // Clear Enemy Projectiles (Layer Check - Clears regardless of owner)
             // Note: StageSmallBulletMoverScript might also be on "EnemyProjectiles" layer.
             // The specific check above handles it with role and revenge logic.
-            // This block will catch other projectiles on this layer that aren't StageSmallBulletMoverScript.
             if (col.gameObject.layer == LayerMask.NameToLayer("EnemyProjectiles"))
             {
                 if (col.TryGetComponent(out ClientProjectileLifetime projectileLifetime))
                 {
-                    // Check if it's NOT a StageSmallBulletMoverScript or ClientLilyWhiteHealth to avoid double processing
-                    if (col.GetComponent<StageSmallBulletMoverScript>() == null && col.GetComponent<ClientLilyWhiteHealth>() == null) 
+                    // Check if it's NOT a StageSmallBulletMoverScript to avoid double processing
+                    if (col.GetComponent<StageSmallBulletMoverScript>() == null) 
                     {
                         Debug.Log($"[ClientSpellcardExecutor] Clearing generic EnemyProjectile {col.gameObject.name}");
                         projectileLifetime.ForceReturnToPool();
