@@ -4,6 +4,7 @@ using System.Collections; // ADDED for coroutine
 
 // namespace TouhouWebArena.Client.Enemies // Global for now
 // {
+    [RequireComponent(typeof(AudioSource))] // Ensure AudioSource is present for death sounds
     public class ClientSpiritHealth : MonoBehaviour
     {
         private int _currentHealth;
@@ -35,9 +36,13 @@ using System.Collections; // ADDED for coroutine
         [Tooltip("How strong the flash color tint is (0=no tint, 1=full color).")]
         [Range(0f, 1f)] [SerializeField] private float _flashIntensity = 0.5f;
 
+        [Header("Sound Settings")] // New header for sound fields
+        public AudioClip enemyDefeatedSound;
+
         private ClientSpiritController _spiritController; // ADDED: Reference to controller for visuals
         private PooledObjectInfo _pooledObjectInfo; // To get PrefabID for logging or other purposes
         private Coroutine _flashCoroutine;
+        private AudioSource audioSource; // Cached AudioSource component
 
         void Awake()
         {
@@ -47,6 +52,19 @@ using System.Collections; // ADDED for coroutine
             if (_spiritController == null)
             {
                 Debug.LogError($"[ClientSpiritHealth] ClientSpiritController component not found on {gameObject.name}! Flash effect will not work.");
+            }
+
+            // Get and configure AudioSource for death sounds
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource != null)
+            {
+                audioSource.playOnAwake = false;
+                audioSource.loop = false;
+                audioSource.spatialBlend = 1.0f; // Make it a 3D sound
+            }
+            else
+            {
+                Debug.LogError($"[ClientSpiritHealth on {gameObject.name}] AudioSource component not found despite RequireComponent attribute!");
             }
         }
 
@@ -93,6 +111,14 @@ using System.Collections; // ADDED for coroutine
         private void Die(ulong attackerOwnerClientId)
         {
             // Debug.Log($"[ClientSpiritHealth] Spirit died. Killed by client: {attackerOwnerClientId}", this);
+
+            // Play defeat sound only if the local client was the attacker
+            if (enemyDefeatedSound != null && attackerOwnerClientId == NetworkManager.Singleton.LocalClientId)
+            {
+                // Use PlayClipAtPoint to play sound independently of this GameObject's lifecycle
+                float volume = (audioSource != null) ? audioSource.volume : 1.0f; // Use existing volume or default
+                AudioSource.PlayClipAtPoint(enemyDefeatedSound, transform.position, volume);
+            }
 
             SpawnDeathShockwave(attackerOwnerClientId);
 

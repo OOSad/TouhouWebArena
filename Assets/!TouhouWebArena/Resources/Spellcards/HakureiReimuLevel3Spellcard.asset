@@ -74,3 +74,123 @@ MonoBehaviour:
     skipEveryNth: 0
     intraActionDelay: 0
     lifetime: 10
+  - startDelay: 1
+    bulletPrefabs:
+    - {fileID: 2173492373472071295, guid: 3f2279f364f549a459822741608eda89, type: 3}
+    positionOffset: {x: 0, y: 0}
+    count: 40
+    formation: 1
+    radius: 0
+    spacing: 0
+    angle: 0
+    applyRandomSpawnOffset: 0
+    randomOffsetMin: {x: -3, y: -1}
+    randomOffsetMax: {x: 3, y: 1}
+    behavior: 0
+    speed: 2
+    speedIncrementPerBullet: 0
+    homingSpeed: 4
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
+    homingDelay: 0
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
+    lifetime: 10
+  - startDelay: 1
+    bulletPrefabs:
+    - {fileID: 3623579197644259766, guid: 044aacc1cd040ac4db9cb9b9b57acf82, type: 3}
+    positionOffset: {x: 0, y: 0}
+    count: 40
+    formation: 1
+    radius: 0
+    spacing: 0
+    angle: 0
+    applyRandomSpawnOffset: 0
+    randomOffsetMin: {x: 0, y: 0}
+    randomOffsetMax: {x: 0, y: 0}
+    behavior: 3
+    speed: 1
+    speedIncrementPerBullet: 0
+    homingSpeed: 4
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
+    homingDelay: 1
+    secondHomingDelay: 0.1
+    firstHomingDuration: 1
+    secondHomingLookAheadDistance: 10
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
+    lifetime: 10
+  - startDelay: 2
+    bulletPrefabs:
+    - {fileID: 2173492373472071295, guid: 3f2279f364f549a459822741608eda89, type: 3}
+    positionOffset: {x: 0, y: 0}
+    count: 40
+    formation: 1
+    radius: 0
+    spacing: 0
+    angle: 0
+    applyRandomSpawnOffset: 0
+    randomOffsetMin: {x: -3, y: -1}
+    randomOffsetMax: {x: 3, y: 1}
+    behavior: 0
+    speed: 2
+    speedIncrementPerBullet: 0
+    homingSpeed: 4
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
+    homingDelay: 0
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
+    lifetime: 10
+  - startDelay: 2
+    bulletPrefabs:
+    - {fileID: 3623579197644259766, guid: 044aacc1cd040ac4db9cb9b9b57acf82, type: 3}
+    positionOffset: {x: 0, y: 0}
+    count: 40
+    formation: 1
+    radius: 0
+    spacing: 0
+    angle: 0
+    applyRandomSpawnOffset: 0
+    randomOffsetMin: {x: 0, y: 0}
+    randomOffsetMax: {x: 0, y: 0}
+    behavior: 3
+    speed: 1
+    speedIncrementPerBullet: 0
+    homingSpeed: 4
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
+    homingDelay: 1
+    secondHomingDelay: 0.1
+    firstHomingDuration: 1
+    secondHomingLookAheadDistance: 10
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
+    lifetime: 10

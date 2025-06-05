@@ -1,6 +1,22 @@
-# Hakurei Reimu Spellcard Details
+# Hakurei Reimu Overview
 
-This document outlines the specific spellcard implementations for Hakurei Reimu.
+This document outlines the specific spellcard implementations and general abilities for Hakurei Reimu.
+
+## Basic Abilities and Controls
+
+Hakurei Reimu's basic actions are controlled via the standard player input scheme, primarily managed by the `PlayerShootingController.cs` component on her prefab.
+
+*   **Movement:** Standard arrow key movement, with focus mode (Left Shift) for slower, more precise movement and hitbox display.
+*   **Firing (Z Key):**
+    *   **Tap Z:** Fires a quick burst of ofuda (amulet) pairs.
+    *   **Hold Z:** Fires a continuous stream of ofuda pairs.
+    *   **Sound:** A sound effect (`playerFireSound` in `PlayerShootingController`) plays for each shot fired by the local player.
+*   **Spellcard Charging & Activation (X Key):**
+    *   **Hold X:** Charges Reimu's spellcard gauge.
+    *   **Release X:** Activates a Charge Attack (Level 1) or her currently equipped Spellcard (Level 2+) based on the charge level.
+*   **Bullet Impact Sound:** When Reimu's ofuda hit an enemy, a sound effect (`playerBulletHitEnemySound` in `PlayerShootingController`, played via `BulletMovement.cs`) is triggered for the local player.
+
+## Spellcard Details
 
 ## Level 2: Spirit Sign "Yin-Yang Sign"
 

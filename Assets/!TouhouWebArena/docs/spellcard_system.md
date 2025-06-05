@@ -8,7 +8,7 @@ In Touhou games, characters can use Spellcards. These are unique patterns of bul
 
 Spellcards are still defined using ScriptableObject assets created in the Unity editor.
 
-*   **Level 2 & 3 Spellcards:** Use `SpellcardData` assets. Define a sequence of `SpellcardAction`s. The server validates activation, determines parameters (including a shared random offset if needed), and sends an RPC to clients. Clients then load the data and execute the entire action sequence locally.
+*   **Level 2 & 3 Spellcards:** Use `SpellcardData` assets. Define a sequence of `SpellcardAction`s. The server validates activation, determines parameters (including a shared random offset if needed), and sends an RPC to clients. Clients then load the data and execute the entire action sequence locally. These are currently configured to represent their intended "hardest" difficulty.
 *   **Level 4 Spellcards:** Use `Level4SpellcardData` assets. *(Note: Level 4 Illusion logic is assumed to still be primarily server-driven based on previous documentation, but this needs review/refactoring if it hasn't been updated yet. This document primarily focuses on the refactored Level 2/3 flow).*
 
 Activation logic remains similar: player input triggers a server request, cost is validated, and a clear effect occurs around the caster. However, the *execution* of the bullet patterns (for Lv2/3) now happens entirely on the client side.
@@ -138,8 +138,8 @@ Activation logic remains similar: player input triggers a server request, cost i
                     // This is currently commented out in the code.
                     // PlayerAttackRelay.LocalInstance.RequestOpponentStageBulletSpawnServerRpc(....);
                 }
-            *   **`ClientLilyWhiteHealth`:** (New Check) If found, calls `lilyWhiteHealth.ForceReturnToPoolByClear()`.
-            *   **Other "EnemyProjectiles" Layer Objects:** If an object is on the "EnemyProjectiles" layer and *does not* have a `StageSmallBulletMoverScript` (to avoid double processing) and *does not* have `ClientLilyWhiteHealth` (to avoid double processing), and has a `ClientProjectileLifetime` component, `projectileLifetime.ForceReturnToPool()` is called.
+            *   **`ClientLilyWhiteHealth`:** This check has been removed. Lily White is no longer forcefully despawned by spellcard activation shockwaves.
+            *   **Other "EnemyProjectiles" Layer Objects:** If an object is on the "EnemyProjectiles" layer and *does not* have a `StageSmallBulletMoverScript` (to avoid double processing), and has a `ClientProjectileLifetime` component, `projectileLifetime.ForceReturnToPool()` is called.
             *   **`ClientFairyHealth`:** If found and `fairyHealth.OwningPlayerRole == casterRole`, calls `fairyHealth.ForceReturnToPool()`.
             *   **`ClientSpiritController`:** If found and `spiritController.OwningPlayerRole == casterRole`, calls `spiritHealth.ForceReturnToPool()` (after getting `ClientSpiritHealth`).
             *   **Opponent's Extra Attacks (`ReimuExtraAttackOrb_Client`, `MarisaExtraAttackLaser_Client`):** If found and `AttackerClientId` does not match the `casterPlayerClientId` (resolved from `casterRole`), calls `ForceReturnToPoolByClear()` on the extra attack.

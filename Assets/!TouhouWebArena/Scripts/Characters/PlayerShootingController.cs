@@ -12,6 +12,7 @@ using TouhouWebArena.Spellcards.Behaviors; // Added for LinearMovement
 /// </summary>
 [RequireComponent(typeof(NetworkObject))]
 [RequireComponent(typeof(CharacterStats))]
+[RequireComponent(typeof(AudioSource))] // Added for player firing sound
 // Renamed class from PlayerShooting to PlayerShootingController
 public class PlayerShootingController : NetworkBehaviour
 {
@@ -37,6 +38,11 @@ public class PlayerShootingController : NetworkBehaviour
     private bool isHoldingFireKey = false; // Tracks if the fire key is currently held down by the owner client.
     private float fireKeyDownTime = 0f; // Time Z was pressed
     private const float TAP_THRESHOLD = 0.2f; // Max duration for a tap
+
+    // --- Sound Related --- 
+    public AudioClip playerFireSound; // Sound to play when firing
+    public AudioClip playerBulletHitEnemySound; // Sound for bullet hitting an enemy
+    private AudioSource audioSource; // Cached AudioSource component
 
     // --- Component References ---
     private CharacterStats characterStats; // Cached reference to this player's CharacterStats.
@@ -144,6 +150,18 @@ public class PlayerShootingController : NetworkBehaviour
 
         // Shots will now originate from the player's transform center.
         firePoint = transform; 
+
+        // Get and configure AudioSource for firing sounds
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource != null)
+        {
+            audioSource.playOnAwake = false;
+            audioSource.loop = false;
+        }
+        else
+        {
+            Debug.LogError("[PlayerShootingController] AudioSource component not found despite RequireComponent attribute!");
+        }
     }
 
 
@@ -281,6 +299,12 @@ public class PlayerShootingController : NetworkBehaviour
 
         for (int i = 0; i < characterStats.GetBurstCount(); i++)
         {
+            // Play firing sound
+            if (audioSource != null && playerFireSound != null && IsOwner) // Only owner plays their own firing sound locally
+            {
+                audioSource.PlayOneShot(playerFireSound);
+            }
+
             // Spawn Left Bullet of the Pair
             SpawnAndNetworkBullet(prefabId, firePoint.position + leftOffset, firePoint.rotation, shotSpeed, shotLifetime);
 
@@ -321,6 +345,12 @@ public class PlayerShootingController : NetworkBehaviour
         {
             if (Time.time >= nextShotPairTime)
             {
+                // Play firing sound
+                if (audioSource != null && playerFireSound != null && IsOwner) // Only owner plays their own firing sound locally
+                {
+                    audioSource.PlayOneShot(playerFireSound);
+                }
+
                 SpawnAndNetworkBullet(prefabId, firePoint.position + leftOffset, firePoint.rotation, shotSpeed, shotLifetime);
                 SpawnAndNetworkBullet(prefabId, firePoint.position + rightOffset, firePoint.rotation, shotSpeed, shotLifetime);
                 nextShotPairTime = Time.time + timeBetweenShots;
@@ -344,7 +374,7 @@ public class PlayerShootingController : NetworkBehaviour
             BulletMovement mover = bulletInstance.GetComponent<BulletMovement>();
             if (mover != null)
             {
-                mover.Initialize(OwnerClientId, speed, lifetime); // Correctly initialize for owner
+                mover.Initialize(OwnerClientId, speed, lifetime, this); // Correctly initialize for owner, passing this controller
             }
             else
             {
@@ -411,7 +441,8 @@ public class PlayerShootingController : NetworkBehaviour
             if (mover != null)
             {
                 // Pass the OwnerClientId of this PlayerShootingController (the firer)
-                mover.Initialize(this.OwnerClientId, speed, lifetime); 
+                // For remote bullets, the shootingController reference is null as they don't play hit sounds locally for their owner.
+                mover.Initialize(this.OwnerClientId, speed, lifetime, null); 
             }
             else
             {
@@ -538,5 +569,14 @@ public class PlayerShootingController : NetworkBehaviour
             nextBurstStartTime = Time.time + burstDuration + characterStats.GetBurstCooldown();
         }
         // else: AI tried to shoot too soon or during burst, do nothing.
+    }
+
+    // Method for bullets to call to play their hit sound
+    public void PlayBulletHitEnemySound()
+    {
+        if (audioSource != null && playerBulletHitEnemySound != null)
+        {
+            audioSource.PlayOneShot(playerBulletHitEnemySound);
+        }
     }
 } 

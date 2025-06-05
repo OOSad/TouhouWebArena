@@ -43,11 +43,11 @@ Projectiles are primarily client-simulated based on server commands. Clients han
 
 Enemies (Fairies, Spirits, Lily White) use a Server-Authoritative Spawning + Client-Side Simulation model.
 
-- **Fairies:** Server (`FairySpawner`) defines waves and calls `FairySpawnNetworkHandler.SpawnFairyWaveClientRpc`. Clients receive RPC, get fairies from `ClientGameObjectPool`, initialize `SplineWalker` for path movement, `ClientFairyHealth` for health/ownership/damage flash/death shockwave/kill reporting, and `ClientFairyController` for path completion pooling.
-- **Spirits:** Server (`SpiritSpawner`) triggers periodic or revenge spawns and calls `ClientSpiritSpawnHandler.SpawnSpiritClientRpc`. Clients receive RPC, get spirits from `ClientGameObjectPool`, initialize `ClientSpiritController` (movement, activation, ownership, centerline check, visual swap), `ClientSpiritHealth` (health, damage flash, death shockwave, kill reporting), and `ClientSpiritTimeoutAttack` (timeout attack pattern). Spirits despawn via centerline check or timeout without death shockwave.
-- **Lily White:** Server (`LilyWhiteSpawner`) triggers timed spawns via `ClientLilyWhiteSpawnHandler.SpawnLilyWhiteClientRpc`. Clients receive RPC, get Lily White from `ClientGameObjectPool`, and initialize `ClientLilyWhiteController` (three-phase movement, timed despawn). Lily White currently has no health or attack interaction.
+- **Fairies:** Server (`FairySpawner`) defines waves and calls `FairySpawnNetworkHandler.SpawnFairyWaveClientRpc`. Clients receive RPC, get fairies from `ClientGameObjectPool`, initialize `SplineWalker` for path movement, `ClientFairyHealth` (health/ownership/damage flash/death shockwave/kill reporting/defeat sound), and `ClientFairyController` for path completion pooling.
+- **Spirits:** Server (`SpiritSpawner`) triggers periodic or revenge spawns and calls `ClientSpiritSpawnHandler.SpawnSpiritClientRpc`. Clients receive RPC, get spirits from `ClientGameObjectPool`, initialize `ClientSpiritController` (movement, activation, ownership, centerline check, visual swap), `ClientSpiritHealth` (health, damage flash, death shockwave, kill reporting/defeat sound), and `ClientSpiritTimeoutAttack` (timeout attack pattern). Spirits despawn via centerline check or timeout without death shockwave.
+- **Lily White:** Server (`LilyWhiteSpawner`) triggers timed spawns via `ClientLilyWhiteSpawnHandler.SpawnLilyWhiteClientRpc`. Clients receive RPC, get Lily White from `ClientGameObjectPool`. `ClientLilyWhiteSpawnHandler` plays a spawn sound. `ClientLilyWhiteController` handles her three-phase movement and timed despawn. `LilyWhiteAttackPattern` executes her bullet attacks and plays an attack sound. `ClientLilyWhiteHealth` manages her health, damage intake, death notification to the controller, and plays a defeat sound. She is no longer cleared by spellcard shockwaves.
 - **Retaliation/Counter Bullets:** Spawned server-side via `EffectNetworkHandler.SpawnStageBulletClientRpc` (triggered by fairy kills reported via `PlayerAttackRelay.ReportFairyKillServerRpc` or shockwave-cleared stage bullets reported via `PlayerAttackRelay.RequestOpponentStageBulletSpawnServerRpc`). Clients receive RPC, get bullet from pool, and initialize `StageSmallBulletMoverScript`. Shockwave-cleared counter bullets use specific parameters and randomized speed.
-- **Clearing:** Enemies are cleared by taking lethal damage, triggering death sequences (shockwaves, pooling). Player deathbombs clear enemies in radius by dealing damage. Spellcard activations clear caster's own pooled enemies via client-side RPC.
+- **Clearing:** Enemies are cleared by taking lethal damage, triggering death sequences (shockwaves, pooling, defeat sounds). Player deathbombs clear enemies in radius by dealing damage. Spellcard activations clear caster's own pooled enemies via client-side RPC.
 
 ## Spellcard System
 
@@ -58,7 +58,7 @@ Spellcards are defined using ScriptableObject assets and follow a server-trigger
     - Server validates activation/cost (`SpellBarManager`), triggers clear/banner RPCs (`ServerAttackSpawner`), calculates shared random offset if needed, and calls `SpellcardNetworkHandler.ExecuteSpellcardClientRpc`.
     - Clients receive RPC, load `SpellcardData`, calculate origin based on target field, and use `ClientSpellcardActionRunner` to execute actions.
     - `ClientSpellcardActionRunner` iterates actions, gets pooled bullets, calculates spawn positions/rotations (applying shared offset), and calls `ClientBulletConfigurer`.
-    - Spellcard clear effect is handled client-side (`ClientSpellcardExecutor`) upon receiving a separate RPC, using `Physics2D.OverlapCircleAll` to find and return pooled objects (own bullets/enemies, opponent's extra attacks) within a radius.
+    - Spellcard clear effect is handled client-side (`ClientSpellcardExecutor`) upon receiving a separate RPC, using `Physics2D.OverlapCircleAll` to find and return pooled objects (own bullets/enemies, opponent's extra attacks) within a radius. Lily White is no longer cleared by this effect.
 - **Level 4 Spellcards (Illusion System):**
     - Server (`ServerAttackSpawner`) spawns a server-authoritative Illusion `NetworkObject` with `ServerIllusionOrchestrator`, `ClientIllusionView`, and `IllusionHealth`.
     - Server-side `ServerIllusionOrchestrator` manages lifecycle, idle movement (RPCs transform updates to clients), selects attack patterns from `AttackPool`, calculates orientation/offset, and calls `ClientIllusionView.ExecuteAttackPatternClientRpc`.
@@ -78,10 +78,10 @@ Extra attacks are character-specific abilities triggered by destroying designate
 
 ## Health & Damage System
 
-Player health is server-authoritative, managed by `PlayerHealth` with `NetworkVariable`s for `CurrentHealth` and `IsInvincible`. Enemy health (Fairies, Spirits) is client-side, managed by `ClientFairyHealth` and `ClientSpiritHealth`. Illusion health is client-side with server reporting, managed by `IllusionHealth`.
+Player health is server-authoritative, managed by `PlayerHealth` with `NetworkVariable`s for `CurrentHealth` and `IsInvincible`. Enemy health (Fairies, Spirits, Lily White) is client-side, managed by respective health scripts (`ClientFairyHealth`, `ClientSpiritHealth`, `ClientLilyWhiteHealth`). Illusion health is client-side with server reporting, managed by `IllusionHealth`.
 
 - **Player Damage:** Client (`PlayerHitbox`) detects collision and reports to server (`ReportHitToServerRpc`). Server (`PlayerHealth`) applies damage, triggers invincibility (`IsInvincible` `NetworkVariable`), and manages death. Invincibility on server triggers client-side visuals (`PlayerInvincibilityVisuals`) and movement lock (`ClientAuthMovement`). After invincibility, server (`PlayerDeathBomb`) triggers client-side deathbomb clear (`ClearObjectsInRadiusClientRpc`) of pooled bullets and enemies.
-- **Enemy Damage:** Client-side scripts (`BulletMovement`, `ClientFairyShockwave`) detect collision and apply damage directly to client-side `ClientFairyHealth` or `ClientSpiritHealth`. If local player kills enemy, client reports kill to server (`PlayerAttackRelay.ReportFairyKillServerRpc` / `ReportSpiritKillServerRpc`).
+- **Enemy Damage:** Client-side scripts (`BulletMovement`, `ClientFairyShockwave`) detect collision and apply damage directly to client-side health scripts. If local player kills enemy, client reports kill to server (`PlayerAttackRelay.ReportFairyKillServerRpc` / `ReportSpiritKillServerRpc`) and the local health script plays a defeat sound using `AudioSource.PlayClipAtPoint()` if the kill was by HP depletion and initiated by the local player.
 - **Illusion Damage:** Client-side `IllusionHealth` (on the responsible client) detects player shot hits and applies damage locally. If health is depleted, client reports death to server (`IllusionHealth.ReportDeathToServerRpc`). Server receives RPC and triggers despawn via `ServerIllusionOrchestrator`.
 
 ## UI System
@@ -99,4 +99,29 @@ The Scope Style is a mechanic activated when a player enters Focus mode. Its pri
 
 - **Activation:** Tied to the player's Focus mode, managed by `PlayerFocusController.cs`, which likely enables/disables the Scope Style GameObject/Collider.
 - **Zone of Influence:** Defined by a trigger collider, typically on a child GameObject.
-- **Spirit Interaction:** Detects Spirits (likely via `OnTriggerEnter2D`) and signals the detected `ClientSpiritController` to activate the Spirit. Activated Spirits become visually distinct and potentially easier to destroy. 
+- **Spirit Interaction:** Detects Spirits (likely via `OnTriggerEnter2D`) and signals the detected `ClientSpiritController` to activate the Spirit. Activated Spirits become visually distinct and potentially easier to destroy.
+
+## Audio System Patterns
+
+Sound effects are being integrated to enhance feedback and immersion. Emerging patterns include:
+
+-   **Local Player Feedback Sounds:**
+    *   Sounds for actions initiated by the local player (e.g., firing a shot, bullet impacting an enemy) are typically played by a script on the player's character (e.g., `PlayerShootingController`).
+    *   These often use an `AudioSource` component on the player's prefab.
+    *   Playback (e.g., `audioSource.PlayOneShot(clip)`) is often conditional on `IsOwner` (for `NetworkBehaviour` scripts) or other logic to ensure the sound is primarily for the local player's benefit.
+    *   Example: `PlayerShootingController` plays `playerFireSound`; `BulletMovement` calls a method on the owner `PlayerShootingController` to play `playerBulletHitEnemySound`.
+
+-   **Enemy Action Sounds (Global/Spatialized):**
+    *   Sounds related to enemy actions (e.g., Lily White spawning, Lily White attacking) are typically played by scripts on the enemy's client-side representation (e.g., `ClientLilyWhiteSpawnHandler`, `LilyWhiteAttackPattern`).
+    *   These utilize an `AudioSource` component on the enemy prefab or its controlling scripts.
+    *   These sounds are generally intended to be heard by all players. Future work will refine 3D spatialization (e.g., `spatialBlend`, rolloff curves on the `AudioSource`) for better positional audio.
+
+-   **Conditional Global Sounds (e.g., Enemy Defeat):**
+    *   For events that occur globally but should have a single, distinct audio cue (e.g., an enemy being defeated), the sound is often played by the client that triggered or is most directly responsible for the event.
+    *   `AudioSource.PlayClipAtPoint(clip, position, volume)` is used to play the sound at the event's location in world space, making it audible to all nearby players.
+    *   The decision to play the sound is conditional (e.g., `if (attackerOwnerClientId == NetworkManager.Singleton.LocalClientId)` in enemy health scripts) to prevent the sound from playing multiple times if the death event is processed by all clients.
+    *   Examples: `ClientFairyHealth`, `ClientSpiritHealth`, `ClientLilyWhiteHealth` play `enemyDefeatedSound` this way.
+
+-   **Audio Components & Assets:**
+    *   Reusable sounds are stored as `AudioClip` assets.
+    *   Scripts requiring audio playback typically have serialized `AudioClip` fields (assigned in the Unity Inspector) and an `AudioSource` component (often added via `RequireComponent(typeof(AudioSource))` and configured in `Awake()`). 

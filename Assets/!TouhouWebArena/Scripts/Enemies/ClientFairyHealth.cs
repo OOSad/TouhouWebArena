@@ -5,6 +5,7 @@ using TouhouWebArena; // Needed for PlayerRole
 using System.Collections; // ADDED: For IEnumerator
 
 // Basic client-side health management for a fairy.
+[RequireComponent(typeof(AudioSource))] // Ensure AudioSource is present for death sounds
 public class ClientFairyHealth : MonoBehaviour
 {
     [SerializeField] private int maxHealth = 1;
@@ -26,8 +27,12 @@ public class ClientFairyHealth : MonoBehaviour
     [Tooltip("How strong the flash color tint is (0=no tint, 1=full color).")]
     [Range(0f, 1f)] [SerializeField] private float _flashIntensity = 0.5f;
 
+    [Header("Sound Settings")] // New header for sound fields
+    public AudioClip enemyDefeatedSound;
+
     private SpriteRenderer _spriteRenderer;
     private Coroutine _flashCoroutine;
+    private AudioSource audioSource; // Cached AudioSource component
 
     private int _currentHealth;
     private bool _isExtraAttackTrigger = false; // Added for extra attack
@@ -46,6 +51,19 @@ public class ClientFairyHealth : MonoBehaviour
         if (_spriteRenderer == null)
         {
             Debug.LogWarning($"[ClientFairyHealth on {gameObject.name}] SpriteRenderer not found in children.");
+        }
+
+        // Get and configure AudioSource for death sounds
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource != null)
+        {
+            audioSource.playOnAwake = false;
+            audioSource.loop = false;
+            audioSource.spatialBlend = 1.0f; // Make it a 3D sound
+        }
+        else
+        {
+            Debug.LogError($"[ClientFairyHealth on {gameObject.name}] AudioSource component not found despite RequireComponent attribute!");
         }
     }
 
@@ -96,6 +114,14 @@ public class ClientFairyHealth : MonoBehaviour
         {
             _currentHealth = 0;
 
+            // Play defeat sound only if the local client was the attacker
+            if (enemyDefeatedSound != null && attackerOwnerClientId == NetworkManager.Singleton.LocalClientId)
+            {
+                // Use PlayClipAtPoint to play sound independently of this GameObject's lifecycle
+                float volume = (audioSource != null) ? audioSource.volume : 1.0f; // Use existing volume or default
+                AudioSource.PlayClipAtPoint(enemyDefeatedSound, transform.position, volume);
+            }
+
             SpawnDeathShockwave(attackerOwnerClientId); // Spawn effect first
 
             // Conditional Kill Reporting
@@ -133,6 +159,14 @@ public class ClientFairyHealth : MonoBehaviour
     {
         if (!IsAlive) return;
         _currentHealth = 0;
+
+        // Play defeat sound only if the local client was the instigator
+        if (enemyDefeatedSound != null && instigatorClientId == NetworkManager.Singleton.LocalClientId)
+        {
+            // Use PlayClipAtPoint to play sound independently of this GameObject's lifecycle
+            float volume = (audioSource != null) ? audioSource.volume : 1.0f; // Use existing volume or default
+            AudioSource.PlayClipAtPoint(enemyDefeatedSound, transform.position, volume);
+        }
 
         SpawnDeathShockwave(instigatorClientId); // Spawn effect first
 

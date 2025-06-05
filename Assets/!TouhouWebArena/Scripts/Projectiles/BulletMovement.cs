@@ -18,7 +18,7 @@ public class BulletMovement : MonoBehaviour // CHANGED from NetworkBehaviour
     // public NetworkVariable<PlayerRole> OwnerRole { get; private set; } = ... // REMOVED
 
     // private bool isDespawning = false; // REMOVED - Lifetime component will handle this
-
+    private PlayerShootingController ownerShootingController; // To play hit sounds
     private ClientProjectileLifetime _projectileLifetime;
 
     void Awake()
@@ -38,10 +38,11 @@ public class BulletMovement : MonoBehaviour // CHANGED from NetworkBehaviour
         // If moveSpeed is always constant from the prefab, this is less critical.
     }
 
-    public void Initialize(ulong ownerClientId, float speed, float lifetime) // Added ownerClientId & lifetime parameter
+    public void Initialize(ulong ownerClientId, float speed, float lifetime, PlayerShootingController shootingController) // Added ownerClientId & lifetime parameter & shootingController
     {
         this.FiredByOwnerClientId = ownerClientId; // NEW
         this.moveSpeed = speed;
+        this.ownerShootingController = shootingController; // Store the reference
         if (_projectileLifetime != null)
         {
             _projectileLifetime.Initialize(lifetime);
@@ -92,6 +93,20 @@ public class BulletMovement : MonoBehaviour // CHANGED from NetworkBehaviour
         if (hitSomething)
         {
             // Debug.Log($"[BulletMovement] Client-side collision with {other.name} (Tag: {other.tag})");
+
+            // Play hit sound if this bullet belongs to the local player
+            if (this.FiredByOwnerClientId == Unity.Netcode.NetworkManager.Singleton.LocalClientId)
+            {
+                if (ownerShootingController != null)
+                {
+                    ownerShootingController.PlayBulletHitEnemySound();
+                }
+                else
+                {
+                    Debug.LogWarning("[BulletMovement] ownerShootingController reference is null. Cannot play hit sound.");
+                }
+            }
+
             if (_projectileLifetime != null)
             {
                 _projectileLifetime.ForceReturnToPool(); // Return bullet to pool on hit

@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
+using Unity.Netcode;
 
+[RequireComponent(typeof(AudioSource))] // Ensure AudioSource is present for death sounds
 public class ClientLilyWhiteHealth : MonoBehaviour
 {
     [SerializeField] private int maxHealth = 75;
@@ -13,9 +15,13 @@ public class ClientLilyWhiteHealth : MonoBehaviour
     [Tooltip("How strong the flash color tint is (0=no tint, 1=full color).")]
     [Range(0f, 1f)] [SerializeField] private float _flashIntensity = 0.7f;
 
+    [Header("Sound Settings")] // New header for sound fields
+    public AudioClip enemyDefeatedSound;
+
     private SpriteRenderer _spriteRenderer;
     private Coroutine _flashCoroutine;
     private ClientLilyWhiteController _lilyWhiteController;
+    private AudioSource audioSource; // Cached AudioSource component
 
     private int _currentHealth;
     public int CurrentHealth => _currentHealth;
@@ -33,6 +39,19 @@ public class ClientLilyWhiteHealth : MonoBehaviour
         if (_lilyWhiteController == null)
         {
             Debug.LogError($"[ClientLilyWhiteHealth on {gameObject.name}] ClientLilyWhiteController not found on this GameObject.");
+        }
+
+        // Get and configure AudioSource for death sounds
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource != null)
+        {
+            audioSource.playOnAwake = false;
+            audioSource.loop = false;
+            audioSource.spatialBlend = 1.0f; // Make it a 3D sound
+        }
+        else
+        {
+            Debug.LogError($"[ClientLilyWhiteHealth on {gameObject.name}] AudioSource component not found despite RequireComponent attribute!");
         }
     }
 
@@ -65,6 +84,15 @@ public class ClientLilyWhiteHealth : MonoBehaviour
         if (_currentHealth <= 0)
         {
             _currentHealth = 0;
+
+            // Play defeat sound only if the local client was the attacker
+            if (enemyDefeatedSound != null && attackerOwnerClientId == NetworkManager.Singleton.LocalClientId)
+            {
+                // Use PlayClipAtPoint to play sound independently of this GameObject's lifecycle
+                float volume = (audioSource != null) ? audioSource.volume : 1.0f; // Use existing volume or default
+                AudioSource.PlayClipAtPoint(enemyDefeatedSound, transform.position, volume);
+            }
+
             // Notify controller to handle despawn
             _lilyWhiteController.HandleDeath(); 
         }

@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(AudioSource))] // Ensure AudioSource is present
 public class LilyWhiteAttackPattern : MonoBehaviour
 {
     public enum SweepDirection
@@ -45,8 +46,24 @@ public class LilyWhiteAttackPattern : MonoBehaviour
     [Header("Attack Configuration")]
     public List<LilySweepParameters> attackSweeps = new List<LilySweepParameters>();
 
+    [Header("Sound Settings")] // New header for sound related fields
+    public AudioClip attackSoundClip;
+    public float attackSoundRepeatDelay = 0.15f; // Time between each sound play
+    
+    private AudioSource audioSource;
+    private Coroutine attackSoundCoroutine; // To manage the sound loop
+
     private Transform lilyTransform; // To store Lily White's current transform for bullet spawning
     private PlayerRole _targetedPlayerRole = PlayerRole.None; // New field to store the targeted player role
+
+    void Awake() // Added Awake to get AudioSource
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) 
+        {
+             Debug.LogError("[LilyWhiteAttackPattern] AudioSource component not found despite RequireComponent!");
+        }
+    }
 
     public void StartAttackSequence(Transform ownerTransform, PlayerRole targetedPlayerRole)
     {
@@ -78,6 +95,13 @@ public class LilyWhiteAttackPattern : MonoBehaviour
         }
 
         yield return new WaitForSeconds(p.startDelay);
+
+        // Start the attack sound loop
+        if (attackSoundCoroutine != null) 
+        {
+            StopCoroutine(attackSoundCoroutine);
+        }
+        attackSoundCoroutine = StartCoroutine(PlayAttackSoundLoopCoroutine());
 
         float sweepTimer = 0f;
         float clawSpawnTimer = 0f;
@@ -144,6 +168,13 @@ public class LilyWhiteAttackPattern : MonoBehaviour
                 SpawnClaw(currentClawCenterAngle, p);
             }
             yield return null;
+        }
+
+        // Stop the attack sound loop once the sweep is done
+        if (attackSoundCoroutine != null)
+        { 
+            StopCoroutine(attackSoundCoroutine);
+            attackSoundCoroutine = null;
         }
     }
 
@@ -212,6 +243,23 @@ public class LilyWhiteAttackPattern : MonoBehaviour
             // Debug.Log($"Transform.localScale: {bulletInstance.transform.localScale}");
             // Debug.Log($"GameObject.layer: {LayerMask.LayerToName(bulletInstance.layer)} (Raw int: {bulletInstance.layer})");
             // Debug.Log($"--- Bullet Debug END for '{p.bulletPrefabId}' (Sweep: {p.sweepName}) ---");
+        }
+    }
+
+    private IEnumerator PlayAttackSoundLoopCoroutine()
+    {
+        if (attackSoundClip == null || audioSource == null)
+        {
+            Debug.LogWarning("LilyWhiteAttackPattern: Attack sound clip or AudioSource missing, cannot play attack sound loop.");
+            yield break;
+        }
+
+        audioSource.loop = false; // Ensure PlayOneShot behavior is not overridden by AudioSource loop setting
+
+        while (true) // Loop indefinitely until stopped by StopCoroutine
+        {
+            audioSource.PlayOneShot(attackSoundClip);
+            yield return new WaitForSeconds(attackSoundRepeatDelay);
         }
     }
 } 

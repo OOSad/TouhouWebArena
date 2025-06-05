@@ -1,6 +1,22 @@
-# Kirisame Marisa Spellcard Details
+# Kirisame Marisa Overview
 
-This document outlines the specific spellcard implementations for Kirisame Marisa.
+This document outlines the specific spellcard implementations and general abilities for Kirisame Marisa.
+
+## Basic Abilities and Controls
+
+Kirisame Marisa's basic actions are controlled via the standard player input scheme, primarily managed by the `PlayerShootingController.cs` component on her prefab.
+
+*   **Movement:** Standard arrow key movement, with focus mode (Left Shift) for slower, more precise movement and hitbox display.
+*   **Firing (Z Key):**
+    *   **Tap Z:** Fires a quick burst of star-shaped bullet pairs.
+    *   **Hold Z:** Fires a continuous stream of star-shaped bullet pairs.
+    *   **Sound:** A sound effect (`playerFireSound` in `PlayerShootingController`) plays for each shot fired by the local player.
+*   **Spellcard Charging & Activation (X Key):**
+    *   **Hold X:** Charges Marisa's spellcard gauge.
+    *   **Release X:** Activates a Charge Attack (Level 1) or her currently equipped Spellcard (Level 2+) based on the charge level.
+*   **Bullet Impact Sound:** When Marisa's star bullets hit an enemy, a sound effect (`playerBulletHitEnemySound` in `PlayerShootingController`, played via `BulletMovement.cs`) is triggered for the local player.
+
+## Spellcard Details
 
 ## Level 2: Magic Sign "Stardust"
 

@@ -44,9 +44,39 @@ MonoBehaviour:
     skipEveryNth: 0
     intraActionDelay: 0
     lifetime: 20
-  - startDelay: 0
+  - startDelay: 0.1
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: bbf6c41255a933e4fa06d4dc01a93369, type: 3}
+    positionOffset: {x: 3, y: 0.5}
+    count: 8
+    formation: 2
+    radius: 0
+    spacing: 0
+    angle: 125
+    applyRandomSpawnOffset: 0
+    randomOffsetMin: {x: 0, y: 0}
+    randomOffsetMax: {x: 0, y: 0}
+    behavior: 0
+    speed: 0.5
+    speedIncrementPerBullet: 0.5
+    homingSpeed: 0
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
+    homingDelay: 0
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
+    lifetime: 20
+  - startDelay: 0.2
+    bulletPrefabs:
+    - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
     positionOffset: {x: 3, y: 0}
     count: 8
     formation: 2
@@ -74,7 +104,37 @@ MonoBehaviour:
     skipEveryNth: 0
     intraActionDelay: 0
     lifetime: 20
-  - startDelay: 0
+  - startDelay: 0.3
+    bulletPrefabs:
+    - {fileID: 968588019201452436, guid: bbf6c41255a933e4fa06d4dc01a93369, type: 3}
+    positionOffset: {x: 3, y: -0.5}
+    count: 8
+    formation: 2
+    radius: 0
+    spacing: 0
+    angle: 125
+    applyRandomSpawnOffset: 0
+    randomOffsetMin: {x: 0, y: 0}
+    randomOffsetMax: {x: 0, y: 0}
+    behavior: 0
+    speed: 0.5
+    speedIncrementPerBullet: 0.5
+    homingSpeed: 0
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
+    homingDelay: 0
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
+    lifetime: 20
+  - startDelay: 0.4
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
     positionOffset: {x: 3, y: -1}
@@ -104,9 +164,39 @@ MonoBehaviour:
     skipEveryNth: 0
     intraActionDelay: 0
     lifetime: 20
-  - startDelay: 0
+  - startDelay: 0.5
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: bbf6c41255a933e4fa06d4dc01a93369, type: 3}
+    positionOffset: {x: 3, y: -1.5}
+    count: 8
+    formation: 2
+    radius: 0
+    spacing: 0
+    angle: 125
+    applyRandomSpawnOffset: 0
+    randomOffsetMin: {x: 0, y: 0}
+    randomOffsetMax: {x: 0, y: 0}
+    behavior: 0
+    speed: 0.5
+    speedIncrementPerBullet: 0.5
+    homingSpeed: 0
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
+    homingDelay: 0
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
+    lifetime: 20
+  - startDelay: 0.6
+    bulletPrefabs:
+    - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
     positionOffset: {x: 3, y: -2}
     count: 8
     formation: 2
@@ -134,7 +224,37 @@ MonoBehaviour:
     skipEveryNth: 0
     intraActionDelay: 0
     lifetime: 20
-  - startDelay: 0
+  - startDelay: 0.7
+    bulletPrefabs:
+    - {fileID: 968588019201452436, guid: bbf6c41255a933e4fa06d4dc01a93369, type: 3}
+    positionOffset: {x: 3, y: -2.5}
+    count: 8
+    formation: 2
+    radius: 0
+    spacing: 0
+    angle: 125
+    applyRandomSpawnOffset: 0
+    randomOffsetMin: {x: 0, y: 0}
+    randomOffsetMax: {x: 0, y: 0}
+    behavior: 0
+    speed: 0.5
+    speedIncrementPerBullet: 0.5
+    homingSpeed: 0
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
+    homingDelay: 0
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
+    lifetime: 20
+  - startDelay: 0.8
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
     positionOffset: {x: 3, y: -3}
@@ -164,10 +284,70 @@ MonoBehaviour:
     skipEveryNth: 0
     intraActionDelay: 0
     lifetime: 20
-  - startDelay: 0
+  - startDelay: 0.9
     bulletPrefabs:
     - {fileID: 968588019201452436, guid: bbf6c41255a933e4fa06d4dc01a93369, type: 3}
+    positionOffset: {x: 3, y: -3.5}
+    count: 8
+    formation: 2
+    radius: 0
+    spacing: 0
+    angle: 125
+    applyRandomSpawnOffset: 0
+    randomOffsetMin: {x: 0, y: 0}
+    randomOffsetMax: {x: 0, y: 0}
+    behavior: 0
+    speed: 0.5
+    speedIncrementPerBullet: 0.5
+    homingSpeed: 0
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
+    homingDelay: 0
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
+    lifetime: 20
+  - startDelay: 1
+    bulletPrefabs:
+    - {fileID: 968588019201452436, guid: 674fdea7e6d304e4897a5b0afeba1a00, type: 3}
     positionOffset: {x: 3, y: -4}
+    count: 8
+    formation: 2
+    radius: 0
+    spacing: 0
+    angle: 125
+    applyRandomSpawnOffset: 0
+    randomOffsetMin: {x: 0, y: 0}
+    randomOffsetMax: {x: 0, y: 0}
+    behavior: 0
+    speed: 0.5
+    speedIncrementPerBullet: 0.5
+    homingSpeed: 0
+    tangentialSpeed: 1
+    useInitialSpeed: 0
+    initialSpeed: 1
+    speedTransitionDuration: 0.5
+    homingDelay: 0
+    secondHomingDelay: 0.3
+    firstHomingDuration: 0.5
+    secondHomingLookAheadDistance: 10
+    spreadAngle: 45
+    minTurnSpeed: 90
+    maxTurnSpeed: 270
+    skipEveryNth: 0
+    intraActionDelay: 0
+    lifetime: 20
+  - startDelay: 1.1
+    bulletPrefabs:
+    - {fileID: 968588019201452436, guid: bbf6c41255a933e4fa06d4dc01a93369, type: 3}
+    positionOffset: {x: 3, y: -4.5}
     count: 8
     formation: 2
     radius: 0

@@ -96,17 +96,20 @@ Lily White is a client-simulated entity with a predefined movement pattern and a
     *   **Spawning:** Triggered by server RPC via `LilyWhiteSpawner` -> `ClientLilyWhiteSpawnHandler`.
     *   **Movement:** Deterministic three-phase movement (down, wait, up) handled by `ClientLilyWhiteController`.
     *   **Attacks:** Spawns stage bullets during the wait phase, handled by `LilyWhiteAttackPattern`.
+        *   `LilyWhiteAttackPattern.cs` now also handles playing a looping attack sound (`attackSoundClip`) via `PlayOneShot()` on an `AudioSource` during its sweep attacks.
     *   **Despawning:** 
         *   Primarily by a timer (`totalLifetime` in `ClientLilyWhiteController`).
         *   **New:** When health reaches zero due to player shots, `ClientLilyWhiteHealth` calls `ClientLilyWhiteController.HandleDeath()`.
         *   The movement coroutine also has logic to detect when she moves off-screen (though the timer or health depletion are the primary despawn triggers).
     *   **Taking Damage:** Player bullets with `BulletMovement.cs` check for the "LilyWhite" tag on collision. If matched, `ClientLilyWhiteHealth.TakeDamage()` is called. 
+    *   **Spawn Sound:** `ClientLilyWhiteSpawnHandler.cs` now plays a sound (`lilyWhiteSpawnSound`) via `PlayOneShot()` on an `AudioSource` when Lily White is initialized locally.
+    *   **Defeat Sound:** `ClientLilyWhiteHealth.cs` plays an `enemyDefeatedSound` using `AudioSource.PlayClipAtPoint()` when Lily White is defeated by HP depletion. This sound is only played on the client of the player who dealt the fatal blow.
 
 ## Clearing Effects (Client-Side)
 
 Enemies are "cleared" by taking lethal damage. Enemy *projectiles* can also be cleared by specific effects.
 
-*   **Spellcard Activation Clear:** Player spellcards triggered via `ClientSpellcardExecutor.TriggerLocalClearEffectClientRpc` clear `StageSmallBulletMoverScript` instances (including Lily White's bullets) that are within the spellcard's radius and located on the *caster's side* of the arena (X < 0 for Player 1, X > 0 for Player 2), regardless of the bullet's `OwningPlayerRole`. This is a client-side visual clear based on position.
+*   **Spellcard Activation Clear:** Player spellcards triggered via `ClientSpellcardExecutor.TriggerLocalClearEffectClientRpc` clear `StageSmallBulletMoverScript` instances (including Lily White's bullets) that are within the spellcard's radius and located on the *caster's side* of the arena (X < 0 for Player 1, X > 0 for Player 2), regardless of the bullet's `OwningPlayerRole`. This is a client-side visual clear based on position. Lily White herself is no longer affected by this clear.
 *   **Fairy Shockwaves:** `ClientFairyShockwave` instances triggered by dying Fairies or Spirits clear `StageSmallBulletMoverScript` instances (including Lily White's bullets) that are within the shockwave's radius and belong to the *opposing player* (checking `bullet.OwningPlayerRole != shockwaveOwnerRole && bullet.OwningPlayerRole != PlayerRole.None`). This is a client-side clear based on bullet ownership.
 *   **Player Death Bomb:** The `ClientRpc` for bomb clearing (`PlayerDeathBomb.ClearObjectsInRadiusClientRpc`) clears `StageSmallBulletMoverScript` instances (including Lily White's bullets) within the bomb radius by calling `ForceReturnToPoolByBomb()`, regardless of ownership or position. It also damages/clears other entities like fairies and spirits based on ownership. **It may need to be updated to also call `ForceReturnToPoolByClear()` on `ClientLilyWhiteHealth` if Lily White should be cleared by player bombs.**
 
@@ -124,9 +127,13 @@ Enemies are "cleared" by taking lethal damage. Enemy *projectiles* can also be c
 
 *   **Core Client-Side Enemy Components:**
     *   `ClientFairyHealth.cs`: Manage health, death effects (shockwave, kill reporting) for Fairies.
+        *   Now requires an `AudioSource` component.
+        *   Plays an `enemyDefeatedSound` using `AudioSource.PlayClipAtPoint()` when the fairy is defeated by HP depletion, only on the client of the player who dealt the fatal blow.
     *   `ClientFairyController.cs`: Coordinate client-side behaviors, path completion pooling for Fairies.
     *   `ClientSpiritController.cs`: Manages overall spirit behavior, movement (normal, aimed, activated with acceleration), visual state, and triggers activation consequences (health change, timeout attack start).
     *   `ClientSpiritHealth.cs`: Manages spirit health (normal/activated), damage processing, death sequence (shockwave with variable size, reporting kill to server), and forced despawn for timeouts.
+        *   Now requires an `AudioSource` component.
+        *   Plays an `enemyDefeatedSound` using `AudioSource.PlayClipAtPoint()` when the spirit is defeated by HP depletion, only on the client of the player who dealt the fatal blow.
     *   `ClientSpiritTimeoutAttack.cs`: Handles the activated spirit's timeout, including determining target side, aiming the 3-bullet claw attack (or firing downwards), and despawning the spirit.
     *   `SplineWalker.cs`: Client-side path following for fairies.
     *   `PooledObjectInfo.cs`: Essential for `ClientGameObjectPool`.
@@ -138,7 +145,10 @@ Enemies are "cleared" by taking lethal damage. Enemy *projectiles* can also be c
 *   **Client-Side Spawning Handlers:**
     *   `ClientSpiritSpawnHandler.cs`: Client-only singleton that receives an RPC from `SpiritSpawner` to spawn and initialize spirits locally from the `ClientGameObjectPool`.
     *   `ClientLilyWhiteSpawnHandler.cs`: Client-only singleton that receives an RPC from `LilyWhiteSpawner` to spawn and initialize Lily White locally from the `ClientGameObjectPool`.
+        *   Now includes an `AudioSource` and `AudioClip lilyWhiteSpawnSound` to play a sound on spawn.
     *   `ClientLilyWhiteHealth.cs`: (New) Manages health, damage, and death notification for Lily White.
+        *   Now requires an `AudioSource` component.
+        *   Plays an `enemyDefeatedSound` using `AudioSource.PlayClipAtPoint()` when Lily White is defeated by HP depletion, only on the client of the player who dealt the fatal blow.
 *   **Related Systems:**
     *   `ClientGameObjectPool.cs`: Pools all client-side enemies (Fairies, Spirits) and their effects (shockwaves, spirit timeout bullets).
     *   `PlayerAttackRelay.cs`:
