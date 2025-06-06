@@ -268,7 +268,7 @@ public class PlayerShootingController : NetworkBehaviour
             }
             else
             {
-                Debug.LogWarning("[PlayerShootingController] Cannot check charge level - SpellBarController reference is missing.");
+                 Debug.LogWarning("[PlayerShootingController] Cannot check charge level - SpellBarController reference is missing.");
             }
         }
     }

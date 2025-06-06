@@ -86,11 +86,27 @@ public class ClientLilyWhiteHealth : MonoBehaviour
             _currentHealth = 0;
 
             // Play defeat sound only if the local client was the attacker
-            if (enemyDefeatedSound != null && attackerOwnerClientId == NetworkManager.Singleton.LocalClientId)
+            if (attackerOwnerClientId == NetworkManager.Singleton.LocalClientId)
             {
-                // Use PlayClipAtPoint to play sound independently of this GameObject's lifecycle
-                float volume = (audioSource != null) ? audioSource.volume : 1.0f; // Use existing volume or default
-                AudioSource.PlayClipAtPoint(enemyDefeatedSound, transform.position, volume);
+                if (enemyDefeatedSound != null)
+                {
+                    // Check if enough time has passed since the last defeat sound
+                    if (Time.time >= GlobalAudioSettings.LastEnemyDefeatSoundPlayTime + GlobalAudioSettings.MinIntervalBetweenEnemyDefeatSounds)
+                    {
+                        Debug.Log($"[ClientLilyWhiteHealth] Playing enemyDefeatedSound: {enemyDefeatedSound.name} for {gameObject.name} at volume {GlobalAudioSettings.SfxVolume}. Time: {Time.time}");
+                        // Use PlayClipAtPoint to play sound independently of this GameObject's lifecycle
+                        AudioSource.PlayClipAtPoint(enemyDefeatedSound, transform.position, GlobalAudioSettings.SfxVolume);
+                        GlobalAudioSettings.LastEnemyDefeatSoundPlayTime = Time.time; // Update the last played time
+                    }
+                    else
+                    {
+                        Debug.Log($"[ClientLilyWhiteHealth] Skipped playing enemyDefeatedSound for {gameObject.name} due to cooldown. Time: {Time.time}, LastPlayed: {GlobalAudioSettings.LastEnemyDefeatSoundPlayTime}");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"[ClientLilyWhiteHealth] enemyDefeatedSound is null for {gameObject.name}");
+                }
             }
 
             // Notify controller to handle despawn

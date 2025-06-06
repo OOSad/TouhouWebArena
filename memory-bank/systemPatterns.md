@@ -121,7 +121,34 @@ Sound effects are being integrated to enhance feedback and immersion. Emerging p
     *   `AudioSource.PlayClipAtPoint(clip, position, volume)` is used to play the sound at the event's location in world space, making it audible to all nearby players.
     *   The decision to play the sound is conditional (e.g., `if (attackerOwnerClientId == NetworkManager.Singleton.LocalClientId)` in enemy health scripts) to prevent the sound from playing multiple times if the death event is processed by all clients.
     *   Examples: `ClientFairyHealth`, `ClientSpiritHealth`, `ClientLilyWhiteHealth` play `enemyDefeatedSound` this way.
+    *   **Cooldown for Stacking Sounds:** To prevent an excessive number of identical sounds from playing simultaneously (e.g., multiple enemy defeat sounds), a global static class `GlobalAudioSettings` is used. This class holds `LastEnemyDefeatSoundPlayTime` and `MinIntervalBetweenEnemyDefeatSounds`. Scripts like `ClientFairyHealth`, `ClientSpiritHealth`, and `ClientLilyWhiteHealth` check against these values before playing their defeat sound via `PlayClipAtPoint`, ensuring a minimum time interval has passed.
+
+-   **Global Volume Control (for `PlayClipAtPoint`):**
+    *   The `GlobalAudioSettings` class also contains a static `SfxVolume` field (e.g., `0.05f`).
+    *   Sounds played using `AudioSource.PlayClipAtPoint` by scripts like the enemy health scripts now use this `GlobalAudioSettings.SfxVolume` to ensure consistent volume levels, rather than relying on potentially varying `AudioSource` component volumes or default values.
 
 -   **Audio Components & Assets:**
     *   Reusable sounds are stored as `AudioClip` assets.
-    *   Scripts requiring audio playback typically have serialized `AudioClip` fields (assigned in the Unity Inspector) and an `AudioSource` component (often added via `RequireComponent(typeof(AudioSource))` and configured in `Awake()`). 
+    *   Scripts requiring audio playback typically have serialized `AudioClip` fields (assigned in the Unity Inspector) and an `AudioSource` component (often added via `RequireComponent(typeof(AudioSource))` and configured in `Awake()`).
+
+-   **Music System (Menu, Character Select, Gameplay):**
+    *   **State Management:** A static class `MusicStateManager.cs` is used to maintain music state across scene loads. It stores:
+        *   `LastPlayedMenuClip` (AudioClip reference)
+        *   `LastMenuClipTime` (float)
+        *   `GameplayMusicActive` (bool flag)
+    *   **Menu & Character Select Music (`MainMenuMusic.cs`, `CharacterSelectMusicPlayer.cs`):**
+        *   These are scene-specific MonoBehaviour scripts attached to GameObjects with an `AudioSource` in their respective scenes.
+        *   On `Start()`: They check `MusicStateManager`. 
+            *   If `GameplayMusicActive` was true, they reset state and play their assigned clip from the beginning.
+            *   Otherwise, if `LastPlayedMenuClip.name` matches their assigned `AudioClip.name`, they resume playback from `LastMenuClipTime`.
+            *   Otherwise, they play their clip from the beginning.
+        *   On `OnDisable()`: If `GameplayMusicActive` is false and their `AudioSource` is playing their assigned clip, they save the `audioSource.clip` to `LastPlayedMenuClip` and `audioSource.time` to `LastMenuClipTime` in `MusicStateManager`.
+        *   This allows for seamless music continuation between the Main Menu and Character Select scenes if they use the same audio track.
+    *   **Gameplay Music (`GameplayMusicPlayer.cs`):**
+        *   This is a `NetworkBehaviour` attached to a GameObject in the gameplay scene.
+        *   On `OnNetworkSpawn()`: It sets `MusicStateManager.GameplayMusicActive = true`. This prevents `MainMenuMusic` or `CharacterSelectMusicPlayer` from saving their state when the gameplay scene loads.
+        *   The server randomly selects a track from a list of `AudioClip`s and sends the choice to all clients via a `ClientRpc`.
+        *   Clients (and the host) receive the RPC and play the synchronized gameplay track from the beginning.
+        *   Gameplay music does not attempt to save or resume state.
+    *   **Clip Comparison:** `AudioClip.name` is used for comparing clips to ensure reliable resumption, as direct `AudioClip` object comparison can be unreliable across scene loads or different Inspector assignments of the same asset.
+    *   **Scene Transitions:** State saving is performed in `OnDisable()` rather than `OnDestroy()` for increased reliability during scene unloads. 

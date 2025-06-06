@@ -74,4 +74,25 @@ The game uses Unity's built-in audio system for sound effects. Key components an
     *   **Enemy Sounds:** Sounds for enemy actions (spawn, attack) are played from scripts associated with the enemy (e.g., `ClientLilyWhiteSpawnHandler`, `LilyWhiteAttackPattern`). These are generally intended to be heard by all players, with 3D spatialization.
     *   **Conditional Global Sounds:** For events like enemy deaths, sounds are played using `PlayClipAtPoint` at the enemy's position. The logic to play the sound is often conditional (e.g., only the client who dealt the killing blow plays the sound) to avoid multiple instances of the sound playing simultaneously across all clients.
 
--   **Volume Management:** Basic volume control is available via the `volumeScale` parameter of `PlayOneShot` or the `volume` parameter of `PlayClipAtPoint`. More complex mixing and mastering may be addressed later. 
+-   **Volume Management:** Basic volume control is available via the `volumeScale` parameter of `PlayOneShot` or the `volume` parameter of `PlayClipAtPoint`. More complex mixing and mastering may be addressed later.
+
+-   **Music System Implementation:**
+    *   **Core Scripts:**
+        *   `MusicStateManager.cs`: A static class responsible for holding the state of menu/character select music between scene loads. It stores `LastPlayedMenuClip` (AudioClip), `LastMenuClipTime` (float), and a boolean `GameplayMusicActive` flag.
+        *   `MainMenuMusic.cs`: MonoBehaviour for the main menu scene. Plays music, resumes from `MusicStateManager` based on clip name if applicable, and saves its state (clip reference, time) to `MusicStateManager` on `OnDisable` if `GameplayMusicActive` is false.
+        *   `CharacterSelectMusicPlayer.cs`: MonoBehaviour for the character select scene. Similar to `MainMenuMusic.cs`, it plays music, attempts to resume based on `MusicStateManager`'s stored clip name, and saves its state on `OnDisable` if `GameplayMusicActive` is false.
+        *   `GameplayMusicPlayer.cs`: A `NetworkBehaviour` for the gameplay scene. It sets `MusicStateManager.GameplayMusicActive = true` in `OnNetworkSpawn`. The server selects a random gameplay track and uses a `ClientRpc` to instruct all clients to play it. This script does not save state for resumption.
+    *   **Removed Scripts:** The previous `PersistentMenuMusicPlayer.cs` (singleton with `DontDestroyOnLoad`) and `MainMenuMusicActivator.cs` have been removed and replaced by this new scene-specific system.
+    *   **State Persistence & Resumption:**
+        *   Music state between Main Menu and Character Select is designed to be continuous if the same audio track is used.
+        *   State (clip and time) is saved in the `OnDisable()` method of `MainMenuMusic` and `CharacterSelectMusicPlayer` and retrieved in their `Start()` methods.
+        *   Comparison of `AudioClip.name` is used instead of direct `AudioClip` object comparison for robustness in determining if music should resume.
+    *   **Scene Transition Handling:**
+        *   The `GameplayMusicActive` flag in `MusicStateManager` prevents menu/character select music from saving its state when transitioning into the gameplay scene, ensuring gameplay music takes precedence and menu music restarts upon returning.
+
+-   **Global Sound Effect Management (`GlobalAudioSettings.cs`):**
+    *   A static class `GlobalAudioSettings` provides centralized control for certain audio behaviors:
+        *   `SfxVolume` (static float): Defines a global volume level (e.g., `0.05f`) for sound effects played via `AudioSource.PlayClipAtPoint` in managed scripts (like enemy health scripts). This ensures consistent volume for these specific SFX.
+        *   `LastEnemyDefeatSoundPlayTime` (static float): Stores the `Time.time` when the last enemy defeat sound was played.
+        *   `MinIntervalBetweenEnemyDefeatSounds` (static float): Specifies a minimum delay (e.g., `0.1f` seconds) required before another enemy defeat sound can be played.
+    *   **Usage:** Scripts responsible for playing potentially stacking sounds (e.g., `ClientFairyHealth`, `ClientSpiritHealth`, `ClientLilyWhiteHealth` for enemy defeat sounds) check `Time.time` against `LastEnemyDefeatSoundPlayTime + MinIntervalBetweenEnemyDefeatSounds`. If the interval has passed, the sound is played using `GlobalAudioSettings.SfxVolume`, and `LastEnemyDefeatSoundPlayTime` is updated. This mitigates overly loud, stacked sound effects. 

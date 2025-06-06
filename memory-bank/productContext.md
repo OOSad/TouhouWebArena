@@ -32,4 +32,5 @@ The game incorporates sound effects for key actions to enhance player immersion 
 - Player bullet impact sounds (when local player's bullet hits an enemy).
 - Enemy defeat sounds (played by the client of the player dealing the fatal blow for Fairies, Spirits, and Lily White).
 - Enemy-specific sounds (e.g., Lily White's spawn and attack sounds, audible to both players, with 3D spatial blend).
-Future enhancements will include more ambient sounds, UI sounds, music, and further refinement of 3D audio.
+- Music system for Main Menu, Character Select (with seamless transition), and Gameplay (synchronized random tracks).
+Future enhancements will include more ambient sounds, UI sounds, and further refinement of 3D audio.

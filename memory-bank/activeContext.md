@@ -28,6 +28,30 @@ Current focus is on **updating all relevant project documentation (Memory Bank a
     *   Added `AudioClip enemyDefeatedSound` to `ClientFairyHealth.cs`, `ClientSpiritHealth.cs`, and `ClientLilyWhiteHealth.cs`.
     *   These scripts now require an `AudioSource`.
     *   Sound plays via `AudioSource.PlayClipAtPoint()` upon HP depletion death, only on the client of the player who dealt the fatal blow.
+8.  **Music System Implementation (Menu, Character Select, Gameplay):**
+    *   Created `MusicStateManager.cs` to hold menu music state (clip, time) and a `GameplayMusicActive` flag between scene loads.
+    *   Implemented `MainMenuMusic.cs` for the main menu scene:
+        *   Plays assigned menu music.
+        *   Resumes from `MusicStateManager` if returning from character select with the same track.
+        *   Saves its state (clip name, time) to `MusicStateManager` via `OnDisable` if gameplay music is not active.
+    *   Implemented `CharacterSelectMusicPlayer.cs` for the character select scene:
+        *   Plays assigned character select music (typically same as menu).
+        *   Resumes from `MusicStateManager` if the track name matches the last played menu clip.
+        *   Saves its state to `MusicStateManager` via `OnDisable` if gameplay music is not active.
+    *   Updated `GameplayMusicPlayer.cs`:
+        *   Sets `MusicStateManager.GameplayMusicActive = true` on spawn to prevent menu music state saving.
+        *   Server chooses a random track and synchronizes it to clients via `ClientRpc`.
+        *   Gameplay music does not save state for resumption.
+    *   Refined logic to use `AudioClip.name` for comparison to ensure reliable resumption.
+    *   Switched state saving from `OnDestroy` to `OnDisable` for better reliability during scene transitions.
+    *   Removed `PersistentMenuMusicPlayer.cs` and `MainMenuMusicActivator.cs`.
+9.  **Enemy Defeat Sound Refinement (Volume & Stacking Mitigation):**
+    *   Created `GlobalAudioSettings.cs` (static class) to manage:
+        *   `SfxVolume` (global volume for specific `PlayClipAtPoint` sounds).
+        *   `LastEnemyDefeatSoundPlayTime` and `MinIntervalBetweenEnemyDefeatSounds` (to implement a cooldown).
+    *   Modified `ClientFairyHealth.cs`, `ClientSpiritHealth.cs`, and `ClientLilyWhiteHealth.cs` to:
+        *   Use `GlobalAudioSettings.SfxVolume` when playing their defeat sound via `PlayClipAtPoint`.
+        *   Check against the cooldown values in `GlobalAudioSettings` before playing the defeat sound, preventing rapid stacking.
 
 **Previous Context (Pre-Sound Implementation & Documentation Update):**
 - Addressed issues with Lily White's stage bullets (crossing center, clearing by shockwaves).
@@ -37,7 +61,7 @@ Current focus is on **updating all relevant project documentation (Memory Bank a
 **Next Steps (After Documentation Update):**
 - Continue with the checklist of features and refinements provided by the user, including:
     - Adding remaining sound effects (menu navigation, character select).
-    - Adding music (menu, character select, gameplay).
     - Implementing animated backgrounds.
     - Implementing visual/gameplay effects (action stop, round transitions, post-match dialogue).
-    - Refine 3D audio settings for enemy sounds (spatial blend, rolloff) for better positional audio cues. 
+    - Refine 3D audio settings for enemy sounds (spatial blend, rolloff) for better positional audio cues.
+    - Thoroughly test all new sound and music features with both players. 

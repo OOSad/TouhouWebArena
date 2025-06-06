@@ -18,6 +18,16 @@
     *   Player firing sound (local, in `PlayerShootingController.cs`).
     *   Player bullet hitting an enemy sound (local, via `BulletMovement.cs` and `PlayerShootingController.cs`).
     *   Enemy defeat sounds for Fairies, Spirits, and Lily White (via `ClientFairyHealth.cs`, `ClientSpiritHealth.cs`, `ClientLilyWhiteHealth.cs`, played using `AudioSource.PlayClipAtPoint()` on the client dealing fatal blow).
+*   **Music System Implementation:**
+    *   Implemented scene-specific music players (`MainMenuMusic.cs`, `CharacterSelectMusicPlayer.cs`) for menu and character select screens, allowing continuous playback between these scenes.
+    *   Utilized a static `MusicStateManager.cs` to store current music time, clip name, and a `GameplayMusicActive` flag to manage state across scene loads.
+    *   Music state (clip name, playback time) is saved on `OnDisable` and resumed on `Start` if appropriate, using clip name comparison for robustness.
+    *   Updated `GameplayMusicPlayer.cs` to be a `NetworkBehaviour`, with the server selecting and synchronizing a random gameplay track to clients via `ClientRpc`.
+    *   `GameplayMusicPlayer.cs` sets `MusicStateManager.GameplayMusicActive = true` to ensure menu/character select music does not save its state when transitioning to gameplay.
+    *   Removed `PersistentMenuMusicPlayer.cs` and `MainMenuMusicActivator.cs`.
+*   **Enemy Defeat Sound Refinement:**
+    *   Implemented `GlobalAudioSettings.cs` to provide a global SFX volume (`SfxVolume`) for specific `PlayClipAtPoint` sounds and a cooldown mechanism (`LastEnemyDefeatSoundPlayTime`, `MinIntervalBetweenEnemyDefeatSounds`).
+    *   Updated enemy health scripts (`ClientFairyHealth`, `ClientSpiritHealth`, `ClientLilyWhiteHealth`) to use this global volume and cooldown, preventing excessively loud and stacked defeat sounds.
 *   **Spellcard Tweaks:**
     *   Difficulty of Level 2/3 spellcards adjusted to be their "hardest" version.
 *   **Documentation Updates (In Progress - Nearly Complete):**
@@ -31,13 +41,6 @@
 
 **What's Left (User Checklist):**
 
-*   **Sound Effects (Phase 2):**
-    *   Menu navigation sounds.
-    *   Character select screen sounds.
-*   **Music Implementation:**
-    *   Menu music.
-    *   Character select screen music.
-    *   Gameplay music (different tracks for different stages/phases if desired).
 *   **Visual Enhancements:**
     *   Animated backgrounds for gameplay arenas.
 *   **Gameplay Effects & Polish:**
