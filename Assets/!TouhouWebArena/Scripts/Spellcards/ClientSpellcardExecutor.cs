@@ -17,6 +17,11 @@ public class ClientSpellcardExecutor : NetworkBehaviour
     private ClientSpellcardActionRunner _actionRunner;
     // private ClientIllusionController illusionController; // Need way to manage/spawn illusions client-side
 
+    [Header("Action Stop Settings")]
+    [SerializeField] private float spellcardActionStopDuration = 0.5f;
+    [SerializeField] private float spellcardActionStopTimeScale = 0.01f;
+    private Coroutine _actionStopCoroutine;
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -47,6 +52,13 @@ public class ClientSpellcardExecutor : NetworkBehaviour
     public void StartLocalSpellcardExecution(ulong casterClientId, ulong targetClientId, string spellcardDataResourcePath, int spellLevel, Vector2 sharedRandomOffset)
     {
         // Debug.Log($\"[ClientSpellcardExecutor] Attempting to start local execution for Lv{spellLevel} spellcard: {spellcardDataResourcePath}. Caster: {casterClientId}, Target: {targetClientId}, Offset: {sharedRandomOffset}\");
+
+        if (_actionStopCoroutine != null)
+        {
+            StopCoroutine(_actionStopCoroutine);
+            Time.timeScale = 1.0f; // Ensure time scale is reset if interrupted
+        }
+        _actionStopCoroutine = StartCoroutine(ActionStopSequence(spellcardActionStopDuration, spellcardActionStopTimeScale));
 
         if (_actionRunner == null)
         {
@@ -143,6 +155,18 @@ public class ClientSpellcardExecutor : NetworkBehaviour
         // Some spellcards might want to aim towards/away from the caster or target.
         // For now, individual bullet rotations are handled by their spawn parameters (action.angle) and behaviors.
         return Quaternion.identity;
+    }
+
+    private System.Collections.IEnumerator ActionStopSequence(float duration, float timeScale)
+    {
+        // Debug.Log($"ActionStopSequence started. Duration: {duration}, TimeScale to apply: {timeScale}");
+        Time.timeScale = timeScale;
+        // Debug.Log($"ActionStopSequence: Set Time.timeScale to {Time.timeScale}. Waiting for {duration} realtime seconds.");
+        yield return new WaitForSecondsRealtime(duration);
+        // Debug.Log($"ActionStopSequence: Wait completed. Current Time.timeScale before reset: {Time.timeScale}. Resetting to 1.0f.");
+        Time.timeScale = 1.0f;
+        _actionStopCoroutine = null;
+        // Debug.Log($"ActionStopSequence finished. Time.timeScale should be 1.0f. Actual: {Time.timeScale}");
     }
 
     // --- Client-Side Clearing RPC --- 

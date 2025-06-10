@@ -44,6 +44,11 @@ public class PlayerHealth : NetworkBehaviour
     private CharacterStats characterStats; // Added reference
     private bool isHpLocked = false; // Server-side flag for debug health lock
 
+    [Header("Near Death Action Stop Settings")]
+    [SerializeField] private float nearDeathActionStopDuration = 0.4f; // Example value, tune as needed
+    [SerializeField] private float nearDeathActionStopTimeScale = 0.05f; // Example value, tune as needed
+    private Coroutine _nearDeathActionStopCoroutine;
+
     // Added Awake to get components
     private void Awake()
     {
@@ -82,6 +87,19 @@ public class PlayerHealth : NetworkBehaviour
         OnHealthChanged?.Invoke(newValue);
     }
 
+    [ClientRpc]
+    private void TriggerNearDeathActionStopClientRpc()
+    {
+        if (_nearDeathActionStopCoroutine != null)
+        {
+            StopCoroutine(_nearDeathActionStopCoroutine);
+            // Ensure time scale is reset if interrupted, though the new one will set it again shortly.
+            // This primarily ensures that if this RPC is called rapidly, the previous coroutine stops cleanly.
+            Time.timeScale = 1.0f; 
+        }
+        _nearDeathActionStopCoroutine = StartCoroutine(NearDeathActionStopSequence(nearDeathActionStopDuration, nearDeathActionStopTimeScale));
+    }
+
     /// <summary>
     /// Server-authoritative method to apply damage to the player.
     /// Checks for invincibility and current health state before applying damage.
@@ -105,12 +123,25 @@ public class PlayerHealth : NetworkBehaviour
              UnityEngine.Debug.Log($"[PlayerHealth:{OwnerClientId}] [Server] HP is locked. Damage amount {amount} will not change health, but invincibility may trigger.");
         }
 
+        int previousHealth = CurrentHealth.Value; // Store health before change
+
         if (applyHealthChange)
         {
-            int previousHealth = CurrentHealth.Value; 
             int newHealth = CurrentHealth.Value - amount;
             CurrentHealth.Value = Mathf.Max(newHealth, 0);
             // Debug.Log($"[PlayerHealth:{OwnerClientId}] [Server] Health changed from {previousHealth} to {CurrentHealth.Value} (Damage: {amount})");
+        }
+
+        // Check for near-death condition BEFORE death check, if health was actually changed
+        if (applyHealthChange) 
+        {
+            bool nearDeathConditionMet = (previousHealth > 1 && CurrentHealth.Value == 1) || 
+                                         (previousHealth == 1 && CurrentHealth.Value <= 0);
+            if (nearDeathConditionMet)
+            {
+                Debug.Log($"[PlayerHealth:{OwnerClientId}] [Server] Near-death condition met. Previous: {previousHealth}, Current: {CurrentHealth.Value}. Triggering action stop.");
+                TriggerNearDeathActionStopClientRpc();
+            }
         }
 
         if (CurrentHealth.Value <= 0 && applyHealthChange) 
@@ -221,5 +252,13 @@ public class PlayerHealth : NetworkBehaviour
         { 
             HandleDeathServer();
         }
+    }
+
+    private System.Collections.IEnumerator NearDeathActionStopSequence(float duration, float timeScale)
+    {
+        Time.timeScale = timeScale;
+        yield return new WaitForSecondsRealtime(duration);
+        Time.timeScale = 1.0f;
+        _nearDeathActionStopCoroutine = null;
     }
 } 

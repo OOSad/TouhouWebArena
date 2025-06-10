@@ -36,6 +36,15 @@ namespace TouhouWebArena.Managers
         [SerializeField]
         [Tooltip("Delay in seconds after a round ends before the next round starts.")]
         private float roundResetDelay = 3.0f;
+        [SerializeField]
+        [Tooltip("SERVER-SIDE DELAY. Duration in seconds for players to 'catch their breath' after entities are cleared and before the screen wipe starts.")]
+        private float catchBreathDuration = 2.0f;
+        [SerializeField]
+        [Tooltip("SERVER-SIDE TOTAL WAIT for client screen wipe. Should be sum of ClientScreenWipeController's WipeIn, Hold, and WipeOut durations for best synchronization.")]
+        private float screenWipeDuration = 1.0f;
+        [SerializeField]
+        [Tooltip("SERVER-SIDE DELAY. Critical: This value MUST MATCH the 'Wipe In Duration' set on the ClientScreenWipeController component to ensure player positions are reset while the screen is obscured.")]
+        private float serverPlayerResetDelayDuringWipe = 0.4f; // Default to client's typical wipe-in time
 
         [Header("Spawn Points")]
         [Tooltip("Reference to the Transform defining Player 1's spawn location.")]
@@ -189,81 +198,129 @@ namespace TouhouWebArena.Managers
         {
             matchHasEnded = false; // Reset the flag now that a new round/match is starting
 
-            // --- Tell Clients to Hide Match End UI --- 
-            // Send RPC to *all* clients who might have the panel open
-            // Note: This assumes MaxPlayers or similar is defined or accessible
-            // If not, we might need to track clients involved in the last match.
-            // For simplicity, let's send to all connected clients for now.
-            ClientRpcParams allClientsParams = new ClientRpcParams { 
-                Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds }
-            };
-            HideMatchEndPanelClientRpc(allClientsParams);
-            // ---------------------------------------
-
-            if (!IsServer) yield break;
-
-            IsRoundActive.Value = false;
-            Debug.Log("[RoundManager] Round Reset: Deactivating spawners and clearing entities.");
+            IsRoundActive.Value = false; // Mark round as inactive during transition
+            RoundTime.Value = 0f;      // Reset round timer
+            Debug.Log("[RoundManager] RoundResetCoroutine: Start. IsRoundActive=false, RoundTime=0.");
 
             // --- 1. Pause Systems ---
-            // Disable Spawners using ServerSpawnerManager
             if (ServerSpawnerManager.Instance != null)
             {
-                 ServerSpawnerManager.Instance.PauseAllSpawners();
-            } else {
-                 Debug.LogError("[RoundManager] ServerSpawnerManager instance not found! Cannot pause spawners.");
-            }
-           
-            // TODO: Disable Player Input?
-
-            // --- 2. Clear Entities --- 
-            // Delay slightly to allow in-flight projectiles to finish spawning/registering?
-            yield return new WaitForSeconds(0.2f); 
-
-            // Call the static helper method to clear entities
-            ServerEntityCleanupHelper.CleanupAllEntitiesServer();
-
-            // --- ADDED: Tell clients to clear their specific visuals ---
-            if (clientEntityCleanupHandlerCache != null) // Changed from ClientEntityCleanupHandler.Instance
-            {
-                ClientRpcParams allClientsParamsForCleanup = new ClientRpcParams
-                {
-                    Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds }
-                };
-                clientEntityCleanupHandlerCache.ClearAllClientSideVisualsClientRpc(allClientsParamsForCleanup); // Changed from ClientEntityCleanupHandler.Instance
-                Debug.Log("[RoundManager] Sent ClearAllClientSideVisualsClientRpc to all clients via cached reference.");
+                ServerSpawnerManager.Instance.PauseAllSpawners();
+                Debug.Log("[RoundManager] RoundResetCoroutine: All spawners paused.");
             }
             else
             {
-                Debug.LogWarning("[RoundManager] Cached ClientEntityCleanupHandler is null. Cannot send RPC to clear client visuals.");
+                Debug.LogWarning("[RoundManager] RoundResetCoroutine: ServerSpawnerManager.Instance is null. Cannot pause spawners.");
             }
-            // ---------------------------------------------------------
 
-            // --- 3. Reset Players ---
-            // Call the static helper method to reset players
+            // --- 2. Clear Entities ---
+            // Server-side cleanup
+            ServerEntityCleanupHelper.CleanupAllEntitiesServer();
+            Debug.Log("[RoundManager] RoundResetCoroutine: ServerEntityCleanupHelper.CleanupAllEntitiesServer() called.");
+
+            // Client-side cleanup RPC
+            if (clientEntityCleanupHandlerCache != null)
+            {
+                ClientRpcParams allClientsParamsCleanup = new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds }
+                };
+                clientEntityCleanupHandlerCache.ClearAllClientSideVisualsClientRpc(allClientsParamsCleanup);
+                Debug.Log("[RoundManager] RoundResetCoroutine: ClearAllClientSideVisualsClientRpc sent.");
+            }
+            else
+            {
+                Debug.LogWarning("[RoundManager] RoundResetCoroutine: clientEntityCleanupHandlerCache is null. Cannot send ClearAllClientSideVisualsClientRpc.");
+            }
+
+            // --- 3. "Catch Breath" Period ---
+            Debug.Log($"[RoundManager] RoundResetCoroutine: Starting 'Catch Breath' period for {catchBreathDuration} seconds.");
+            yield return new WaitForSeconds(catchBreathDuration);
+            Debug.Log("[RoundManager] RoundResetCoroutine: 'Catch Breath' period ended.");
+
+            // --- 4. Screen Wipe Effect & Player Reset during Wipe ---
+            Debug.Log("[RoundManager] RoundResetCoroutine: Triggering screen wipe effect on clients.");
+            ClientRpcParams allClientsParamsWipe = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds }
+            };
+            ExecuteScreenWipeClientRpc(allClientsParamsWipe);
+
+            Debug.Log($"[RoundManager] RoundResetCoroutine: Server waiting for {serverPlayerResetDelayDuringWipe}s (for client wipe-in) before resetting players.");
+            yield return new WaitForSeconds(serverPlayerResetDelayDuringWipe);
+
+            // Reset player positions
             ServerPlayerResetHelper.ResetPlayersServer(player1SpawnPoint, player2SpawnPoint);
+            Debug.Log("[RoundManager] RoundResetCoroutine: Player positions reset.");
 
-            // --- 4. Wait --- 
-            Debug.Log($"[RoundManager] Waiting for {roundResetDelay} seconds...");
+            // Reset player spell bars
+            if (SpellBarManager.Instance != null && PlayerDataManager.Instance != null)
+            {
+                PlayerData? p1Data = PlayerDataManager.Instance.GetPlayer1Data();
+                if (p1Data.HasValue)
+                {
+                    SpellBarManager.Instance.ResetSpellBarServer(p1Data.Value.ClientId);
+                }
+                PlayerData? p2Data = PlayerDataManager.Instance.GetPlayer2Data();
+                if (p2Data.HasValue)
+                {
+                    SpellBarManager.Instance.ResetSpellBarServer(p2Data.Value.ClientId);
+                }
+                Debug.Log("[RoundManager] RoundResetCoroutine: Player spell bar reset attempts made.");
+            }
+            else
+            {
+                Debug.LogWarning("[RoundManager] RoundResetCoroutine: SpellBarManager or PlayerDataManager instance is null. Cannot reset spell bars.");
+            }
+
+            // Reset Lily White's spawn timer
+            if (LilyWhiteSpawner.Instance != null)
+            {
+                LilyWhiteSpawner.Instance.ResetSpawnTimer();
+                Debug.Log("[RoundManager] RoundResetCoroutine: Lily White spawn timer reset.");
+            }
+            else
+            {
+                Debug.LogWarning("[RoundManager] RoundResetCoroutine: LilyWhiteSpawner.Instance is null. Cannot reset timer.");
+            }
+            
+            // Wait for the remainder of the screen wipe duration
+            float remainingScreenWipeWait = Mathf.Max(0, screenWipeDuration - serverPlayerResetDelayDuringWipe);
+            if (remainingScreenWipeWait > 0)
+            {
+                Debug.Log($"[RoundManager] RoundResetCoroutine: Server waiting for remaining {remainingScreenWipeWait}s of screen wipe.");
+                yield return new WaitForSeconds(remainingScreenWipeWait);
+            }
+            Debug.Log("[RoundManager] RoundResetCoroutine: Screen wipe duration presumed complete on clients.");
+
+            // --- 5. Post-Wipe Delay (Original roundResetDelay) ---
+            Debug.Log($"[RoundManager] RoundResetCoroutine: Waiting for {roundResetDelay} seconds (original round reset delay)...");
             yield return new WaitForSeconds(roundResetDelay);
 
-            // --- 5. Resume Systems ---
-            Debug.Log("[RoundManager] Resuming systems.");
-            // Resume Spawners using ServerSpawnerManager
-             if (ServerSpawnerManager.Instance != null)
+            // --- 6. Resume Systems ---
+            // Hide Match End UI (if it was shown)
+            ClientRpcParams allClientsParamsHidePanel = new ClientRpcParams 
+            { 
+                Send = new ClientRpcSendParams { TargetClientIds = NetworkManager.Singleton.ConnectedClientsIds }
+            };
+            HideMatchEndPanelClientRpc(allClientsParamsHidePanel);
+            Debug.Log("[RoundManager] RoundResetCoroutine: HideMatchEndPanelClientRpc sent.");
+
+            // Re-enable Spawners
+            if (ServerSpawnerManager.Instance != null)
             {
-                 ServerSpawnerManager.Instance.ResumeAllSpawners();
-            } else {
-                 Debug.LogError("[RoundManager] ServerSpawnerManager instance not found! Cannot resume spawners.");
+                ServerSpawnerManager.Instance.ResumeAllSpawners();
+                Debug.Log("[RoundManager] RoundResetCoroutine: All spawners resumed.");
+            }
+            else
+            {
+                Debug.LogWarning("[RoundManager] RoundResetCoroutine: ServerSpawnerManager.Instance is null. Cannot resume spawners.");
             }
 
-            // TODO: Re-enable player input? (Ensure input is disabled when match ends / round resets)
-
-            // Reset timer before activating round
-            RoundTime.Value = 0f;
+            // TODO: Re-enable player input if it was disabled globally.
 
             IsRoundActive.Value = true;
-            Debug.Log("[RoundManager] Round Reset Complete. New round active.");
+            Debug.Log("[RoundManager] RoundResetCoroutine: End. IsRoundActive=true. New round starting.");
         }
 
         /// <summary>
@@ -300,6 +357,22 @@ namespace TouhouWebArena.Managers
                 MatchEndUIController.Instance.HideMatchEndScreen();
             }
             // No error log needed if not found, maybe it wasn't shown
+        }
+
+        [ClientRpc]
+        private void ExecuteScreenWipeClientRpc(ClientRpcParams clientRpcParams = default)
+        {
+            // This will be called on all clients.
+            // It needs to trigger the actual screen wipe UI/animation.
+            Debug.Log($"[RoundManager - Client {NetworkManager.Singleton.LocalClientId}] Received ExecuteScreenWipeClientRpc. Attempting to start screen wipe.");
+            if (ClientScreenWipeController.Instance != null)
+            {
+                ClientScreenWipeController.Instance.StartWipeEffect();
+            }
+            else
+            {
+                Debug.LogError($"[RoundManager - Client {NetworkManager.Singleton.LocalClientId}] ClientScreenWipeController.Instance is null! Cannot perform screen wipe.");
+            }
         }
 
         /// <summary>

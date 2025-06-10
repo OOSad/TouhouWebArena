@@ -46,7 +46,9 @@ This document describes how health is managed and damage is processed. Player he
     *   Checks `PlayerHealth.IsInvincible.Value`. If true, no action.
     *   Otherwise, calls `playerHealth.TakeDamage(1)`.
     *   `PlayerHealth.TakeDamage(1)`: 
+        *   Stores the `previousHealth` before modification.
         *   Decrements `CurrentHealth.Value`.
+        *   **Near-Death Action Stop Trigger (Server):** If `applyHealthChange` is true (HP not locked) and either (`previousHealth > 1 && CurrentHealth.Value == 1`) OR (`previousHealth == 1 && CurrentHealth.Value <= 0`), the server calls `TriggerNearDeathActionStopClientRpc()` on `PlayerHealth.cs`. This RPC causes all clients to execute a brief game slowdown effect via `Time.timeScale` manipulation, managed by a coroutine in `PlayerHealth.cs`.
         *   If `CurrentHealth.Value` > 0 (or if HP is locked for debug), it calls `TriggerInvincibilityServer()`.
         *   If `CurrentHealth.Value` <= 0 (actual final death), it calls `HandleDeathServer()` (which invokes `OnPlayerDeathServer` for game/round managers).
 4.  **Invincibility Period (Server & Client):**

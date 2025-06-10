@@ -34,6 +34,12 @@ The UI system displays critical game information to the players, including healt
     *   Displays `0ms` values if running as Host.
 *   **Rematch Prompt (`RematchPromptController.cs`, Prefab):** Handles the UI for rematch requests and confirmations at the end of a match. Interacts with `RoundManager`.
 *   **Match End Screen (`MatchEndUIController.cs`, Prefab):** Displays the winner and loser at the end of the match. Controlled by `RoundManager`.
+*   **Screen Wipe Controller (`ClientScreenWipeController.cs`):**
+    *   Manages the client-side visual screen wipe effect used during round transitions.
+    *   Uses two UI `Image` components (`player1WipeImage`, `player2WipeImage`) to cover each player's playspace individually.
+    *   The animation (fade-in, hold, fade-out) is controlled by Inspector fields: `wipeInDuration`, `holdDuration`, `wipeOutDuration`.
+    *   It's a singleton (`ClientScreenWipeController.Instance`).
+    *   The wipe effect is triggered by the `ExecuteScreenWipeClientRpc` call from `RoundManager.cs`.
 
 ## Data Binding & Updates
 

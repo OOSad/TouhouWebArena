@@ -119,7 +119,8 @@ Activation logic remains similar: player input triggers a server request, cost i
     b.  Calls `ClientSpellcardExecutor.Instance.StartLocalSpellcardExecution`, passing all received parameters.
 7.  Client (ClientSpellcardExecutor):
     a.  Logs receipt.
-    b.  **(Spellcard Clear Effect Handling - Triggered by `TriggerLocalClearEffectClientRpc` from Server step 4.a):**
+    b.  **Action Stop Effect:** Immediately upon `StartLocalSpellcardExecution`, if no other action stop is active, it starts a coroutine (`ActionStopSequence`) that sets `Time.timeScale` to a low value (e.g., 0.1) for a short duration (e.g., 0.1s-0.5s), then restores `Time.timeScale` to 1.0. This creates a brief game slowdown effect when any spellcard is activated. This effect is purely client-side.
+    c.  **(Spellcard Clear Effect Handling - Triggered by `TriggerLocalClearEffectClientRpc` from Server step 4.a):**
         i.  Receives `casterPosition`, `clearRadius`, and `casterRole`.
         ii. Performs `Physics2D.OverlapCircleAll(casterPosition, clearRadius)` to find all colliders in the area.
         iii. Iterates through colliders:

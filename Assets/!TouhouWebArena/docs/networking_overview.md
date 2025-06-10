@@ -180,18 +180,19 @@ Here's how major game systems interact with the network:
     *   Illusions can also be despawned by direct server logic, such as when an opposing player casts a Level 4 spell (handled in `ServerAttackSpawner`).
 *   **Game State (Score, Rounds):** Managed by a server-authoritative `RoundManager.cs`. This script orchestrates the overall game flow, including transitions between rounds.
     *   **Round Reset Sequence:** When a round ends (e.g., a player reaches zero health), `RoundManager.RoundResetCoroutine()` initiates the following server-side sequence:
-        1.  `IsRoundActive` is set to `false`.
-        2.  All entity spawners are paused via `ServerSpawnerManager.Instance.PauseAllSpawners()`. This prevents new entities like fairies and spirits from starting their spawn routines. The individual spawners (`FairySpawner.cs`, `SpiritSpawner.cs`) have checks to honor this paused state immediately after their spawn interval yields.
-        3.  A very brief delay (`0.2f` seconds) occurs.
-        4.  `ServerEntityCleanupHelper.CleanupAllEntitiesServer()` is called. Its primary role now is to find and despawn server-authoritative `NetworkObject`s like active Illusions (by finding `IllusionHealth` components).
-        5.  `ClientEntityCleanupHandler.Instance.ClearAllClientSideVisualsClientRpc()` is sent to all clients. This is crucial for clearing the majority of game entities, which are client-simulated:
-            *   It iterates through a predefined list of client-pooled prefab IDs (e.g., "Spirit", "ReimuExtraAttackOrb", "MarisaChargeLaser_Client", "NormalFairy", "StageSmallBullet", various spellcard bullets) and calls `ClientGameObjectPool.Instance.ReturnAllActiveObjectsById()` for each.
-            *   It also calls `FairySpawnNetworkHandler.Instance.StopAllActiveFairySpawningCoroutines()` to immediately halt any client-side coroutines that are in the process of spawning individual fairies from a wave that was already commanded.
-        6.  Player states are reset by `ServerPlayerResetHelper.ResetPlayersServer()`:
-            *   Health is restored to full via `PlayerHealth.SetHealthDirectlyServer()`.
-            *   Player positions are reset: the server directly sets the `playerNetObj.transform.position` and `rotation` to the designated spawn points. It then sends a targeted `TeleportClientRpc` to the `ClientAuthMovement` script on the owning client, which calls `ServerForceTeleport()` to update the client's local state and prevent movement conflicts.
-        7.  A configurable delay (`roundResetDelay`, typically 3 seconds) occurs, during which players can get their bearings. Spawning remains paused.
-        8.  After the delay, `ServerSpawnerManager.Instance.ResumeAllSpawners()` is called, `RoundTime` is reset, and `IsRoundActive` is set to `true`, starting the next round.
+        1.  `IsRoundActive` (NetworkVariable) is set to `false`.
+        2.  All entity spawners are paused via `ServerSpawnerManager.Instance.PauseAllSpawners()`.
+        3.  A very brief delay (e.g., `0.2f` seconds) occurs.
+        4.  Server-authoritative entities (like Illusions) are cleaned up by `ServerEntityCleanupHelper.CleanupAllEntitiesServer()`.
+        5.  `ClientEntityCleanupHandler.Instance.ClearAllClientSideVisualsClientRpc()` is sent to all clients to clear their client-simulated entities (bullets, basic enemies, effects).
+        6.  **Catch Breath Period:** The server waits for `catchBreathDuration` (e.g., 2 seconds).
+        7.  **Screen Wipe Initiation:** The server calls `ExecuteScreenWipeClientRpc` on all clients. This RPC, received by `RoundManager` on clients, calls `ClientScreenWipeController.Instance.StartWipeEffect()` to begin the local visual wipe animation.
+        8.  **Player Reset During Wipe (Server-Side Timing):**
+            *   The server waits for `serverPlayerResetDelayDuringWipe` (e.g., 1 second, ideally matching the client's wipe-in animation duration).
+            *   `ServerPlayerResetHelper.ResetPlayersServer()` is called. This resets player health (via `PlayerHealth.SetHealthDirectlyServer()`), teleports players to spawn points (server directly sets transform and sends `TeleportClientRpc` to `ClientAuthMovement`), and resets spell bars.
+            *   The server waits for the remaining duration of `screenWipeDuration` (e.g., if `screenWipeDuration` is 2.2s and `serverPlayerResetDelayDuringWipe` was 1s, it waits another 1.2s). This total `screenWipeDuration` should cover the client's full wipe animation (in + hold + out).
+        9.  **Pre-Round Delay:** A configurable delay (`roundResetDelay`, e.g., 3 seconds) occurs. Spawning remains paused.
+        10. **Next Round Start:** After the delay, `ServerSpawnerManager.Instance.ResumeAllSpawners()` is called, `RoundTime` (NetworkVariable) is reset to 0, and `IsRoundActive` (NetworkVariable) is set to `true`, starting the next round.
 *   **Object Pooling:**
     *   **`ClientGameObjectPool.cs`:** Primary pool used by all clients for non-NetworkObject entities spawned via RPC commands or local actions (player bullets, enemy bullets, fairies, spirits, shockwaves, VFX, charge attacks, spellcard projectiles). These objects are identified by string `PrefabID`s stored in their `PooledObjectInfo.cs` component.
     *   **`NetworkObjectPool.cs`:** Likely **DEPRECATED/UNUSED**. If it were to be used, `NetworkObject.Despawn()` would attempt to return objects to this pool if they were registered. Currently, server-authoritative objects like Illusions are despawned via `NetworkObject.Despawn()`, which will destroy them if no `NetworkObjectPool` is handling their prefab.

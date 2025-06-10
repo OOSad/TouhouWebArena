@@ -7,8 +7,8 @@ public class LilyWhiteSpawner : NetworkBehaviour
     public static LilyWhiteSpawner Instance { get; private set; }
 
     [Header("Timing Settings")]
-    public float initialDelay = 50.0f;
-    public float repeatInterval = 30.0f;
+    [Tooltip("Time in seconds before the first Lily White spawn and after a timer reset.")]
+    public float spawnInterval = 40.0f;
 
     private Coroutine spawnCoroutine;
 
@@ -37,7 +37,7 @@ public class LilyWhiteSpawner : NetworkBehaviour
 
     private IEnumerator SpawnLilyWhiteRoutine()
     {
-        yield return new WaitForSeconds(initialDelay);
+        yield return new WaitForSeconds(spawnInterval);
 
         while (true)
         {
@@ -49,7 +49,7 @@ public class LilyWhiteSpawner : NetworkBehaviour
             {
                 Debug.LogWarning("LilyWhiteSpawner: ClientLilyWhiteSpawnHandler.Instance is null. Cannot send ClientRpc.");
             }
-            yield return new WaitForSeconds(repeatInterval);
+            yield return new WaitForSeconds(spawnInterval);
         }
     }
 
@@ -67,6 +67,26 @@ public class LilyWhiteSpawner : NetworkBehaviour
         {
             Debug.LogWarning("LilyWhiteSpawner (ForceSpawn): ClientLilyWhiteSpawnHandler.Instance is null. Cannot send ClientRpc.");
         }
+    }
+
+    /// <summary>
+    /// Resets Lily White's spawn timer. She will wait the full spawnInterval before appearing again.
+    /// Should only be called on the server.
+    /// </summary>
+    public void ResetSpawnTimer()
+    {
+        if (!IsServer)
+        {
+            Debug.LogWarning("ResetSpawnTimer called on client. Ignoring.");
+            return;
+        }
+
+        if (spawnCoroutine != null)
+        {
+            StopCoroutine(spawnCoroutine);
+        }
+        Debug.Log("LilyWhiteSpawner: Spawn timer reset. Lily White will spawn in " + spawnInterval + " seconds.");
+        spawnCoroutine = StartCoroutine(SpawnLilyWhiteRoutine());
     }
 
     public override void OnNetworkDespawn()

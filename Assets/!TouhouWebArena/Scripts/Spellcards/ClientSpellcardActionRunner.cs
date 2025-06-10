@@ -5,6 +5,7 @@ using TouhouWebArena;
 using TouhouWebArena.Spellcards;
 using TouhouWebArena.Spellcards.Behaviors; // For ClientBulletConfigurer
 using Unity.Netcode;
+using TouhouWebArena.Managers; // Added for RoundManager
 
 /// <summary>
 /// [Client Only] Handles the client-side execution of spellcard actions defined in `SpellcardAction` objects.
@@ -24,6 +25,7 @@ public class ClientSpellcardActionRunner : MonoBehaviour
     // void OnDestroy() { /* Singleton cleanup if needed */ }
 
     private ClientGameObjectPool _poolInstance; // Cached reference to the object pool for projectile spawning.
+    private RoundManager _roundManagerCache; // Cached reference to the RoundManager
 
     void Start()
     {
@@ -33,6 +35,15 @@ public class ClientSpellcardActionRunner : MonoBehaviour
         {
             Debug.LogError("[ClientSpellcardActionRunner] ClientGameObjectPool instance not found!");
             enabled = false;
+            return; // Return early if pool is not found
+        }
+
+        // Get the RoundManager instance
+        _roundManagerCache = FindFirstObjectByType<RoundManager>();
+        if (_roundManagerCache == null)
+        {
+            Debug.LogError("[ClientSpellcardActionRunner] RoundManager instance not found! Spellcards might not halt correctly on round end.");
+            // Not disabling the script, as spellcards might still need to function in editor or other contexts
         }
     }
 
@@ -176,6 +187,14 @@ public class ClientSpellcardActionRunner : MonoBehaviour
         int bulletsSpawnedThisAction = 0;
         for (int i = 0; i < action.count; i++)
         {
+            // --- ADDED: Check if round is still active before spawning next bullet --- 
+            if (_roundManagerCache != null && !_roundManagerCache.IsRoundActive.Value)
+            {
+                Debug.Log($"[ClientSpellcardActionRunner] Round ended. Halting action for caster {casterClientId}. Action Bullet Prefab: {(action.bulletPrefabs != null && action.bulletPrefabs.Count > 0 && action.bulletPrefabs[0] != null ? action.bulletPrefabs[0].name : "N/A")}");
+                yield break; // Exit this action's coroutine
+            }
+            // --- END ADDED CHECK ---
+
             if (action.skipEveryNth > 0 && (i + 1) % action.skipEveryNth == 0)
             {
                 if (action.intraActionDelay > 0 && i < action.count - 1) yield return new WaitForSeconds(action.intraActionDelay);
@@ -333,13 +352,21 @@ public class ClientSpellcardActionRunner : MonoBehaviour
     /// </summary>
     private IEnumerator ExecuteSingleActionCoroutineInternalDynamicOrigin(ulong casterClientId, ulong targetClientId, SpellcardAction action, Transform originTransform, Quaternion explicitAttackOrientation, PlayerRole targetPlayerRole, Vector3 sequenceOffset)
     {
-        if (_poolInstance == null || action == null || originTransform == null) yield break;
+        if (_poolInstance == null || originTransform == null) yield break; // Added originTransform null check for safety
 
         if (action.startDelay > 0) yield return new WaitForSeconds(action.startDelay);
 
         int bulletsSpawnedThisAction = 0;
         for (int i = 0; i < action.count; i++)
         {
+            // --- ADDED: Check if round is still active before spawning next bullet --- 
+            if (_roundManagerCache != null && !_roundManagerCache.IsRoundActive.Value)
+            {
+                Debug.Log($"[ClientSpellcardActionRunner Dynamic] Round ended. Halting action for caster {casterClientId}. Action Bullet Prefab: {(action.bulletPrefabs != null && action.bulletPrefabs.Count > 0 && action.bulletPrefabs[0] != null ? action.bulletPrefabs[0].name : "N/A")}");
+                yield break; // Exit this action's coroutine
+            }
+            // --- END ADDED CHECK ---
+
             if (action.skipEveryNth > 0 && (i + 1) % action.skipEveryNth == 0)
             {
                 if (action.intraActionDelay > 0 && i < action.count - 1) yield return new WaitForSeconds(action.intraActionDelay);

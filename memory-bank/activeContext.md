@@ -64,4 +64,61 @@ Current focus is on **updating all relevant project documentation (Memory Bank a
     - Implementing animated backgrounds.
     - Implementing visual/gameplay effects (action stop, round transitions, post-match dialogue).
     - Refine 3D audio settings for enemy sounds (spatial blend, rolloff) for better positional audio cues.
-    - Thoroughly test all new sound and music features with both players. 
+    - Thoroughly test all new sound and music features with both players.
+
+## Current Task: Implementing Feature Checklist for Touhou Web Arena
+
+The primary goal is to implement a list of new features and refinements following the addition of the enemy Lily White.
+
+### Completed Sub-Tasks:
+*   Lily White spawn sound effect.
+*   Player firing mechanics refactor (tap for burst, hold for continuous, X for spell charge).
+*   Bug Fix: Lily White no longer cleared by player spellcard shockwaves.
+*   Lily White attack sound effect.
+*   Player firing sound effect.
+*   Player bullet hit enemy sound effect.
+*   Enemy defeat sounds (Fairy, Spirit, Lily White) with local client fix.
+*   Level 2/3 spellcards tweaked to hardest setting (manual user task).
+*   Action Stop: Spellcard activation (implemented with `ClientSpellcardExecutor`, time slowdown on spell use).
+*   Action Stop: Near-death player hit (implemented with `PlayerHealth`, time slowdown when player health is 1 or drops to 0).
+*   Round Transition Timings:
+    *   Implemented server-side logic in `RoundManager.cs` for a new round end sequence:
+        *   Post-entity-clear "catch breath" period (default 2s).
+        *   Screen wipe period (default 1s), triggering a client-side effect.
+        *   Existing `roundResetDelay` before next round starts.
+    *   Created `ClientScreenWipeController.cs` to handle the client-side visual wipe animation.
+
+### Current Focus / Next Steps:
+*   **Verify Round Transition Visuals:** The user needs to set up the UI for `ClientScreenWipeController` and confirm the screen wipe animation plays correctly and the overall timing of the new round transition sequence feels right.
+*   Address remaining items from the initial checklist.
+
+### Recently Discovered Issues:
+*   Lily White's global timer is reportedly not resetting between rounds.
+
+### Key Scripts Involved Recently:
+*   `Assets/!TouhouWebArena/Scripts/Spellcards/ClientSpellcardExecutor.cs` (Action stop for spellcards)
+*   `Assets/!TouhouWebArena/Scripts/Characters/PlayerHealth.cs` (Action stop for near-death)
+*   `Assets/!TouhouWebArena/Scripts/Managers/RoundManager.cs` (Round transition sequence, new delays, RPC for screen wipe)
+*   `Assets/!TouhouWebArena/Scripts/Client/UI/ClientScreenWipeController.cs` (Client-side screen wipe animation logic)
+
+### Considerations:
+*   The `roundResetDelay` in `RoundManager` might need adjustment after the new `catchBreathDuration` and `screenWipeDuration` are finalized.
+
+## Current Work Focus
+- Implementing the refined Lily White appearance timer:
+    - Lily White appears every 40 seconds.
+    - This timer is reset on round end.
+- This involved modifying `LilyWhiteSpawner.cs` to change the interval and add a reset method.
+- It also involved updating `RoundManager.cs` to call this reset method during the `RoundResetCoroutine`.
+
+## Recent Changes
+- Modified `LilyWhiteSpawner.cs` to use a 40s `spawnInterval` and added `ResetSpawnTimer()`.
+- Refactored `RoundManager.cs`'s `RoundResetCoroutine` to include the call to `LilyWhiteSpawner.Instance.ResetSpawnTimer()` and corrected other method calls within the coroutine for entity cleanup and player state reset.
+
+## Next Steps
+- Verify the Lily White timer changes in-game.
+- Proceed with the next item on the feature list (e.g., post-match character dialogue, remaining sounds/music/backgrounds).
+
+## Active Decisions & Considerations
+- The Lily White spawn timer is now server-authoritative and resets explicitly at the end of each round via `RoundManager`.
+- The `RoundResetCoroutine` in `RoundManager.cs` has been significantly refactored to ensure correct order of operations and method calls for various reset procedures. 

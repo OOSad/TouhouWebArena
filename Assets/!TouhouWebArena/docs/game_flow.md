@@ -35,13 +35,31 @@ This document describes the typical sequence of events from launching the applic
     *   Resets spell bars (`SpellBarController` state).
     *   Starts the **`SpiritSpawner.cs`** (on the `GameManager`) to begin periodic spirit spawning. `SpiritSpawner.cs` then sends RPCs to `ClientSpiritSpawnHandler.cs` on clients, which handle the actual spawning and simulation of spirits locally.
     *   Other managers on `GameManager` (`FairyRegistry`, `SpiritRegistry`, `PathManager`, `ExtraAttackManager`) are ready.
-2.  **Gameplay:** Players move, shoot, charge, use spellcards (including Level 4 spellcards which summon server-authoritative Illusions that then perform client-simulated attacks). Enemies spawn via `FairySpawner` (triggering client-simulated fairies) and `SpiritSpawner` (triggering client-simulated spirits). State changes (health, spell charge, enemy death, spellcard execution) are managed authoritatively by the server and synchronized via `NetworkVariables` and RPCs (as detailed in `networking_overview.md`).
-3.  **Round End Condition:** A round ends when one player's health reaches zero. This is detected server-side (likely by monitoring the health `NetworkVariable` in `CharacterStats`).
-4.  **Round Conclusion:**
-    *   The server determines the round winner (the player whose opponent reached zero health).
-    *   Gameplay might pause briefly. Enemy spawners (`FairySpawner`, `SpiritSpawner`) are likely stopped/paused by the `GameManager` or a related script.
-    *   The server updates the match score (TBD, potentially managed by a script component on `GameManager`).
-    *   The server checks if the match end condition has been met.
+2.  **Gameplay:** Players move, shoot, charge, use spellcards (including Level 4 spellcards which summon server-authoritative Illusions that then perform client-simulated attacks). Enemies spawn via `FairySpawner` (triggering client-simulated fairies) and `SpiritSpawner` (triggering client-simulated spirits). State changes (health, spell charge, enemy death, spellcard execution) are managed authoritatively by the server and synchronized via `NetworkVariables` and RPCs (as detailed in `networking_overview.md`). Brief "action stop" effects (game slowdown) occur locally when spellcards are activated or when a player takes a near-death hit.
+3.  **Round End Condition:** A round ends when one player's health reaches zero. This is detected server-side by `PlayerHealth.cs`, which invokes `PlayerHealth.OnPlayerDeathServer`.
+4.  **Round Conclusion:** This detailed sequence is orchestrated by `RoundManager.HandlePlayerDeathServer` and its `RoundResetCoroutine` on the server:
+    *   The server determines the round winner and updates the score (`Player1Score` / `Player2Score`).
+    *   If the match winning score is reached, `MatchEndedClientRpc` is sent to the relevant clients to display the match end UI, and the round reset sequence is skipped.
+    *   Otherwise, the following round transition begins:
+        *   `IsRoundActive` (NetworkVariable) is set to `false`.
+        *   Enemy spawners (`ServerSpawnerManager`) are paused.
+        *   Entities are cleared:
+            *   Server-side entities (like Illusions) are cleaned up by `ServerEntityCleanupHelper.CleanupAllEntitiesServer()`.
+            *   Clients are instructed to clear their client-simulated entities via `ClientEntityCleanupHandler.ClearAllClientSideVisualsClientRpc()`.
+            *   This clearing happens after a very brief initial delay (e.g., 0.2s) in the coroutine.
+        *   **"Catch Breath" Period:** The server waits for `catchBreathDuration` (e.g., 2 seconds) allowing a pause after entities vanish.
+        *   **Screen Wipe & Player Reset:**
+            *   The server calls `ExecuteScreenWipeClientRpc` on all clients.
+            *   Clients receive this RPC and `ClientScreenWipeController.Instance.StartWipeEffect()` is called, starting the local screen wipe animation (e.g., playspace images fade in, hold, then fade out).
+            *   The server waits for `serverPlayerResetDelayDuringWipe` (e.g., 0.4s or 1s, matching the client's wipe-in animation duration).
+            *   **Player positions and health are reset** by `ServerPlayerResetHelper.ResetPlayersServer()` during this period, while client screens are ideally obscured by the wipe. Spell bars are also reset.
+            *   The server then waits for the remainder of `screenWipeDuration` (total expected client wipe animation time, e.g., 1s or 2.2s).
+        *   **Pre-Round Delay:** The server waits for an additional `roundResetDelay` (e.g., 3 seconds).
+        *   **Next Round Start:**
+            *   `RoundTime` is reset to 0.
+            *   `IsRoundActive` is set back to `true`.
+            *   Spawners (`ServerSpawnerManager`) are resumed.
+            *   Player input, which might have been locked during the transition or invincibility, is implicitly re-enabled as players are no longer in an invincible state and `IsRoundActive` is true.
 
 ## Match Lifecycle (Server-Authoritative)
 

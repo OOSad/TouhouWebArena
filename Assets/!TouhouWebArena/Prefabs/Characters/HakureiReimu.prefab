@@ -533,6 +533,8 @@ MonoBehaviour:
     m_InternalValue: 5
   IsInvincible:
     m_InternalValue: 0
+  nearDeathActionStopDuration: 1
+  nearDeathActionStopTimeScale: 0.05
 --- !u!114 &2922928309270852027
 MonoBehaviour:
   m_ObjectHideFlags: 0
