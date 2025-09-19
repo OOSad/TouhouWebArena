@@ -1,0 +1,11 @@
+[gd_resource type="AudioBusLayout" load_steps=2 format=3]
+
+[sub_resource type="AudioEffectReverb" id=1]
+
+[resource]
+bus/0/name = "Master"
+bus/0/volume_db = 0.0
+bus/0/solo = false
+bus/0/mute = false
+bus/0/bypass_fx = false
+bus/0/effect/0 = SubResource(1)
