@@ -1,0 +1,190 @@
+2025-09-19 03:45:58,425 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-19 03:45:58,425 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-19 03:45:58,425 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-19 03:45:58,426 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-19 03:45:58,426 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-19 03:45:58,428 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by existing context_portal: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-19 03:45:58,429 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'existing_context_portal', 'indicators_found': [], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-19 03:45:58,429 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 03:45:58,429 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 03:45:58,429 - INFO - context_portal_mcp.db.database - Alembic.ini not found. Creating at c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic.ini
+2025-09-19 03:45:58,430 - INFO - context_portal_mcp.db.database - Alembic env.py not found. Creating at c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic\env.py
+2025-09-19 03:45:58,430 - INFO - context_portal_mcp.db.database - Initial schema not found. Creating at c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic\versions\2025_06_17_initial_schema.py
+2025-09-19 03:45:58,440 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-19 03:45:58,440 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-19 03:45:58,475 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-19 03:45:58,475 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-19 03:45:58,475 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-19 03:45:58,475 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-19 03:45:58,476 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-19 03:45:58,477 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by existing context_portal: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-19 03:45:58,478 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'existing_context_portal', 'indicators_found': [], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-19 03:45:58,478 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 03:45:58,478 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 03:45:58,479 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-19 03:45:58,480 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-19 03:46:26,874 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-19 03:46:26,874 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-19 03:46:26,874 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-19 03:46:26,874 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-19 03:46:26,875 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-19 03:46:26,877 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by existing context_portal: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-19 03:46:26,877 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'existing_context_portal', 'indicators_found': [], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-19 03:46:26,878 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 03:46:26,878 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 03:46:26,879 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-19 03:46:26,879 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-19 18:03:34,005 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-19 18:03:34,006 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-19 18:03:34,006 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-19 18:03:34,006 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-19 18:03:34,006 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-19 18:03:34,008 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by existing context_portal: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-19 18:03:34,008 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'existing_context_portal', 'indicators_found': [], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-19 18:03:34,009 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 18:03:34,009 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 18:03:34,017 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-19 18:03:34,017 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-19 22:55:11,272 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-19 22:55:11,272 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-19 22:55:11,272 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-19 22:55:11,273 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-19 22:55:11,273 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-19 22:55:11,273 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by strong indicators: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-19 22:55:11,274 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'strong_indicators', 'indicators_found': ['.git', '.gitignore'], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-19 22:55:11,274 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 22:55:11,274 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 22:55:11,284 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-19 22:55:11,284 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-19 22:55:11,329 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-19 22:55:11,329 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-19 22:55:11,329 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-19 22:55:11,329 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-19 22:55:11,330 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-19 22:55:11,330 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by strong indicators: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-19 22:55:11,331 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'strong_indicators', 'indicators_found': ['.git', '.gitignore'], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-19 22:55:11,331 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 22:55:11,331 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 22:55:11,332 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-19 22:55:11,332 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-19 23:05:56,774 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-19 23:05:56,774 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-19 23:05:56,774 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-19 23:05:56,774 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-19 23:05:56,775 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-19 23:05:56,775 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by strong indicators: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-19 23:05:56,775 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'strong_indicators', 'indicators_found': ['.git', '.gitignore'], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-19 23:05:56,776 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 23:05:56,776 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-19 23:05:56,777 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-19 23:05:56,777 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-20 00:16:00,086 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-20 00:16:00,087 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-20 00:16:00,087 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-20 00:16:00,087 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-20 00:16:00,087 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-20 00:16:00,088 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by strong indicators: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-20 00:16:00,089 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'strong_indicators', 'indicators_found': ['.git', '.gitignore'], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-20 00:16:00,089 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 00:16:00,089 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 00:16:00,090 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-20 00:16:00,090 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-20 00:16:00,091 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-20 00:16:00,091 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-20 00:16:00,091 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-20 00:16:00,091 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-20 00:16:00,091 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-20 00:16:00,092 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by strong indicators: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-20 00:16:00,092 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'strong_indicators', 'indicators_found': ['.git', '.gitignore'], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-20 00:16:00,093 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 00:16:00,093 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 00:16:00,094 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-20 00:16:00,094 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-20 00:17:56,341 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-20 00:17:56,341 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-20 00:17:56,341 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-20 00:17:56,341 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-20 00:17:56,342 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-20 00:17:56,342 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by strong indicators: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-20 00:17:56,343 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'strong_indicators', 'indicators_found': ['.git', '.gitignore'], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-20 00:17:56,343 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 00:17:56,343 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 00:17:56,345 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-20 00:17:56,345 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-20 01:33:20,169 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-20 01:33:20,169 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-20 01:33:20,170 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-20 01:33:20,170 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-20 01:33:20,170 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-20 01:33:20,170 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by strong indicators: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-20 01:33:20,171 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'strong_indicators', 'indicators_found': ['.git', '.gitignore'], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-20 01:33:20,172 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 01:33:20,172 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 01:33:20,173 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-20 01:33:20,173 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-20 01:34:19,122 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-20 01:34:19,122 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-20 01:34:19,122 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-20 01:34:19,123 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-20 01:34:19,123 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-20 01:34:19,123 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by strong indicators: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-20 01:34:19,124 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'strong_indicators', 'indicators_found': ['.git', '.gitignore'], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-20 01:34:19,124 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 01:34:19,124 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 01:34:19,126 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-20 01:34:19,126 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-20 01:40:09,540 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-20 01:40:09,541 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-20 01:40:09,541 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-20 01:40:09,541 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-20 01:40:09,541 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-20 01:40:09,542 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by strong indicators: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-20 01:40:09,543 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'strong_indicators', 'indicators_found': ['.git', '.gitignore'], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-20 01:40:09,543 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 01:40:09,543 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 01:40:09,545 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-20 01:40:09,545 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-20 01:40:42,219 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-20 01:40:42,219 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-20 01:40:42,220 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-20 01:40:42,220 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-20 01:40:42,220 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-20 01:40:42,220 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by strong indicators: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-20 01:40:42,221 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'strong_indicators', 'indicators_found': ['.git', '.gitignore'], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-20 01:40:42,221 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 01:40:42,221 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 01:40:42,222 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-20 01:40:42,222 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-20 04:28:51,513 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-20 04:28:51,513 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-20 04:28:51,514 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-20 04:28:51,514 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-20 04:28:51,514 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-20 04:28:51,515 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by strong indicators: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-20 04:28:51,515 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'strong_indicators', 'indicators_found': ['.git', '.gitignore'], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-20 04:28:51,515 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 04:28:51,515 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 04:28:51,517 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-20 04:28:51,517 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-20 04:29:57,542 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-20 04:29:57,543 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-20 04:29:57,543 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-20 04:29:57,543 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-20 04:29:57,543 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-20 04:29:57,544 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by strong indicators: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-20 04:29:57,544 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'strong_indicators', 'indicators_found': ['.git', '.gitignore'], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-20 04:29:57,545 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 04:29:57,545 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 04:29:57,546 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-20 04:29:57,547 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db
+2025-09-20 05:00:10,301 - INFO - context_portal_mcp.main - File logging configured to: c:/Users/Shrine/Desktop/TouhouWebArena\context_portal\./logs/conport.log
+2025-09-20 05:00:10,301 - INFO - context_portal_mcp.core.config - Database filename set to: context.db
+2025-09-20 05:00:10,302 - INFO - context_portal_mcp.main - Using database filename: context.db
+2025-09-20 05:00:10,302 - INFO - context_portal_mcp.main - Parsed CLI args: Namespace(host='127.0.0.1', port=8000, workspace_id='c:/Users/Shrine/Desktop/TouhouWebArena', auto_detect_workspace=True, workspace_search_start=None, no_auto_detect=False, mode='stdio', log_file='./logs/conport.log', db_path=None, base_path=None, db_filename='context.db', log_level='INFO')
+2025-09-20 05:00:10,302 - INFO - context_portal_mcp.main - Starting ConPort in STDIO mode with workspace detection enabled
+2025-09-20 05:00:10,302 - INFO - context_portal_mcp.core.workspace_detector - Workspace detected by strong indicators: C:\Users\Shrine\Desktop\TouhouWebArena
+2025-09-20 05:00:10,303 - INFO - context_portal_mcp.main - Workspace detection details: {'start_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'detected_workspace': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena', 'context_portal_path': 'C:\\Users\\Shrine\\Desktop\\TouhouWebArena\\context_portal', 'detection_method': 'strong_indicators', 'indicators_found': ['.git', '.gitignore'], 'environment_variables': {'VSCODE_WORKSPACE_FOLDER': None, 'CONPORT_WORKSPACE': None, 'PWD': None, 'CWD': 'c:\\Users\\Shrine\\Desktop\\TouhouWebArena'}}
+2025-09-20 05:00:10,303 - INFO - context_portal_mcp.main - Effective workspace ID: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 05:00:10,303 - INFO - context_portal_mcp.main - Pre-warming database connection for workspace: c:/Users/Shrine/Desktop/TouhouWebArena
+2025-09-20 05:00:10,304 - INFO - context_portal_mcp.db.database - Alembic: Script directory c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\alembic confirmed to exist by Python.
+2025-09-20 05:00:10,305 - INFO - context_portal_mcp.db.database - Running Alembic migrations for database: c:\Users\Shrine\Desktop\TouhouWebArena\context_portal\context.db

@@ -1,0 +1,101 @@
+[gd_scene load_steps=3 format=3 uid="uid://c6g8qj0w2v8j"]
+
+[ext_resource type="Script" path="res://MainMenu/MainMenu.gd" id="1_gdakv"]
+[ext_resource type="FontFile" uid="uid://d5f9f1k5v4r3g" path="res://theme/default_font.tres" id="2_h7yv5"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_gdakv")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -298.0
+offset_top = 36.0
+offset_right = 298.0
+offset_bottom = 79.0
+grow_horizontal = 2
+text = "Touhou Web Arena"
+theme_override_fonts/font = ExtResource("2_h7yv5")
+theme_override_font_sizes/font_size = 36
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DisclaimerLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -298.0
+offset_top = -61.0
+offset_right = 298.0
+offset_bottom = -29.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Music/Game Design by ZUN
+"
+theme_override_fonts/font = ExtResource("2_h7yv5")
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RightPanel" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 138.0
+offset_top = -88.0
+offset_right = 498.0
+offset_bottom = 88.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="NicknameRow" type="HBoxContainer" parent="RightPanel"]
+layout_mode = 2
+
+[node name="NicknameLabel" type="Label" parent="RightPanel/NicknameRow"]
+layout_mode = 2
+text = "Nickname: "
+theme_override_fonts/font = ExtResource("2_h7yv5")
+theme_override_font_sizes/font_size = 24
+
+[node name="NicknameInput" type="LineEdit" parent="RightPanel/NicknameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Anonymous Fairy"
+theme_override_fonts/font = ExtResource("2_h7yv5")
+theme_override_font_sizes/font_size = 24
+
+[node name="OnlineMatchButton" type="Button" parent="RightPanel"]
+layout_mode = 2
+text = "Online Match"
+theme_override_fonts/font = ExtResource("2_h7yv5")
+theme_override_font_sizes/font_size = 24
+
+[node name="KeybindsButton" type="Button" parent="RightPanel"]
+layout_mode = 2
+text = "Keybinds"
+theme_override_fonts/font = ExtResource("2_h7yv5")
+theme_override_font_sizes/font_size = 24

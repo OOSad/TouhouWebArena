@@ -1,0 +1,4 @@
+[gd_resource type="SystemFont" format=3 uid="uid://d5f9f1k5v4r3g"]
+
+[resource]
+font_names = PackedStringArray("Verdana")
