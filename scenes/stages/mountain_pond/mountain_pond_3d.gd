@@ -20,7 +20,9 @@ const UNIT: float = 1.0 / 64.0
 const QUAD: float = 800.0
 
 const SKY: Color = Color8(0xa0, 0xb0, 0xa0)
-const FOG_RANGE: Vector2 = Vector2(800.0, 1100.0)
+## PoFV fogs at 800-1100; pulled in 100 so the far edge of the water never shows as a line
+## when the camera rises (per the user)
+const FOG_RANGE: Vector2 = Vector2(700.0, 1000.0)
 const FOV: float = 30.0
 const FACING: Vector2 = Vector2(250.0, 300.0) # ahead, down
 
