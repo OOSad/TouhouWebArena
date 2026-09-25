@@ -161,6 +161,7 @@ const WEB_BIG_FILE_BYTES: int = 100 * 1024 * 1024
 ## WEB_BIG_FILE_BYTES.
 const WEB_DROP_JS: String = """
 window.twaBigFile = null;
+window.twaBigFiles = [];
 window.twaFolderFiles = [];
 var twaWanted = %s;
 function twaWalk(roots, label) {
@@ -220,8 +221,8 @@ window.addEventListener('drop', function (event) {
 		if (files[i].size > %d) {
 			event.preventDefault();
 			event.stopImmediatePropagation();
-			window.twaBigFile = files[i];
-			window.twaOnBigFile(files[i].name, files.length, files[i].size);
+			window.twaBigFiles.push(files[i]);
+			window.twaOnBigFile(files[i].name, files.length, files[i].size, window.twaBigFiles.length - 1);
 			return;
 		}
 	}
@@ -234,6 +235,12 @@ window.twaReadSlice = function (offset, length) {
 """
 
 signal _web_slice_read(bytes: PackedByteArray)
+signal _web_reader_free
+
+# The browser side has one current file (twaBigFile) and every slice answers on one signal,
+# so a second drop while a thbgm.dat is still being cut would take the first one's bytes.
+# Drops take turns instead.
+var _web_reading: bool = false
 
 # Kept referenced: JavaScript only holds weak handles to these callbacks.
 var _web_big_file_callback: JavaScriptObject
@@ -263,6 +270,12 @@ func _on_web_folder(args: Array) -> void:
 	if found.is_empty():
 		archive_failed.emit("No game files found in %s." % str(args[0]))
 		return
+	await _claim_web_reader()
+	await _read_web_folder(found)
+	_release_web_reader()
+
+
+func _read_web_folder(found: Array) -> void:
 	var music: Array[int] = []
 	for i in found.size():
 		var file_name: String = found[i][0]
@@ -297,15 +310,36 @@ func _on_web_big_file(args: Array) -> void:
 	if int(args[1]) > 1:
 		archive_failed.emit("Please drop %s on its own." % file_name)
 		return
+	var index := int(args[3])
+	await _claim_web_reader()
+	JavaScriptBridge.eval("window.twaBigFile = window.twaBigFiles[%d];" % index, true)
+	await _read_web_big_file(file_name, int(args[2]))
+	JavaScriptBridge.eval("window.twaBigFiles[%d] = null;" % index, true)
+	_release_web_reader()
+
+
+func _read_web_big_file(file_name: String, size: int) -> void:
 	var header: PackedByteArray = await _web_read(0, 4)
 	if not DatMusic.is_thbgm(header):
 		archive_failed.emit("%s isn't one of the files listed." % file_name)
 		return
-	var source := _music_source_for_size(int(args[2]))
+	var source := _music_source_for_size(size)
 	if source.is_empty():
 		archive_failed.emit(_unmatched_music_message())
 		return
 	await _extract_music(_web_read, file_name, source)
+
+
+## Waits until no other dropped file is being read, then takes the reader.
+func _claim_web_reader() -> void:
+	while _web_reading:
+		await _web_reader_free
+	_web_reading = true
+
+
+func _release_web_reader() -> void:
+	_web_reading = false
+	_web_reader_free.emit()
 
 
 ## Asks the browser for one slice of the dropped big file and waits for it.
