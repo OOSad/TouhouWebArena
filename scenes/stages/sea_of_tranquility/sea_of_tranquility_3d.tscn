@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/stages/sea_of_tranquility/sea_of_tranquility_3d.gd" id="1_script"]
+
+[sub_resource type="Environment" id="Environment_sea"]
+background_mode = 3
+background_canvas_max_layer = -1
+
+[node name="SeaOfTranquility3D" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_sea")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+environment = SubResource("Environment_sea")
+current = true
+fov = 30.0

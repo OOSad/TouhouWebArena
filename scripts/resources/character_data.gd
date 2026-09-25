@@ -208,17 +208,12 @@ func get_shockwave_color() -> Color:
 		return shockwave_color
 	return primary_color
 
-## Returns the 3D stage scene for this character, with sensible defaults
+## Returns the 3D stage scene for this character: their own scene if set, otherwise the one
+## their home stage id names, so the id and the scene can never disagree.
 func get_home_stage_scene() -> PackedScene:
 	if home_stage_scene != null:
 		return home_stage_scene
-	if character_id == "youmu":
-		return load("res://scenes/stages/hakugyokurou_stairs/hakugyokurou_stairs_3d.tscn")
-	if character_id == "cirno":
-		return load("res://scenes/stages/misty_lake/misty_lake_3d.tscn")
-	if character_id == "sakuya":
-		return load("res://scenes/stages/flowering_night/flowering_night_3d.tscn")
-	return load("res://scenes/stages/bamboo_road/bamboo_road_3d.tscn")
+	return get_stage_scene_by_id(get_home_stage_id())
 
 ## Returns the unique home stage identifier string
 func get_home_stage_id() -> String:
@@ -321,6 +316,9 @@ static func get_stage_scene_by_id(stage_id: String) -> PackedScene:
 	if stage_id == "garden_of_the_sun":
 		if ResourceLoader.exists("res://scenes/stages/garden_of_the_sun/garden_of_the_sun_3d.tscn"):
 			return load("res://scenes/stages/garden_of_the_sun/garden_of_the_sun_3d.tscn")
+	if stage_id == "sea_of_tranquility":
+		if ResourceLoader.exists("res://scenes/stages/sea_of_tranquility/sea_of_tranquility_3d.tscn"):
+			return load("res://scenes/stages/sea_of_tranquility/sea_of_tranquility_3d.tscn")
 	if ResourceLoader.exists("res://scenes/stages/bamboo_road/bamboo_road_3d.tscn"):
 		return load("res://scenes/stages/bamboo_road/bamboo_road_3d.tscn")
 	return null

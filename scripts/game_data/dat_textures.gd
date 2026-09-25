@@ -79,6 +79,11 @@ const RECIPES: Dictionary = {
 	"spirit_red_ring": ["th09", "enemy.anm", [76, 77, 78, 79, 80, 81, 82, 83], 0],
 	# Clownpiece: the moon of her Fake Apollo (LoLK st05enm.anm sprite 39, enm5b.png).
 	"clownpiece_moon": ["th15", "st05enm.anm", 39, 0],
+	# Clownpiece's stage, the Sea of Tranquility (LoLK st05wl.anm): the cratered ground, and the
+	# two sky sprites (the Earth, and the glow drawn over it).
+	"stage_sea_ground": ["th15", "st05wl.anm", "stage05a.png", 0, {"mipmaps": true}],
+	"stage_sea_sky": ["th15", "st05wl.anm", 1, 0],
+	"stage_sea_sky_glow": ["th15", "st05wl.anm", 2, 0],
 	# HUD: the spinning sakura that marks a round won (front.anm scripts 47-51).
 	"round_win_sakura": ["th09", "front.anm", 39, 0],
 	# Stage textures, from the worldNN.anm stage sheets. A file name in place of a sprite id
