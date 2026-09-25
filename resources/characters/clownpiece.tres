@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" path="res://assets/characters/clownpiece/clownpiece_player.png" id="2_texture"]
 [ext_resource type="Texture2D" path="res://assets/ui/menu_characters/clownpiece.png" id="4_portrait"]
 [ext_resource type="Resource" path="res://resources/bosses/clownpiece_boss.tres" id="5_boss"]
+[ext_resource type="Resource" path="res://resources/spellcards/clownpiece/clownpiece_spell_lv2.tres" id="6_spell_lv2"]
 
 [resource]
 script = ExtResource("1_script")
@@ -35,3 +36,5 @@ active_charge_speed = 2.4
 spell_bar_color = Color(0.62, 0.3, 0.72, 1)
 version_tag = "TH15"
 boss_data = ExtResource("5_boss")
+spellcard_lv2 = ExtResource("6_spell_lv2")
+shockwave_color = Color(0.62, 0.3, 0.72, 1)
