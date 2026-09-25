@@ -139,9 +139,66 @@ func _extract_music_from_path(path: String) -> void:
 ## window, before the canvas handler) and keeps any big file as a browser File reference,
 ## so only the track slices are ever read (File.slice). Other files still go to Godot.
 const WEB_BIG_FILE_BYTES: int = 100 * 1024 * 1024
+## A dropped folder is walked here too, by name only (readEntries never reads a file), and
+## only the wanted files are handed to Godot as File references (twaOnFolder), so a Steam
+## library never goes near Godot's handler, which would read every file into memory.
+## Formatted with: the wanted names (a JSON array), SCAN_MAX_DEPTH, SCAN_MAX_FOLDERS, then
+## WEB_BIG_FILE_BYTES.
 const WEB_DROP_JS: String = """
 window.twaBigFile = null;
+window.twaFolderFiles = [];
+var twaWanted = %s;
+function twaWalk(roots, label) {
+	var found = [], pending = 1, folders = 0, finished = false;
+	function done() {
+		if (pending === 0 && !finished) {
+			finished = true;
+			window.twaFolderFiles = found;
+			window.twaOnFolder(label, JSON.stringify(found.map(function (f) { return [f.name, f.size]; })));
+		}
+	}
+	function visit(entry, depth) {
+		if (entry.isFile) {
+			if (twaWanted.indexOf(entry.name.toLowerCase()) >= 0) {
+				pending++;
+				entry.file(function (f) { found.push(f); pending--; done(); },
+					function () { pending--; done(); });
+			}
+			return;
+		}
+		if (depth > %d || folders >= %d || entry.name.charAt(0) === '.') { return; }
+		folders++;
+		pending++;
+		var reader = entry.createReader();
+		(function read() {
+			reader.readEntries(function (batch) {
+				if (batch.length === 0) { pending--; done(); return; }
+				for (var j = 0; j < batch.length; j++) { visit(batch[j], depth + 1); }
+				read();
+			}, function () { pending--; done(); });
+		})();
+	}
+	for (var i = 0; i < roots.length; i++) { visit(roots[i], 0); }
+	pending--;
+	done();
+}
 window.addEventListener('drop', function (event) {
+	// Entries must be taken during the event; they stay usable after it.
+	var items = event.dataTransfer ? event.dataTransfer.items : null;
+	var entries = [], folder = null;
+	for (var k = 0; items && k < items.length; k++) {
+		var entry = items[k].webkitGetAsEntry ? items[k].webkitGetAsEntry() : null;
+		if (entry) {
+			entries.push(entry);
+			if (entry.isDirectory && !folder) { folder = entry.name; }
+		}
+	}
+	if (folder) {
+		event.preventDefault();
+		event.stopImmediatePropagation();
+		twaWalk(entries, folder);
+		return;
+	}
 	var files = event.dataTransfer ? event.dataTransfer.files : null;
 	if (!files) { return; }
 	for (var i = 0; i < files.length; i++) {
@@ -166,6 +223,7 @@ signal _web_slice_read(bytes: PackedByteArray)
 # Kept referenced: JavaScript only holds weak handles to these callbacks.
 var _web_big_file_callback: JavaScriptObject
 var _web_slice_callback: JavaScriptObject
+var _web_folder_callback: JavaScriptObject
 
 
 func _setup_web_drop() -> void:
@@ -173,10 +231,47 @@ func _setup_web_drop() -> void:
 		return
 	_web_big_file_callback = JavaScriptBridge.create_callback(_on_web_big_file)
 	_web_slice_callback = JavaScriptBridge.create_callback(_on_web_slice)
+	_web_folder_callback = JavaScriptBridge.create_callback(_on_web_folder)
 	var window := JavaScriptBridge.get_interface("window")
 	window.twaOnBigFile = _web_big_file_callback
 	window.twaOnSlice = _web_slice_callback
-	JavaScriptBridge.eval(WEB_DROP_JS % WEB_BIG_FILE_BYTES, true)
+	window.twaOnFolder = _web_folder_callback
+	JavaScriptBridge.eval(WEB_DROP_JS % [JSON.stringify(_wanted_file_names()), SCAN_MAX_DEPTH,
+		SCAN_MAX_FOLDERS, WEB_BIG_FILE_BYTES], true)
+
+
+## A folder dropped on the web build, walked by WEB_DROP_JS: `args` is the folder's name and
+## a JSON list of [name, size], one per wanted file found, indexed as window.twaFolderFiles.
+## The .dat files are read in and loaded like a dropped file; then PoFV's music, picked by size.
+func _on_web_folder(args: Array) -> void:
+	var found: Array = JSON.parse_string(str(args[1])) if args.size() > 1 else []
+	if found.is_empty():
+		archive_failed.emit("No game files found in %s." % str(args[0]))
+		return
+	var music: Array[int] = []
+	for i in found.size():
+		var file_name: String = found[i][0]
+		if file_name.to_lower() == "thbgm.dat":
+			music.append(i)
+			continue
+		JavaScriptBridge.eval("window.twaBigFile = window.twaFolderFiles[%d];" % i, true)
+		var bytes: PackedByteArray = await _web_read(0, int(found[i][1]))
+		var incoming := "%s/incoming_%s" % [CACHE_DIR, file_name]
+		DirAccess.make_dir_recursive_absolute(CACHE_DIR)
+		var out := FileAccess.open(incoming, FileAccess.WRITE)
+		if out == null:
+			archive_failed.emit("%s couldn't be read." % file_name)
+			continue
+		out.store_buffer(bytes)
+		out.close()
+		load_archive_file(incoming)
+		DirAccess.remove_absolute(incoming)
+	var size := _music_file_size()
+	for i in music:
+		if int(found[i][1]) == size:
+			JavaScriptBridge.eval("window.twaBigFile = window.twaFolderFiles[%d];" % i, true)
+			await _extract_music(_web_read, str(found[i][0]))
+			return
 
 
 func _on_web_big_file(args: Array) -> void:
@@ -429,12 +524,18 @@ func _on_files_dropped(paths: PackedStringArray) -> void:
 			break
 
 
-## A dropped folder (a Steam library, say) is searched, subfolders too, for the files by
-## name. Every thbgm.dat is returned; `_on_files_dropped` picks PoFV's by its size.
-func find_game_files(folder: String) -> Array[String]:
+## The file names a dropped folder is searched for (lower case).
+func _wanted_file_names() -> Array[String]:
 	var wanted: Array[String] = ["thbgm.dat"]
 	for game_id in KNOWN_FILES:
 		wanted.append(KNOWN_FILES[game_id][0])
+	return wanted
+
+
+## A dropped folder (a Steam library, say) is searched, subfolders too, for the files by
+## name. Every thbgm.dat is returned; `_on_files_dropped` picks PoFV's by its size.
+func find_game_files(folder: String) -> Array[String]:
+	var wanted := _wanted_file_names()
 	var found: Array[String] = []
 	var queue: Array = [[folder, 0]]
 	var folders_seen: int = 0

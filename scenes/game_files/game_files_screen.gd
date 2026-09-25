@@ -35,9 +35,6 @@ func _ready() -> void:
 		return
 	for f in REQUIRED_FILES:
 		_add_file_row(f)
-	# Dropped folders are searched on desktop only so far; the browser's drop is separate.
-	if not OS.has_feature("web"):
-		($Center/Panel/VBox/HintLabel as Label).text = "Drag them onto this window, or drop a whole folder holding your games\n(your Steam library, say) and they'll be found. The Touhou games are sold on Steam."
 	_show_message("")
 	continue_btn.pressed.connect(_go_to_menu)
 	var game_data := _game_data()
