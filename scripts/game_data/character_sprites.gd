@@ -142,6 +142,11 @@ static func build_spell_bg(anm: ThAnm, character: String, kind: String) -> Image
 	return image
 
 
+## Clownpiece's Level 4 background, from LoLK's st05enm.anm in th15.dat (her Stage 5 spell
+## background); SpellBackgroundOverlay's "twin_rotate" mode draws it.
+const LOLK_SPELL_BG: Dictionary = {"base": "cdbg05a00.png", "anim": "cdbg05b00.png"}
+
+
 static func apply_banner(character: String, banner: Image) -> CharacterData:
 	if banner == null:
 		return null
@@ -185,6 +190,41 @@ static func build_faces(anm: ThAnm, pl: String) -> Image:
 		var x := i * FACE_SIZE.x
 		faces.blit_rect(top, Rect2i(0, 0, FACE_SIZE.x, FACE_TOP_HEIGHT), Vector2i(x, 0))
 		faces.blit_rect(bottom, Rect2i(0, 0, FACE_SIZE.x, FACE_SIZE.y - FACE_TOP_HEIGHT), Vector2i(x, FACE_TOP_HEIGHT))
+	return faces
+
+
+## Clownpiece's faces, from LoLK's st05enm.anm in th15.dat, laid out like PoFV's (see
+## FACES). LoLK draws a 610x1000 body with a blank face (face05bs) and pastes a 180x160
+## expression on it at (205, 404); its lost pose (face05lo) comes whole. Each is cropped to
+## PoFV's framing (hat to chest, her head about Cirno's size, checked side by side) and
+## scaled into the 256x320 cell.
+## LoLK has six of PoFV's nine faces; the other three take the nearest.
+const LOLK_FACE_FILES: Array[String] = ["no", "n2", "hp", "n2", "dp", "dp", "pr", "pr", "lo"]
+const LOLK_FACE_AT := Vector2i(205, 404)
+const LOLK_BUST_CROP := Rect2i(75, 215, 420, 525)
+
+static func build_lolk_faces(st05enm: ThAnm) -> Image:
+	var body := st05enm.sheet_image_by_file("face05bs.png") if st05enm else null
+	if body == null:
+		push_warning("CharacterSprites: th15.dat has no face05bs.png")
+		return null
+	var faces := Image.create(FACE_SIZE.x * FACES.size(), FACE_SIZE.y, false, Image.FORMAT_RGBA8)
+	for i in LOLK_FACE_FILES.size():
+		var file := "face05%s.png" % LOLK_FACE_FILES[i]
+		var part := st05enm.sheet_image_by_file(file)
+		if part == null:
+			push_warning("CharacterSprites: th15.dat has no %s" % file)
+			return null
+		var whole: Image = part
+		if part.get_size() != body.get_size():
+			whole = body.duplicate()
+			whole.convert(Image.FORMAT_RGBA8)
+			part.convert(Image.FORMAT_RGBA8)
+			whole.blend_rect(part, Rect2i(Vector2i.ZERO, part.get_size()), LOLK_FACE_AT)
+		var bust := whole.get_region(LOLK_BUST_CROP)
+		bust.resize(FACE_SIZE.x, FACE_SIZE.y, Image.INTERPOLATE_LANCZOS)
+		bust.convert(Image.FORMAT_RGBA8)
+		faces.blit_rect(bust, Rect2i(Vector2i.ZERO, FACE_SIZE), Vector2i(i * FACE_SIZE.x, 0))
 	return faces
 
 

@@ -152,10 +152,10 @@ func setup_match(winner_p: int, loser_p: int, p1_char: String, p2_char: String) 
 	_setup_portraits_and_dialogue()
 	_update_menu_display()
 
-## Clownpiece has no PoFV face and borrows Reimu's.
+## Characters with faces: the PoFV cast, and Clownpiece, whose come from LoLK.
 func _normalize_char_name(raw_name: String) -> String:
 	var lower := raw_name.to_lower().strip_edges()
-	for key in CharacterSprites.PLAYER_SHEETS:
+	for key in CharacterSprites.PLAYER_SHEETS.keys() + ["clownpiece"]:
 		if key in lower:
 			return key
 	return "reimu"

@@ -427,6 +427,13 @@ const QUOTES: Array[Dictionary] = [
 		"loser_id": "*",
 		"winner_expression": 0,
 		"text": "Few people can make their own flower bloom. Why? Because there is no end to the arrogant idea of blooming all by oneself. Blooming is the soil's doing. So once you have bloomed, don't forget to give back to the soil."
+	},
+	# Clownpiece: not in PoFV, so no match script; her one line is the user's.
+	{
+		"winner_id": "clownpiece",
+		"loser_id": "*",
+		"winner_expression": 2,
+		"text": "It's Lunatic Time!"
 	}
 ]
 
@@ -441,6 +448,7 @@ static func get_random_quote(winner_id: String, loser_id: String) -> Dictionary:
 	elif "cirno" in w_norm: w_norm = "cirno"
 	elif "reisen" in w_norm or "udonge" in w_norm: w_norm = "reisen"
 	elif "yuuka" in w_norm: w_norm = "yuuka"
+	elif "clownpiece" in w_norm: w_norm = "clownpiece"
 	if "reimu" in l_norm: l_norm = "reimu"
 	elif "marisa" in l_norm: l_norm = "marisa"
 	elif "sakuya" in l_norm: l_norm = "sakuya"
@@ -448,6 +456,7 @@ static func get_random_quote(winner_id: String, loser_id: String) -> Dictionary:
 	elif "cirno" in l_norm: l_norm = "cirno"
 	elif "reisen" in l_norm or "udonge" in l_norm: l_norm = "reisen"
 	elif "yuuka" in l_norm: l_norm = "yuuka"
+	elif "clownpiece" in l_norm: l_norm = "clownpiece"
 	
 	var exact_matches: Array[Dictionary] = []
 	var generic_matches: Array[Dictionary] = []

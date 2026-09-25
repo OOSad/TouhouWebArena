@@ -19,6 +19,19 @@ const ALIGNED_LAYER_SIZE: float = 256.0 * 2.0804145 * 600.0 / 288.0
 ## "scroll_rotate" (Yuuka): cdbg09b tiles the field scrolling up 0.0033 of a texture a frame
 ## (pl09.anm script 13) under cdbg09, drawn additive at the aligned size and turning (script 14)
 const SCROLL_ROTATE_SPEED: Vector2 = Vector2(0.0, 0.0033333334 * 60.0)
+## "twin_rotate" (Clownpiece, LoLK st05enm.anm scripts 11-13): cdbg05a00 sits still under two
+## copies of cdbg05b00 multiplied in at half strength (LoLK's alpha 128), scaled 1.4 and 1.5
+## (TH15 units, x 2.143 here), centred 192 units down, turning the same way at 0.0017 and
+## 0.0052 rad a frame. Multiply was matched against the footage: additive washed the vines
+## out pink, normal blending fogged them, subtractive turned the reds green; multiply gives
+## the dark vines, maroon edges and yellow core LoLK shows.
+## The field is taller than LoLK's, so the base keeps its shape and covers it.
+const TWIN_MULTIPLY: ShaderMaterial = preload("res://scenes/effects/spell_background_multiply.tres")
+const TWIN_CENTRE: Vector2 = Vector2(300.0, 192.0 * 2.143)
+const TWIN_SLOW_SCALE: float = 1.4 * 2.143
+const TWIN_FAST_SCALE: float = 1.5 * 2.143
+const TWIN_SLOW_SPEED: float = 0.0017453292 * 60.0
+const TWIN_FAST_SPEED: float = 0.0052359877 * 60.0
 const ADDITIVE: CanvasItemMaterial = preload("res://scenes/effects/spell_background_additive.tres")
 const FADE_IN_DURATION: float = 1.0 # 60 frames in PoFV
 const DEFAULT_FADE_OUT_DURATION: float = 0.8
@@ -26,6 +39,9 @@ const DEFAULT_FADE_OUT_DURATION: float = 0.8
 var _is_rotating: bool = false
 var _is_rotating_base: bool = false
 var _base_rotation_speed: float = ROTATION_SPEED_RAD_BASE
+var _top_rotation_speed: float = ROTATION_SPEED_RAD
+var _default_rotate_position: Vector2 = Vector2.ZERO
+var _default_base_stretch: TextureRect.StretchMode = TextureRect.STRETCH_SCALE
 # Scene sizes, restored for every other mode after "aligned_rotate" resizes the layers
 var _default_rotate_scale: Vector2 = Vector2.ONE
 var _default_rotate_base_scale: Vector2 = Vector2.ONE
@@ -37,8 +53,12 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if anim_rotate:
 		_default_rotate_scale = anim_rotate.scale
+	if anim_rotate:
+		_default_rotate_position = anim_rotate.position
 	if anim_rotate_base:
 		_default_rotate_base_scale = anim_rotate_base.scale
+	if base_rect:
+		_default_base_stretch = base_rect.stretch_mode
 	# Each field gets its own copy: modes set the scroll speed, and the two fields can be
 	# showing different characters' backgrounds at once
 	if anim_scroll and anim_scroll.material:
@@ -49,7 +69,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if _is_rotating and anim_rotate and anim_rotate.visible:
-		anim_rotate.rotation += ROTATION_SPEED_RAD * delta
+		anim_rotate.rotation += _top_rotation_speed * delta
 	if _is_rotating_base and anim_rotate_base and anim_rotate_base.visible:
 		anim_rotate_base.rotation += _base_rotation_speed * delta
 
@@ -60,6 +80,13 @@ func activate(char_data: CharacterData) -> void:
 	
 	_current_char_id = char_data.character_id
 	_base_rotation_speed = ROTATION_SPEED_RAD_BASE
+	_top_rotation_speed = ROTATION_SPEED_RAD
+	if base_rect:
+		base_rect.stretch_mode = _default_base_stretch
+	for layer in [anim_rotate, anim_rotate_base]:
+		if layer:
+			layer.position = _default_rotate_position
+			layer.material = null
 	if anim_rotate:
 		anim_rotate.scale = _default_rotate_scale
 	if anim_rotate_base:
@@ -151,6 +178,27 @@ func activate(char_data: CharacterData) -> void:
 		if anim_rotate_base:
 			anim_rotate_base.visible = false
 			_is_rotating_base = false
+		if anim_counter_scroll:
+			anim_counter_scroll.visible = false
+	elif char_data.spell_bg_anim_type == "twin_rotate":
+		if base_rect and base_rect.visible:
+			base_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		for spec in [[anim_rotate_base, TWIN_SLOW_SCALE], [anim_rotate, TWIN_FAST_SCALE]]:
+			var layer: Sprite2D = spec[0]
+			if layer:
+				layer.texture = char_data.spell_bg_anim_texture
+				layer.visible = char_data.spell_bg_anim_texture != null
+				layer.rotation = 0.0
+				layer.modulate.a = 0.5
+				layer.material = TWIN_MULTIPLY
+				layer.position = TWIN_CENTRE
+				layer.scale = Vector2(spec[1], spec[1])
+		_is_rotating_base = anim_rotate_base != null and anim_rotate_base.visible
+		_is_rotating = anim_rotate != null and anim_rotate.visible
+		_base_rotation_speed = TWIN_SLOW_SPEED
+		_top_rotation_speed = TWIN_FAST_SPEED
+		if anim_scroll:
+			anim_scroll.visible = false
 		if anim_counter_scroll:
 			anim_counter_scroll.visible = false
 	elif char_data.spell_bg_anim_type == "scroll_up":

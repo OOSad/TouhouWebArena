@@ -450,6 +450,11 @@ func _prepare_graphics() -> void:
 		var shot_data := CharacterSprites.apply_shot(character, shot)
 		if shot_data:
 			_filled_resources.append(shot_data)
+	var clownpiece_faces := cached_image("faces_clownpiece_lolk_v%d" % CharacterSprites.VERSION,
+		func() -> Image: return CharacterSprites.build_lolk_faces(_anm("th15", "st05enm.anm")))
+	var clownpiece_faces_data := CharacterSprites.apply_faces("clownpiece", clownpiece_faces)
+	if clownpiece_faces_data:
+		_filled_resources.append(clownpiece_faces_data)
 	var clownpiece_shot := cached_image("shot_clownpiece_th15_v%d" % BulletSprites.TH15_VERSION,
 		func() -> Image: return BulletSprites.cut_th15_shot(_anm("th15", "bullet.anm")))
 	var clownpiece_data := CharacterSprites.apply_shot("clownpiece", clownpiece_shot)
@@ -470,6 +475,15 @@ func _prepare_graphics() -> void:
 			var bg_data := CharacterSprites.apply_spell_bg(character, kind, bg)
 			if bg_data:
 				_filled_resources.append(bg_data)
+
+	for kind in CharacterSprites.LOLK_SPELL_BG:
+		var lolk_bg := cached_image("spellbg_clownpiece_%s_lolk_v%d" % [kind, CharacterSprites.VERSION],
+			func() -> Image:
+				var st05enm := _anm("th15", "st05enm.anm")
+				return st05enm.sheet_image_by_file(CharacterSprites.LOLK_SPELL_BG[kind]) if st05enm else null)
+		var lolk_bg_data := CharacterSprites.apply_spell_bg("clownpiece", kind, lolk_bg)
+		if lolk_bg_data:
+			_filled_resources.append(lolk_bg_data)
 
 	for texture_name in DatTextures.RECIPES:
 		var recipe: Array = DatTextures.RECIPES[texture_name]
