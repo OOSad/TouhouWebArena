@@ -77,6 +77,8 @@ const RECIPES: Dictionary = {
 	"spirit_teal_ring": ["th09", "enemy.anm", [52, 53, 54, 55, 56, 57, 58, 59], 0],
 	"spirit_red": ["th09", "enemy.anm", [72, 73, 74, 75], 0],
 	"spirit_red_ring": ["th09", "enemy.anm", [76, 77, 78, 79, 80, 81, 82, 83], 0],
+	# Clownpiece: the moon of her Fake Apollo (LoLK st05enm.anm sprite 39, enm5b.png).
+	"clownpiece_moon": ["th15", "st05enm.anm", 39, 0],
 	# HUD: the spinning sakura that marks a round won (front.anm scripts 47-51).
 	"round_win_sakura": ["th09", "front.anm", 39, 0],
 	# Stage textures, from the worldNN.anm stage sheets. A file name in place of a sprite id

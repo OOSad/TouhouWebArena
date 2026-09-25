@@ -1000,6 +1000,8 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		should_despawn = true
 	elif area is ReisenMoonBlast:
 		base_dmg = area.damage
+	elif area is ClownpieceMoon:
+		base_dmg = area.damage
 	elif area is YinYangOrb:
 		base_dmg = 1.5
 	elif area.get_parent() is EarthLightRay:

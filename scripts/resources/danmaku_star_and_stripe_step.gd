@@ -5,8 +5,10 @@ extends DanmakuStep
 ## "Striped Abyss", whose two-sided crossing beams proved too much to port (per the user).
 ##
 ## Stripes: twelve long beams slide in from the left wall only, one row at a time from the
-## bottom of the field upward, and every one of them drifts downward at the same rate while it
-## holds its row. The gaps between rows therefore keep their size; the player rides one down.
+## top of the field downward, and every one of them drifts upward at the same rate while it
+## holds its row. The gaps between rows therefore keep their size; the player rides one up.
+## This is TH15's card mirrored top to bottom, per the user: sinking rows squashed players at
+## the bottom of the field, and rising ones carry them up toward Fake Apollo's moon.
 ## Stars: meanwhile two spawn points, mirrored about the centre, sweep back and forth across
 ## the top of the field dropping stars straight down at a random slow speed.
 ##
@@ -46,7 +48,7 @@ extends DanmakuStep
 ## Earth Light Ray's own length. TH15's beam is 1600 px long at 12 px/frame, so it holds its
 ## row ~2.2s; at the slower speed this length holds it about as long.
 @export var beam_length: float = 1060.0
-## Downward drift at Rank 1 (Easy, 0.6 px/frame) and Rank 16 (Normal, 1.3).
+## Upward drift at Rank 1 (Easy, 0.6 px/frame) and Rank 16 (Normal, 1.3).
 @export var drift_min_rank: float = 77.14
 @export var drift_max_rank: float = 167.14
 @export var damage: float = 1.0
@@ -99,7 +101,7 @@ func execute(playfield: Node2D, _origin: Vector2, rank: int) -> void:
 	var cast_time: float = stripe_time + hold_after
 	var star_count: int = maxi(int(cast_time / star_interval), 0)
 
-	var first_row: float = FIELD_HEIGHT - _roll(rng) * start_jitter
+	var first_row: float = _roll(rng) * start_jitter
 	var stars := []
 	var sweep_x: float = 0.0
 	var sweeping_out: bool = true
@@ -128,7 +130,7 @@ func execute(playfield: Node2D, _origin: Vector2, rank: int) -> void:
 	for n in range(stripes):
 		if not is_instance_valid(playfield):
 			return
-		_fire(playfield, first_row - row_spacing * float(n), drift)
+		_fire(playfield, first_row + row_spacing * float(n), -drift)
 		if n < stripes - 1:
 			if not playfield.is_inside_tree():
 				return

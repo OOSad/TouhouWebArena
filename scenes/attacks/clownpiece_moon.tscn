@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/attacks/clownpiece_moon.gd" id="1_moon_script"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/clownpiece_moon.tres" id="2_moon_tex"]
+
+[node name="ClownpieceMoon" type="Area2D"]
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("1_moon_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_moon_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]

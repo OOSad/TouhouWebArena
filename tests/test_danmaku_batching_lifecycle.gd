@@ -32,7 +32,7 @@ func _init() -> void:
 	# Crucial: Under Godot 4 2D batching, all AtlasTextures sharing the same master atlas share the exact same GPU RID!
 	assert(atlas_red.atlas != null and atlas_red.atlas == atlas_oval.atlas and atlas_red.atlas == atlas_star.atlas, "All bullets must share the one runtime sprite sheet")
 	assert(EnemyPellet.pellet_red_tex is AtlasTexture and (EnemyPellet.pellet_red_tex as AtlasTexture).atlas == atlas_red.atlas, "Enemy pellets must share it too")
-	assert(filled.size() == BulletSprites.SPRITES.size() + 2, "Every mapped bullet type, plus Clownpiece's two, must get a sprite")
+	assert(filled.size() == BulletSprites.SPRITES.size() + 3, "Every mapped bullet type, plus Clownpiece's three (flame, star, glow ball), must get a sprite")
 	for clownpiece in ["clownpiece_flame_red", "clownpiece_big_star_blue"]:
 		var data := load(BulletSprites.BULLETS % clownpiece) as DanmakuBulletData
 		assert((data.texture as AtlasTexture).atlas == atlas_red.atlas, "%s must share the sheet too" % clownpiece)

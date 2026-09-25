@@ -10,8 +10,10 @@ extends DanmakuStep
 ## than the ring, so a player who stands still is still hit by the flame aimed at them.
 ##
 ## ECL (`BossCard3_at`): `ins_606` 144 bullets (64 on Easy), `ins_605` speed 1.5, aim mode 3
-## at the player, ex 0x200000 for 120 frames at 2.0 - the repel. A volley is three rings,
-## `ins_23` 120 frames apart (90 on Lunatic), before she moves on.
+## at the player, ex 0x200000 for 120 frames at 2.0 - the repel. TH15 fires three rings,
+## `ins_23` 120 frames apart (90 on Lunatic). That held the stage for four seconds and crowded
+## out her other cards, so per the user a volley is two rings fired close together: one
+## doubled ring, the second trailing the first by about 60 px.
 ##
 ## TH15 units convert by field height, 960 / 448 = 2.143, so 1 px/frame is 128.6 px/s here. Not the
 ## depot's uniform 1.5625: TH15's field is wider than ours in proportion, so width scaling
@@ -25,13 +27,13 @@ extends DanmakuStep
 @export var bullet_data: DanmakuBulletData = null
 
 @export_group("Ring")
-@export var rings_per_volley: int = 3
+@export var rings_per_volley: int = 2
 @export var bullets_per_ring: int = 144
 ## 1.5 px/frame.
 @export var speed: float = 192.86
-## Seconds between rings (120 frames, Normal). Not shortened to Lunatic's 90 at high rank:
-## rank scales the gap instead (see Repel), so the rhythm stays the same.
-@export var ring_interval: float = 2.0
+## Seconds between the two rings: 0.3s puts the second ~58 px behind the first, inside the
+## repel reach, so the gap the player opens bends both. (TH15: 120 frames between three.)
+@export var ring_interval: float = 0.3
 
 @export_group("Repel")
 ## How far the push reaches at Rank 1 and Rank 16; this sets how wide a gap the player can

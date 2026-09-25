@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/resources/boss_data.gd" id="1_script"]
 [ext_resource type="Resource" path="res://resources/spellcards/clownpiece/clownpiece_boss_spell_1.tres" id="3_spell"]
 [ext_resource type="Resource" path="res://resources/spellcards/clownpiece/clownpiece_boss_spell_2.tres" id="4_spell2"]
+[ext_resource type="Resource" path="res://resources/spellcards/clownpiece/clownpiece_boss_spell_3.tres" id="5_spell3"]
 
 [resource]
 script = ExtResource("1_script")
@@ -40,4 +41,4 @@ attack_rate = 2.2
 initial_attack_delay = 0.4
 post_cast_delay = 0.3
 post_hop_delay = 0.25
-attack_patterns = [ExtResource("3_spell"), ExtResource("4_spell2")]
+attack_patterns = [ExtResource("3_spell"), ExtResource("4_spell2"), ExtResource("5_spell3")]
