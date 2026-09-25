@@ -114,7 +114,8 @@ const ENEMY_PELLET_SPRITES: Dictionary = {
 # Flame: bullet3.png sprites 484-487, four 32x32 frames of a white-cored orb trailing
 # flame (bullet.anm script 108). The anm draws it 4px above the bullet, so 8px of empty
 # space below each frame puts the orb, not the middle of the cell, on the bullet.
-# Star: bullet2.png (96, 0), the big blue five-pointed star.
+# Star: bullet2.png (96, 0), the big blue five-pointed star. Red: (32, 0), the pink-red one
+# Starry Illusion fires in LoLK.
 # Glow ball: bullet1.png sprite 67, the violet one of the 16px white-cored glow balls (type
 # 26), picked by colour against the footage of Fake Apollo.
 const TH15_FLAME: Array[Rect2i] = [
@@ -123,11 +124,12 @@ const TH15_FLAME: Array[Rect2i] = [
 const TH15_FLAME_SHEET: String = "bullet/bullet3.png"
 const TH15_FLAME_PAD_BELOW: int = 8
 const TH15_STAR: Rect2i = Rect2i(96, 0, 32, 32)
+const TH15_STAR_RED: Rect2i = Rect2i(32, 0, 32, 32)
 const TH15_STAR_SHEET: String = "bullet/bullet2.png"
 const TH15_GLOW_PURPLE: Rect2i = Rect2i(48, 48, 16, 16)
 const TH15_GLOW_SHEET: String = "bullet/bullet1.png"
 # Keys of the images cut_th15() makes; bump TH15_VERSION when changing how they are cut.
-const TH15_KEYS: Array[String] = ["th15_flame_0", "th15_flame_1", "th15_flame_2", "th15_flame_3", "th15_star", "th15_glow_purple"]
+const TH15_KEYS: Array[String] = ["th15_flame_0", "th15_flame_1", "th15_flame_2", "th15_flame_3", "th15_star", "th15_star_red", "th15_glow_purple"]
 const TH15_VERSION: int = 1
 
 # Effect textures filled from etama.anm. PoFV's sparkle burst (etama y209, 30x30, the same
@@ -184,9 +186,11 @@ static func apply(etama: ThAnm, th15_images: Dictionary) -> Array[DanmakuBulletD
 	flame.texture = frames[0]
 	var star := load(BULLETS % "clownpiece_big_star_blue") as DanmakuBulletData
 	star.texture = textures.get("th15_star")
+	var red_star := load(BULLETS % "clownpiece_big_star_red") as DanmakuBulletData
+	red_star.texture = textures.get("th15_star_red")
 	var glow := load(BULLETS % "clownpiece_glow_ball_purple") as DanmakuBulletData
 	glow.texture = textures.get("th15_glow_purple")
-	changed.append_array([flame, star, glow])
+	changed.append_array([flame, star, red_star, glow])
 
 	var pellet: Dictionary = {}
 	for property in ENEMY_PELLET_SPRITES:
@@ -208,6 +212,9 @@ static func cut_th15(th15_bullets: ThAnm, key: String) -> Image:
 	if key == "th15_star":
 		var star_sheet := th15_bullets.sheet_image(TH15_STAR_SHEET)
 		return star_sheet.get_region(TH15_STAR) if star_sheet else null
+	if key == "th15_star_red":
+		var red_sheet := th15_bullets.sheet_image(TH15_STAR_SHEET)
+		return red_sheet.get_region(TH15_STAR_RED) if red_sheet else null
 	if key == "th15_glow_purple":
 		var glow_sheet := th15_bullets.sheet_image(TH15_GLOW_SHEET)
 		return glow_sheet.get_region(TH15_GLOW_PURPLE) if glow_sheet else null

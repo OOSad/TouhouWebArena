@@ -1,10 +1,10 @@
 class_name ClownpieceMoon
 extends Area2D
 
-## The moon of Clownpiece's "Fake Apollo" (TH15 `st05bs.ecl` BossCard5), cut down from
-## three moons orbiting her for the whole card to one sweep, per the user: it fades in at one
-## side of her, swings a half circle underneath her to the other side while shedding rings of
-## orbs, and fades out there. The fade-out is the card's name: the moon was never real.
+## One moon of Clownpiece's "Fake Apollo" (TH15 `st05bs.ecl` BossCard5), cut down from moons
+## orbiting her for the whole card to one sweep, per the user: it fades in, swings half a
+## turn round its orbit's centre while shedding rings of orbs, and fades out. The fade-out is
+## the card's name: the moon was never real. `DanmakuFakeApolloStep` places one or three.
 ##
 ## Touching the moon hurts, as in TH15 (`ins_501` hitbox 96 units across), but only while
 ## it is fully there: fading in or out it is harmless.

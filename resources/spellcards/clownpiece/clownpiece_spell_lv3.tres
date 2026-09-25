@@ -4,15 +4,24 @@
 [ext_resource type="Script" path="res://scripts/resources/danmaku_fake_apollo_step.gd" id="2_apollo_script"]
 [ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_base"]
 
-[sub_resource type="Resource" id="Resource_fake_apollo"]
+[sub_resource type="Resource" id="Resource_three_moons"]
 script = ExtResource("2_apollo_script")
+moon_count = 3
+orbit_offset = Vector2(0, 200)
+orbit_radius = 190.0
+ring_count_min_rank = 10
+ring_count_max_rank = 14
+ring_interval_min_rank = 1.0
+ring_interval_max_rank = 0.7
+ring_speed_min_rank = 102.86
+ring_speed_max_rank = 154.29
 
 [resource]
 script = ExtResource("1_spell_script")
-spellcard_id = "clownpiece_lv2"
-spellcard_name = "\"Fake Apollo\""
-level = 2
+spellcard_id = "clownpiece_lv3"
+spellcard_name = "\"Apollo Hoax Theory\""
+level = 3
 waves_min = 1
 waves_max = 1
 jitter_wave_origin = false
-steps = Array[ExtResource("3_step_base")]([SubResource("Resource_fake_apollo")])
+steps = Array[ExtResource("3_step_base")]([SubResource("Resource_three_moons")])
