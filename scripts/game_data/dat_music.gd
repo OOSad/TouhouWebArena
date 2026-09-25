@@ -1,9 +1,10 @@
 class_name DatMusic
 extends RefCounted
-## PoFV's soundtrack from the player's own thbgm.dat.
+## The game's music, from the player's own thbgm.dat files (PoFV's, and LoLK's for
+## Clownpiece's theme).
 ##
-## thbgm.dat (440 MB) is raw 44.1 kHz 16-bit stereo audio, every track back to back behind a
-## 16-byte "ZWAV" header. th09.dat's thbgm.fmt lists each track: 52-byte records of
+## A thbgm.dat (PoFV's is 440 MB) is raw 44.1 kHz 16-bit stereo audio, every track back to back
+## behind a 16-byte "ZWAV" header. Its game's thbgm.fmt lists each track: 52-byte records of
 ## {name[16], offset, unknown, loop start (bytes), length (bytes), WAVEFORMATEX + 2 pad}.
 ## Only the tracks the game plays are cut out, compressed to QOA (about a fifth of the size)
 ## and kept in user://; thbgm.dat itself is never stored, which matters on the web build,
@@ -17,16 +18,25 @@ const BYTES_PER_FRAME: int = 4  # 16-bit stereo
 ## Bump when changing how tracks are built, so saved copies aren't reused.
 const VERSION: int = 1
 
-## Track id -> its entry in thbgm.fmt. The ids are the file names the game has always used
-## for its music (res://assets/music/<id>.ogg), so stage data and saved replays keep working.
-const TRACKS: Dictionary = {
-	"01_flower_reflecting_mound": "th09_00.wav",       # No.1 Higan Retour
-	"02_spring_lane": "th09_01.wav",                   # No.2 Colorful Path
-	"04_flowering_night": "th09_02.wav",               # No.4 Flowering Night
-	"06_lunatic_eyes_invisible_full_moon": "th08_12.wav",  # No.6 Invisible Full Moon
-	"07_adventure_of_the_lovestruck_tomboy": "th09_05.wav",  # No.7
-	"10_ancient_temple": "th07_10_b.wav",              # No.5 Ancient Temple
-	"13_gensokyo_past_and_present": "th09_13.wav",     # No.13 Flower Land
+## The music files the game reads, each a game's thbgm.dat. Every Touhou game names its music
+## file thbgm.dat, so each is identified by size: its game's thbgm.fmt (inside that game's
+## .dat) ends exactly where the file does. Source id (the file screen's row) -> the game
+## whose .dat holds the track list, and track id -> its entry in that list. The track ids
+## are the file names the game has always asked for music by (res://assets/music/<id>.ogg),
+## so stage data and saved replays keep working.
+const SOURCES: Dictionary = {
+	"thbgm": {"game": "th09", "tracks": {
+		"01_flower_reflecting_mound": "th09_00.wav",       # No.1 Higan Retour
+		"02_spring_lane": "th09_01.wav",                   # No.2 Colorful Path
+		"04_flowering_night": "th09_02.wav",               # No.4 Flowering Night
+		"06_lunatic_eyes_invisible_full_moon": "th08_12.wav",  # No.6 Invisible Full Moon
+		"07_adventure_of_the_lovestruck_tomboy": "th09_05.wav",  # No.7
+		"10_ancient_temple": "th07_10_b.wav",              # No.5 Ancient Temple
+		"13_gensokyo_past_and_present": "th09_13.wav",     # No.13 Flower Land
+	}},
+	"thbgm15": {"game": "th15", "tracks": {
+		"15_pierrot_of_the_star_spangled_banner": "th15_11.wav",  # Clownpiece's theme
+	}},
 }
 
 

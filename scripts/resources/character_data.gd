@@ -330,6 +330,7 @@ const STAGE_MUSIC: Dictionary = {
 	"eientei_corridor": "06_lunatic_eyes_invisible_full_moon",
 	"garden_of_the_sun": "13_gensokyo_past_and_present",
 	"flowering_night": "04_flowering_night",
+	"sea_of_tranquility": "15_pierrot_of_the_star_spangled_banner",
 }
 const DEFAULT_STAGE_MUSIC: String = "02_spring_lane"
 

@@ -22,16 +22,15 @@ const KNOWN_FILES: Dictionary = {
 	"th09": ["th09.dat", "PBGZ", "pl15.sht"],
 	"th15": ["th15.dat", "THA1", "st07enm3.anm"],
 }
-## PoFV's soundtrack, cut from the player's thbgm.dat (DatMusic). Kept apart from ASSET_CACHE
-## so dropping another .dat doesn't make the player hand over 440 MB of music again.
+## The music, cut from the player's thbgm.dat files (DatMusic). Kept apart from ASSET_CACHE
+## so dropping another .dat doesn't make the player hand over 440 MB of music again. The file
+## screen and signals know each music file by its DatMusic.SOURCES id.
 const MUSIC_CACHE: String = "user://game_files/music"
-## The "game id" the file screen and signals use for thbgm.dat.
-const MUSIC_ID: String = "thbgm"
 ## Limits on searching a dropped folder: a Steam library's games sit at steamapps/common/<game>,
 ## three levels down, so six leaves room for other layouts.
 const SCAN_MAX_DEPTH: int = 6
 const SCAN_MAX_FOLDERS: int = 20000
-const OTHER_MUSIC_MESSAGE: String = "That thbgm.dat is another game's music. PoFV's is the one in the same folder as th09.dat."
+const OTHER_MUSIC_MESSAGE: String = "That thbgm.dat is from a game we don't use. The ones wanted sit beside th09.dat and th15.dat."
 
 # game id ("th09") -> ThDatArchive
 var archives: Dictionary = {}
@@ -52,8 +51,8 @@ func _ready() -> void:
 
 
 func has_archive(game_id: String) -> bool:
-	if game_id == MUSIC_ID:
-		return has_music()
+	if DatMusic.SOURCES.has(game_id):
+		return has_music(game_id)
 	return archives.has(game_id)
 
 
@@ -61,12 +60,15 @@ func has_all_files() -> bool:
 	for game_id in KNOWN_FILES:
 		if not archives.has(game_id):
 			return false
-	return has_music()
+	for source in DatMusic.SOURCES:
+		if not has_music(source):
+			return false
+	return true
 
 
-## True once every track has been cut from thbgm.dat and saved.
-func has_music() -> bool:
-	for id in DatMusic.TRACKS:
+## True once every track of that music source (see DatMusic.SOURCES) has been cut and saved.
+func has_music(source: String) -> bool:
+	for id in DatMusic.SOURCES[source].tracks:
 		if not FileAccess.file_exists(_music_path(id)):
 			return false
 	return true
@@ -76,39 +78,52 @@ func _music_path(id: String) -> String:
 	return "%s/%s_v%d.qoa" % [MUSIC_CACHE, id, DatMusic.VERSION]
 
 
-## thbgm.fmt from th09.dat, parsed; empty until th09.dat is in.
-func _music_fmt() -> Dictionary:
-	if not archives.has("th09"):
+## A music source's track list (its game's thbgm.fmt), parsed; empty until that .dat is in.
+func _music_fmt(source: String) -> Dictionary:
+	var game: String = DatMusic.SOURCES[source].game
+	if not archives.has(game):
 		return {}
-	return DatMusic.parse_fmt(archives["th09"].extract(DatMusic.FMT_FILE))
+	return DatMusic.parse_fmt(archives[game].extract(DatMusic.FMT_FILE))
 
 
-## PoFV's thbgm.dat size, where the last track in its track list ends; 0 until th09.dat is
-## in. Every Touhou game names its music thbgm.dat with the same header, but each game's
-## track list ends at its own file's exact size, so this tells PoFV's apart.
-func _music_file_size() -> int:
-	var end := 0
-	for entry in _music_fmt().values():
-		end = maxi(end, entry.offset + entry.length)
-	return end
+## Which music source a thbgm.dat of this size is, or "" if none whose .dat is in. Every
+## Touhou game names its music thbgm.dat with the same header, but each game's track list
+## ends exactly where its own file does.
+func _music_source_for_size(size: int) -> String:
+	for source in DatMusic.SOURCES:
+		var end := 0
+		for entry in _music_fmt(source).values():
+			end = maxi(end, entry.offset + entry.length)
+		if end > 0 and end == size:
+			return source
+	return ""
 
 
-## Cuts every track the game plays out of thbgm.dat, compresses it and saves it. `read` is
+## Why a thbgm.dat that matched no source was turned down.
+func _unmatched_music_message() -> String:
+	for source in DatMusic.SOURCES:
+		if not archives.has(DatMusic.SOURCES[source].game):
+			return "Drop th09.dat and th15.dat first, then the music: each game's track list is in its .dat."
+	return OTHER_MUSIC_MESSAGE
+
+
+## Cuts every track the game plays out of a thbgm.dat, compresses it and saves it. `read` is
 ## (offset, length) -> PackedByteArray and may be a coroutine: on desktop it reads the file,
 ## on the web build it asks the browser for just that slice (see WEB_DROP_JS). Yields
 ## between tracks so the file screen can show progress.
-func _extract_music(read: Callable, file_name: String) -> void:
-	var fmt := _music_fmt()
+func _extract_music(read: Callable, file_name: String, source: String) -> void:
+	var fmt := _music_fmt(source)
 	if fmt.is_empty():
 		archive_failed.emit("%s couldn't be read." % file_name)
 		return
 	DirAccess.make_dir_recursive_absolute(MUSIC_CACHE)
+	var tracks: Dictionary = DatMusic.SOURCES[source].tracks
 	var done := 0
-	for id in DatMusic.TRACKS:
-		music_preparing.emit(done + 1, DatMusic.TRACKS.size())
+	for id in tracks:
+		music_preparing.emit(done + 1, tracks.size())
 		await get_tree().process_frame
 		await get_tree().process_frame
-		var entry: Dictionary = fmt[DatMusic.TRACKS[id]]
+		var entry: Dictionary = fmt[tracks[id]]
 		var pcm: PackedByteArray = await read.call(entry.offset, entry.length)
 		var qoa := DatMusic.compress(pcm, entry) if pcm.size() == entry.length else PackedByteArray()
 		var out := FileAccess.open(_music_path(id), FileAccess.WRITE)
@@ -119,19 +134,19 @@ func _extract_music(read: Callable, file_name: String) -> void:
 		out.close()
 		done += 1
 	_prepare_music()
-	archive_loaded.emit(MUSIC_ID, done)
+	archive_loaded.emit(source, done)
 	_prepare_graphics_soon()
 
 
 ## Desktop: thbgm.dat stays where it is on disk, and only the track slices are read.
-func _extract_music_from_path(path: String) -> void:
+func _extract_music_from_path(path: String, source: String) -> void:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		archive_failed.emit("%s couldn't be read." % path.get_file())
 		return
 	await _extract_music(func(offset: int, length: int) -> PackedByteArray:
 		file.seek(offset)
-		return file.get_buffer(length), path.get_file())
+		return file.get_buffer(length), path.get_file(), source)
 
 
 ## Web build: Godot's own drop handler reads a dropped file into memory whole, which for
@@ -266,12 +281,15 @@ func _on_web_folder(args: Array) -> void:
 		out.close()
 		load_archive_file(incoming)
 		DirAccess.remove_absolute(incoming)
-	var size := _music_file_size()
+	# Every music file found is checked by size against the track lists now in; one per source.
+	var taken: Array[String] = []
 	for i in music:
-		if int(found[i][1]) == size:
-			JavaScriptBridge.eval("window.twaBigFile = window.twaFolderFiles[%d];" % i, true)
-			await _extract_music(_web_read, str(found[i][0]))
-			return
+		var source := _music_source_for_size(int(found[i][1]))
+		if source.is_empty() or source in taken:
+			continue
+		taken.append(source)
+		JavaScriptBridge.eval("window.twaBigFile = window.twaFolderFiles[%d];" % i, true)
+		await _extract_music(_web_read, str(found[i][0]), source)
 
 
 func _on_web_big_file(args: Array) -> void:
@@ -283,13 +301,11 @@ func _on_web_big_file(args: Array) -> void:
 	if not DatMusic.is_thbgm(header):
 		archive_failed.emit("%s isn't one of the files listed." % file_name)
 		return
-	if not archives.has("th09"):
-		archive_failed.emit("Drop th09.dat first, then thbgm.dat (it needs th09.dat's track list).")
+	var source := _music_source_for_size(int(args[2]))
+	if source.is_empty():
+		archive_failed.emit(_unmatched_music_message())
 		return
-	if int(args[2]) != _music_file_size():
-		archive_failed.emit(OTHER_MUSIC_MESSAGE)
-		return
-	await _extract_music(_web_read, file_name)
+	await _extract_music(_web_read, file_name, source)
 
 
 ## Asks the browser for one slice of the dropped big file and waits for it.
@@ -302,14 +318,19 @@ func _on_web_slice(args: Array) -> void:
 	_web_slice_read.emit(JavaScriptBridge.js_buffer_to_packed_byte_array(args[0]))
 
 
-## Hands AudioManager the saved soundtrack, looping where thbgm.fmt says.
+## Hands AudioManager every saved track, looping where its game's thbgm.fmt says. A source
+## whose music or .dat isn't in yet is skipped; the rest still play.
 func _prepare_music() -> void:
-	var fmt := _music_fmt()
-	if fmt.is_empty() or not has_music():
-		return
 	var streams: Dictionary = {}
-	for id in DatMusic.TRACKS:
-		streams[id] = DatMusic.make_stream(FileAccess.get_file_as_bytes(_music_path(id)), fmt[DatMusic.TRACKS[id]])
+	for source in DatMusic.SOURCES:
+		var fmt := _music_fmt(source)
+		if fmt.is_empty() or not has_music(source):
+			continue
+		var tracks: Dictionary = DatMusic.SOURCES[source].tracks
+		for id in tracks:
+			streams[id] = DatMusic.make_stream(FileAccess.get_file_as_bytes(_music_path(id)), fmt[tracks[id]])
+	if streams.is_empty():
+		return
 	var audio := get_node_or_null("/root/AudioManager")
 	if audio:
 		audio.set_music(streams)
@@ -532,15 +553,20 @@ func _on_files_dropped(paths: PackedStringArray) -> void:
 				music.append(file_path)
 			else:
 				load_archive_file(file_path)
-	# Music found in a folder is checked last, once th09.dat's track list is in, and only
-	# PoFV's is taken: the others are other games' and are skipped without a word.
-	var size := _music_file_size()
+	# Music found in a folder is checked last, once the .dat files' track lists are in, each
+	# by size; other games' are skipped without a word. One at a time, so the file screen's
+	# progress reads as one count per file.
+	var taken: Array[String] = []
 	for file_path in music:
 		var file := FileAccess.open(file_path, FileAccess.READ)
-		if file and file.get_length() == size:
-			file.close()
-			load_archive_file(file_path)
-			break
+		if file == null:
+			continue
+		var source := _music_source_for_size(file.get_length())
+		file.close()
+		if source.is_empty() or source in taken:
+			continue
+		taken.append(source)
+		await _extract_music_from_path(file_path, source)
 
 
 ## The file names a dropped folder is searched for (lower case).
@@ -596,14 +622,12 @@ func load_archive_file(path: String) -> bool:
 	if peek and DatMusic.is_thbgm(peek.get_buffer(4)):
 		var music_size := peek.get_length()
 		peek.close()
-		# Its track list is in th09.dat, so that has to come first.
-		if not archives.has("th09"):
-			archive_failed.emit("Drop th09.dat first, then thbgm.dat (it needs th09.dat's track list).")
+		# Its track list is in its game's .dat, so that has to be in first.
+		var source := _music_source_for_size(music_size)
+		if source.is_empty():
+			archive_failed.emit(_unmatched_music_message())
 			return false
-		if music_size != _music_file_size():
-			archive_failed.emit(OTHER_MUSIC_MESSAGE)
-			return false
-		_extract_music_from_path(path)
+		_extract_music_from_path(path, source)
 		return true
 	peek = null
 	var archive := ThDatArchive.new()

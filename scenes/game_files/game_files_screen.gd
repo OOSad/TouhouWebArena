@@ -9,6 +9,7 @@ const REQUIRED_FILES: Array[Dictionary] = [
 	{"id": "th09", "file": "th09.dat", "game": "Touhou 9 ~ Phantasmagoria of Flower View"},
 	{"id": "th15", "file": "th15.dat", "game": "Touhou 15 ~ Legacy of Lunatic Kingdom"},
 	{"id": "thbgm", "file": "thbgm.dat", "game": "Touhou 9 music (in the same folder as th09.dat)"},
+	{"id": "thbgm15", "file": "thbgm.dat", "game": "Touhou 15 music (in the same folder as th15.dat)"},
 ]
 
 const COLOR_MISSING := Color(0.95, 0.55, 0.5)
