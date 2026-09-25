@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/attacks/reisen_charge_bullet.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/reisen_charge_shot.tres" id="2_texture"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_charge"]
+radius = 15.0
+height = 92.0
+
+[node name="ReisenChargeBullet" type="Area2D"]
+script = ExtResource("1_script")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+texture_filter = 1
+texture = ExtResource("2_texture")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("CapsuleShape2D_charge")

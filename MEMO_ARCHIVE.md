@@ -1,0 +1,659 @@
+# Project Memo, Backlog & To-Do List
+
+## 1. Presentation, UI & Art To-Dos
+- [x] **Dynamic 5-Layer Main Menu Architecture, Bootup Sequence & Silhouette Cycling**:
+  - Modularized the Main Menu (`scenes/main_menu/main_menu.tscn` and `scenes/main_menu/main_menu.gd`) into five distinct decoupled layers:
+    1. **Layer 1: Background**: Clean antique washi paper base (`assets/ui/title_bg_clean.png`) with delicate corner *karakusa* floral arabesques and *seigaiha* dot waves.
+    2. **Layer 2: Center Ring**: Sacred braided *shimenawa* ring with 4 zigzag *shide* paper streamers (`assets/ui/title_ring_shimenawa.png`) centered at $(960, 540)$ at static scale ($1.0$), serene and calm with no pulsation.
+    3. **Layer 3: Left Duelist Slot**: Left-flanking character slot (`LeftCharSlot`) hosting two cross-fading `TextureRect` nodes (`LeftCharA`, `LeftCharB`).
+    4. **Layer 4: Right Duelist Slot**: Right-flanking character slot (`RightCharSlot`) hosting two cross-fading `TextureRect` nodes (`RightCharA`, `RightCharB`).
+    5. **Layer 5: Menu UI & Scrim**: Translucent dark scrim (`DarkScrim`, $\alpha = 0.28$) and interactive interface (`MarginContainer`), featuring balanced two-column layout with `CenterSpacer` preserving an unobstructed view of the sacred ring.
+  - **Cinematic Bootup Sequence**:
+    - Elements fade in sequentially: Base Background ($0.0 \to 0.4\text{s}$) $\to$ Center Ring ($0.35 \to 0.75\text{s}$, static scale $1.0$) $\to$ Duelists gliding in laterally from the screen edges toward resting positions ($0.65 \to 1.3\text{s}$) $\to$ Menu UI & Scrim ($1.05 \to 1.45\text{s}$).
+    - **Instant Skip**: Pressing any key or clicking the mouse during bootup instantly snaps all layers to full opacity and resting positions.
+  - **Lateral Edge Glide Character Cycling**:
+    - Left duelist: Outgoing character glides leftward toward the outer screen edge while quickly fading out ($0.45\text{s}$); incoming character glides inward from the left screen edge to the resting position while fading in ($0.65\text{s}$).
+    - Right duelist: Outgoing character glides rightward toward the outer screen edge while quickly fading out ($0.45\text{s}$); incoming character glides inward from the right screen edge to the resting position while fading in ($0.65\text{s}$).
+    - **1.5x Silhouette Scale & Ring-Facing Dynamic Orientation**:
+      - Silhouette slots expanded by 1.5x ($440 \times 640 \to 660 \times 960$), vertically centered on screen ($y \in [60, 1020]$), framing the central sacred ring with a strong, commanding artistic presence.
+      - Lateral glide distance scaled proportionally (`GLIDE_OFFSET = 180.0`).
+      - **Always Face the Ring**: Implemented `_apply_character_to_rect()` which checks each silhouette's natural facing direction (`_get_texture_natural_facing()`) and flips it horizontally if needed (`flip_h`) so that characters on the left slot always face right (toward the ring), and characters on the right slot always face left (toward the ring). Neither duelist ever looks offscreen.
+    - **Preferred Character Silhouette Pair**:
+      - Replaced multi-pose assets with the single, most iconic silhouette pair:
+        - `res://assets/ui/menu_characters/reimu.png`: Floating Reimu accompanied by her sacred Yin-Yang orb, floating ofuda charms, gohei wand, oversized hair bow, and billowing sleeves.
+        - `res://assets/ui/menu_characters/marisa.png`: Standing Marisa holding her octagonal mini-hakkero magical reactor with sparkling star emissions, witch hat, and broom behind her.
+      - Removed the alternative poses (`marisa_flying` and `reimu_standing` without orb) so that bootup and all subsequent cycling exclusively display these polished, high-definition silhouettes with 100% consistency.
+  - **Future Silhouette Generation Specification & Style Guide**:
+    - *Aesthetic Standard*: Translucent sumi-e watercolor ink wash silhouettes that blend seamlessly into the antique washi paper. No sharp high-contrast anime line art, no clothing fold lines, and NO facial features. Traditional *seigaiha* ocean wave patterns, floral scrollwork, manga halftone dots, and gold leaf (*kinpaku*) flakes must bleed directly through the character's semi-transparent body.
+    - *Reference Rosters*:
+      - Touhou 9 PoFV: Reimu, Marisa, Cirno, Youmu, Reisen, Tewi, Aya, Medicine, Yuuka, Komachi, Eiki, Sakuya, Mystia, Lyrica, Lunasa, Merlin, Lily White.
+      - Touhou 19 UDoALG: Sanae, Ran, Aunn, Nazrin, Seiran, Ringo, Tsukasa, Megumu, Chimata, Yachie, Saki, Yuuma, Suika, Biten, Enoko, Chiyari, Hisami, Zanmu.
+    - *Standard Generation Prompt Template*:
+      > "Create an ethereal, nondescript sumi-e ink wash watercolor silhouette of [Character Name] from Touhou Project in the exact same artistic style as the reference image. Identifiable solely by her silhouette landmarks: [Iconic landmarks, e.g. maid mob cap and floating silver throwing knives for Sakuya; dual katanas and swirling phantom ghost for Youmu; rabbit ears and wave lines for Reisen]. The figure must be a completely nondescript translucent watercolor ink silhouette with NO anime facial features and NO internal line drawing. Faint seigaiha ocean waves, Japanese floral scrollwork, halftone screentones, and gold leaf foil flakes (kinpaku) bleed directly through her semi-transparent body. Centered full-body figure surrounded by completely plain, clean, uniform solid off-white parchment background with wide empty margins on all four sides. No outer vines, no borders, no frames, no surrounding background scenery. Ethereal, ancient Japanese woodblock print watermark aesthetic."
+    - *Workflow*: Save extracted silhouette PNGs to `assets/ui/menu_characters/`. The menu engine will automatically discover and integrate them into the dynamic cycling pool with zero code changes required.
+  - Automated test suite in `tests/test_main_menu_modular.gd` verifies scene tree instantiation, bootup opacity states, instant skip snapping, and cross-fade cycling.
+
+- [x] **Title Screen Background Art Integration & Interactive Switcher (Midpoint & Diagonal Compositions)**:
+  - Generated authentic Touhou-style aesthetic backgrounds blending antique washi paper textures, gold leaf flakes, *seigaiha* wave patterns, floral *karakusa* scrollwork, and a central sacred *shimenawa* ring:
+    - `assets/ui/title_bg_symmetric.png`: Midpoint vertically balanced composition where Reimu and Marisa's waists align with the equator of the central ring and their hats/bows meet the upper ring arc with a comfortable ~90px ground clearance.
+    - `assets/ui/title_bg_diagonal.png`: Dynamic asymmetrical diagonal composition placing Reimu anchored low in the bottom-left and Marisa soaring high in the top-right on her broomstick, creating an active line of action across the dueling ring.
+  - Imported assets into Godot and wired them into `scenes/main_menu/main_menu.tscn`:
+    - Added `BackgroundTex` (`TextureRect`) and subtle translucent `DarkScrim` (`ColorRect` with `mouse_filter = 2`) ensuring the washi paper texture shines through while retaining 100% legibility of UI labels and input fields.
+    - Added crisp font drop shadows and outlines to `TitleLabel` and menu buttons for arcade readability.
+    - Added interactive `BgToggleBtn` in the top-right header and hotkey handler (`T`) in `main_menu.gd` allowing instantaneous in-game cycling between **Diagonal**, **Midpoint (Symmetric)**, and **Plain Dark** modes with audio feedback.
+  - Created automated test suite `tests/test_main_menu_background.gd` verifying scene instantiation, initial midpoint texture, cycling to diagonal, cycling to plain, and clean loopback with 0 errors.
+- [x] **Character Select "Twilight Indigo" Atmosphere & UI Styling**:
+  - Brought the title art world aesthetic into `scenes/character_select/character_select.tscn` using an in-engine "Twilight Indigo" palette shift:
+    - Standardized to the horizontally aligned symmetric composition (`title_bg_symmetric.png`) by default, tinted with `modulate = Color(0.42, 0.52, 0.82, 1.0)` to maintain visual consistency with the Main Menu's horizontally aligned duelists while shifting into a moonlit twilight night sky where gold leaf flakes glitter across the arena.
+    - Added `TwilightScrim` (`Color(0.01, 0.02, 0.06, 0.35)`) and wrapped the character list in a translucent `SelectionCard` (`PanelContainer`) with rounded corners and subtle indigo border.
+    - Upgraded typography across the entire screen: added arcade drop shadows (`Color(0, 0, 0, 0.95)`, offset 2, 2) and dark outlines to `TitleLabel`, `ReimuName`, `MarisaName`, P1/P2 pointers, and buttons.
+    - Styled `ConfirmButton` with translucent emerald borders and `BackButton` with translucent ruby borders.
+    - Wired hotkey `T` into `character_select.gd` to allow cycling between **Twilight Symmetric (Default)**, **Twilight Diagonal**, and **Plain Dark** modes.
+  - Created automated test suite `tests/test_character_select_background.gd` verifying scene initialization, symmetric default, and cycling sequence.
+- [x] **Modular Character Cards on Character Select Screen (Tactical Kit Specifications & Iteration Badging)**:
+  - Designed and implemented a modular, data-driven tactical card system flanking the character select roster on the left (Player 1, cyan accent `#66ccff`) and right (Player 2, coral accent `#ff7373`):
+    - **Extensible CharacterData Foundation**: Added presentation exports to `CharacterData` (`scripts/resources/character_data.gd`) including `version_tag` (`"TH09"`), `archetype`, `primary_shot_name`, `primary_shot_desc`, `special_trait`, `extra_attack_name`, `extra_attack_desc`, `charge_attack_desc`, `signature_spell_name`, and `portrait_texture`.
+    - **Reimu's Precise Kit Profile**: Accurately represented Reimu's basic shot as dual forward streaming amulets (straight, non-homing), while reserving homing behavior for her Lv 1 Charge Attack (`HakureiAmulet`), alongside Yin-Yang Orbs (wall-bouncing harassment) and Spirit Sign "Fantasy Seal".
+    - **Marisa's Kit Profile**: Documented Marisa's high-speed linear heavy piercing kit: concentrated Magic Needle Stream, Earth Light Ray (bottom-erupting lasers), Illusion Laser (punch-through beam), and Magic Sign "Stardust Reverie".
+    - **Modular CharacterCard Component**: Created `scenes/character_select/character_card.tscn` and `character_card.gd` featuring player badges (`[ 1P ]` / `[ 2P ]`), version tags (`[ TH09 ]`), sumi-e silhouette watermark, combat specifications, and TH09-style dual sub-cards for Extra Harassment and Lv 1 Charge attacks.
+    - **Dynamic Character Select Integration**: Refactored `scenes/character_select/character_select.tscn` into a 3-column `ColumnsHBox` layout with live updates synchronized to keyboard navigation, mouse clicks, and netplay RPC state changes.
+  - Created automated test suite `tests/test_character_card_select.gd` verifying component instantiation, Reimu and Marisa data attributes, basic vs charge attack descriptions, and real-time selection shifts.
+- [x] **Arena Stage Background Art Integration (Bamboo Green Main Menu Theme)**:
+  - Created and integrated `assets/ui/stage_bg_bamboo.png`, a 1920×1080 stage background for the dual-playfield arena mirroring the authentic Japanese aesthetic of the main menu and splash screen:
+    - Distressed antique washi paper grain, traditional *seigaiha* ocean waves in margins and corners, flowing floral *karakusa* arabesques on flanking side pillars, manga halftone screentones, sumi-e ink splatters, drifting cherry blossom sakura petals, and subtle gold leaf (*kinpaku*) flakes.
+    - Sacred glowing *shimenawa* rope ring centered precisely within the 60px divider separating Player 1 and Player 2 viewports.
+    - Palette toned to the stage's deep forest bamboo green (`#0f1f14` / `Color(0.06, 0.12, 0.08)`) ensuring the active 3D bamboo road, glowing danmaku bullets, and HUD gauges retain maximum contrast and legibility.
+    - Completely avoided heavy arcade moldings or overcomplicated tinting systems: directly replaced the flat `ColorRect` in `scenes/arena/arena.tscn` with a `TextureRect` (`mouse_filter = 2`) loading `stage_bg_bamboo.png`.
+    - Maintained crisp, clean Touhou playfield borders in `scenes/arena/playfield.tscn`.
+- [x] **128×128 HD Yin-Yang Life Orbs (Full, Half, and Empty Sockets)**:
+  - Completely replaced the old 32×32 low-res dithered ripped placeholders in `assets/ui/` with original, mathematically modeled 128×128 HD assets with 4× supersampling anti-aliasing and mipmaps:
+    - `life_orb_full.png`: Authentic Touhou 3D sphere with pure pearl white and deep crimson red swirls, spherical diffuse/ambient shading, dual Blinn-Phong specular glass highlights, and luminous pearl-rim Fresnel falloff.
+    - `life_orb_half.png`: 0.5 HP state featuring a darkened cracked obsidian/amber hemisphere with a glowing amber fracture line along the central seam (mirrored dynamically for Player 2 via `flip_h`).
+    - `life_orb_empty.png`: Elegant empty socket displaying a dark smoky glass disc with a delicate silver-jade outer rim outline.
+  - Verified with `tests/test_health.gd` and visual in-engine damage capture showing seamless rendering across all states.
+- [x] **HUD Modernization: Repositioned Health Orbs to Bottom Margins & Streamlined Top Bar**:
+  - Repositioned the Yin-Yang Life Orbs from the top header to a vertical column in the side margins ($X = 278$ for P1, $X = 1606$ for P2), aligned with the bottom of each playfield and spell bar ($Y = 838 \dots 1046$).
+  - Implemented top-to-bottom depletion (`deplete_from_top = true`) so health drains downward like a thermometer/liquid gauge, leaving the player's last remaining health (the 0.5 Guts life) right next to the player's ship and spell bar in their natural focus area.
+  - Removed obsolete AI indicator badges (`[F1] BOT: OFF`, `[F2] BOT: OFF`) from the top header.
+  - Retained clean player name headers (`P1NameLabel`, `P2NameLabel`) at the top left/right, and preserved the Sakura win blossoms and match timer centered at the top.
+  - Repositioned `StatsToggleButton` (`[⚡ STATS]`) directly below `FullscreenButton` (`[⛶ FULLSCREEN]`) in the top-left margin ($X = 30$, $Y = 70 \dots 116$), doubled button font size from 13 to 26 for crisp readability, and eliminated right-side header button asymmetry.
+- [x] **HUD Modernization: 4 Discrete Segment Blocks Spell Gauge & Dynamically Adjusting Health Pillar**:
+  - Upgraded the bottom Spell Charge Gauge (`scenes/ui/spell_bar.gd` & `spell_bar.tscn`):
+    - Replaced the continuous single bar with $N$ discrete physical blocks (default 4, modularly adapting to `CharacterData.spell_bar_segments`) separated by $3\text{ px}$ hairline gaps.
+    - Each block features dark metallic beveled framing, inner inset groove, per-block passive charge fill (`p_fill`), glowing pulsing active charge fill (`a_fill`) with white top shine line and leading cursor edge, and crisp centered level numerals (`1`, `2`, `3`, `4`) with dark drop shadows.
+  - Upgraded Health Gauge Housing (`scenes/ui/health_gauge.gd` & `health_gauge.tscn`):
+    - Added a sleek dark bamboo-charcoal capsule housing (`Color(0.04, 0.08, 0.05, 0.82)`) with a delicate jade border hairline (`Color(0.12, 0.24, 0.16, 0.95)`).
+    - Recessed circular socket indentations ($r = 17\text{ px}$) behind each life slot, giving depleted orbs an authentic carved socket look rather than floating empty shapes.
+    - Dynamic height and bottom-anchoring: adjusts dynamically to character `max_health` (`total_slots = maxi(1, int(ceil(max_val)))`), anchoring strictly to $Y = 1046.0$ so the crucial last-life slot remains in the exact same screen location across all characters (3, 5, or 7 HP).
+  - Automated tests verified in `tests/test_hud_blocks_pillar.gd` and `tests/test_spell_bar.gd`.
+- [x] **128×128 HD Danmaku Pellets & Visual Quality Upgrade (Touhou 09 Two-Tone Aesthetics)**:
+  - Generated crisp $128 \times 128$ high-definition textures with exact analytical subpixel anti-aliasing and authentic Touhou two-tone aesthetics:
+    - `danmaku_pellet_hd_blue.png`: Solid brilliant white core (`#FFFFFF`) with rich electric blue crescent rim (`#1E48FF`) and deep azure border outline (`#102090`).
+    - `danmaku_pellet_hd_red.png`: Solid brilliant white core (`#FFFFFF`) with vibrant ruby/magenta crescent rim (`#F01C68`) and crimson border outline (`#881030`).
+    - `danmaku_ring_hd_white.png`: Smooth anti-aliased glowing circular ring with bright core band and luminous feathering.
+  - Configured texture import settings with `mipmaps/generate = true` to guarantee zero temporal shimmering, sparkling, or texture cache misses when downscaled.
+  - Rewired `EnemyPellet` (`scenes/bullets/enemy_pellet.gd` & `.tscn`):
+    - Scaled $128 \times 128$ sprites down to match exact gameplay physical hitboxes (`scale = Vector2(0.16, 0.16)` for standard 6.0px radius pellets, `Vector2(0.32, 0.32)` for 12.0px radius big pellets, `Vector2(0.28, 0.28)` for 11.0px radius ring pellets).
+    - Preserved brilliant white interior by keeping `sprite.modulate = Color.WHITE` instead of blanket multiplicative tinting.
+    - Added natural color variety dispatch in `EnemyPellet.setup()` and `Playfield.spawn_pellet()`: standard counter-pellets split 50/50 between Blue and Red, while directional pelting/Lily White respects explicit arm theme colors.
+  - Maintained 100% 2D canvas batching performance in WebGL 2.0 (renders in 1–2 batched draw calls).
+  - Automated unit test suite `tests/test_hd_pellet_visuals.gd` verified 128x128 dimensions, scaling factors, white modulate retention, and red/blue texture variety.
+- [x] **Convert Remaining Vector-Drawn Elements to Batched HD Sprites (Part 2)**:
+  - **TravelMote Batched Sprite2D Conversion**: Replaced the procedural vector `_draw()` concentric circles in `scenes/effects/travel_mote.gd` (which caused 60–150 unbatched vector draw calls during fairy/spirit chain reaction pops) with batched `Sprite2D` nodes using newly generated `assets/effects/travel_mote_hd.png` ($128 \times 128$ glowing orb with Gaussian radial falloff, pure white core, and mipmaps). Godot's 2D canvas renderer now batches all active travel motes into a single draw call.
+  - **DanmakuBullet Vector Fallback Elimination**: Removed procedural `draw_circle()` calls and `queue_redraw()` from `scenes/bullets/danmaku_bullet.gd`. Bullets with missing textures or `ShapeType.CIRCLE` now automatically default to batched HD pellet sprites (`DEFAULT_PELLET_TEX`). Removed nearest-neighbor `texture_filter = 1` from `scenes/bullets/danmaku_bullet.tscn` to enable smooth linear mipmapping.
+  - **Completed 128×128 HD Danmaku Pellet Suite**:
+    - Created `assets/bullets/danmaku_pellet_hd_green.png` ($128 \times 128$, emerald green crescent rim `#10D050` with pure white `#FFFFFF` core).
+    - Created `assets/bullets/danmaku_pellet_hd_white.png` ($128 \times 128$, silver/slate crescent rim `#A0AEC0` with pure white `#FFFFFF` core).
+    - Upgraded all Danmaku pellet resources in `resources/bullets/`: `red_pellet.tres`, `white_pellet.tres`, `blue_pellet_small.tres`, and `green_pellet.tres` with calibrated `base_scale` and full mipmapping.
+  - Automated tests updated and verified in `tests/test_hd_pellet_visuals.gd` (all 6 test suites passing).
+- [x] **Stage 1 3D Background ("Bamboo Road") & Asset Extraction**:
+  - Extracted authentic *Touhou 09: Phantasmagoria of Flower View* stage assets directly from `th09.dat` (`world01.anm` and `world01.std`) via Touhou Toolkit.
+  - Sliced and alpha-keyed textures into `assets/stages/bamboo_road/` (`floor_tile.png`, `bamboo_stalk.png`, `bamboo_leaves_a.png`, `bamboo_leaves_b.png`) with strict licensing compliance notes.
+  - Cleaned and padded foliage textures: eliminated ~3,000 stray near-black pixels, feathered cut atlas boundaries ($X=0$ for A, $Y=0$ for B), removed disconnected bottom-right atlas island, and added transparent margins around all edges to guarantee 0 border bleeding or straight knife-edge quad lines in 3D.
+  - Sized independent QuadMeshes matching exact image aspect ratios (`_leaves_a_mesh` $2.8\text{m} \times 2.68\text{m}$, `_leaves_b_mesh` $3.3\text{m} \times 2.2\text{m}$) with calibrated branch attachment offsets ensuring leaves originate directly from tree stalks and fan inward toward the path with subtle organic tilt angles.
+  - Elevated `alpha_scissor_threshold` to $0.30$ in `bamboo_stage_fog.gdshader` for crisp, organic foliage contours with zero quad seam artifacts.
+  - Built self-contained `BambooRoad3D` scene (`scenes/stages/bamboo_road/bamboo_road_3d.tscn` & `.gd`):
+    - Dedicated spatial fog shader (`bamboo_stage_fog.gdshader`) with unshaded rendering computing exact view-space depth fog from 3.5m to 14.0m directly into `Color(0.1, 0.22, 0.14)`, creating a dense, opaque mist that completely swallows the horizon with zero pop-in or border seams.
+    - Camera3D elevated to $Y = 6.6\text{m}$ with steeper downward pitch of $-38.5^\circ$, delivering an expansive view over the bamboo road and rich canopy framing.
+    - Wide ground plane geometry ($28.0\text{m}$ wide) and 88 dense bamboo trees (44 per side, $10.5\text{m}$ tall) ensuring ~14–16 trees are simultaneously visible within the player's view frustum at any given moment.
+    - Tighter lateral spacing ($X \in [\pm 1.9\text{m}, \pm 5.2\text{m}]$) with organic outward lean ($6^\circ\text{–}13^\circ$ tilt away from the center path), creating a classic natural V-shaped bamboo cathedral canopy that leaves the ground corridor clear while framing the sky and upper road.
+    - Multi-tier foliage system: every tree features lower foliage ($Y = 2.8\text{–}4.0\text{m}$), eye-level foliage ($Y = 4.4\text{–}5.8\text{m}$), upper branches ($Y = 6.2\text{–}7.6\text{m}$), and top crown ($Y = 8.0\text{–}9.5\text{m}$) branching into the path corridor so leaves are prominently displayed.
+    - Scroll speed reduced by over half to $4.8\text{ units/s}$ with gentle, relaxed lateral sway ($0.48\text{ Hz}$) and banking roll.
+    - Zero-allocation infinite scrolling ground ribbon and flanking bamboo groves recycled dynamically into the far fog boundary.
+    - Configurable `time_offset` parameter to allow organic phase-shifted camera sway between Player 1 and Player 2.
+  - Integrated 3D background directly into `Playfield` (`playfield.tscn` & `playfield.gd`) behind 2D gameplay canvas with clean fallback toggle (`enable_3d_background`).
+  - Automated test suite `tests/test_bamboo_road.gd` verified scene loading, node creation, camera height/pitch/speed thresholds, custom shader fog material, multi-tier tree foliage, camera sway math, and world scrolling over frames with 0 errors.
+- [x] **Global Audio Manager & Touhou 09 Sound Effects Integration**:
+  - Imported and calibrated all 39 authentic *Touhou 09: Phantasmagoria of Flower View* `.wav` sound effects into `assets/sounds/`.
+  - Implemented `AudioManager` autoload (`scripts/global/audio_manager.gd`) registered in `project.godot` with global `AudioService` class name and static dispatch helper API.
+  - Pre-emptively lowered Master bus volume to 1% linear level (`-40.0 dB`) at engine startup via `default_bus_layout.tres` and `AudioService` master volume controller.
+  - Multi-channel polyphonic voice pool (12 players, polyphony 2) for overlapping soundscape.
+  - Dedicated monophonic channel with strict single-instance debounce logic for Marisa's piercing lasers (`se_lazer00`), eliminating ear-bleeding distortion.
+  - Dedicated multi-voice channel pool (4 players) for fairy and spirit defeat pops (`se_enep00`) with streams pre-assigned to prevent Godot stream reassignment cutoff, paired with a 70ms debounce. Accurately reproduces the authentic *Touhou 09* rapid popping cascade with natural tail overlap while preventing same-frame explosion sound stacking.
+  - High-frequency micro-throttles (`THROTTLE_INTERVALS_MS`) preventing machine-gun audio glitches on rapid fairy/spirit pellet impacts (`se_damage00` 40ms) and menu scrolling (`se_select00` 35ms).
+  - Wired full suite of semantic audio cues across all game systems:
+    - Menu cursor navigation (`se_select00`), confirmations (`se_ok00`), and cancellations (`se_cancel00`).
+    - Local player primary shooting cadence (`se_plst00`).
+    - Spell gauge integer threshold crossings at 25%, 50%, 75%, and 100% (`se_chargeup`).
+    - Standard hits on fairies, spirits, and bosses (`se_damage00`).
+    - Critical low health (< 30% HP) indicator on Boss Characters and Lily White (`se_damage01`).
+    - Fairy and spirit defeat pops (`se_enep00`).
+    - Lily White mid-boss entrance warning alert (`se_warning`) and defeat pop (`se_enep01`).
+    - Lily White retreat danmaku bullet barrage waves (`se_tan00`) firing at ~105ms wave cadence.
+    - Spellcard cast declaration banner / Action Stop (`se_cat00`).
+    - Player non-lethal hit (`se_pldead00`), Guts survival on last 0.5 HP (`se_life1`), and lethal defeat (`se_playerdead`).
+    - Boss character defeat, dispel, and timeout disappearance (`se_tan00`).
+    - Marisa Extra Attack and Level 4 Attack 5 fixed green laser discharges (`se_lazer00`).
+    - In-game pause key press (`se_pause`).
+  - Comprehensive automated unit test suite `tests/test_audio_manager.gd` verifying all 18 preloaded audio assets, static dispatch helpers, single-instance laser channel, 30% low-health thresholds, spellcard cat sound, and guts audio cues.
+- [x] **Reimu & Marisa Authentic Shot & Charge Attack Pass-Through Tumbling Shards**:
+  - Extracted authentic *Touhou 09: Phantasmagoria of Flower View* sprites:
+    - `assets/characters/reimu/reimu_shot_penetrate.png` ($16 \times 16\text{ px}$, Reimu Shot Effect 1 frame 3).
+    - `assets/characters/reimu/reimu_charge_amulet_spent_dark.png` ($64 \times 64\text{ px}$, Reimu Player Bomb frame 2 dark spent talisman).
+    - `assets/characters/marisa/marisa_shot_shard_1.png` ($32 \times 32\text{ px}$, Marisa Shot sprite 2 crescent energy arc).
+    - `assets/characters/marisa/marisa_shot_shard_2.png` ($32 \times 32\text{ px}$, Marisa Shot sprite 3 flying spark cluster).
+    - `assets/characters/marisa/marisa_shot_shard_3.png` ($32 \times 32\text{ px}$, Marisa Shot sprite 4 dispersing ember particles).
+  - Generalized `ShotHitShard` visual effect scene (`scenes/effects/shot_hit_shard.tscn` & `.gd`): accepts custom textures and scales, animating rapid rotational tumbling ($1.5\text{--}2.5$ full rotations), decelerating forward exit trajectory ($\sim 52\text{ px}$ over $0.24\text{s}$), and smooth alpha fade-out.
+  - Integrated into `PlayerBullet._on_area_entered`: automatically computes the far-side exit boundary on enemy hitboxes along the shot vector, spawning `reimu_shot_penetrate.png` for Reimu and picking randomly among Marisa's three green energy shards for Marisa.
+  - Enhanced Reimu's Charge Attack (`HakureiAmulet`, `scenes/attacks/hakurei_amulet.gd`): upon hitting an enemy, calculates the far-side exit boundary on the enemy hitbox, relocates to the exit position, and executes a tumbling forward coast ($\sim 50\text{--}75\text{ px}$) while fading out with the spent talisman texture.
+  - Automated test suite `tests/test_shot_hit_shard.gd` and `tests/test_charge_attack.gd` verified sprite loading, scene instantiation, exit calculations, and hit reactions with 0 errors.
+- [x] **Level 4 Spellcard Background Graphics Overlay (`cdbg*`)**:
+  - Extracted authentic *Touhou 09: Phantasmagoria of Flower View* background textures from `th09.dat` (`pl00.anm` and `pl01.anm`):
+    - `reimu_spell_bg_base.png` (`cdbg00.png`, $256 \times 256\text{ px}$, static blue Yin-Yang base).
+    - `reimu_spell_bg_anim.png` (`cdbg00b.png`, $256 \times 256\text{ px}$, rotating red floral Yin-Yang motif).
+    - `marisa_spell_bg_base.png` (`cdbg01.png`, $256 \times 256\text{ px}$, static purple magic circles base).
+    - `marisa_spell_bg_anim.png` (`cdbg01b.png`, $288 \times 448\text{ px}$, seamless scrolling hexagonal honeycomb grid).
+  - Built `SpellBackgroundOverlay` (`scenes/effects/spell_background_overlay.tscn` & `.gd`):
+    - Base layer: `TextureRect` dynamically scaled to fill the $600 \times 960$ playfield, with 1.0s (60-frame) ease-out alpha fade-in matching original PoFV engine bytecode timing.
+    - Animated top layer:
+      - **Reimu**: Centered $4.33\times$ scale sprite rotating continuously clockwise at $\omega = -0.471\text{ rad/s}$ ($\approx -0.45^\circ/\text{frame}$, $-27^\circ/\text{s}$).
+      - **Marisa**: `TextureRect` with custom CanvasItem shader (`shaders/spell_bg_scroll.gdshader`) that tiles UV by $(2.083, 2.143)$ to maintain authentic cell size and scrolls vertically upwards at $v = 0.667\text{ UV/s}$ ($0.01111\text{ UV/frame}$).
+  - Integrated with `CharacterData` exports (`spell_bg_base_texture`, `spell_bg_anim_texture`, `spell_bg_anim_type`) assigned in `reimu.tres` and `marisa.tres`.
+  - Embedded in `Playfield` (`playfield.tscn` & `playfield.gd`) behind entities, bullets, borders, and effects:
+    - Automatically activates on the target playfield when a Boss arrives.
+    - Smoothly deactivates (fades out over 0.8s) when the Boss is defeated, dispelled by a counter-spellcard, or times out.
+  - Automated unit test suite `tests/test_spell_background_overlay.gd` verifies node instantiation, character texture binding, rotation state, scrolling shader, and boss lifecycle triggers with 100% pass rate (35/35 test suites passing).
+- [ ] **Authentic Lily White Shot Barrage Sound Investigation & Replacement**:
+  - Research and identify the authentic *Touhou 09: Phantasmagoria of Flower View* sound effect used during Lily White's retreat danmaku spiral barrage (current `se_tan00` repeating at 2x rate is a temporary placeholder awaiting exact sound identification/replacement).
+- [ ] **Winner & Dead Parrot Banners**:
+  - Removed temporary placeholder `winner_badge.png` and `dead_parrot.png` graphics. Post-match layout and animation hooks in `scenes/post_match/post_match.gd` and `.tscn` remain modular and will dynamically load and animate authentic or fan-made banner assets once sourced.
+- [x] **Portrait Slide-in Animation**:
+  - Combatant panels slide in smoothly from the screen edges (`P1Side` from $x = -500$, `P2Side` from $x = 1940$) over 0.45s with cubic ease-out.
+- [x] **Victory Dialogue Scripting**:
+  - Extracted authentic official English PoFV match dialogue directly from `th09e.dat` (`pl00_match.msg` and `pl01_match.msg`) and populated `scripts/resources/victory_dialogue_db.gd` with matching facial expressions for Reimu vs Marisa, Marisa vs Reimu, mirror matches, and generic quotes.
+- [ ] **Portrait Art Replacement**:
+- [x] **Full Screen Button Responsive Top-Left Positioning**:
+  - Added dedicated `[⛶ FULLSCREEN]` HUD button in the top-left corner ($x = 30$, $y = 15$) and bound `F11` shortcut across the match for web and desktop toggling.
+- [x] **Mouse Click Navigation in Character Selection & Post-Match Menus**:
+  - Wired full mouse support on Character Select (`character_select.gd` / `.tscn`) with hand cursors on character rows and a dedicated `[ CONFIRM SELECTION ]` button.
+  - Connected hover and press handlers on Post-Match menu buttons (`post_match.gd` / `.tscn`) for rematch, character re-selection, and main menu exit.
+- [x] **Two-Way Character Select Back-Out Synchronization**:
+  - When either player cancels out of character select (`cancel` action / `Esc` / `X`), the back-out is immediately broadcasted via RPC and signaling server `opponent_left` status; both players are displayed a return banner and cleanly returned to the main menu without hanging.
+- [x] **In-Match Double-Tap Escape Forfeit & Connection Timeout Detection**:
+  - In active matches (`scenes/arena/arena.gd` & `.tscn`), pressing Escape once warns with a prominent centered banner: `"Press Esc again within 3s to return to Main Menu"`.
+  - Pressing Escape a second time within 3.0 seconds triggers forfeit: stops music, notifies opponent via `NetworkManager.send_match_quit()` (broadcasting `rpc_opponent_quit_match` and WebSocket leave), and cleanly returns to `scenes/main_menu/main_menu.tscn`.
+  - Opponents receive clean visual notification (`"Opponent left the match. Returning to Main Menu..."` / `"Opponent disconnected..."`) with 1.5s reading grace period before returning to main menu.
+  - Automatic 10-second communication lapse / packet timeout detection (`REMOTE_PACKET_TIMEOUT_SEC`) ensures players are never stranded if an opponent closes their browser tab or suffers severe internet dropouts.
+  - Verified in offline practice and online netplay with automated tests in `tests/test_quick_wins.gd`.
+- [x] **Marisa EX Earth Light Ray Telegraph Safety**:
+  - Hitbox Area2D `monitoring` and `monitorable` are strictly disabled and `collision_shape.disabled = true` during the telegraph aiming line; collision is enabled strictly during discharge when `is_firing` is true.
+- [x] **Charge Attack Warning Placement on Opponent Playfield**:
+  - During spellcard declarations and action stop freezes, `target_field.show_spellcard_warning(...)` is invoked so the prominent red "WARNING" and "Clear Fairy Level 0X" banners display directly over the targeted opponent's playfield.
+- [ ] **Comprehensive UI & HUD Overhaul / Design**:
+  - Full aesthetic revamp of the in-game HUD: ornate shrine/nature border frames around the playfields, stylized health meters, elegant round counter display pedestals, dedicated charge attack gauges, combo & score typography, and match timer.
+- [ ] **Spell Bar Texture & Frame Assets**:
+  - Source authentic/custom stylized spell bar graphics, ornate frames, and segment divider assets to elevate the current procedural vector-drawn gauge once art assets become available.
+- [x] **Touhou 19 Charging Power-Up Visual Effect**:
+  - Extracted the authentic 8-frame rising fire aura spritesheet directly from *Touhou 19: Unfinished Dream of All Living Ghost* (`th19.dat` -> `aura.anm` -> `aura.png`, $256 \times 128$ px, 8 frames of $64 \times 64$ px) to `assets/effects/charge_aura.png`.
+  - Implemented modular `ChargeAura` component (`scenes/effects/charge_aura.tscn` / `charge_aura.gd`) attached behind player characters (`z_index = -1`) with additive luminous blending (`CanvasItemMaterial.BLEND_MODE_ADD`).
+  - Animated flame cycling at ~22 FPS (`0.046s` per frame) centered to envelop the character's body and rise above their head.
+  - **Dynamic Charge Scaling**: Smoothly scales and expands from base flame ($1.55\times$) up through Level 1 ($1.95\times$), Level 2 ($2.35\times$), Level 3 ($2.75\times$), and blazing maximum Level 4 ($3.15\times$ with high-frequency aura vibration/jitter).
+  - **Complementary Inward Energy Wisps**: Multi-tier converging arcs contracting inward towards the character's core while the fire aura blazes outward, capturing the dual power-gathering aesthetic.
+  - Seamlessly hooked into player charge lifecycle (`_handle_charging`, `_release_charge`, `reset_for_round`, `_on_defeat`) and synchronized across netplay puppets (`apply_remote_state`).
+  - Verified with automated test suite in `tests/test_charge_aura.gd`.
+- [x] **In-Game Performance Profiler & Telemetry Overlay**:
+  - Implemented real-time performance profiler overlay (`scenes/ui/profiler_overlay.tscn` & `.gd`) accessible in-game via `[⚡ STATS]` button in the top HUD or `F10` key, with 1-click snapshot clipboard export via `[📋 Copy]` or `F9`.
+  - Enters the unused 330px right screen margin ($X = 1585\text{--}1915$, $Y = 55\text{--}1010$) with enlarged 15px-18px typography for high-DPI and 1080p legibility.
+  - Features real-time rolling 120-frame frame-time graph with 16.7ms (60 FPS) and 33.3ms (30 FPS) target baselines and red spike alerts.
+  - Tracks Godot 4 hardware telemetry: FPS, 1% Lows, min/max, CPU process time, 2D physics time, draw calls, rendered primitives, 2D canvas items, VRAM, static/peak RAM, total scene nodes, and orphan leak detection.
+  - Live Danmaku entity counters: P1 & P2 active bullets against caps, fairies, spirits, and active travel motes.
+  - Verified with automated unit testing in `tests/test_profiler_overlay.gd` (all 32 suites passing).
+- [x] **Danmaku Master Texture Atlas & Draw Call Consolidation (WebGL 2.0)**:
+  - Eliminated the 203–226 draw call spike that occurred when players triggered spellcards in quick succession.
+  - Spliced all HD pellets (Blue, Green, Red, White), HD Ring, Talismans (Red, White), Stars (Blue, Green, Yellow), Ovals (Red, White), and small pellets into a unified $512 \times 512$ master texture atlas (`assets/bullets/danmaku_atlas.png`).
+  - Created individual `AtlasTexture` `.tres` resources in `resources/bullets/textures/` and updated all 11 bullet `.tres` resources to point to them.
+  - Because all bullets share the underlying master atlas texture RID and a uniform static `z_index = 10`, Godot 4's 2D canvas batcher now renders all bullets across both playfields in just 1–2 WebGL draw calls, eliminating batch breaks between alternating pellet and star/oval flurries.
+  - Optimized `HeavyShockwave`: set `resource_local_to_scene = true` on `ShaderMaterial_ring` to eliminate shared uniform thrashing between P1 and P2, and set `antialiased = false` on `draw_arc` to prevent unbatchable vector geometry flushes.
+  - Automated tests updated and verified in `tests/test_danmaku_batching_lifecycle.gd` and `tests/test_hd_pellet_visuals.gd`.
+- [ ] **Replay System**:
+  - Future implementation of "Save Replay" on the post-match screen (deferred).
+
+## 2. Gameplay & Combat Mechanics To-Dos
+- [x] **Match Forfeit Input Disambiguation (Decouple 'X' Key from Escape)**:
+  - Resolved bug where pressing or holding 'X' during gameplay triggered the double-tap forfeit backout banner ("Press Esc again within 3s to return to Main Menu") and kicked players to the Main Menu.
+  - In `arena.gd` (`_unhandled_input`), removed `event.is_action_pressed("cancel")` check, strictly checking `(event.keycode == KEY_ESCAPE or event.physical_keycode == KEY_ESCAPE)` with `not event.echo`.
+  - In `player.gd` (`_handle_charging`), added `Input.is_physical_key_pressed(KEY_C)` alongside `KEY_X` and `charge` action so both X and C charge smoothly without interference.
+  - Added dedicated unit test suite `tests/test_x_key_not_escape.gd` verifying X presses, holds, and double-taps never trigger escape or forfeit, while double-tapping Escape triggers forfeit as intended.
+- [x] **Authentic Charge Start Sound (`se_charge00`)**:
+  - Registered `se_charge00` (`assets/sounds/se_charge00.wav`) with `AudioService.play_charge_start()` with 100ms debounce flutter protection in `THROTTLE_INTERVALS_MS`.
+  - Triggered in `player.gd` (`_handle_charging`) whenever the player starts holding the charge key (`if not is_charging`), as well as during netplay puppet charging initiation (`apply_remote_state`).
+  - Verified with automated test suite in `tests/test_audio_charge_start.gd`.
+- [x] **Modular Spellcard Heavy Shockwaves & Screen Reset (Level 2-4)**:
+  - Modeled faithfully after *Touhou 09: Phantasmagoria of Flower View* video reference where releasing a spellcard triggers an expanding heavy shockwave ring.
+  - Sizing calibrated precisely by spell level:
+    - **Level 2 Spellcard**: Encompasses ~50% of the screen ($R = 420\text{ px}$, $t \approx 1.02\text{s}$).
+    - **Level 3 Spellcard**: Encompasses ~75% of the screen ($R = 650\text{ px}$, $t \approx 1.60\text{s}$).
+    - **Level 4 Spellcard**: True screen reset button ($R = 1200\text{ px}$, $t \approx 2.97\text{s}$, covering all corners from anywhere on the $600 \times 960$ field).
+  - **Authentic Runic Graphic & Balanced Band Thickness**: Integrated authentic Touhou 09 calligraphy runic texture (`assets/effects/spellcard_shockwave_ribbon.png`) via polar coordinate ring shader (`shaders/polar_ring.gdshader`). Balanced to a crisp 40px thick band (`ribbon_half_width = 20.0`, halved from 80px). Multi-tier atmospheric glow arcs smoothly highlight the runes without overwhelming the screen or resembling a thin laser wire.
+  - **Uniform Travelling Speed Across All Levels ($400\text{ px/s}$)**: Calibrated a uniform, constant linear expansion speed ($V = 400.0\text{ px/s}$, doubled from 200 px/s, configured via `CharacterData.shockwave_speed`). Duration is dynamically computed as `(radius - 12.0) / shockwave_speed`. All levels expand at the exact same brisk, responsive pace (Level 2: 1.02s, Level 3: 1.60s, Level 4: 2.97s).
+  - **Sequencing & Pacing**: Executed **after** the Action Stop freeze concludes and normal gameplay unpauses, allowing players to clearly track the expanding barrier. Shockwave stays 100% visible and bright for 80% of its travel, smoothly fading in the final 20%.
+  - **Delayed Fairy & Spirit Cascades (Option A)**: Fairies and spirits hit by the shockwave continue travelling along their curve/path for a brief delay (~0.10–0.12s) before popping into their own visual shockwaves, allowing the heavy shockwave to clear the field without generating counter-attacks or combo loops back to the opponent.
+  - Boss preservation & dispel: Bosses (`BossCharacter` and `LilyWhite`) are immune to shockwave damage; however, casting your own Level 4 Spellcard dispels any active opponent boss from your screen (`caster_field.dispel_active_boss()`).
+  - Fully modular in `CharacterData`: configurable radii (`shockwave_radius_lv2/3/4`), travelling speed (`shockwave_speed = 400.0`), duration (`shockwave_duration`), theme color (`shockwave_color`), and toggle (`has_spellcard_shockwaves`).
+  - **Object Pooling & Shockwave Hardening**: Resolved bullet pool count inflation and exhaustion (`P1 BULLETS: 1783/350`) where repeated per-frame shockwave sweeps across deactivated bullets caused duplicate instances in `NodePool._pool` and inflated `_active_count`. Hardened `NodePool` with an internal `_active_set` dictionary, mathematically preventing double-releases, duplicate references, and counter drift. Enforced visibility and cancellation guards in `HeavyShockwave` and offscreen parking in `_deactivate`.
+  - **Amulet Target Free Resilience**: Fixed Reimu's `HakureiAmulet._process_homing` and `_is_target_valid` to gracefully reacquire targets without throwing engine-level "previously freed" type coercion crashes when enemies die during homing flight.
+  - Verified with dedicated automated test suite `tests/test_spellcard_shockwave.gd`, `tests/test_telemetry_and_bullet_cap.gd`, and `tests/test_charge_attack.gd` (100% pass across all 22 test suites).
+- [x] **Spellcard "Action Stop" Freeze Effect & Spell Banners**:
+  - Faithfully reproduces the authentic *Touhou 09: Phantasmagoria of Flower View* spell declaration sequence:
+    1. Both playfields momentarily freeze (~0.58s global SceneTree pause).
+    2. Caster sprite flashes as a solid red silhouette in their cast pose via `shaders/red_silhouette.gdshader`.
+    3. Caster's playfield displays their authentic 288x85 px Spell Attack Notification banner (`assets/characters/reimu/reimu_spell_banner.png` / `assets/characters/marisa/marisa_spell_banner.png`) sliding in, holding, and sliding out with 2x nearest-neighbor integer scaling.
+    4. Action resumes cleanly, caster silhouette material is cleared, the heavy defensive shockwave expands from the caster, and danmaku barrage / boss begins.
+  - Fully synchronized across local play and WebRTC multiplayer (`NetworkManager`, `SpellBanner`, `DebugMenu`, and `Arena` configured with `PROCESS_MODE_ALWAYS`).
+  - Verified with comprehensive automated unit testing in `tests/test_action_stop_full.gd`.
+- [x] **Animated Fairies & Color Variants (Blue, Red, Green & Great Fairy)**:
+  - Extracted 4x3 animated spritesheet grids with pixel-perfect transparency: `small_fairy_blue.png` (32x32), `small_fairy_red.png` (32x32), `small_fairy_green.png` (48x48), and `great_fairy.png` (64x64).
+  - Implemented 4-frame wing-flapping loops (~10 fps / 0.10s per frame) in `fairy.gd`.
+  - Implemented dynamic curve-tangent banking: fairies automatically switch to Row 2 and horizontally flip when banking into turns along curved flight paths.
+  - In `playfield.gd` (`_spawn_fairy_train`), small fairies are peppered with color variants (60% Blue, 20% Red, 20% Green) deterministically synchronized between P1 and P2 via `_fairy_rng`.
+  - Great Fairies now flap sunflower wings and bank into curves using their upgraded 64x64 animated spritesheet.
+- [x] **Rounds System (Best-of-3)**:
+  - Implemented Best-of-3 round tracking in `GameManager`, spinning sakura blossom win indicators (`RoundWinsDisplay`), intermission announcements, and dual directional screen wipes (`ScreenWipe`) before resetting playfields. Match ends only when a player reaches 2 wins!
+- [x] **Character Entrance Glide & Fairy Spawn Timing (Touhou 09 Starting Sequence)**:
+  - Modeled authentically after *Touhou 09: Phantasmagoria of Flower View* match startup sequence:
+    - Players spawn in the outside bottom corners of their respective playfield (P1 at `(70, 848)`, P2 at `(530, 848)`).
+    - On match start and after round intermission wipes open, players smoothly glide diagonally inward to their baseline starting positions `(300, 816)` via a 1.1s cubic ease-out tween.
+    - Directional banking animations reflect the inward glide (P1 banks right on Row 2, P2 banks left on Row 1), settling cleanly into idle hover (Row 0) upon arrival.
+    - Input controls (movement, shooting, charging, focus) are locked and character is invulnerable during the glide.
+    - Fairy spawner initial wave delay dialed up by 1.2s (from 0.8s to 2.0s via `FairySpawner.initial_spawn_delay`), allowing characters to glide in and hold their stance for ~0.9s before fairies curve into the field.
+  - Verified with comprehensive test suite in `tests/test_rounds.gd` (67/67 passed).
+- [x] **Rudimentary Practice AI / Bot**:
+  - Modular AI sparring partner (`scripts/ai/rudimentary_ai.gd`) usable for both P1 (toggled via F1) and P2 (toggled via F2). Features continuous uninterrupted firing, closest enemy vertical alignment, high-priority incoming projectile detection & evasion, and screen edge margin safety.
+- [x] **Client-Authoritative Hitboxes & Netplay Defeat Desync Fix**:
+  - Addressed the intercontinental playtesting bug where remote puppets registered phantom local bullet collisions on the host machine.
+  - Remote puppets now have their hurtbox monitoring and collision detection completely disabled (`hurtbox.monitoring = false`, `hurtbox.monitorable = false`).
+  - Strict local client authority: each player machine is sole arbiter of their own hits, health drops, and defeat signals.
+  - Defeat resolution in `arena.gd` now strictly enforces that a client can only report their own local defeat; Host will never unilaterally end rounds based on local puppet status.
+  - Added `apply_remote_damage_visuals(remaining_hp)` to replicate red hit flashes without damage calculations.
+  - Added dedicated unit test suite `tests/test_netplay_authority.gd` verifying puppet immunity, AI bot activation, and damage visual sync.
+- [x] **Networked Charge Attacks & Spellcard Visual Sync**:
+  - Replicated Level 1 Charge Attacks (`ReimuChargeAttack` Hakurei Amulets, `MarisaChargeAttack` Illusion Laser) over WebRTC RPCs (`NetworkManager.send_charge_attack`).
+  - Remote puppets now instantiate and execute their respective Lv 1 charge attack scenes and spell bar release flashes on the opponent's view of their playfield.
+  - Replicated Spellcard Banners and Heavy Shockwaves on Lv 2-4 spellcard activations so both clients witness the dramatic activation sequence on the caster's field.
+- [x] **Spell Bar & Charging Mechanics (Levels 1-4)**:
+  - Dual-bar modular spell gauge system modeled directly after *Touhou 09: Phantasmagoria of Flower View*.
+  - Passive charge bar fills up through gameplay (popping fairies, great fairies, spirits, and canceling pellets in shockwaves). Starts at 1.0 (25% / Lv 1 state).
+  - Charge accumulation calibrated to 400 total units: approx 10 fairy trains (50-60 fairies) to fill 25% (1.0 segment).
+  - Active charge bar overlaid on top, charged by holding Charge (`X` for P1, `Numpad .` / `Numpad 1` / `.` for P2).
+  - Sleek, half-height presentation (16px total height with 12px inner track, crisp 1px borders, subtle pulse, and red segment divider ticks).
+  - Lv 1: Charge Attack activation consumes 0 passive segments (character-specific shot volleys deferred to future step per design).
+  - Lv 2-4: Spellcard activation clearing playfield pellets with heavy shockwaves, sending pressure attacks to opponent, and subtracting appropriate passive segments (Lv 2 consumes 1, Lv 3 consumes 2, Lv 4 consumes 3, down to minimum 1.0).
+  - Dynamic rank scaling up to 16 displayed via flanking left (Lv 2-3) and right (Lv 4) rank indicators.
+- [x] **Reimu's Level 1 Charge Attack (Hakurei Amulet / 博麗アミュレット)**:
+  - 4 large spinning talismans materialize in front of Reimu upon releasing Charge at Level 1 (>= 1.0 active charge).
+  - Talismans start small (0.15 scale) and grow larger than Reimu's sprite (1.4 scale) over ~0.45s while tracking her position.
+  - After forming, they smoothly accelerate from 260 px/s up to 1150 px/s with homing steering towards the nearest active enemy.
+  - On enemy contact, they inflict 2.5 damage, disable collisions, transition into the spent outline talisman texture (`reimu_charge_amulet_spent.png`), and rapidly spin while fading out over ~0.28s.
+  - Releasing at Level 1 does not consume passive spell bar segments, remaining at 1.0 (25%).
+- [x] **Marisa's Level 1 Charge Attack (Illusion Laser / イリュージョンレーザー)**:
+  - High-intensity vertical laser beam fired straight up from Marisa upon releasing Charge at Level 1 (>= 1.0 active charge).
+  - Uses the authentic 16x16 laser sprite tile sliced directly from `assets/characters/marisa/marisa_raw_sheet.png`.
+  - Dynamically anchors to Marisa's position and tracks her horizontal movement across the playfield during its ~0.45s duration.
+  - Multi-tick rapid melting damage model (1.2 damage per tick every 0.06s, dealing ~8.4–9.6 damage total), swiftly obliterating Small Fairies and melting Great Fairies in ~0.18s.
+  - Hits enemy Fairies and Spirits on layer 4 (does not cancel bullets; standard non-additive rendering).
+  - Releasing at Level 1 consumes 0 passive spell bar segments.
+- [x] **Data-Driven Danmaku Engine & Reimu's Level 2 & 3 Spellcards**:
+  - Implemented modular, timeline-based Custom Resource architecture for designing danmaku patterns directly in Godot's Inspector without touching engine code (`DanmakuBulletData`, `DanmakuStep`, `DanmakuDelayStep`, `DanmakuRingStep`, `SpellcardData`).
+  - High-performance bullet pooling via `danmaku_bullet_pool` (250 pre-allocated instances per playfield), recycling on round resets, and full shockwave cancellation integration (regular shockwaves cancel into score/gauge items, heavy shockwaves clear the board).
+  - Multi-phase motion modes:
+    - `LINEAR`: Fixed velocity and direction.
+    - `DECEL_AND_HOME`: Outward radial burst -> smooth ease-out deceleration to 0 -> brief hovering pause -> snapshot player's current position -> high-speed direct homing strike.
+  - **Reimu's Level 2 Spellcard** (`reimu_spell_lv2.tres`): 1 to 3 waves (scaling by Rank 1–16) with alternating red circular pellet rings and half-step staggered white needle decel-and-home rings.
+  - **Reimu's Level 3 Spellcard** (`reimu_spell_lv3.tres`): Higher threat variant upgrading pellets and needles into large red and white talismans with expanded hitboxes and higher damage.
+  - **Authentic Danmaku Sprites Sliced & Wired**: Extracted all 6 authentic bullet sprites from the user's Touhou 10 sheet with clean alpha transparency masks, doubled to 32x32 via integer nearest-neighbor scaling for 1080p fidelity into `assets/bullets/` (`danmaku_circle_white.png`, `danmaku_circle_red.png`, `danmaku_oval_white.png`, `danmaku_oval_red.png`, `danmaku_talisman_red.png`, `danmaku_talisman_white.png`) and wired them into modular bullet resources in `resources/bullets/` (`red_pellet.tres`, `white_pellet.tres`, `red_oval.tres`, `white_oval.tres`, `red_talisman.tres`, `white_talisman.tres`).
+  - **Time-Based Bullet Lifespans**: Danmaku bullets despawn via customizable time-based lifespan (`lifetime = 7.0s` default, configurable per `DanmakuBulletData`) rather than viewport bounds, with generous offscreen safety margins ($\pm 1200$px) so outward bursts can expand deep off-screen before decelerating and homing inward without getting eaten or clipped.
+  - **Multi-Stage Homing**: Added `homing_stages` (1 or 2) and `stage1_flight_duration` to `DanmakuBullet` and `DanmakuRingStep`. Allows bullets like Reimu's Level 3 talismans to dash toward the player, brake to a stop midway, lock on to the player's updated position a second time, and launch all the way across the arena.
+  - Automated match routing in `arena.gd` (firing spellcards onto the opponent's playfield upon charging to Lv 2/3) and test hotkeys (`F3` for Lv 2, `F4` for Lv 3).
+- [x] **Marisa's Level 2 Spellcard (Magic Sign "Stardust Reverie" / 魔符「スターダストレヴァリエ」)**:
+  - Staggered parallel diagonal streams of alternating blue stars and small pellets falling from the outside boundary toward the inside.
+  - Mirrored automatically: P1 target spawns on left wall and travels down-right; P2 target spawns on right wall and travels down-left.
+  - Rank scaling: 6 lines at Rank 1, 8 lines at Rank 8, 12 lines at Rank 16. Speed values remain constant across ranks per design specs.
+  - Ascending velocity gradient along each 8-bullet line (140 to 400 px/s), producing a smooth expanding fan separation across the playfield.
+  - Bullet resources: `blue_star.tres` (1.5x star) and `blue_pellet_small.tres` (2x small circle) with authentic Touhou hitboxes and non-rotating orientations.
+  - Modular step: `DanmakuDiagonalStripStep` (`danmaku_diagonal_strip_step.gd`), wired directly to `marisa_spell_lv2.tres` and `marisa.tres`.
+- [x] **Marisa's Level 3 Spellcard (Magic Sign "Stardust Reverie" / 魔符「スターダストレヴァリエ」 - Dual Inward)**:
+  - Downward diagonal double-pronged attack emerging simultaneously from both outside boundaries toward the center playfield.
+  - Left wall emits green star strips (`green_star.tres`) traveling down-right ($+45^\circ$).
+  - Right wall emits blue star strips (`blue_star.tres`) traveling down-left ($+135^\circ$).
+  - Pairs launch simultaneously at each horizontal coordinate, intersecting in the center to form a diamond crosshatch barrage.
+  - Rank scaling: 3 pairs at Rank 1 (48 bullets), 4 pairs at Rank 8 (64 bullets), 6 pairs at Rank 16 (96 bullets).
+  - All bullets in each line spawn stacked at the same base point (`bullet_spacing = 0.0`) and separate smoothly via ascending velocity gradient (140 to 400 px/s).
+  - Wired directly via `DanmakuDiagonalStripStep` with `DirectionMode.DUAL_INWARD` into `marisa_spell_lv3.tres` and `marisa.tres`.
+- [x] **Modular Spellcard Heavy Shockwaves & Screen Reset (Authentic Runic Polar Ribbon & Delayed Fairy Cascade)**:
+  - Added defensive screen shockwaves triggered on Level 2, 3, and 4 spellcard activation after Action Stop concludes (`scenes/effects/heavy_shockwave.tscn` / `heavy_shockwave.gd`).
+  - **Calibrated Radii**: Level 2 = 420 px (~50% screen), Level 3 = 650 px (~75% screen), Level 4 = 1200 px (full playfield board wipe). Slowed expansion speed ($2\times$ factor, duration 1.20–1.30s).
+  - **Authentic Touhou 09 Runic Ribbon Effect**: Extracted the authentic 16×128 pixel-art calligraphy ribbon from `etama3.png` (`assets/effects/spellcard_shockwave_ribbon.png`) and bent it into an expanding polar ring via a custom additive CanvasItem shader (`shaders/polar_ring.gdshader`) with rotating animation, combined with multi-layer glowing vector rim arcs.
+  - **Fairy Detonation Cascade (Option A)**: Fairies and Spirits struck by a heavy shockwave do not die instantly; their death is delayed (~0.12s for fairies, ~0.10s for spirits) while they continue travelling along their path. This allows the heavy shockwave to vaporize surrounding bullets first. Once the delay elapses, the entity bursts into its own standard visual circular `Shockwave` ring with pellet cancellation disconnected and zero retaliatory counter-attacks generated.
+  - **Counter-Attack & Boss Counter Hierarchy**: Normal & Big Pellets, Danmaku Bullets, Yin-Yang Orbs, Earth Light Rays, and fairies/spirits are cleared cleanly with 0 counter-bullets sent to the opponent. Boss characters are immune to shockwave damage, but casting your own Level 4 Spellcard dispels the active opponent boss from your field immediately.
+  - Automated unit test suite `tests/test_spellcard_shockwave.gd` (all 20 test checks passed).
+- [x] **In-Game Debug Console (F12)**:
+  - Accessible in gameplay via `F12`.
+  - Comprehensive overlay providing real-time HP adjustment, God Mode, Rank controls (manual increment/decrement, Rank 1/8/16 presets, and rank progression freeze), passive gauge manipulation, direct spellcard triggers (Lv 1, Lv 2, Lv 3), and AI mode controls (Human, Full Bot, Dodge-Only Bot).
+  - World & Spawner controls: Independent toggles for Fairies, Pellets, and Spirits; one-click board wipe buttons (`Clear All Bullets & Pellets`, `Clear All Enemies & Spirits`); variable simulation speeds (`0.25x`, `0.5x`, `1.0x`, `2.0x`); and round resets / forced round wins.
+- [x] **Destructible Spellcard Bullets (Shockwave Cancellation Attribute)**:
+  - Systematically calibrated bullet cancelability via `DanmakuBulletData.can_be_canceled` across all 11 bullet resources (`resources/bullets/`).
+  - Small circular pellets (`red_pellet.tres`, `white_pellet.tres`, `blue_pellet_small.tres`, `green_pellet.tres`) are cancelable by normal fairy shockwaves (`can_be_canceled = true`), allowing players to carve paths through pellet curtains and gain passive charge.
+  - Signature and heavy projectiles (Talismans: `red_talisman.tres`, `white_talisman.tres`; Stars: `blue_star.tres`, `green_star.tres`, `yellow_star.tres`; Needles/Ovals: `red_oval.tres`, `white_oval.tres`) are immune to normal fairy shockwaves (`can_be_canceled = false`), preserving boss flurries and high-level spellcards while remaining destructible by defensive Level 2–4 Heavy Shockwaves.
+  - Comprehensive automated unit test suite `tests/test_bullet_cancelability.gd` passing with 100% coverage across resource flags, runtime setup, fairy shockwave interactions, and heavy shockwave clearing. Updated `DANMAKU_CATALOG.md`.
+- [x] **Level 4 Boss Entity ("Illusion") & Danmaku Attacks**:
+  - Floating boss character entity appearing on opponent playfield upon activating Level 4 Spellcard.
+  - [x] *Phase 1 (Entrance, Motion, Authentic Sprites & Polish)*: Modular `BossData` resource, `BossCharacter` entity (`Area2D`), authentic Reimu & Marisa boss sprite sheet extractions (`reimu_boss.png` & `marisa_boss.png`, 64x80 px/frame, 4 columns $\times$ 3 rows: Row 0 idle hover, Row 1 directional flip banking, Row 2 cast pose), balanced $2.33\times$ scale (`sprite_scale = Vector2(2.33, 2.33)`, rendered $149 \times 187$ px, reduced by $1.5\times$ from $3.5\times$), 32px hitbox, non-looping directional banking that cleanly holds on its finished frame while swooping, longer evasive leaps ($90\text{--}160\text{ px}$) taking twice as long ($0.84\text{s}$) for a floaty swoop, and timeout explosion into an expanding red shockwave (`DefeatShockwave`) in place without flying offscreen. Regular spawners continue running concurrently.
+  - *Phase 2 (Danmaku Attacks, Action Quota & Polish)*:
+    - [x] **Boss Action Quota & Authentic PoFV Rhythm Cadence**:
+      - Replaced desynced dual-timer logic with an authentic finite-phase rhythm loop: $[\text{Entrance}] \xrightarrow{0.4\text{s}} [\text{Cast Attack}] \xrightarrow{0.3\text{s}} [\text{Evasive Hop (0.65s)}] \xrightarrow{0.25\text{s}} [\text{Cast Next Attack}] \dots$
+      - **Action Quota & Screen Duration**: Boss stays on screen for a randomized quota of attacks between `attacks_min = 5` and `attacks_max = 9` (frequently 8, authentic to empirical PoFV testing across all ranks). Rank dictates the density, velocity, and flurry sizes of each individual attack, while the number of attacks is randomized per summon (`randomize_attack_count = true`). Boss departs (`leave_screen()`) immediately upon finishing its quota.
+      - **Modular Departure & Selection Modes in `BossData`**:
+        - `DepartureMode`: `ATTACK_COUNT` (default for Reimu & Marisa), `DURATION` (timed survival), or `HYBRID`. Includes `duration_safety = 24.0s` fallback.
+        - `AttackSelectionMode`: `RANDOM` (purely random pick from attack pool with repeats allowed, authentic to Reimu and Marisa) or `SEQUENTIAL` (fixed spell itineraries for future characters).
+    - [x] **Reimu Boss Attack 1 ("Two Rings Homing Talisman")**: Modular `reimu_boss_spell_1.tres` composed of dual concentric `red_talisman.tres` rings in `DECEL_AND_HOME` mode. Both rings expand at differing initial speeds (inner: 340–390 px/s, outer: 410–470 px/s) and stop at the exact same moment ($t = 1.0\text{s}$) reaching $170\text{--}235\text{ px}$ from the boss with clean ~35px radial separation. Outer ring is offset by a half angular step (`stagger_half_step = true`). After a $0.25\text{s}$ stationary pause locking onto player position, both rings dash at $360\text{ px/s}$. Rank scaling: Rank 1 fires 56 talismans per ring (112 total); Rank 16 fires 80 talismans per ring (160 total). Boss transitions to Row 2 cast animation during attack, pauses hopping, and returns to Row 0 idle hover after 0.55s.
+    - [x] **Reimu Boss Attack 2 ("Extra Attack Barrage")**: Modular `reimu_boss_spell_2.tres` utilizing new `DanmakuExtraAttackStep`. Sequentially summons Yin-Yang Orbs (`yin_yang_orb.tscn`) fanning out horizontally across boss position with alternating left/right toss direction and high vertical toss ($390\text{ px/s}$) arcing slightly past the top screen edge. Rank scaling: exactly 4 orbs at Rank 1 scaling up to 8 orbs at Rank 16. Boss holds Row 2 cast pose for duration of the sequential flurry ($0.22\text{s}$ delay between spawns) and returns to idle hover on completion.
+    - [x] **Reimu Boss Attack 3 ("Pellet and Talisman Claw")**: Modular `reimu_boss_spell_3.tres` utilizing new `DanmakuClawStep`. Fires 3 angled strips in a tightened $14^\circ$ claw spread (`fan_spread_angle_deg = 14.0`) aimed directly at the player. 3 strips of non-homing pellets (`red_pellet.tres`) with an overlaid strip of red talismans (`red_talisman.tres`) on the center strip. Ascending initial speeds ($140\text{--}290\text{ px/s}$ at Rank 1, $170\text{--}350\text{ px/s}$ at Rank 16) produce an unfurling claw stream; center pellets feature high acceleration ($70\text{--}110\text{ px/s}^2$ vs $25\text{--}45\text{ px/s}^2$ for side strips and talismans) causing center pellets to surge forward during travel. Rank scaling: 9 bullets per strip (36 total) at Rank 1 scaling up to 16 bullets per strip (64 total) at Rank 16.
+    - [x] **Reimu Boss Attack 4 ("Double Circles of Pellets")**: Modular `reimu_boss_spell_4.tres` utilizing new `DanmakuDoubleRingStep`. Two concentric rings of small pellets (`red_pellet.tres` and `white_pellet.tres`) spawned stacked right at the center inside the boss sprite ($R_0 = 0.0\text{ px}$). Pellets "walk" the circumference in opposite directions (red clockwise $+0.2125\text{--}0.275\text{ rad/s}$, white counter-clockwise $-0.2125\text{--}0.275\text{ rad/s}$) interleaved by half a step ($\pi / N$) while expanding radially outward at $170\text{--}220\text{ px/s}$ until exiting the playfield (`MotionMode.EXPANDING_ORBIT`). Rank scaling: 36 red + 36 white (72 total) at Rank 1 scaling up to 52 red + 52 white (104 total) at Rank 16.
+    - [x] **Reimu Boss Attack 5 ("Four Red Talisman Circles")**: Modular `reimu_boss_spell_5.tres` composed of 4 concentric rings of `red_talisman.tres` in `LINEAR` motion mode via 4 chained `DanmakuRingStep` resources. All 4 rings spawn from the boss origin with matching angular alignment (`stagger_half_step = false`), forming clean radial spokes and corridors from the outside to the inside so that players can stream cleanly through gaps without dodging sideways between rings. Outer rings travel faster than inner rings ($250\text{--}320\text{ px/s}$, $225\text{--}290\text{ px/s}$, $200\text{--}260\text{ px/s}$, $175\text{--}230\text{ px/s}$), causing the four rings to naturally separate as they expand across the screen. Rank scaling: 48 talismans per ring ($4 \times 48 = 192$ total) at Rank 1 scaling up to 112 talismans per ring ($4 \times 112 = 448$ total) at Rank 16. Danmaku bullet pool is prebaked with 1200 instances in `playfield.gd`, allowing multiple consecutive flurries with no entity cap restrictions or stutter. Completes Reimu's full 5-attack boss pool!
+    - **Marisa Boss Attack Pool**:
+      - [x] **Marisa Boss Attack 1 ("Lines of Stars" / 魔符「イリュージョンスター」)**: Modular `marisa_boss_spell_1.tres` utilizing new `DanmakuAimedStripStep`. Sequentially shoots strips of blue star bullets (`blue_star.tres`) aimed at the opponent's current location while performing a standardized hop to either side ($80\text{ px}$, $1.55\text{s}$) identical across all ranks. Each strip has 4 stars spawned simultaneously at initial speed $220\text{ px/s}$, which separate naturally during flight via a tuned acceleration gradient ($90\text{--}210\text{ px/s}^2$, $+40\text{ px/s}^2$ per bullet, $+0.3\text{x}$ projectile speed). Rank scaling: 5 strips (20 stars total) at Rank 1 scaling up to 20 strips (80 stars total) at Rank 16. Strips fire sequentially with a $0.12\text{s} \to 0.07\text{s}$ interval, producing a sweeping, curved trail from a moving caster across the full attack. At all ranks, Marisa glides for the full standardized $1.55\text{s}$ duration before ending cast pose.
+      - [x] **Marisa Boss Attack 2 ("Extra Attack Barrage" / Earth Light Rays)**: Modular `marisa_boss_spell_2.tres` utilizing `DanmakuExtraAttackStep` (`SpawnLocation.GROUND_RAYS`). Sequentially erupts Earth Light Rays (`earth_light_ray.tscn`) anchored firmly at the bottom ground border ($Y = 950\text{ px}$) shooting upward with halved tilt angles (random in $[-3.25^\circ, +3.25^\circ]$) pointing both inwards and outwards across non-deterministic, random ground positions ($X \in [75, 525]$ with consecutive spacing $\ge 45\text{ px}$). Slices across dodging corridors without cutting off edges (extended beam length 1060 px). Rank scaling: exactly 4 rays at Rank 1 scaling up to 8 rays at Rank 16 with $0.22\text{s}$ sequential interval. Boss holds Row 2 cast pose during the sequential eruption, cycling sequentially with Attack 1.
+      - [x] **Marisa Boss Attack 3 ("Spiral Pellets and Stars" / Magic Sign "Illusion Star" Pinwheel)**: Modular `marisa_boss_spell_3.tres` utilizing `DanmakuPinwheelStep`. Spawns 24 rotating bursts radiating outward from the boss across 6 radiating spokes at a rapid interval of $0.045\text{s}$ ($\approx 2.5$ frames at 60 fps, $\sim 1.0\text{s}$ total cast). Waves alternate rapidly between Green Stars $\to$ Green Pellets $\to$ Blue Stars $\to$ Green Pellets across all 6 spokes, while the pivot rotates clockwise at $15.0^\circ$ per wave ($360^\circ$ full rotation over 24 bursts). Each spoke fires a curved circular angular arc/fan ($\approx 6.5^\circ$ spacing per bullet) rather than a flat transverse bar, forming 6 seamless, tightly coiling vortex ribbons identical to Touhou 09. Authentic pixel-art green pellet (`danmaku_circle_green.png`) extracted cleanly from the Touhou sheet, with `green_pellet.tres` resource created. Rank scaling: 2 bullets per spoke arc ($2 \times 6 = 12$ bullets/burst; 288 total) at calibrated $160.0\text{ px/s}$ at Rank 1 scaling up to 4 bullets per spoke arc ($4 \times 6 = 24$ bullets/burst; 576 total) at $340.0\text{ px/s}$ at Rank 16.
+      - [ ] **Revisit & Polish Marisa Boss Attack 3 ("Spiral Pellets and Stars")**: Return in a future session for final micro-calibrations on rotation velocity, burst interval timing, and bullet cluster curvature.
+      - [x] **Marisa Boss Attack 4 ("Star Spray" / Magic Sign "Illusion Star" Spray)**: Modular `marisa_boss_spell_4.tres` utilizing `DanmakuStarSprayStep`. Marisa fires a spray of 60 yellow stars (`yellow_star.tres`, extracted from Touhou sheet) from her center across 6 rapid burst waves. Stars continuously spin ($6.0\text{ rad/s}$) and curve outward during their first $1.1\text{s}$ ($\pm 1.25\text{ rad/s}$), blossoming outward in a fountain/bell fan shape, and then settle into straight linear motion indefinitely while continuing to spin (`MotionMode.CURVE_THEN_LINE`). Star count is strictly 60 at both Rank 1 and Rank 16; speed scales sharply from $200.0\text{ px/s}$ at Rank 1 to $520.0\text{ px/s}$ at Rank 16.
+      - [x] **Marisa Boss Attack 5 ("Two Fixed Green Lasers")**: Modular `marisa_boss_spell_5.tres` utilizing new `DanmakuFixedLasersStep` and green-hued Earth Light Rays (`earth_light_ray_green.tscn`). Two vertical green laser beams (0° tilt) erupt at fixed horizontal positions corresponding to the quarter-splits of the playfield ($X = 150.0\text{ px}$ and $X = 450.0\text{ px}$) anchored at the bottom screen border ($Y = 950.0\text{ px}$). The two lasers fire sequentially with a $0.22\text{s}$ stagger. At Rank 1, they fire once (2 lasers total); at Rank 16, they pulse/repeat 3 times in total (6 lasers total) spaced by a $0.65\text{s}$ wave interval with alternating firing sequence (Left->Right then Right->Left). Completes Marisa's full 5-attack boss pool!
+    - [x] **Boss Defeat Reward Drops**:
+      - Defeat explosion & fountain pickup burst when Boss is shot down before retreat/timeout.
+      - 4 authentic Touhou 09 item pickups extracted to `assets/pickups/` (`pickup_g`, `pickup_bullet`, `pickup_ex`, `pickup_point`):
+        - **G**: Fully recharges spell gauge to maximum.
+        - **点 (Point)**: Fires off a Level 4 Spellcard against the opponent.
+        - **EX**: Summons a flurry barrage of extra attacks onto the opponent.
+        - **弾 (Bullet)**: Sends dense bullet clusters towards the opponent.
+      - Dedicated `PickupItem` entity (`scenes/items/pickup_item.tscn` / `pickup_item.gd`) on collision layer 5 (`pickups`).
+      - Authentic straight-vertical launch physics ($V_x = 0$, $V_y = -390\text{ px/s}$, gravity $360\text{ px/s}^2$, float terminal velocity $220\text{ px/s}$).
+      - Player `ItemCollector` area with dynamic radius: $24\text{ px}$ normal, expands to $48\text{ px}$ when focused (Shift key) with magnetic attraction pulling nearby items inward.
+      - Integrated sound effects (`se_powerup.wav`, `se_cardget.wav`, `se_power0.wav`) via `AudioService`.
+      - Covered by automated test suite `tests/test_pickup_items.gd`.
+
+- [x] **AI Autonomous Charging & Spellcard Usage (`RudimentaryAI`)**:
+  - Implemented authentic Touhou 09 spell bar AI behavior in `scripts/ai/rudimentary_ai.gd`:
+    - Target spellcard levels strictly encompass Spellcards (Lv 2, 3, or 4) via RNG (~50% Lv 2, 32% Lv 3, 18% Lv 4) — never the first segment (Lv 1 Charge Attack).
+    - Bot charges towards its chosen spellcard while actively dodging bullet pressure.
+    - Releases charge into a spellcard immediately upon reaching the queued active charge level (or passive gauge ceiling $\ge \text{Lv } 2$), consumes the required passive segments, triggers cooldown ($1.5\text{--}3.5\text{s}$), and rolls a new target level.
+    - Never aborts charging into weak Lv 1 charge attacks under routine bullet pressure; emergency defensive release triggers if and only if $\ge \text{Lv } 2$ is charged and an imminent hazard ($\le 90\text{ px}$ or laser) threatens the bot.
+    - Includes `set_spells_enabled(bool)` toggle and dedicated automated unit test suite `tests/test_ai_spell_usage.gd` (64 assertions passed).
+- [x] **AI Hazard Awareness, Border Coverage & Scope Style Overhaul (`RudimentaryAI`)**:
+  - Upgraded threat detection, spatial dodging, and offensive behaviors in `scripts/ai/rudimentary_ai.gd`:
+    - **Safe Operating Boundaries**: Restored safe horizontal boundaries to `[95.0, 505.0]` with corner threshold `140.0`. This prevents the bot from walking directly into the upward trajectory of bottom-corner sweeping fairies ($X \approx 42\text{--}73, Y = 971 \to 540$) while still allowing player shot width and homing amulets to cleanly hit edge enemies.
+    - **Enemy Behind/Below Filter**: Excluded enemies with $Y > player.y - 30.0$ from horizontal alignment targeting. Because player shots fire strictly upward, the bot will never walk into an ascending enemy behind/below it.
+    - **Enemy Body Collision Hazard Detection**: Added entity layer scanning to `_scan_front_threats()` for `Fairy`, `Spirit`, `BossCharacter`, and `LilyWhite` in dangerous proximity ($dy \in [-50.0, 140.0]$). Enemy bodies are treated as lethal collision hazards, actively repelling the bot away rather than walking into them.
+    - **Autonomous Focus Mode & Scope Zone**: Implemented `_should_focus()` to automatically engage Focus Mode when unactivated Spirits enter Scope radius (130px), popping chain reactions and building gauge while suppressing focus during wide hazard dodges to preserve full 540px/s escape velocity.
+    - **Boss & Mid-Boss Alignment**: Expanded enemy alignment scanning to target `BossCharacter` and `LilyWhite` in addition to fairies and spirits.
+    - **Extended Scan Height**: Increased `FRONT_SCAN_HEIGHT` from $230\text{ px}$ to $320\text{ px}$ (~$1.0\text{s}$ warning threshold against fast-falling parabolic hazards).
+    - **Direct Velocity Tracking**: Directly extracts `hazard.velocity` (handling parabolic hazards like `YinYangOrb` that don't use bullet speed/direction vectors).
+    - **Dynamic Hazard Radius & Danger Corridor**: Inspects `hazard.radius` ($60\text{ px}$ on Yin-Yang Orbs), `is_big` ($20\text{ px}$ on big pellets), and bullet hitbox sizes, scaling danger corridor to `maxf(38.0, hazard_radius + 24.0)`.
+    - **Wall-Bounce Ping-Pong Trajectory Projection**: Implemented 1D reflection math across playfield boundary walls ($X \in [65.0, 535.0]$) to project bounced landing points at player height.
+    - **Dynamic Dodge Step Expansion**: Expands sidestep distance to `maxf(55.0, max_threat_radius + 28.0)` (e.g. $88\text{ px}$ evasion for Yin-Yang Orbs instead of standard $55\text{ px}$).
+    - **Distance-to-Boundary Clearance Scoring**: Evaluates candidate clearance relative to hazard collision radius ($|x_{cand} - x_{threat}| - r_{threat}$) so candidates within the collision circle receive negative scores.
+    - **Flank & Beside-Player Threat Scanning**: Added `FLANK_SCAN_DEPTH = 40.0` to eliminate the blindspot where projectiles level with or slightly below the player ($dy \in [-40.0, 0.0]$) were prematurely discarded. Beside-player bullets are tracked with `is_flank = true`, and evaluated directly in candidate clearance so the AI avoids lateral steering collisions.
+    - **Multi-Candidate Precision & Micro-Dodges**: Evaluates 5 candidate positions (`p_x`, `p_x \pm 22.0`, `p_x \pm dodge_clearance`). When a tight 22px micro-dodge achieves safe clearance, the AI engages Focus Mode (`_is_focus = true`) and uses precision speed (0.7x), achieving authentic PoFV pinpoint micro-tap dodging without destabilizing macro-lunges.
+    - **Corner Breakout Vertical Streaming**: Implemented vertical climbing logic (`move_y = -0.85`, dynamic ceiling $Y = 680.0$) when pinned near edges ($X < 140$ or $X > 460$) under threat or when horizontal escape is blocked. Descending bullets pass underneath and the bot breaks out of corner traps.
+    - **Inward Wall Repulsion**: When lingering near borders ($X < 140$ or $X > 460$) without an active edge enemy, the AI applies immediate inward steering ($move\_x = \pm 1.0$) towards playfield center ($X \approx 300$).
+    - Verified by dedicated unit test suite `tests/test_ai_hazard_evasion.gd` (31 assertions passed).
+- [x] **Playfield Perimeter Dispersion & Edge Hazard Coverage**:
+  - Removed perimeter deadzones ($X < 60$ and $X > 540$) by expanding attack mote dispatch coordinates in `scenes/arena/arena.gd` to cover the full width ($X \in [16, 584]$ for pellets, $X \in [35, 565]$ for big pellets, spirits, and extra attacks).
+  - Softened `EnemyPellet` inward bias angle from $14^\circ$ to $3^\circ$ in `scenes/bullets/enemy_pellet.gd` so pellets shower down and fan outward into borders.
+  - Widened `VDive` path in `scenes/fairies/fairy_paths.tscn` to dive from $X=45$ and exit at $X=555$.
+- [x] **Modular Fairy Spawner Extraction**:
+  - Extracted fairy wave scheduling, curve selection, and spawning logic from `scenes/arena/playfield.gd` into a dedicated modular `FairySpawner` component (`scripts/fairies/fairy_spawner.gd`).
+- [x] **Match Rank & Passive Gauge Round Persistence**:
+  - `Playfield.reset_for_new_round()` preserves `match_elapsed_time` and rank scaling (`current_rank_lv2_3` and `current_rank_lv4`) across rounds within the match, while resetting Lily White timers and KO shockwaves.
+  - `Player.reset_for_round()` preserves accumulated `passive_charge` across rounds, zeroing only the momentary `active_charge`. Added `reset_for_new_match()` to cleanly zero ranks and charge on full match reset.
+- [ ] **Lily White Mid-Boss Hazard**:
+  - [x] **Phase 1: Sprite, Movement & Match Timer HUD**:
+    - Sprite extracted from `assets/enemies/enemies_raw_sheet.png` (256x192 px, 4x3 64x64 frames) to `assets/enemies/lily_white.png`.
+    - `LilyWhite` entity scene and controller (`scenes/enemies/lily_white.tscn` / `lily_white.gd`): 2.0s ease-out descent, 0.8s hover rest, 4.0s retreat ascent.
+    - Centralized Match Timer UI (`scenes/ui/match_timer.tscn` / `match_timer.gd`) at top-center between playfields (`MM:SS`).
+    - Spawn schedule: rock-solid 50s initial round elapsed time, then every 30s thereafter (50s, 80s, 110s...).
+    - Debug testing: `[F8]` hotkey and Debug Menu (F12) "Spawn Lily White (Both Fields)" button.
+  - [x] **Phase 2: Danmaku & Bullet Patterns**:
+    - Dual-spiral claw triplets & twin pellet combo fired during retreat ascent (see Section 3 note).
+    - Player damage absorption, hit flashes, defeat signal, and defeat shockwave clearing nearby bullets.
+  - [x] **Defeat Reward Pickups & Lily White / Boss Drops**:
+    - **Single Item Toss**: Defeating Lily White or an Illusion Boss drops exactly one pickup chosen randomly from `[G, 点, EX, 弾]`, tossed straight up vertically ($V_x = 0, V_y = -390\text{ px/s}$).
+    - **Collector Area2D**: Dynamic magnetic radius ($24\text{ px}$ normal, $48\text{ px}$ in focus mode).
+    - **Pickup Effects**:
+      - **G**: Fully restores the player's Spell Gauge (`active_charge = 4.0`, `passive_charge = 4.0`).
+      - **点**: Instantly casts the player's Level 4 Spellcard against the opponent without consuming charge.
+      - **EX**: Dispatches a barrage of 3 Extra Attacks to the opponent's field.
+      - **弾**: Sends an authentic dense barrage of 30 large pellets (`BIG_PELLET`, 2.5x original count, all heavy large pellets) streaming across to the opponent at rapid $0.035\text{s}$ intervals.
+    - Verified with comprehensive test suite in `tests/test_pickup_items.gd` (9/9 passing).
+- [x] **Rank / Difficulty Dynamic Scaling & Round Persistence**:
+  - Implemented dynamic scaling where `match_elapsed_time` scales Rank 1 to 16 for both Lv2-3 and Lv4 spell densities, boss attack durations, and bullet speeds.
+  - `Playfield.reset_for_new_round()` preserves rank progression across rounds 1, 2, and 3 in Best-of-3 matches (only resetting on complete match game-overs), verified by `tests/test_rounds.gd`.
+- [ ] **Match Timer Damage Escalation / Sudden Death (PoFV 2-Orb Loss)**:
+  - In *Phantasmagoria of Flower View*, after a round elapses past a long time threshold without a hit, taking damage causes the player to lose two full circles of health (1.0 HP) instead of one (0.5 HP) to accelerate round conclusions. Evaluate whether this escalation rule should be implemented.
+- [ ] **Comeback Meter Refill on Hit (PoFV Gauge Recovery)**:
+  - In PoFV, taking damage fills/replenishes the victim's spell charge gauge, serving as an essential comeback mechanism that provides defensive spellcard resources after making a mistake. Implement gauge restoration upon taking damage.
+- [ ] **Marisa EX Attack Aiming Laser Damage Fix**:
+  - The thin warning / guide laser line displayed during the initial telegraph aiming phase of Marisa's Earth Light Ray (`earth_light_ray.gd`) currently deals damage to the player. Ensure damage and hit detection are strictly disabled during the telegraph phase and only activate when the full beam fires.
+
+## 3. Tuning & Technical Notes
+- [x] **Bullet Scaling & Density During High Combos (Hard Bullet Cap & Telemetry)**:
+  - **Empirical Touhou 09 (PoFV) Benchmark**: Captured via `thprac` telemetry during peak rally against the AI.
+    - Player 1 Peak: 309 bullets (30 Fairy, 279 Rival).
+    - Player 2 Peak: 188 bullets (5 Fairy, 183 Rival).
+    - Each playfield has a natural ceiling of ~350 bullets, allowing ~700 total active projectiles across the match window.
+  - **Implemented 350-Bullet Ceiling**:
+    - Added `@export var max_active_bullets: int = 350` per `Playfield`.
+    - Spawning checks in `spawn_pellet()` and `spawn_ring_pellet()` prevent runaway compounding beyond 350 projectiles on either side.
+    - Configurable/toggleable in the `[F12]` Debug Menu (`World & Spawners` tab).
+  - **Live Entity Telemetry in Debug Menu [F12]**:
+    - Prominent real-time telemetry banner at the top of the Debug Console.
+    - Displays P1 and P2 breakdown: `BULLETS: X/350 (Pellets: Y | Danmaku: Z) | Fairies: A Spirits: B` and `TOTAL: N Bullets / M Entities`.
+    - Color-coded warnings (Normal blue <80%, Amber 80-99%, Red at cap).
+  - **O(1) NodePool Performance**:
+    - Optimized `NodePool` with internal `_active_count` tracking, eliminating child-node traversal during per-frame queries.
+  - **Unit Test Suite**: `tests/test_telemetry_and_bullet_cap.gd` automated verification.
+- [x] **Rally Loop Damping & Entity Allocation Optimization (Authentic Touhou 09 Rules)**:
+  - **PoFV Bounce Lifecycle & Large Bullet Damping**:
+    - Returned white pellets now track a generational `bounce_count`.
+    - First return: A canceled white pellet is returned to the opponent 1:1 with `bounce_count = 1`.
+    - Second return: If canceled again (`bounce_count >= 1`), it evolves into an un-cancellable **Large Bullet (大型弾)** (`has_big_pellet = true`).
+    - Large bullets cannot be canceled by fairy shockwaves (`can_be_canceled == false`), forcing players to dodge or use spellcard bombs. This terminates infinite positive feedback loops.
+  - **Severed Cascade Loops**:
+    - Bullet cancellations now **never** spawn spirits (`has_spirit = false`), eliminating self-sustaining shockwave chain reactions.
+    - Spirit defeats no longer spawn additional spirits (`has_spirit = false`), eliminating spirit cloning cascades.
+    - Canceled white pellets return at an exact 1:1 ratio (no pellet duplication).
+  - **Memory & Rendering Allocation Bottlenecks Removed**:
+    - Implemented static shared `CircleShape2D` collision shape singletons (`_shape_normal`, `_shape_big`, `_shape_ring`) across pooled `EnemyPellet` instances, ending continuous heap allocations in Godot's PhysicsServer2D.
+    - Implemented dedicated `NodePool` for `TravelMote` (100 pre-allocated instances in `arena.gd`), eliminating heap churn and removing the artificial 20-mote throttle completely. 100% of bullets, spirits, and EX attacks now faithfully display their arcing light motes across the divider.
+    - Updated network RPCs (`send_attack`, `rpc_attack`) and arena handlers to replicate `bounce_count` synchronously over WebRTC.
+- [x] **Lily White Retreat Danmaku Pattern (Dual-Spiral Claw Triplets & Outlined Pellets Combo)**:
+  - **Dual-Spiral Geometry & Bilateral Symmetry**:
+    - Right Vector (Blue): Starts diagonally up-right (`-45.0°`), rotates clockwise (`+6.0°` per wave) sweeping down towards bottom-left (`+141.0°`).
+    - Left Vector (Red): Starts diagonally up-left (`-135.0°`), rotates counter-clockwise (`-6.0°` per wave) sweeping down towards bottom-right (`+39.0°`).
+    - Bilateral mirror reflection preserved across all 32 steps: $\cos(\theta_{\text{red}}) = -\cos(\theta_{\text{blue}})$ and $\sin(\theta_{\text{red}}) = \sin(\theta_{\text{blue}})$.
+  - **Claw Triplet & Twin Pellet Combo**:
+    - Each arm fires a 3-prong fan (`[-13°, 0°, +13°]`).
+    - Each prong emits a **twin pair** with organic jitter (`angle_jitter_deg = 7.0`, `speed_jitter = 35.0` within `[185.0, 255.0] px/s`): the pair shares the exact same jittered heading and speed, with the lead solid pellet spawned $30\text{ px}$ ahead (`twin_offset_px = 30.0`), producing authentic danmaku chaos while keeping pairs locked in tandem.
+    - Yields 12 bullets per wave (6 blue, 6 red; 6 solid, 6 ring), across 32 waves (384 bullets total over 3.255s).
+  - **Dynamic Theming & Shading**:
+    - Upgraded `enemy_pellet.gd` so normal and big pellets render glow and mid-rim using `theme_color`, enabling crisp red pellets alongside blue pellets.
+    - Expanded `pellet_pool` default capacity to 300 in `playfield.gd`.
+  - **Lifecycle & Clean Interruption**:
+    - Firing loop driven by Godot 4 `Tween` (`_barrage_tween`), immediately terminated if Lily is defeated or removed.
+    - Defeat emits `defeated(death_pos)` and triggers a `HeavyShockwave` clearing nearby bullets.
+  - **Unit Test Suite**: Added `test_lily_white_retreat_barrage` in `tests/test_lily_white.gd` testing parameters, bilateral symmetry, single-wave bullet generation (12 pellets: 6 normal, 6 ring), and defeat cancellation.
+- [x] **Lily White Dual-Screen Danmaku Performance Optimizations**:
+  - **Pool Pre-warming (160 -> 500 instances)**: Increased `pellet_pool` initial capacity in `scenes/arena/playfield.gd` from 160 to 500. Lily White's barrage fires 384 bullets; sizing to 500 completely eliminates mid-game `scene.instantiate()` / `add_child()` calls when both Lily Whites fire simultaneously.
+  - **Zero-Allocation Bullet Spawn Animation**: Replaced per-bullet `create_tween()` and lambda closures in `scenes/bullets/enemy_pellet.gd` with an inline `_spawn_timer` and cubic back-ease math formula evaluated directly in `_physics_process()`, eliminating up to 768 simultaneous SceneTree Tweens.
+  - **Web Audio Channel Contention Elimination**: Removed redundant duplicate `AudioService.play_danmaku_shot()` trigger from `scenes/enemies/lily_white.gd`'s barrage tween callback, maintaining a single authentic audio trigger per wave and preventing Web Audio buffer saturation.
+  - **Vector Arc Geometry Optimization**: Reduced `draw_arc` segment count from 36 to 22 in `enemy_pellet.gd`, reducing dynamic vector tessellation overhead by 40% for hundreds of ring bullets.
+  - **Verification**: All 31 test suites in `run_tests.bat` passed with 0 errors. Fresh release web build exported to `build/web/`.
+- [x] **Character Entrance Glide & Fairy Spawn Timing (Authentic Touhou 09 Starting Sequence)**:
+  - Modeled faithfully after authentic *Touhou 09: Phantasmagoria of Flower View* starting sequence (`game_start.mp4`).
+  - **Diagonal Corner Entrance Trajectory**:
+    - Calibrated starting coordinates to originate from the outside bottom corners of each playspace: P1 starts at `Vector2(-40.0, 1080.0)`, P2 starts symmetrically at `Vector2(640.0, 1080.0)`.
+    - Characters travel diagonally across $\approx 430\text{ px}$ ($\Delta X = 340\text{ px}$, $\Delta Y = 264\text{ px}$, $\approx 37.8^\circ$ upward-diagonal) into starting baseline `(300.0, 816.0)`.
+    - Uses quadratic ease-out (`TRANS_QUAD`, `EASE_OUT`) over $1.2\text{s}$, producing a buoyant, floaty Danmaku entrance that slides smoothly into neutral stance without stalling prematurely.
+  - **Directional Banking & Neutral Settle**:
+    - P1 banks into Row 2 (rightward turn tilt) and P2 banks into Row 1 (leftward turn tilt) during the glide.
+    - Settle cleanly back to Row 0 (neutral idle hover) upon completing the entrance.
+    - Player controls, charging, and shooting locked during entrance with invulnerability granted.
+  - **Fairy Spawn Delay Dialed Up**:
+    - Increased `initial_spawn_delay` in `FairySpawner` from $0.8\text{s}$ to $2.0\text{s}$ (`+1.2s`), allowing the entrance glide to finish with a short $0.8\text{s}$ breathing window before fairy waves begin.
+  - **Automated Unit Testing**:
+    - Verified corner spawn positioning, glide state, banking row, and idle settle via `tests/test_rounds.gd` (67/67 tests passing).
+- [x] **Fairy Train Length & Spacing Calibration (Authentic Touhou 09 Density)**:
+  - **Fairy Train Count Reduced by 1**: Reduced `count` in `FairySpawner.spawn_fairy_train()` from `randi_range(4, 10)` to `randi_range(3, 9)`.
+  - **Widened Fairy Gap (+50%)**:
+    - Increased `FAIRY_SPACING` / `@export var fairy_spacing` from $40.0\text{ px}$ to $60.0\text{ px}$.
+    - Resolves tight clustering where $72\text{ px}$ sprite textures were overlapping by $32\text{ px}$ and $40\text{ px}$ collision diameters were touching edge-to-edge.
+    - Collision circles now maintain a clean $20\text{ px}$ separation and sprites maintain authentic individual silhouettes matching Touhou 09 reference footage.
+  - **Unit Test Suite**: Verified in `tests/test_fairy_animation.gd` (train count $3\text{--}9$, spacing $60.0\text{ px}$).
+- [x] **Match Password & Private Room Matchmaking System**:
+  - Implemented private password/room code pairing across WebRTC signaling and Godot client:
+    - **Signaling Server (`server/signaling_server.js`)**: Grouped searching players by normalized password string (`client.password.toLowerCase()`). Matches are partitioned strictly within their password buckets, preventing private room cross-matching with other rooms or the public queue. Empty password acts as open public matchmaking.
+    - **Client Privacy**: Passwords are never relayed raw to other connected clients. Broadcast player list sends privacy-preserving boolean indicators (`has_password`, `matches_password`).
+    - **High-Level Network Manager (`scripts/global/network_manager.gd`)**: Added `current_password` tracking and payload passing across `set_searching(searching, password)` and reconnection handshakes.
+    - **Main Menu UI (`scenes/main_menu/main_menu.tscn` & `.gd`)**:
+      - Added `PasswordContainer` with `PasswordInput` (`LineEdit`) supporting custom room passcodes, with placeholder text `"Optional (Room Code)"`.
+      - Integrated into 5-node vertical focus navigation loop (`NicknameInput` -> `ServerInput` -> `PasswordInput` -> `OnlineMatchBtn` -> `KeybindsBtn`).
+      - Interactive queue status badges: `"Status: Searching [Room: <code>]"` vs `"Status: Searching (Public)"`.
+      - Real-time queue list badges: highlights `• Name - Ready to Match! [Room: <code>]` in green when an opponent with matching password is found, `• Name - In Private Room` for other rooms, and `• Name - Searching (Public)` for open queue.
+    - **Automated Verification**: Created `tests/test_signaling_matchmaking.js` (Node WebSocket suite verifying password pairing, case insensitivity, room isolation, and public queue fallback) and integrated `tests/test_main_menu_password.gd` into `run_tests.bat` (all 31 test suites passing with 100% success).
+    - **Fresh Web Export**: Re-exported release web build (`build/web/index.html`, `index.pck`, `index.wasm`) to incorporate all latest features (password matchmaking, flame charge aura, boss defeat pickups, bullet cancelability damping, pass-through shards, and UI focus loop).
+    - **Desktop WebRTC Native Extension & P2P Handshake Fix**:
+      - Installed official `godotengine/webrtc-native` GDExtension in `addons/webrtc_native/` so desktop Godot executables (F5/F6) can run WebRTC P2P DataChannels on Windows without needing a browser.
+      - Verified local P2P negotiation between host and client succeeds and enters `STATE_CONNECTED`.
+    - **Lobby In-Match Status Broadcast**:
+      - Updated `server/signaling_server.js` `broadcastPlayerList()` to mark players actively inside rooms as `in_match: true`, preserving private room metadata (`room_has_password`, `room_matches_password`).
+      - Updated `scenes/main_menu/main_menu.gd` to render active matches cleanly (`• Name (You) - In Match [Room: <code>]`, `• Name - In Match [Room: <code>]`, `• Name - In Match (Private)`, or `• Name - In Match (Public)`), preventing matched players from falsely reverting to "Browsing".
+      - Updated queue header to display live summary: `LOBBY PLAYERS (%d searching, %d in match)`.
+- [x] **In-Game Unity-Style Profiler & Real-Time Telemetry Overlay**:
+  - **Unobtrusive Right-Margin HUD Placement**:
+    - Embedded into `scenes/arena/arena.tscn` anchored at $X=1595$, $Y=60$ ($320\text{ px}$ wide) within the unused 330px right screen margin ($X \in [1590, 1920]$). Playtesters can keep the profiler open continuously during live matches without obstructing either player's playfield.
+  - **Comprehensive Unity Profiler / Stats Suite**:
+    - **FPS & Frame Timing**: Current FPS, 60-frame rolling Average FPS, 1% Low FPS, Min/Max FPS range, Total Frame Time (ms), CPU logic `_process` (ms), and Physics simulation `_physics_process` (ms).
+    - **Rendering & Draw Calls**: 2D Draw Calls (`RENDER_TOTAL_DRAW_CALLS_IN_FRAME`), Primitives / Triangles (`RENDER_TOTAL_PRIMITIVES_IN_FRAME`), 2D Canvas Items drawn, and Video Memory (MB).
+    - **2D Physics Server**: Active 2D Objects (`PHYSICS_2D_ACTIVE_OBJECTS`), 2D Collision Pairs tested (`PHYSICS_2D_COLLISION_PAIRS`), and Physics Island Count.
+    - **Memory & Node Leak Detection**: Static RAM (MB), Peak RAM (MB), Total SceneTree Node count, Total Engine Objects, and Orphan Nodes (`OBJECT_ORPHAN_NODE_COUNT` - instant red warning indicator if leaks occur).
+    - **Live Danmaku Telemetry**: P1/P2 Bullets (Pellets vs Danmaku breakdown vs bullet cap), Spawner entities (Fairies, Spirits), Total Active Bullets, and Active Travel Motes.
+  - **Visual Rolling Frame-Time Graph (Sparkline)**:
+    - Custom vector canvas (`_draw()`) displaying a rolling 120-frame waveform history.
+    - Color-coded reference guidelines: 16.6ms (60 FPS green line) and 33.3ms (30 FPS yellow line).
+    - Dynamic spike indicators highlight stutter frames ($>33.3\text{ms}$) in bright red/orange.
+  - **Instant 1-Click Clipboard Snapshot**:
+    - `[📋 Copy]` button in overlay header (and `F9` shortcut) copies a timestamped, formatted diagnostic report directly to system clipboard via `DisplayServer.clipboard_set()` and logs to browser console via `print()`. Playtesters can immediately paste exact performance data into Discord/chat during or after lag spikes.
+  - **Web-Friendly & Desktop Access Controls**:
+    - Clickable `[⚡ STATS]` button in the top HUD at `(1595, 15)` (bypasses browser function key hijacking of `F12`/`F11`).
+    - Hotkeys: `F10` to toggle profiler, `F9` to copy snapshot, `✕` button to dismiss.
+  - **Automated Verification & Release Export**:
+    - Created unit test `tests/test_profiler_overlay.gd` verifying instantiation, statistical calculations (avg, 1% low, min, max), snapshot formatting, and clipboard copying.
+    - Verified all 32 unit test suites in `run_tests.bat` pass with 100% success.
+    - Re-exported release web build to `build/web/index.pck` (7.74 MB).
+- [x] **Danmaku Canvas Batching & Off-Screen Bullet Lifecycle Optimization (Reimu Spellcard FPS Dip Fix)**:
+  - **Identified Root Causes of Reimu Spellcard FPS Drop (53 -> 28 FPS)**:
+    - Alternating texture patterns (Red Pellet $\leftrightarrow$ Red Oval, White Oval $\leftrightarrow$ White Pellet in `reimu_spell_lv2.tres`) alternated siblings in the scene tree at `z_index = 0`, forcing Godot's 2D canvas batcher to flush WebGL state on every single bullet, exploding draw calls to 345–358.
+    - Loose safety bounds (`SAFETY_MIN_X = -1200`, `SAFETY_MAX_Y = 2200`, `lifetime = 7.0s`) allowed 75%+ of 360-degree radial ring bullets that exited the screen within 0.8s to persist invisibly in the physics loop and scene tree for 7 full seconds, accumulating up to 869 active bullets on P2.
+    - Lack of `max_active_bullets` enforcement in `Playfield.spawn_danmaku_bullet*` allowed Danmaku spellcards to bypass the 350-bullet ceiling.
+    - Per-bullet `CircleShape2D.new()` instantiations during pool acquisition created physics server churn.
+  - **Implemented Comprehensive 4-Point Optimization**:
+    - **Deterministic Texture-to-Z-Index Batch Bucketing**: Added static `DanmakuBullet.get_z_index_for_texture()` mapping each unique texture to a distinct `z_index` (`z_as_relative = false`). Godot's 2D canvas batcher automatically groups bullets into buckets by texture before rendering, collapsing alternating bullet ring patterns into single batched draw calls (<15 total draw calls).
+    - **Tightened Directional Playfield Exit Despawn**: Added directional boundary checks in `DanmakuBullet._physics_process()`. Linear and launched homing bullets moving outward past playfield margins ($X \notin [-80, 680]$, $Y \notin [-300, 1020]$) despawn immediately, reducing lingering offscreen bullets by >80%.
+    - **Danmaku Bullet Cap Enforcement**: Added `if max_active_bullets > 0 and get_active_bullet_count() >= max_active_bullets: return null` across all 4 `Playfield.spawn_danmaku_bullet*` methods.
+    - **Static Shape Cache**: Cached `CircleShape2D` singletons by radius in `DanmakuBullet.get_cached_circle_shape()`, completely eliminating heap allocations when acquiring bullets from the pool.
+    - **Player Layering**: Player set to `z_index = 30` and HitboxIndicator set to `z_index = 35` to guarantee players render above bullets at all times.
+- [x] **Spellcard Uncapped Geometry & Active Bullet Pool Iteration (Shockwave/AI Lag Plateau Fix)**:
+  - **Preserved Complete Spellcard Geometry**: Removed `max_active_bullets` restrictions from `Playfield.spawn_danmaku_bullet*` so spellcards (e.g. Reimu Lv2 36-bullet rings) always fire complete 360-degree rings with unbroken patterns.
+  - **Eliminated 1,700-Node Linear Scans (Shockwave & AI Threat Scanning)**:
+    - Root cause of the ~40ms flat rectangular frame time plateau: `HeavyShockwave._sweep_playfield_entities()` and `RudimentaryAI._scan_incoming_threats()` called `bullets_layer.get_children()` every single frame for 1.3 seconds, allocating and scanning all 1,700 pooled nodes in GDScript.
+    - Added `NodePool.get_active_nodes()` and `Playfield.get_active_bullets()`, which track active instances directly in $O(1)$ from `_active_set` and non-pooled custom hazards.
+    - Rewired `HeavyShockwave` and `RudimentaryAI` to iterate only active bullets (~15 to 50 items instead of 1,700), reducing per-frame loop iterations and allocations by >98%.
+    - Optimized `HeavyShockwave._draw()` by reducing `draw_arc` segment count from 72 to 32 and consolidating concentric passes to eliminate CPU vertex tessellation overhead.
+- [x] **Playtest Polish & Launch Prep (Soundtrack, Mirrored P2 HUD, Debug Lockdown, VS CPU Practice)**:
+  - **Soundtrack Engine & Background Music**:
+    - Added `02_spring_lane.mp3` (*Spring Lane ~ Colorful Path*) to `res://assets/music/` with looping enabled.
+    - Updated `AudioManager` (`scripts/global/audio_manager.gd`) with dynamic scanning of music tracks (`.mp3`, `.ogg`, `.wav`) in `res://assets/music/`, dedicated `_bgm_player` stream on Master bus, and static `AudioService.play_random_music()` / `AudioService.stop_music()` controls.
+    - Automatically plays randomized BGM on entering the arena and cleanly fades out on match exit.
+  - **Mirrored P2 Health Gauge & Player Nickname HUD**:
+    - Added `is_mirrored: bool` export to `scenes/ui/health_gauge.gd` to reverse container ordering and symmetrically drain orbs from the center-screen edge outward toward player name.
+    - Mirrored P2 top HUD elements in `scenes/arena/arena.tscn` for bilateral symmetry (`P2RoundWins` -> `P2AIBadge` -> `P2HealthGauge`).
+    - Stored and synchronized player nicknames (`p1_name`, `p2_name`, `p2_is_ai`) across `GameManager` and `NetworkManager`, displaying player nicknames (or "CPU") on health gauges instead of static character labels.
+  - **Debug Menu Lockdown & Netplay Bot Key Handling**:
+    - Guarded `toggle_debug_menu()` and debug shortcuts (`F12`, `F10`, `F9`, `F3`, `F4`, `F7`, `F8`) in `arena.gd` behind `OS.is_debug_build()`.
+    - Automatically freed debug menu nodes and hid stats buttons in release builds.
+    - Disabled bot keys (`F1`/`F2`) and hid bot status badges during networked matches.
+  - **Solo Practice Mode ("VS CPU") on Main Menu**:
+    - Added dedicated "VS CPU (Practice)" button on `main_menu.tscn` integrated seamlessly into the vertical keyboard focus chain.
+    - Clicking/selecting Practice Mode configures `GameManager.p2_is_ai = true`, sets player nicknames, and navigates directly to Character Select for instant offline play against the bot.
+  - **Automated Verification**: All 34 test suites in `run_tests.bat` passed with 0 failures.
+  - **Render Cloud Signaling Deployment & Itch.io Release Bundle**:
+    - Deployed `server/signaling_server.js` to live Render cloud service at `wss://touhou-arena-relay.onrender.com`.
+    - Configured `scripts/global/network_manager.gd` to route remote web sessions directly to `wss://touhou-arena-relay.onrender.com` while maintaining `localhost` fallback for local dev.
+    - Updated `scenes/main_menu/main_menu.tscn` server placeholder to the live Render endpoint.
+    - Exported fresh release web build and packaged into `touhou_web_arena_html5.zip` (placed on Desktop) ready for 1-click itch.io upload.
+- [x] **Networked Post-Match Handshake & Results Screen Synchronization**:
+  - Implemented client-authority cursor navigation in `scenes/post_match/post_match.gd` allowing both Player 1 and Player 2 to independently navigate post-match options (Rematch, Change Character, Return to Main Menu).
+  - Added reliable WebRTC RPC synchronization in `scripts/global/network_manager.gd`: `send_post_match_cursor(option_idx)` / `rpc_post_match_cursor` and `send_post_match_confirm(option_idx)` / `rpc_post_match_confirm` with corresponding signals `post_match_cursor_updated` and `post_match_confirmed`.
+  - Added real-time audio cues for remote selection changes (`play_select()`) and confirmation locks (`play_confirm()`).
+  - Implemented 2-player handshake resolution:
+    - Both choose Rematch: Resets round counters via `GameManager.reset_match_rounds()` and cleanly reloads `scenes/arena/arena.tscn`.
+    - Either chooses Change Character: Smoothly returns both players to `scenes/character_select/character_select.tscn`.
+    - Either chooses Return to Main Menu: Cleans up matchmaking room via `NetworkManager.cancel_matchmaking()` and navigates to `scenes/main_menu/main_menu.tscn`.
+  - Added graceful opponent disconnect notification and safety timer returning players to the main menu if peer leaves.
+- [x] **Player Hit Passive Charge Scaling & Spirit Activation Acceleration Ramp**:
+  - **Hit Passive Charge Scaling**:
+    - Implemented round-tracked hit counter `hits_taken_this_round` in `scenes/player/player.gd`.
+    - First hit taken in a round awards $+0.5$ segments (half segment) of passive spell bar charge; 2nd and subsequent hits award $+1.0$ segment (full segment).
+    - Counter cleanly resets to 0 in `reset_for_round()` (both unpreserved and preserved rounds) and `apply_character_data()`.
+    - Integrates seamlessly with existing Guts mechanics, hit shove knockback, and WebRTC client-authoritative state synchronization.
+  - **Activated Spirit Acceleration Ramp-up**:
+    - Replaced constant $110\text{ px/s}$ upward velocity in `scenes/enemies/spirit.gd` with gradual acceleration ramp model (`activated_initial_speed = 0.0`, `current_upward_acceleration = 0.0`, `activated_acceleration_ramp = 40.0`, `upward_speed = 160.0`).
+    - Activated spirits now linger near their activation location for the first $\sim 1\text{s}$ ($\sim 7\text{ px}$ ascent), gradually accelerating upwards to $\sim 159\text{ px/s}$ during the 2.8s detonation countdown.
+    - Total upward distance traveled before 3-way pellet detonation reduced from $308\text{ px}$ to $\approx 151\text{ px}$, keeping spirits in the active mid-screen combat zone for target acquisition and tactical threat.
+- [x] **Opponent Spellcard Warning Overhaul (Authentic Touhou 09 PoFV Warning Screen)**:
+  - **Full-Playfield Red Flash & Atmospheric Wash Overlay**:
+    - `show_spellcard_warning(spell_name, level, rank)` in `scenes/arena/playfield.gd` spawns a full $600 \times 960\text{ px}$ `ColorRect` overlay on the opponent's playfield.
+    - Flashes vividly red on activation (`Color(1.0, 0.05, 0.05, 0.65)`), settling smoothly into a steady atmospheric red wash (`Color(0.85, 0.05, 0.05, 0.42)`), and fading cleanly out at the end of the Action Stop freeze.
+  - **Full-Width Hollow WARNING Banner**:
+    - Recreated the authentic Touhou 09 PoFV WARNING banner using `Cirno.ttf` with dual-layer rendering:
+      - Main: hollow/semi-transparent red fill (`Color(1.0, 0.05, 0.05, 0.18)`), vibrant red outline (`Color(1.0, 0.15, 0.15, 1.0)`).
+      - Shadow: dark crimson offset stroke (`Color(0.65, 0.0, 0.0, 0.75)`).
+    - Stretched horizontally via `scale` to span the exact $600\text{ px}$ playfield width (`scale = Vector2(PLAYFIELD_WIDTH / 250.0, 1.35)`).
+  - **Centered Subtitle**:
+    - Displays `"Spell Card Attack Begin Immediately After!"` in white with bold red outline and dark red drop shadow directly beneath the WARNING banner.
+  - **Class & Rank Display**:
+    - Mapped spellcard tiers authentically: Level 2 $\to$ `"Fairy"`, Level 3 $\to$ `"Witch"`, Level 4 $\to$ `"Dragon"`.
+    - Formats to `"Class: %s Level %d" % [tier_name, rank]` right-aligned under `"immediately after!"` (e.g. `Class: Dragon Level 11`), matching the reference PoFV layout.
+  - **Vertical Centering & Top Message Removal**:
+    - Removed the top yellow spellcard declaration banner on the opponent's side to keep the warning presentation clean.
+    - Repositioned the warning text group to `Vector2(0.0, PLAYFIELD_HEIGHT * 0.38)` ($Y = 364.8\text{ px}$), placing the ~230px block directly in the vertical center of the $960\text{ px}$ playfield.
+  - **Rank Forwarding in `arena.gd`**:
+    - Forwarded active `rank` in `_execute_action_stop(...)` directly into `target_field.show_spellcard_warning(spell_name, level, rank)`.
+  - **Automated Verification**:
+    - Created unit test suite `tests/test_spellcard_warning.gd` verifying overlay dimensions ($600 \times 960$), full-width label span, vertical centering in the field middle, subtitle presence, class & rank formatting across Lv 2-4 and variable ranks, clean absence of top banner, and `PROCESS_MODE_ALWAYS` pause-screen visibility.
+    - Updated `tests/test_action_stop_full.gd` to assert presence of `SpellcardWarningContainer` on target field. All test suites pass 100%.
+- [ ] **Spectator Mode & Active Match Directory** (Backlog / Exploration):
+  - Add active match listing (`matches_list`) to signaling server broadcasting active matches (Host vs Client, characters, round score).
+  - Implement spectator joining with Round-Boundary Synchronization (spectator waits for current round intermission wipe to cleanly synchronize seeds and entities with zero network bandwidth bloat).
+
+
+
+

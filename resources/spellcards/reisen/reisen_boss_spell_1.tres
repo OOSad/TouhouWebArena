@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SpellcardData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_moon_shot_step.gd" id="2_moon_step"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_base"]
+
+[sub_resource type="Resource" id="Resource_moon_volley"]
+script = ExtResource("2_moon_step")
+mote_count = 3
+fan_half_angle_deg = 17.0
+mote_speed = 250.0
+initial_spacing = 40.0
+spawn_offset = Vector2(0, 130)
+charge_duration = 1.2
+fuse_radius = 181.0
+blast_radius_start = 24.0
+blast_radius_end = 126.0
+blast_duration = 1.05
+sfx = "se_exattack"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "reisen_boss_spell_1"
+spellcard_name = "Scatter Sign \"Luna Megalopolis\" - Triple Moon Shot"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.7
+steps = Array[ExtResource("3_step_base")]([SubResource("Resource_moon_volley")])

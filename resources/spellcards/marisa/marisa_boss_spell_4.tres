@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_star_spray_step.gd" id="2_star_spray_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Resource" path="res://resources/bullets/yellow_star.tres" id="4_yellow_star"]
+
+[sub_resource type="Resource" id="Resource_marisa_spray"]
+script = ExtResource("2_star_spray_step_script")
+bullet_data = ExtResource("4_yellow_star")
+total_stars = 60
+waves = 6
+wave_interval = 0.08
+speed_rank_1 = 200.0
+speed_rank_16 = 520.0
+speed_variance = 0.15
+curve_duration = 1.1
+curve_angular_speed = 1.25
+curve_variance = 0.20
+star_spin_speed = 6.0
+zun_mode = true
+boss_cast_hop = false
+boss_cast_hop_distance = 60.0
+boss_cast_hop_duration = 1.0
+sfx = "se_tan00"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "marisa_boss_spell_4"
+spellcard_name = "Star Spray"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_marisa_spray")])
+

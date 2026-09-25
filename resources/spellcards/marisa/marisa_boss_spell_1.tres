@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_aimed_strip_step.gd" id="2_strip_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Resource" path="res://resources/bullets/blue_star.tres" id="4_blue_star"]
+
+[sub_resource type="Resource" id="Resource_aimed_strip_step"]
+script = ExtResource("2_strip_script")
+bullet_data = ExtResource("4_blue_star")
+bullets_per_strip_min = 4
+bullets_per_strip_max = 4
+strips_min = 5
+strips_max = 20
+delay_between_strips_r1 = 0.12
+delay_between_strips_r16 = 0.07
+base_speed = 220.0
+accel_min = 90.0
+accel_max = 210.0
+max_bullet_speed = 700.0
+zun_speed_first = 462.5
+zun_speed_floor = 250.0
+fire_window_frames = 40
+interval_frames_numerator = 60
+interval_rank_offset = 6
+boss_cast_hop = true
+boss_cast_hop_distance = 80.0
+boss_cast_hop_duration = 1.55
+sfx = "se_tan00"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "marisa_boss_spell_1"
+spellcard_name = "Lines of Stars"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_aimed_strip_step")])
+

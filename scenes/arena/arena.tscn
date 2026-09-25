@@ -1,0 +1,268 @@
+[gd_scene format=3 uid="uid://c3rvkpd2ltni5"]
+
+[ext_resource type="Script" uid="uid://c8y4pdcrgyoxm" path="res://scenes/arena/arena.gd" id="1_arena_script"]
+[ext_resource type="PackedScene" path="res://scenes/arena/playfield.tscn" id="2_playfield_scene"]
+[ext_resource type="PackedScene" uid="uid://dfy42oxv77ghq" path="res://scenes/ui/health_gauge.tscn" id="3_health_gauge_scene"]
+[ext_resource type="PackedScene" path="res://scenes/ui/round_wins_display.tscn" id="4_rwd_scene"]
+[ext_resource type="PackedScene" path="res://scenes/effects/screen_wipe.tscn" id="5_wipe_scene"]
+[ext_resource type="PackedScene" path="res://scenes/ui/spell_bar.tscn" id="6_spell_bar_scene"]
+[ext_resource type="PackedScene" uid="uid://b0xdebugmenu1" path="res://scenes/ui/debug_menu.tscn" id="7_debug_menu_scene"]
+[ext_resource type="PackedScene" path="res://scenes/ui/match_timer.tscn" id="8_match_timer_scene"]
+[ext_resource type="PackedScene" uid="uid://bbnllqnfmp7hw" path="res://scenes/ui/profiler_overlay.tscn" id="9_profiler_scene"]
+[ext_resource type="Texture2D" uid="uid://b3um6qolkgyf0" path="res://assets/ui/stage_bg_bamboo.png" id="10_stage_bg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stats_btn"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(0.04, 0.08, 0.06, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.45, 0.35, 0.75)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="Arena" type="Control" unique_id=725060540]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_arena_script")
+
+[node name="Background" type="TextureRect" parent="." unique_id=369406138]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("10_stage_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="FullscreenButton" type="Button" parent="." unique_id=987654321]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 30.0
+offset_top = 16.0
+offset_right = 240.0
+offset_bottom = 62.0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.85, 0.92, 1, 0.95)
+theme_override_colors/font_hover_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_stats_btn")
+text = "[⛶ FULLSCREEN]"
+
+[node name="StatsToggleButton" type="Button" parent="." unique_id=987123456]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 30.0
+offset_top = 70.0
+offset_right = 240.0
+offset_bottom = 116.0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.4, 0.95, 0.65, 0.95)
+theme_override_colors/font_hover_color = Color(0.65, 1, 0.8, 1)
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_stats_btn")
+text = "[⚡ STATS]"
+
+[node name="P1NameLabel" type="Label" parent="." unique_id=948328443]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 330.0
+offset_top = 16.0
+offset_right = 600.0
+offset_bottom = 48.0
+theme_override_font_sizes/font_size = 22
+text = "REIMU"
+vertical_alignment = 1
+
+[node name="P1RoundWins" parent="." unique_id=1421204126 instance=ExtResource("4_rwd_scene")]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 830.0
+offset_top = 14.0
+offset_right = 920.0
+offset_bottom = 50.0
+
+[node name="MatchTimer" parent="." unique_id=1849201948 instance=ExtResource("8_match_timer_scene")]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 926.0
+offset_top = 14.0
+offset_right = 986.0
+offset_bottom = 50.0
+
+[node name="P2RoundWins" parent="." unique_id=1175533002 instance=ExtResource("4_rwd_scene")]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1000.0
+offset_top = 14.0
+offset_right = 1090.0
+offset_bottom = 50.0
+
+[node name="P2NameLabel" type="Label" parent="." unique_id=1955927473]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1320.0
+offset_top = 16.0
+offset_right = 1590.0
+offset_bottom = 48.0
+theme_override_font_sizes/font_size = 22
+text = "MARISA"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="PlayfieldsHBox" type="HBoxContainer" parent="." unique_id=143965389]
+layout_mode = 0
+offset_left = 330.0
+offset_top = 60.0
+offset_right = 1590.0
+offset_bottom = 1020.0
+theme_override_constants/separation = 60
+
+[node name="P1ViewportContainer" type="SubViewportContainer" parent="PlayfieldsHBox" unique_id=1582965613]
+unique_name_in_owner = true
+process_mode = 1
+custom_minimum_size = Vector2(600, 960)
+layout_mode = 2
+stretch = true
+
+[node name="P1Viewport" type="SubViewport" parent="PlayfieldsHBox/P1ViewportContainer" unique_id=284046742]
+handle_input_locally = false
+size = Vector2i(600, 960)
+render_target_update_mode = 4
+
+[node name="P1Playfield" parent="PlayfieldsHBox/P1ViewportContainer/P1Viewport" unique_id=2110666847 instance=ExtResource("2_playfield_scene")]
+unique_name_in_owner = true
+
+[node name="P2ViewportContainer" type="SubViewportContainer" parent="PlayfieldsHBox" unique_id=1622787314]
+unique_name_in_owner = true
+process_mode = 1
+custom_minimum_size = Vector2(600, 960)
+layout_mode = 2
+stretch = true
+
+[node name="P2Viewport" type="SubViewport" parent="PlayfieldsHBox/P2ViewportContainer" unique_id=823632282]
+handle_input_locally = false
+size = Vector2i(600, 960)
+render_target_update_mode = 4
+
+[node name="P2Playfield" parent="PlayfieldsHBox/P2ViewportContainer/P2Viewport" unique_id=1621817575 instance=ExtResource("2_playfield_scene")]
+unique_name_in_owner = true
+player_number = 2
+
+[node name="P1HealthGauge" parent="." unique_id=1984351112 instance=ExtResource("3_health_gauge_scene")]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 278.0
+offset_top = 838.0
+offset_right = 314.0
+offset_bottom = 1046.0
+is_vertical = true
+deplete_from_top = true
+
+[node name="P2HealthGauge" parent="." unique_id=207400713 instance=ExtResource("3_health_gauge_scene")]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1606.0
+offset_top = 838.0
+offset_right = 1642.0
+offset_bottom = 1046.0
+is_vertical = true
+is_mirrored = true
+deplete_from_top = true
+
+[node name="P1SpellBar" parent="." unique_id=1193087366 instance=ExtResource("6_spell_bar_scene")]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 330.0
+offset_top = 1042.0
+offset_right = 930.0
+offset_bottom = 1058.0
+
+[node name="P2SpellBar" parent="." unique_id=1533609162 instance=ExtResource("6_spell_bar_scene")]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 990.0
+offset_top = 1042.0
+offset_right = 1590.0
+offset_bottom = 1058.0
+player_number = 2
+
+[node name="EffectsOverlay" type="Node2D" parent="." unique_id=246861802]
+unique_name_in_owner = true
+
+[node name="VictoryBanner" type="PanelContainer" parent="." unique_id=1342716718]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -60.0
+offset_right = 320.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VictoryLabel" type="Label" parent="VictoryBanner" unique_id=68595268]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 3
+theme_override_font_sizes/font_size = 40
+text = "PLAYER 1 WINS!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ForfeitBanner" type="PanelContainer" parent="." unique_id=1342716719]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -420.0
+offset_top = -50.0
+offset_right = 420.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ForfeitLabel" type="Label" parent="ForfeitBanner" unique_id=68595269]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 28
+text = "Press Esc again within 3s to return to Main Menu"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScreenWipe" parent="." unique_id=2085289028 instance=ExtResource("5_wipe_scene")]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="DebugMenu" parent="." unique_id=1245895582 instance=ExtResource("7_debug_menu_scene")]
+unique_name_in_owner = true
+
+[node name="ProfilerOverlay" parent="." unique_id=635170860 instance=ExtResource("9_profiler_scene")]
+unique_name_in_owner = true

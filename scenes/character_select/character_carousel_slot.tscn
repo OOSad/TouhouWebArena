@@ -1,0 +1,78 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/character_select/character_carousel_slot.gd" id="1_slot_script"]
+[ext_resource type="Shader" path="res://shaders/carousel_wedge.gdshader" id="2_wedge_shader"]
+[ext_resource type="FontFile" uid="uid://sxfx0k4crqn8" path="res://Cirno.ttf" id="3_cirno_font"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wedge"]
+resource_local_to_scene = true
+shader = ExtResource("2_wedge_shader")
+shader_parameter/bg_color = Color(0.03, 0.04, 0.08, 0.92)
+shader_parameter/accent_color = Color(1, 0.35, 0.45, 1)
+shader_parameter/normal_border_color = Color(0.35, 0.45, 0.65, 0.55)
+shader_parameter/p1_border_color = Color(1, 0.28, 0.4, 1)
+shader_parameter/p2_border_color = Color(0.25, 0.85, 1, 1)
+shader_parameter/is_top_heavy = false
+shader_parameter/track_rotation_rad = -0.512389
+shader_parameter/uv_offset = Vector2(0.5, 0.22)
+shader_parameter/uv_scale = Vector2(0.00165, 0.00165)
+shader_parameter/face_shift = Vector2(0, 0)
+shader_parameter/silhouette_alpha = 0.95
+shader_parameter/is_selected_p1 = false
+shader_parameter/is_selected_p2 = false
+shader_parameter/border_width = 3.0
+
+[node name="CharacterCarouselSlot" type="Control"]
+custom_minimum_size = Vector2(240, 220)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 240.0
+offset_bottom = 220.0
+pivot_offset = Vector2(120, 110)
+mouse_filter = 1
+script = ExtResource("1_slot_script")
+
+[node name="WedgeRect" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_wedge")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="P1Badge" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 65.0
+offset_top = 6.0
+offset_right = 135.0
+offset_bottom = 32.0
+theme_override_colors/font_color = Color(1, 0.28, 0.4, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0.04, 0.05, 0.1, 0.9)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("3_cirno_font")
+theme_override_font_sizes/font_size = 20
+text = "[ 1P ]"
+
+[node name="P2Badge" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 156.0
+offset_top = 188.0
+offset_right = 226.0
+offset_bottom = 214.0
+theme_override_colors/font_color = Color(0.25, 0.85, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0.04, 0.05, 0.1, 0.9)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("3_cirno_font")
+theme_override_font_sizes/font_size = 20
+text = "[ 2P ]"

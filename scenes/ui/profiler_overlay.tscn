@@ -1,0 +1,290 @@
+[gd_scene format=3 uid="uid://bbnllqnfmp7hw"]
+
+[ext_resource type="Script" path="res://scenes/ui/profiler_overlay.gd" id="1_profiler_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_profiler_panel"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+bg_color = Color(0.04, 0.07, 0.06, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.5, 0.35, 0.85)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.7)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_section"]
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+bg_color = Color(0.02, 0.04, 0.03, 0.75)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.15, 0.3, 0.22, 0.6)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn"]
+content_margin_left = 8.0
+content_margin_top = 3.0
+content_margin_right = 8.0
+content_margin_bottom = 3.0
+bg_color = Color(0.1, 0.2, 0.16, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.25, 0.55, 0.4, 0.7)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[node name="ProfilerOverlay" type="CanvasLayer"]
+visible = false
+layer = 105
+script = ExtResource("1_profiler_script")
+
+[node name="RootControl" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="RootPanel" type="PanelContainer" parent="RootControl"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1585.0
+offset_top = 55.0
+offset_right = 1915.0
+offset_bottom = 1010.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_profiler_panel")
+
+[node name="VBox" type="VBoxContainer" parent="RootControl/RootPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HeaderHBox" type="HBoxContainer" parent="RootControl/RootPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleLabel" type="Label" parent="RootControl/RootPanel/VBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.35, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 16
+text = "⚡ STATS"
+vertical_alignment = 1
+
+[node name="FPSBadge" type="Label" parent="RootControl/RootPanel/VBox/HeaderHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 18
+text = "60 FPS"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="CopyBtn" type="Button" parent="RootControl/RootPanel/VBox/HeaderHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+theme_override_font_sizes/font_size = 14
+text = "📋 Copy"
+
+[node name="CloseBtn" type="Button" parent="RootControl/RootPanel/VBox/HeaderHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+theme_override_font_sizes/font_size = 14
+text = "✕"
+
+[node name="GraphContainer" type="PanelContainer" parent="RootControl/RootPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="GraphVBox" type="VBoxContainer" parent="RootControl/RootPanel/VBox/GraphContainer"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="GraphHeaderHBox" type="HBoxContainer" parent="RootControl/RootPanel/VBox/GraphContainer/GraphVBox"]
+layout_mode = 2
+
+[node name="GraphTitle" type="Label" parent="RootControl/RootPanel/VBox/GraphContainer/GraphVBox/GraphHeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.65, 0.82, 0.72, 0.9)
+theme_override_font_sizes/font_size = 13
+text = "FRAME TIME (120 FRAMES)"
+
+[node name="GraphLegend" type="Label" parent="RootControl/RootPanel/VBox/GraphContainer/GraphVBox/GraphHeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.7, 0.6, 0.85)
+theme_override_font_sizes/font_size = 12
+text = "16.7ms | 33.3ms"
+
+[node name="GraphControl" type="Control" parent="RootControl/RootPanel/VBox/GraphContainer/GraphVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(290, 72)
+layout_mode = 2
+
+[node name="TimingSection" type="PanelContainer" parent="RootControl/RootPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="TimingVBox" type="VBoxContainer" parent="RootControl/RootPanel/VBox/TimingSection"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="FPSDetailsLabel" type="Label" parent="RootControl/RootPanel/VBox/TimingSection/TimingVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.96, 0.9, 1)
+theme_override_font_sizes/font_size = 15
+text = "FPS: 60.0 (Avg: 59.8 | 1% Low: 56.2)
+Range: [54 - 60 FPS]"
+
+[node name="CPUTimingLabel" type="Label" parent="RootControl/RootPanel/VBox/TimingSection/TimingVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.88, 0.82, 0.95)
+theme_override_font_sizes/font_size = 15
+text = "Frame: 16.6 ms
+CPU Proc: 3.2 ms | Phys: 4.1 ms"
+
+[node name="RenderSection" type="PanelContainer" parent="RootControl/RootPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="RenderVBox" type="VBoxContainer" parent="RootControl/RootPanel/VBox/RenderSection"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="RenderTitle" type="Label" parent="RootControl/RootPanel/VBox/RenderSection/RenderVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.85, 0.95, 0.95)
+theme_override_font_sizes/font_size = 14
+text = "RENDER & GPU"
+
+[node name="RenderStatsLabel" type="Label" parent="RootControl/RootPanel/VBox/RenderSection/RenderVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.92, 0.96, 1)
+theme_override_font_sizes/font_size = 15
+text = "Draw Calls: 42 | Prims: 1,280
+2D Canvas Items: 210 | VRAM: 34.2 MB"
+
+[node name="PhysicsSection" type="PanelContainer" parent="RootControl/RootPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="PhysicsVBox" type="VBoxContainer" parent="RootControl/RootPanel/VBox/PhysicsSection"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="PhysicsTitle" type="Label" parent="RootControl/RootPanel/VBox/PhysicsSection/PhysicsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.8, 0.5, 0.95)
+theme_override_font_sizes/font_size = 14
+text = "2D PHYSICS SERVER"
+
+[node name="PhysicsStatsLabel" type="Label" parent="RootControl/RootPanel/VBox/PhysicsSection/PhysicsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.92, 0.84, 1)
+theme_override_font_sizes/font_size = 15
+text = "Phys2D Active: 380 | Pairs: 64
+Islands: 4"
+
+[node name="MemorySection" type="PanelContainer" parent="RootControl/RootPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="MemoryVBox" type="VBoxContainer" parent="RootControl/RootPanel/VBox/MemorySection"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="MemoryTitle" type="Label" parent="RootControl/RootPanel/VBox/MemorySection/MemoryVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.7, 0.88, 0.95)
+theme_override_font_sizes/font_size = 14
+text = "MEMORY & NODES"
+
+[node name="MemoryStatsLabel" type="Label" parent="RootControl/RootPanel/VBox/MemorySection/MemoryVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.88, 0.96, 1)
+theme_override_font_sizes/font_size = 15
+text = "RAM: 38.5 MB (Peak: 42.1 MB)
+Nodes: 860 | Objects: 2,140"
+
+[node name="OrphansLabel" type="Label" parent="RootControl/RootPanel/VBox/MemorySection/MemoryVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 0.65, 1)
+theme_override_font_sizes/font_size = 15
+text = "Orphan Nodes: 0 (No Leaks)"
+
+[node name="GameplaySection" type="PanelContainer" parent="RootControl/RootPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="GameplayVBox" type="VBoxContainer" parent="RootControl/RootPanel/VBox/GameplaySection"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="GameplayTitle" type="Label" parent="RootControl/RootPanel/VBox/GameplaySection/GameplayVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.9, 0.9, 0.95)
+theme_override_font_sizes/font_size = 14
+text = "DANMAKU & ENTITIES"
+
+[node name="P1GameplayLabel" type="Label" parent="RootControl/RootPanel/VBox/GameplaySection/GameplayVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.92, 0.96, 1)
+theme_override_font_sizes/font_size = 15
+text = "P1: 0/350 Bullets | F: 0 S: 0"
+
+[node name="P2GameplayLabel" type="Label" parent="RootControl/RootPanel/VBox/GameplaySection/GameplayVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.92, 0.96, 1)
+theme_override_font_sizes/font_size = 15
+text = "P2: 0/350 Bullets | F: 0 S: 0"
+
+[node name="TotalGameplayLabel" type="Label" parent="RootControl/RootPanel/VBox/GameplaySection/GameplayVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.96, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "Total Active: 0 Bullets | 0 Entities"
+
+[node name="FooterPanel" type="PanelContainer" parent="RootControl/RootPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="StatusHintLabel" type="Label" parent="RootControl/RootPanel/VBox/FooterPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.75, 0.95)
+theme_override_font_sizes/font_size = 13
+text = "[F9] Copy Snapshot  |  [F10] Toggle"
+horizontal_alignment = 1
+

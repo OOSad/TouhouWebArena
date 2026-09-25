@@ -1,0 +1,38 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/stages/flowering_night/flowering_night_3d.gd" id="1_flowering_script"]
+
+[sub_resource type="Environment" id="Environment_flowering"]
+background_mode = 1
+background_color = Color(0.55, 0.45, 0.4, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1.0, 0.95, 0.85, 1)
+fog_enabled = true
+fog_mode = 1
+fog_light_color = Color(0.55, 0.45, 0.4, 1)
+fog_density = 0.1
+fog_depth_curve = 1.0
+fog_depth_begin = 5.0
+fog_depth_end = 20.0
+fog_sky_affect = 1.0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_field"]
+size = Vector2(36, 64)
+
+[node name="FloweringNight3D" type="Node3D"]
+script = ExtResource("1_flowering_script")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.669131, 0.743145, 0, -0.743145, 0.669131, 0, 6.6, 0)
+environment = SubResource("Environment_flowering")
+current = true
+fov = 58.0
+
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_flowering")
+
+[node name="FieldPlane" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -18)
+mesh = SubResource("PlaneMesh_field")

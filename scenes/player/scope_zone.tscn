@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/player/scope_zone.gd" id="1_scope_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_scope"]
+radius = 130.0
+
+[node name="ScopeZone" type="Area2D"]
+collision_layer = 0
+collision_mask = 8
+monitorable = false
+script = ExtResource("1_scope_script")
+
+[node name="CircleShape" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_scope")
+
+[node name="PolygonShape" type="CollisionPolygon2D" parent="."]
+disabled = true

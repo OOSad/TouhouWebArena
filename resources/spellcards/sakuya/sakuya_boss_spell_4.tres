@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SpellcardData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_knife_strafe_step.gd" id="2_strafe_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+
+[sub_resource type="Resource" id="Resource_knife_strafe"]
+script = ExtResource("2_strafe_step_script")
+bullet_data = null
+left_edge_x = 33.3
+right_edge_x = 566.7
+jump_duration = 0.6666667
+dash_duration = 0.8333333
+daggers_per_line = 13
+lines_min = 2
+lines_max = 6
+angle_min_deg = 15.0
+angle_max_deg = 72.0
+taper_ticks = 3
+speed_min = 193.75
+speed_max = 287.5
+zun_mode = true
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "sakuya_boss_spell_4"
+spellcard_name = "Time Sign \"Mysterious Jack\" - Knife Strafing"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_knife_strafe")])

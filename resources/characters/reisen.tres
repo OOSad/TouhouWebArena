@@ -1,0 +1,67 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/character_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/menu_characters/reisen.png" id="4_portrait"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/reisen_charge_attack.tscn" id="5_charge_attack"]
+[ext_resource type="Resource" path="res://resources/spellcards/reisen/reisen_spell_lv2.tres" id="6_spell_lv2"]
+[ext_resource type="Resource" path="res://resources/spellcards/reisen/reisen_spell_lv3.tres" id="7_spell_lv3"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/reisen_extra_moon.tscn" id="8_extra_attack"]
+[ext_resource type="PackedScene" path="res://scenes/stages/eientei_corridor/eientei_corridor_3d.tscn" id="10_eientei_stage"]
+
+[resource]
+script = ExtResource("1_script")
+character_id = "reisen"
+display_name = "Reisen Udongein Inaba"
+title = "Moon Rabbit of Madness"
+primary_color = Color(0.72, 0.42, 0.92, 1)
+secondary_color = Color(0.93, 0.88, 0.99, 1)
+portrait_texture = ExtResource("4_portrait")
+normal_speed = 607.5
+focus_speed = 337.5
+hurtbox_radius = 3.0
+graze_radius = 64.0
+passive_charge_per_graze = 0.015
+bullet_damage = 1.0
+bullet_speed = 1400.0
+bullet_scale = Vector2(2.0, 2.0)
+bullet_capsule_height = 48.0
+shot_cooldown = 0.075
+primary_shot_name = "Lunatic Cartridge"
+primary_shot_desc = "Rapid stream of pale cartridge rounds fired straight up."
+scope_shape = 3
+scope_radius = 200.0
+scope_expand_duration = 0.26
+scope_collapse_duration = 0.13
+extra_attack_scene = ExtResource("8_extra_attack")
+extra_attack_y_range = Vector2(130, 175)
+extra_attack_x_range = Vector2(60, 540)
+spell_bar_segments = 4
+passive_charge_start = 1.0
+passive_charge_per_fairy = 0.01
+passive_charge_per_great_fairy = 0.025
+passive_charge_per_spirit = 0.04
+passive_charge_per_cancel = 0.001
+active_charge_speed = 2.1
+charge_attack_name = "Mind Explosion"
+charge_attack_scene = ExtResource("5_charge_attack")
+extra_attack_name = "Falling Moon"
+extra_attack_desc = "Drops a pale moon into the opponent's ceiling; it bursts short of them and leaves a crater to fly around."
+charge_attack_desc = "A single oversized cartridge resolves into being and flies straight ahead, bursting into a red spark aura on impact"
+special_trait = "Area Denial (her moons leave standing craters instead of bullets to dodge)"
+signature_spell_name = "Wave Sign \"Lunar Wave\""
+spellcard_lv2 = ExtResource("6_spell_lv2")
+spellcard_lv3 = ExtResource("7_spell_lv3")
+spell_bg_anim_type = "aligned_rotate"
+spell_bar_color = Color(0.52, 0.3, 0.72, 1)
+has_spellcard_shockwaves = true
+shockwave_radius_lv2 = 420.0
+shockwave_radius_lv3 = 650.0
+shockwave_radius_lv4 = 1200.0
+shockwave_speed = 400.0
+shockwave_duration = 1.02
+shockwave_color = Color(0.82, 0.45, 0.95, 1)
+version_tag = "TH09"
+archetype = "Balanced Mid-Range / Illusory Disruption"
+home_stage_scene = ExtResource("10_eientei_stage")
+home_stage_id = "eientei_corridor"
+stage_bgm_path = "res://assets/music/06_lunatic_eyes_invisible_full_moon.ogg"

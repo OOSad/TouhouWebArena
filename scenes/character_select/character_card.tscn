@@ -1,0 +1,432 @@
+[gd_scene load_steps=7 format=3 uid="uid://c3k7v0j8x4b8y"]
+
+[ext_resource type="Script" path="res://scenes/character_select/character_card.gd" id="1_card_script"]
+[ext_resource type="FontFile" uid="uid://sxfx0k4crqn8" path="res://Cirno.ttf" id="2_cirno_font"]
+[ext_resource type="PackedScene" uid="uid://dfy42oxv77ghq" path="res://scenes/ui/health_gauge.tscn" id="3_health_gauge"]
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_divider"]
+color = Color(0.4, 0.5, 0.7, 0.35)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_overlay"]
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+bg_color = Color(0.02, 0.03, 0.07, 0.93)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.55, 0.85, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_subcard"]
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+bg_color = Color(0.02, 0.03, 0.07, 0.68)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.35, 0.55, 0.5)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="CharacterCard" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_card_script")
+
+[node name="PortraitRect" type="TextureRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 1434.0
+offset_bottom = 1920.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="NamePlateVBox" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 36.0
+offset_top = -210.0
+offset_right = -36.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="TopHBox" type="HBoxContainer" parent="NamePlateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="PlayerBadge" type="Label" parent="NamePlateVBox/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 24
+text = "[ 1P ]"
+
+[node name="VersionTag" type="Label" parent="NamePlateVBox/TopHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.78, 0.92, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 18
+text = "[ TH09 ]"
+
+[node name="TitleLabel" type="Label" parent="NamePlateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.85, 0.65, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 20
+text = "Shrine Maiden of Paradise"
+
+[node name="NameLabel" type="Label" parent="NamePlateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 6
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 40
+text = "Reimu Hakurei"
+
+[node name="HandicapSlot" type="HBoxContainer" parent="NamePlateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="HandicapGauge" parent="NamePlateVBox/HandicapSlot" instance=ExtResource("3_health_gauge")]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+orb_size = Vector2(26, 26)
+enable_pillar = false
+
+[node name="HandicapLabel" type="Label" parent="NamePlateVBox/HandicapSlot"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 0.9)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 18
+text = "5.0 HP"
+vertical_alignment = 1
+
+[node name="InspectHint" type="Label" parent="NamePlateVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.68, 0.76, 0.9, 0.85)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 15
+text = "[Shift + Left / Right] Set Handicap"
+
+[node name="InfoOverlay" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 0
+offset_left = 320.0
+offset_top = 44.0
+offset_right = 760.0
+offset_bottom = 344.0
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_overlay")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="InfoOverlay"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="InfoVBox" type="VBoxContainer" parent="InfoOverlay/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="ArchetypeLabel" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.9, 0.75, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 16
+text = "Role: All-Around / Boundary Control"
+
+[node name="Divider1" type="HSeparator" parent="InfoOverlay/ScrollContainer/InfoVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_divider")
+
+[node name="KitVBox" type="VBoxContainer" parent="InfoOverlay/ScrollContainer/InfoVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="KitSectionHeader" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox/KitVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.76, 0.85, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 15
+text = "COMBAT SPECIFICATIONS"
+
+[node name="ShotVBox" type="VBoxContainer" parent="InfoOverlay/ScrollContainer/InfoVBox/KitVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="ShotNameLabel" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox/KitVBox/ShotVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 18
+text = "• Shot: Hakurei Amulet"
+
+[node name="ShotDescLabel" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox/KitVBox/ShotVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.82, 0.92, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 15
+text = "  Dual forward streaming amulets"
+autowrap_mode = 2
+
+[node name="ScopeLabel" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox/KitVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 18
+text = "• Scope: Centric Circle (r = 130px)"
+
+[node name="TraitLabel" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox/KitVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 18
+text = "• Trait: Small Hitbox (graze advantage)"
+autowrap_mode = 2
+
+[node name="Divider2" type="HSeparator" parent="InfoOverlay/ScrollContainer/InfoVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/separator = SubResource("StyleBoxLine_divider")
+
+[node name="TacticalBadgesHBox" type="HBoxContainer" parent="InfoOverlay/ScrollContainer/InfoVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="ExtraPanel" type="PanelContainer" parent="InfoOverlay/ScrollContainer/InfoVBox/TacticalBadgesHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_subcard")
+
+[node name="ExtraVBox" type="VBoxContainer" parent="InfoOverlay/ScrollContainer/InfoVBox/TacticalBadgesHBox/ExtraPanel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="ExtraTag" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox/TacticalBadgesHBox/ExtraPanel/ExtraVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.4, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 14
+text = "[ EXTRA ATTACK ]"
+
+[node name="ExtraNameLabel" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox/TacticalBadgesHBox/ExtraPanel/ExtraVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 17
+text = "Yin-Yang Orbs"
+
+[node name="ExtraDescLabel" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox/TacticalBadgesHBox/ExtraPanel/ExtraVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.92, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 14
+text = "Bounces off walls to constrict incoming movement"
+autowrap_mode = 2
+
+[node name="ChargePanel" type="PanelContainer" parent="InfoOverlay/ScrollContainer/InfoVBox/TacticalBadgesHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_subcard")
+
+[node name="ChargeVBox" type="VBoxContainer" parent="InfoOverlay/ScrollContainer/InfoVBox/TacticalBadgesHBox/ChargePanel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="ChargeTag" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox/TacticalBadgesHBox/ChargePanel/ChargeVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 14
+text = "[ CHARGE (LV 1) ]"
+
+[node name="ChargeNameLabel" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox/TacticalBadgesHBox/ChargePanel/ChargeVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 17
+text = "Hakurei Amulet"
+
+[node name="ChargeDescLabel" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox/TacticalBadgesHBox/ChargePanel/ChargeVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.92, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 14
+text = "Homing talisman burst tracking enemies"
+autowrap_mode = 2
+
+[node name="SpellcardPanel" type="PanelContainer" parent="InfoOverlay/ScrollContainer/InfoVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_subcard")
+
+[node name="SpellHBox" type="HBoxContainer" parent="InfoOverlay/ScrollContainer/InfoVBox/SpellcardPanel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="SpellTag" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox/SpellcardPanel/SpellHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.65, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 14
+text = "[ SIGNATURE SPELL ]"
+
+[node name="SignatureSpellLabel" type="Label" parent="InfoOverlay/ScrollContainer/InfoVBox/SpellcardPanel/SpellHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 16
+text = "Spirit Sign \"Fantasy Seal\""
+text_overrun_behavior = 3

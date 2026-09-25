@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="DanmakuBulletData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/danmaku_bullet_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://resources/bullets/textures/tex_spawn_glow_yellow.tres" id="3_glow"]
+
+[resource]
+script = ExtResource("1_script")
+bullet_id = "yellow_big_ball"
+hitbox_radius = 20.5
+rotate_with_direction = false
+base_scale = Vector2(2.0833, 2.0833)
+can_be_canceled = false
+lifetime = 8.0
+spawn_fade_in = true
+spawn_fade_in_start_scale_mult = 3.2
+spawn_fade_in_duration = 0.2666667
+spawn_fade_in_holds = true
+spawn_fade_in_texture = ExtResource("3_glow")
+spawn_fade_in_speed_mult = 0.45
+spawn_fade_in_texture_end_scale = 1.6

@@ -1,0 +1,69 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/character_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/menu_characters/yuuka.png" id="4_portrait"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/yuuka_charge_attack.tscn" id="5_charge_attack"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/yuuka_extra_flower.tscn" id="6_extra_attack"]
+[ext_resource type="Resource" path="res://resources/spellcards/yuuka/yuuka_spell_lv2.tres" id="7_spell_lv2"]
+[ext_resource type="Resource" path="res://resources/spellcards/yuuka/yuuka_spell_lv3.tres" id="8_spell_lv3"]
+[ext_resource type="PackedScene" path="res://scenes/stages/garden_of_the_sun/garden_of_the_sun_3d.tscn" id="9_garden_stage"]
+
+[resource]
+script = ExtResource("1_script")
+character_id = "yuuka"
+display_name = "Yuuka Kazami"
+title = "Flower Master of the Four Seasons"
+primary_color = Color(0.24, 0.72, 0.38, 1)
+secondary_color = Color(0.98, 0.88, 0.3, 1)
+portrait_texture = ExtResource("4_portrait")
+normal_speed = 405.0
+focus_speed = 243.0
+hurtbox_radius = 3.0
+graze_radius = 64.0
+passive_charge_per_graze = 0.015
+bullet_damage = 1.0
+bullet_speed = 1400.0
+bullet_scale = Vector2(2.0, 2.0)
+bullet_capsule_height = 24.0
+shot_cooldown = 0.075
+primary_shot_name = "Sunflower Bloom"
+primary_shot_desc = "Fan-pattern burst of flower bullets radiating outward."
+scope_shape = 4
+scope_radius = 110.0
+scope_expand_duration = 0.28
+scope_collapse_duration = 0.14
+spell_bar_segments = 4
+passive_charge_start = 1.0
+passive_charge_per_fairy = 0.01
+passive_charge_per_great_fairy = 0.025
+passive_charge_per_spirit = 0.04
+passive_charge_per_cancel = 0.001
+active_charge_speed = 2.34
+charge_attack_name = "Beauty of Nature"
+charge_attack_scene = ExtResource("5_charge_attack")
+extra_attack_scene = ExtResource("6_extra_attack")
+extra_attack_y_range = Vector2(30, 180)
+extra_attack_x_range = Vector2(60, 540)
+extra_attack_name = "Falling Sunflower"
+extra_attack_desc = "Drops a spinning sunflower onto the opponent's field; each one falls at its own speed."
+charge_attack_desc = "Fires dense radial blossoms around herself to claim territorial control."
+special_trait = "Slow and deliberate movement with rapid charge accumulation and wide screen coverage."
+signature_spell_name = "Flower Sign \"Blossoming of Gensokyo\""
+spellcard_lv2 = ExtResource("7_spell_lv2")
+spellcard_lv3 = ExtResource("8_spell_lv3")
+spell_bar_color = Color(0.18, 0.62, 0.28, 1)
+has_spellcard_shockwaves = true
+shockwave_radius_lv2 = 420.0
+shockwave_radius_lv3 = 650.0
+shockwave_radius_lv4 = 1200.0
+shockwave_speed = 400.0
+shockwave_duration = 1.02
+shockwave_color = Color(0.35, 0.88, 0.45, 1)
+version_tag = "TH09"
+archetype = "Heavy Juggernaut / Botanical Dominance"
+
+home_stage_scene = ExtResource("9_garden_stage")
+home_stage_id = "garden_of_the_sun"
+stage_bgm_path = "res://assets/music/13_gensokyo_past_and_present.ogg"
+extra_attack_launch_sfx = "se_exattack"
+spell_bg_anim_type = "scroll_rotate"

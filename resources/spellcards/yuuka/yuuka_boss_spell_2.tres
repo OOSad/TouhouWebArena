@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_ball_stream_step.gd" id="2_stream_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_delay_step.gd" id="4_delay_script"]
+[ext_resource type="Resource" path="res://resources/bullets/yellow_big_ball.tres" id="5_ball"]
+
+[sub_resource type="Resource" id="Resource_stream"]
+script = ExtResource("2_stream_script")
+bullet_data = ExtResource("5_ball")
+windup_sfx = "se_power0"
+
+[sub_resource type="Resource" id="Resource_tail"]
+script = ExtResource("4_delay_script")
+delay_seconds = 0.2333333
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "yuuka_boss_spell_2"
+spellcard_name = "Big Ball Streams"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+jitter_wave_origin = false
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_stream"), SubResource("Resource_tail")])

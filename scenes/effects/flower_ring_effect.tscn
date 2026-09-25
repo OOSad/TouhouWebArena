@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/effects/flower_ring_effect.gd" id="1_script"]
+[ext_resource type="Shader" path="res://shaders/flower_ring.gdshader" id="2_shader"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/spellcard_shockwave_ribbon.tres" id="3_texture"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_flower"]
+resource_local_to_scene = true
+shader = ExtResource("2_shader")
+shader_parameter/ribbon_texture = ExtResource("3_texture")
+shader_parameter/base_radius = 140.0
+shader_parameter/lobe_depth = 0.32
+shader_parameter/band_width = 144.0
+shader_parameter/rotation_angle = 0.0
+shader_parameter/repeats = 10.0
+shader_parameter/color_tint = Color(0.3, 0.85, 1, 1)
+shader_parameter/core_glow_intensity = 0.6
+
+[node name="FlowerRingEffect" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_flower")
+offset_left = -300.0
+offset_top = -300.0
+offset_right = 300.0
+offset_bottom = 300.0
+mouse_filter = 2
+

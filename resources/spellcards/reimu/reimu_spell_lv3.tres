@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3 uid="uid://7w0hxasgq1nk"]
+
+[ext_resource type="Script" uid="uid://doicapgx47u0j" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" uid="uid://b2eevludovou4" path="res://scripts/resources/danmaku_step.gd" id="2_kfvx3"]
+[ext_resource type="Script" uid="uid://gwyhg8xjkaey" path="res://scripts/resources/danmaku_ring_step.gd" id="2_ring_script"]
+[ext_resource type="Script" uid="uid://e17ldbpib36h" path="res://scripts/resources/danmaku_delay_step.gd" id="3_delay_script"]
+[ext_resource type="Resource" path="res://resources/bullets/red_talisman.tres" id="4_red_talisman"]
+[ext_resource type="Script" uid="uid://dhx7tbmuoqo10" path="res://scripts/resources/danmaku_bullet_data.gd" id="4_ucfhi"]
+[ext_resource type="Resource" path="res://resources/bullets/white_talisman.tres" id="5_white_talisman"]
+
+[sub_resource type="Resource" id="Resource_ring_red_talisman"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("4_red_talisman")
+use_wave_angle = true
+count_min = 50
+count_max = 80
+speed_min = 318.75
+speed_max = 412.5
+alternate_speed_min = 312.5
+alternate_speed_max = 412.5
+
+[sub_resource type="Resource" id="Resource_delay"]
+script = ExtResource("3_delay_script")
+
+[sub_resource type="Resource" id="Resource_ring_white_talisman"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("5_white_talisman")
+motion_mode = 1
+use_wave_angle = true
+count_min = 50
+count_max = 80
+stagger_half_step = true
+speed_min = 318.75
+speed_max = 412.5
+alternate_speed_min = 312.5
+alternate_speed_max = 412.5
+homing_decel_time = 1.0
+homing_pause_time = 0.0
+homing_launch_speed = 375.0
+stage1_flight_duration = 0.0
+homing_stage2_decel_time = 1.5
+homing_stage2_launch_speed = 250.0
+alternate_homing_launch_speed = 375.0
+homing_stages = 2
+alternate_homing_decel_time = 1.0
+alternate_homing_stages = 2
+homing_sfx = "se_kira00"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "reimu_lv3"
+spellcard_name = "Spirit Sign \"Fantasy Seal -Concentrate-\""
+level = 3
+wave_interval = 0.6666667
+wave_rank_breaks = PackedInt32Array(8, 15)
+wave_counts = PackedInt32Array(1, 2, 3)
+jitter_wave_origin = false
+random_wave_angle = true
+mirror_player_origin = true
+steps = Array[ExtResource("2_kfvx3")]([SubResource("Resource_ring_red_talisman"), SubResource("Resource_delay"), SubResource("Resource_ring_white_talisman")])

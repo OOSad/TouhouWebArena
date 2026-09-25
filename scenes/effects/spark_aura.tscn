@@ -1,0 +1,31 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/effects/spark_aura.gd" id="1_script"]
+[ext_resource type="Shader" path="res://shaders/spark_aura.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_spark"]
+resource_local_to_scene = true
+shader = ExtResource("2_shader")
+shader_parameter/core_color = Color(0.3, 0.02, 0.1, 1)
+shader_parameter/edge_color = Color(1, 0.05, 0.05, 1)
+shader_parameter/spark_color = Color(1, 1, 1, 1)
+shader_parameter/disc_radius = 0.42
+shader_parameter/jitter_amount = 0.01
+shader_parameter/disc_alpha = 1.0
+shader_parameter/spark_alpha = 1.0
+shader_parameter/mottle = 0.0
+shader_parameter/ring_thickness = 0.01
+shader_parameter/control_points = 22.0
+shader_parameter/jitter_hz = 30.0
+shader_parameter/seed = 0.0
+
+[node name="SparkAura" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_spark")
+offset_left = -210.0
+offset_top = -210.0
+offset_right = 210.0
+offset_bottom = 210.0
+mouse_filter = 2

@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/stages/eientei_corridor/eientei_corridor_3d.gd" id="1_eientei_script"]
+
+[sub_resource type="Environment" id="Environment_eientei"]
+background_mode = 1
+background_color = Color(0.1255, 0.1216, 0.2471, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.35, 0.3, 0.38, 1)
+fog_enabled = false
+
+[node name="EienteiCorridor3D" type="Node3D"]
+script = ExtResource("1_eientei_script")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.766044, -0.642788, 0, 0.642788, 0.766044, 0, 4.6, 0)
+environment = SubResource("Environment_eientei")
+current = true
+fov = 58.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_eientei")

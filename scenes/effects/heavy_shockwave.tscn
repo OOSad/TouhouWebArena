@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/effects/heavy_shockwave.gd" id="1_heavy_shockwave_script"]
+[ext_resource type="Shader" path="res://shaders/polar_ring.gdshader" id="2_polar_shader"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/spellcard_shockwave_ribbon.tres" id="3_ribbon_texture"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ring"]
+resource_local_to_scene = true
+shader = ExtResource("2_polar_shader")
+shader_parameter/ribbon_texture = ExtResource("3_ribbon_texture")
+shader_parameter/inner_radius_px = 16.0
+shader_parameter/outer_radius_px = 44.0
+shader_parameter/rotation_angle = 0.0
+shader_parameter/repeats = 6.0
+shader_parameter/color_tint = Color(1, 1, 1, 1)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_shockwave"]
+radius = 30.0
+
+[node name="HeavyShockwave" type="Area2D"]
+collision_layer = 0
+collision_mask = 10
+script = ExtResource("1_heavy_shockwave_script")
+
+[node name="RingRect" type="ColorRect" parent="."]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_ring")
+offset_left = -44.0
+offset_top = -44.0
+offset_right = 44.0
+offset_bottom = 44.0
+mouse_filter = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("CircleShape2D_shockwave")

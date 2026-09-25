@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/effects/shockwave.gd" id="1_shockwave_script"]
+[ext_resource type="Texture2D" path="res://resources/bullets/textures/tex_shockwave.tres" id="2_shockwave_texture"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_shockwave"]
+radius = 30.0
+
+[node name="Shockwave" type="Area2D"]
+collision_layer = 0
+collision_mask = 10
+script = ExtResource("1_shockwave_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+material = SubResource("CanvasItemMaterial_add")
+texture_filter = 1
+texture = ExtResource("2_shockwave_texture")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("CircleShape2D_shockwave")
+

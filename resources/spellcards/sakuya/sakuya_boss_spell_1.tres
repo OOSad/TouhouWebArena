@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="SpellcardData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_pellet_dagger_step.gd" id="2_dagger_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Resource" path="res://resources/bullets/sakuya_dagger_pellet.tres" id="4_pellet_data"]
+
+[sub_resource type="Resource" id="Resource_pellet_dagger"]
+script = ExtResource("2_dagger_step_script")
+dagger_data = null
+pellet_data = ExtResource("4_pellet_data")
+dagger_speed = 250.0
+pellet_spawn_interval = 0.0333333
+pellets_per_burst_min = 1
+pellets_per_burst_max = 1
+pellet_spawn_radius = 66.7
+pellet_accel_time = 2.0
+pellet_speed_min = 130.0
+pellet_speed_max = 205.0
+pellet_bursts_base = 50
+pellet_bursts_per_rank = 2
+pellet_radius_decay = 0.98
+pellet_speed_jitter = 62.5
+sfx = "se_tan00"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "sakuya_boss_spell_1"
+spellcard_name = "Time Sign \"Mysterious Jack\" - Pellet Spewing Dagger"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_pellet_dagger")])

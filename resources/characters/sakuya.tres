@@ -1,0 +1,62 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/character_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/menu_characters/sakuya.png" id="5_portrait"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/sakuya_charge_attack.tscn" id="6_charge_attack"]
+[ext_resource type="Resource" path="res://resources/spellcards/sakuya/sakuya_spell_lv2.tres" id="7_spell_lv2"]
+[ext_resource type="Resource" path="res://resources/spellcards/sakuya/sakuya_spell_lv3.tres" id="8_spell_lv3"]
+[ext_resource type="Texture2D" path="res://assets/effects/sakuya_distortion.png" id="9_bg_base"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/sakuya_clock.tres" id="10_bg_anim"]
+[ext_resource type="PackedScene" path="res://scenes/stages/flowering_night/flowering_night_3d.tscn" id="11_flowering_stage"]
+
+[resource]
+script = ExtResource("1_script")
+character_id = "sakuya"
+display_name = "Sakuya Izayoi"
+title = "Maid of the Scarlet Devil Mansion"
+primary_color = Color(0.35, 0.45, 0.75, 1)
+secondary_color = Color(0.85, 0.9, 1, 1)
+portrait_texture = ExtResource("5_portrait")
+normal_speed = 540.0
+focus_speed = 432.0
+hurtbox_radius = 3.0
+graze_radius = 64.0
+passive_charge_per_graze = 0.015
+bullet_damage = 1.0
+bullet_speed = 1450.0
+bullet_scale = Vector2(1.5, 1.5)
+bullet_capsule_height = 42.0
+shot_cooldown = 0.075
+scope_shape = 2
+scope_radius = 400.0
+scope_expand_duration = 0.22
+scope_collapse_duration = 0.11
+spell_bar_segments = 4
+passive_charge_start = 1.0
+passive_charge_per_fairy = 0.01
+passive_charge_per_great_fairy = 0.025
+passive_charge_per_spirit = 0.04
+passive_charge_per_cancel = 0.001
+active_charge_speed = 2.16
+charge_attack_name = "Silver Knife"
+charge_attack_scene = ExtResource("6_charge_attack")
+charge_attack_desc = "Eight daggers spin up at her hitbox, then flurry toward the nearest enemy"
+extra_attack_name = "Illusion Knives"
+extra_attack_desc = "Five knives spin up where the fairy fell and fly themselves across to the opponent's field"
+signature_spell_name = "Time Sign \"Private Square\""
+spellcard_lv2 = ExtResource("7_spell_lv2")
+spellcard_lv3 = ExtResource("8_spell_lv3")
+spell_bg_base_texture = ExtResource("9_bg_base")
+spell_bg_anim_texture = ExtResource("10_bg_anim")
+spell_bg_anim_type = "dual_rotate"
+spell_bar_color = Color(0.32, 0.42, 0.72, 1)
+has_spellcard_shockwaves = true
+shockwave_radius_lv2 = 420.0
+shockwave_radius_lv3 = 650.0
+shockwave_radius_lv4 = 1200.0
+shockwave_speed = 400.0
+shockwave_duration = 1.02
+shockwave_color = Color(0.65, 0.75, 1, 1)
+home_stage_scene = ExtResource("11_flowering_stage")
+home_stage_id = "flowering_night"
+stage_bgm_path = "res://assets/music/04_flowering_night.ogg"

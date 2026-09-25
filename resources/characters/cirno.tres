@@ -1,0 +1,73 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/character_data.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/cirno_stalactite.tscn" id="4_extra_attack"]
+[ext_resource type="Texture2D" path="res://assets/ui/menu_characters/cirno.png" id="6_portrait"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/cirno_charge_attack.tscn" id="7_charge_attack"]
+[ext_resource type="Resource" path="res://resources/spellcards/cirno/cirno_spell_lv2.tres" id="8_spell_lv2"]
+[ext_resource type="Resource" path="res://resources/spellcards/cirno/cirno_spell_lv3.tres" id="9_spell_lv3"]
+[ext_resource type="Resource" path="res://resources/bosses/cirno_boss.tres" id="10_boss_data"]
+[ext_resource type="PackedScene" path="res://scenes/stages/misty_lake/misty_lake_3d.tscn" id="12_misty_stage"]
+
+
+[resource]
+script = ExtResource("1_script")
+character_id = "cirno"
+display_name = "Cirno"
+title = "Little Ice Fairy"
+primary_color = Color(0.2, 0.7, 1, 1)
+secondary_color = Color(0.7, 0.95, 1, 1)
+normal_speed = 634.5
+focus_speed = 445.5
+hurtbox_radius = 2.8
+graze_radius = 64.0
+passive_charge_per_graze = 0.015
+bullet_damage = 1.0
+bullet_speed = 1350.0
+bullet_scale = Vector2(1.5, 1.5)
+bullet_capsule_height = 48.0
+shot_cooldown = 0.075
+scope_shape = 0
+scope_radius = 108.0
+scope_expand_duration = 0.18
+scope_collapse_duration = 0.09
+extra_attack_scene = ExtResource("4_extra_attack")
+extra_attack_y_range = Vector2(-20, 5)
+extra_attack_x_range = Vector2(50, 550)
+spell_bar_segments = 4
+passive_charge_start = 1.0
+passive_charge_per_fairy = 0.010
+passive_charge_per_great_fairy = 0.025
+passive_charge_per_spirit = 0.040
+passive_charge_per_cancel = 0.001
+active_charge_speed = 1.74
+charge_attack_name = "Freeze Blade"
+charge_attack_scene = ExtResource("7_charge_attack")
+spell_bar_color = Color(0.18, 0.52, 0.88, 1)
+has_spellcard_shockwaves = true
+shockwave_radius_lv2 = 420.0
+shockwave_radius_lv3 = 650.0
+shockwave_radius_lv4 = 1200.0
+shockwave_speed = 400.0
+shockwave_duration = 1.02
+shockwave_color = Color(0.3, 0.85, 1, 1)
+version_tag = "TH09"
+archetype = "High-Mobility / Wide Cryo Spread"
+primary_shot_name = "Icicle Shot"
+primary_shot_desc = "Fires rapid icicle needle volleys that pierce through oncoming enemies."
+special_trait = "Frost Dash (High baseline mobility, compact scope with roster-fastest charge speed)"
+extra_attack_name = "Falling Stalactite"
+extra_attack_desc = "Rains gentle falling ice stalactites from the opponent's ceiling."
+charge_attack_desc = "Radial flurry of chilled frost shards clearing wide lanes."
+signature_spell_name = "Freeze Sign \"Perfect Freeze\""
+spellcard_lv2 = ExtResource("8_spell_lv2")
+spellcard_lv3 = ExtResource("9_spell_lv3")
+portrait_texture = ExtResource("6_portrait")
+boss_data = ExtResource("10_boss_data")
+spell_bg_anim_type = "counter_scroll"
+home_stage_scene = ExtResource("12_misty_stage")
+home_stage_id = "misty_lake"
+stage_bgm_path = "res://assets/music/07_adventure_of_the_lovestruck_tomboy.ogg"
+
+
+

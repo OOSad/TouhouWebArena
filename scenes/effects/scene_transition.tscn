@@ -1,0 +1,52 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/effects/scene_transition.gd" id="1_transition"]
+
+[node name="SceneTransition" type="CanvasLayer"]
+layer = 120
+script = ExtResource("1_transition")
+
+[node name="WipeControl" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LeftPanel" type="Control" parent="WipeControl"]
+layout_mode = 0
+offset_left = -964.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+[node name="Bg" type="ColorRect" parent="WipeControl/LeftPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="RightPanel" type="Control" parent="WipeControl"]
+layout_mode = 0
+offset_left = 1920.0
+offset_top = 0.0
+offset_right = 2884.0
+offset_bottom = 1080.0
+mouse_filter = 2
+
+[node name="Bg" type="ColorRect" parent="WipeControl/RightPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)

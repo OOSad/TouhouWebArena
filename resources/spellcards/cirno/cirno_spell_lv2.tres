@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_freeze_ring_step.gd" id="2_freeze_ring_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_base"]
+[ext_resource type="Resource" path="res://resources/bullets/blue_icicle.tres" id="4_icicle"]
+[ext_resource type="Resource" path="res://resources/bullets/blue_pellet_small.tres" id="5_pellet"]
+
+[sub_resource type="Resource" id="Resource_freeze_ring"]
+script = ExtResource("2_freeze_ring_script")
+icicle_data = ExtResource("4_icicle")
+pellet_data = ExtResource("5_pellet")
+bullets_per_ring_min = 68
+bullets_per_ring_max = 128
+second_ring_min_rank = 99
+zun_speeds = true
+spawn_y_override = 266.7
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "cirno_lv2"
+spellcard_name = "Freeze Sign \"Perfect Freeze\""
+level = 2
+waves_min = 1
+waves_max = 1
+random_wave_angle = true
+steps = Array[ExtResource("3_step_base")]([SubResource("Resource_freeze_ring")])

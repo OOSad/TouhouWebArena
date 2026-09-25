@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_pinwheel_step.gd" id="2_pinwheel_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Resource" path="res://resources/bullets/green_pellet.tres" id="4_green_pellet"]
+[ext_resource type="Resource" path="res://resources/bullets/green_star.tres" id="5_green_star"]
+[ext_resource type="Resource" path="res://resources/bullets/blue_star.tres" id="6_blue_star"]
+[ext_resource type="Resource" path="res://resources/bullets/blue_pellet_small.tres" id="7_blue_pellet"]
+
+[sub_resource type="Resource" id="Resource_marisa_pinwheel"]
+script = ExtResource("2_pinwheel_step_script")
+pellet_bullet_data = ExtResource("4_green_pellet")
+star_bullet_data = ExtResource("5_green_star")
+star_bullet_data_alt = ExtResource("6_blue_star")
+bursts = 24
+burst_interval = 0.07
+spoke_count = 6
+rotation_per_burst_deg = 13.5
+initial_angle_deg = 30.0
+spawn_radius = 0.0
+fan_spread_deg = 6.5
+bullets_per_vector_rank_1 = 2
+bullets_per_vector_rank_16 = 4
+speed_rank_1 = 160.0
+speed_rank_16 = 340.0
+zun_mode = true
+pellet_bullet_data_alt = ExtResource("7_blue_pellet")
+sfx = "se_tan00"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "marisa_boss_spell_3"
+spellcard_name = "Spiral Pellets and Stars"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_marisa_pinwheel")])
+

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SpellcardData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_spiral_machinegun_step.gd" id="2_mg_step"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_base"]
+[ext_resource type="Resource" path="res://resources/bullets/reisen_spiral_bullet.tres" id="4_spiral_bullet"]
+
+[sub_resource type="Resource" id="Resource_mg_sweep"]
+script = ExtResource("2_mg_step")
+bullet_data = ExtResource("4_spiral_bullet")
+muzzle_offset = Vector2(0, 0)
+spin_rate_deg = 304.225
+duration = 2.0
+fire_interval_min = 0.0166667
+fire_interval_max = 0.0166667
+speed_min = 387.5
+speed_max = 575.0
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "reisen_boss_spell_3"
+spellcard_name = "Scatter Sign \"Luna Megalopolis\" - Purple Bullet Spiral Machinegun"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.7
+steps = Array[ExtResource("3_step_base")]([SubResource("Resource_mg_sweep")])

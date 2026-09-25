@@ -1,0 +1,35 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scenes/attacks/sakuya_extra_knife.gd" id="1_knife_script"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/sakuya_knife_blue.tres" id="2_knife_tex"]
+[ext_resource type="Texture2D" path="res://assets/effects/sakuya_knife_glow.png" id="3_glow_tex"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_glow"]
+blend_mode = 1
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_knife"]
+size = Vector2(56, 20)
+
+[node name="SakuyaExtraKnife" type="Area2D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_knife_script")
+
+[node name="Blade" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Glow" type="Sprite2D" parent="Blade"]
+unique_name_in_owner = true
+material = SubResource("CanvasItemMaterial_glow")
+texture_filter = 1
+scale = Vector2(0.55, 0.55)
+texture = ExtResource("3_glow_tex")
+
+[node name="Sprite2D" type="Sprite2D" parent="Blade"]
+unique_name_in_owner = true
+texture_filter = 1
+texture = ExtResource("2_knife_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("RectangleShape2D_knife")

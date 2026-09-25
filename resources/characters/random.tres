@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/character_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/dairi/random.png" id="2_portrait"]
+
+[resource]
+script = ExtResource("1_script")
+character_id = "random"
+display_name = "Random Select"
+title = "Mystery Combatant"
+portrait_texture = ExtResource("2_portrait")
+primary_color = Color(0.7, 0.65, 0.9, 1)
+secondary_color = Color(0.9, 0.85, 1, 1)
+archetype = "Unpredictable"
+primary_shot_name = "Random Volley"
+primary_shot_desc = "Selects a random combatant upon entering the match."
+scope_radius = 130.0
+scope_description = "Mystery Scope"
+trait_name = "Fortune's Wheel"
+trait_desc = "Embrace the chaos of Gensokyo."
+normal_speed = 540.0
+focus_speed = 270.0
+hurtbox_radius = 2.8
+graze_radius = 64.0
+

@@ -1,0 +1,17 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Build artifacts & exports
+build/
+
+# Node server dependencies
+node_modules/
+server/node_modules/
+
+# Windows/Godot temporary files
+~*
+*.log
+*_out.txt
+# Scratch / temporary tuning artifacts
+scratch/

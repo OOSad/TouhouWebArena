@@ -1,0 +1,41 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/spell_bar.gd" id="1_spell_bar"]
+
+[node name="SpellBar" type="HBoxContainer"]
+custom_minimum_size = Vector2(600, 16)
+offset_right = 600.0
+offset_bottom = 16.0
+theme_override_constants/separation = 6
+alignment = 1
+script = ExtResource("1_spell_bar")
+
+[node name="LeftRankLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 16)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "1"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="BarTrack" type="Control" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(528, 12)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="RightRankLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 16)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "1"
+vertical_alignment = 1

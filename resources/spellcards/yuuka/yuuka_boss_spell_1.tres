@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_ring_step.gd" id="2_ring_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_delay_step.gd" id="4_delay_script"]
+[ext_resource type="Resource" path="res://resources/bullets/red_ring_ball.tres" id="5_red"]
+[ext_resource type="Resource" path="res://resources/bullets/yellow_ring_ball.tres" id="6_yellow"]
+
+[sub_resource type="Resource" id="Resource_ring_red"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("5_red")
+motion_mode = 1
+use_wave_angle = true
+count_min = 17
+count_max = 32
+speed_min = 137.5
+speed_max = 325.0
+homing_decel_time = 1.1666667
+homing_pause_time = 0.0
+homing_launch_speed = 137.5
+homing_launch_speed_max = 325.0
+relaunch_relative = true
+relaunch_turn_deg = 90.0
+bounce_off_walls = true
+
+[sub_resource type="Resource" id="Resource_ring_yellow"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("6_yellow")
+motion_mode = 1
+use_wave_angle = true
+stagger_half_step = true
+count_min = 17
+count_max = 32
+speed_min = 137.5
+speed_max = 325.0
+homing_decel_time = 1.1666667
+homing_pause_time = 0.0
+homing_launch_speed = 137.5
+homing_launch_speed_max = 325.0
+relaunch_relative = true
+relaunch_turn_deg = -90.0
+bounce_off_walls = true
+sfx = ""
+
+[sub_resource type="Resource" id="Resource_hold"]
+script = ExtResource("4_delay_script")
+delay_seconds = 1.0
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "yuuka_boss_spell_1"
+spellcard_name = "Bouncing Ring Balls"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+jitter_wave_origin = false
+random_wave_angle = true
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_ring_red"), SubResource("Resource_ring_yellow"), SubResource("Resource_hold")])

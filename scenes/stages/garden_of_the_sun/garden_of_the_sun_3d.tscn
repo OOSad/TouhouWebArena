@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/stages/garden_of_the_sun/garden_of_the_sun_3d.gd" id="1_garden_script"]
+
+[sub_resource type="Environment" id="Environment_garden"]
+background_mode = 1
+background_color = Color(0.8157, 0.8157, 0.502, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+fog_enabled = false
+
+[node name="GardenOfTheSun3D" type="Node3D"]
+script = ExtResource("1_garden_script")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.832050, 0.554700, 0, -0.554700, 0.832050, 0, 7.03125, 0)
+environment = SubResource("Environment_garden")
+current = true
+fov = 32.73
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_garden")

@@ -1,0 +1,893 @@
+[gd_scene format=3 uid="uid://b0xdebugmenu1"]
+
+[ext_resource type="Script" path="res://scenes/ui/debug_menu.gd" id="1_debug_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
+content_margin_left = 16.0
+content_margin_top = 14.0
+content_margin_right = 16.0
+content_margin_bottom = 14.0
+bg_color = Color(0.06, 0.09, 0.12, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.24, 0.52, 0.65, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.7)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_section"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.03, 0.05, 0.07, 0.7)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.28, 0.35, 0.6)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="DebugMenu" type="CanvasLayer"]
+visible = false
+layer = 100
+script = ExtResource("1_debug_script")
+
+[node name="RootControl" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="WindowPanel" type="PanelContainer" parent="RootControl"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -480.0
+offset_top = -340.0
+offset_right = 480.0
+offset_bottom = 340.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_window")
+
+[node name="MainVBox" type="VBoxContainer" parent="RootControl/WindowPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleBar" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TitleBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 18
+text = "TOUHOU WEB ARENA - DEBUG CONSOLE  [Backspace]"
+
+[node name="CloseButton" type="Button" parent="RootControl/WindowPanel/MainVBox/TitleBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 28)
+layout_mode = 2
+text = " X "
+
+[node name="TelemetryBanner" type="PanelContainer" parent="RootControl/WindowPanel/MainVBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="TelemetryHBox" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TelemetryBanner"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="P1TelemetryLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TelemetryBanner/TelemetryHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "P1 BULLETS: 0 / 350 (Pel: 0 | Dan: 0)  |  F: 0  S: 0"
+
+[node name="P2TelemetryLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TelemetryBanner/TelemetryHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "P2 BULLETS: 0 / 350 (Pel: 0 | Dan: 0)  |  F: 0  S: 0"
+
+[node name="TotalTelemetryLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TelemetryBanner/TelemetryHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 13
+text = "TOTAL: 0 / 700"
+
+[node name="TabContainer" type="TabContainer" parent="RootControl/WindowPanel/MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+
+[node name="Combatants" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+metadata/_tab_index = 0
+
+[node name="P1Panel" type="PanelContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="P1VBox" type="VBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="P1Header" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="P1Title" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.4, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "PLAYER 1 (LEFT)"
+
+[node name="P1StatusLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
+text = "REIMU [ALIVE]"
+
+[node name="HSeparator1" type="HSeparator" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="P1HPRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="HPLabelTitle" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1HPRow"]
+layout_mode = 2
+text = "Health:"
+
+[node name="P1HPLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1HPRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+text = "5.0 / 5.0"
+
+[node name="P1HPMinusBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1HPRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "-0.5"
+
+[node name="P1HPPlusBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1HPRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "+0.5"
+
+[node name="P1HPQuickRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="P1HPFillBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1HPQuickRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Fill (5.0)"
+
+[node name="P1HPGutsBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1HPQuickRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Guts (0.5)"
+
+[node name="P1HPKillBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1HPQuickRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+text = "Kill"
+
+[node name="P1GodModeCheck" type="CheckBox" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "God Mode (No Damage / Invincible)"
+
+[node name="HSeparator2" type="HSeparator" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="P1RankLv23Row" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="P1RankLv23Label" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1RankLv23Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Rank Lv2-3: 1"
+
+[node name="P1RankLv23Minus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1RankLv23Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+text = "-"
+
+[node name="P1RankLv23Plus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1RankLv23Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+text = "+"
+
+[node name="P1RankLv4Row" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="P1RankLv4Label" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1RankLv4Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Rank Lv4: 1"
+
+[node name="P1RankLv4Minus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1RankLv4Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+text = "-"
+
+[node name="P1RankLv4Plus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1RankLv4Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+text = "+"
+
+[node name="P1RankPresetRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="P1RankPreset1" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1RankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "R1 (Min)"
+
+[node name="P1RankPreset8" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1RankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "R8 (Mid)"
+
+[node name="P1RankPreset16" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1RankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "R16 (Max)"
+
+[node name="P1FreezeRankCheck" type="CheckBox" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Freeze Rank Progression"
+
+[node name="P1BossRankRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="P1BossRankLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1BossRankRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Boss Rank: 1"
+
+[node name="P1BossRankMinus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1BossRankRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+text = "-"
+
+[node name="P1BossRankPlus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1BossRankRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+text = "+"
+
+[node name="P1BossRankPresetRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="P1BossRankPreset1" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1BossRankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "R1 (Min)"
+
+[node name="P1BossRankPreset8" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1BossRankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "R8 (Mid)"
+
+[node name="P1BossRankPreset16" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1BossRankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "R16 (Max)"
+
+[node name="P1FreezeBossRankCheck" type="CheckBox" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Freeze Boss Rank Progression"
+
+[node name="HSeparator3" type="HSeparator" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="P1GaugeRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="P1GaugeLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1GaugeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Gauge: 1.0 / 4"
+
+[node name="P1GaugeFillBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1GaugeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Fill (4.0)"
+
+[node name="P1GaugeEmptyBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1GaugeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Base (1.0)"
+
+[node name="P1SpellRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="P1FireLv1Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1SpellRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Lv1 Charge"
+
+[node name="P1FireLv2Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1SpellRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Lv2 Spell"
+
+[node name="P1FireLv3Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1SpellRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Lv3 Spell"
+
+[node name="P1FireLv4Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1SpellRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+text = "Lv4 Boss"
+
+[node name="HSeparator4" type="HSeparator" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="P1AIRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
+layout_mode = 2
+
+[node name="AILabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1AIRow"]
+layout_mode = 2
+text = "AI Mode:"
+
+[node name="P1AIOption" type="OptionButton" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1AIRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P2Panel" type="PanelContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="P2VBox" type="VBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="P2Header" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="P2Title" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.7, 0.4, 1)
+theme_override_font_sizes/font_size = 15
+text = "PLAYER 2 (RIGHT)"
+
+[node name="P2StatusLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.4, 1)
+text = "MARISA [ALIVE]"
+
+[node name="HSeparator1" type="HSeparator" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="P2HPRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="HPLabelTitle" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2HPRow"]
+layout_mode = 2
+text = "Health:"
+
+[node name="P2HPLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2HPRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+text = "5.0 / 5.0"
+
+[node name="P2HPMinusBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2HPRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "-0.5"
+
+[node name="P2HPPlusBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2HPRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "+0.5"
+
+[node name="P2HPQuickRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="P2HPFillBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2HPQuickRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Fill (5.0)"
+
+[node name="P2HPGutsBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2HPQuickRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Guts (0.5)"
+
+[node name="P2HPKillBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2HPQuickRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+text = "Kill"
+
+[node name="P2GodModeCheck" type="CheckBox" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "God Mode (No Damage / Invincible)"
+
+[node name="HSeparator2" type="HSeparator" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="P2RankLv23Row" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="P2RankLv23Label" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2RankLv23Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Rank Lv2-3: 1"
+
+[node name="P2RankLv23Minus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2RankLv23Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+text = "-"
+
+[node name="P2RankLv23Plus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2RankLv23Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+text = "+"
+
+[node name="P2RankLv4Row" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="P2RankLv4Label" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2RankLv4Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Rank Lv4: 1"
+
+[node name="P2RankLv4Minus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2RankLv4Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+text = "-"
+
+[node name="P2RankLv4Plus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2RankLv4Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+text = "+"
+
+[node name="P2RankPresetRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="P2RankPreset1" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2RankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "R1 (Min)"
+
+[node name="P2RankPreset8" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2RankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "R8 (Mid)"
+
+[node name="P2RankPreset16" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2RankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "R16 (Max)"
+
+[node name="P2FreezeRankCheck" type="CheckBox" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Freeze Rank Progression"
+
+[node name="P2BossRankRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="P2BossRankLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2BossRankRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Boss Rank: 1"
+
+[node name="P2BossRankMinus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2BossRankRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+text = "-"
+
+[node name="P2BossRankPlus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2BossRankRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+text = "+"
+
+[node name="P2BossRankPresetRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="P2BossRankPreset1" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2BossRankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "R1 (Min)"
+
+[node name="P2BossRankPreset8" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2BossRankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "R8 (Mid)"
+
+[node name="P2BossRankPreset16" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2BossRankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "R16 (Max)"
+
+[node name="P2FreezeBossRankCheck" type="CheckBox" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Freeze Boss Rank Progression"
+
+[node name="HSeparator3" type="HSeparator" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="P2GaugeRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="P2GaugeLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2GaugeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Gauge: 1.0 / 4"
+
+[node name="P2GaugeFillBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2GaugeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Fill (4.0)"
+
+[node name="P2GaugeEmptyBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2GaugeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Base (1.0)"
+
+[node name="P2SpellRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="P2FireLv1Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2SpellRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Lv1 Charge"
+
+[node name="P2FireLv2Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2SpellRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Lv2 Spell"
+
+[node name="P2FireLv3Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2SpellRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Lv3 Spell"
+
+[node name="P2FireLv4Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2SpellRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+text = "Lv4 Boss"
+
+[node name="HSeparator4" type="HSeparator" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="P2AIRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
+layout_mode = 2
+
+[node name="AILabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2AIRow"]
+layout_mode = 2
+text = "AI Mode:"
+
+[node name="P2AIOption" type="OptionButton" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2AIRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="World & Spawners" type="VBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+metadata/_tab_index = 1
+
+[node name="SpawnerSection" type="PanelContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="SpawnerVBox" type="VBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/SpawnerSection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SpawnerTitle" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/SpawnerSection/SpawnerVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.8, 0.4, 1)
+theme_override_font_sizes/font_size = 15
+text = "SPAWNER TOGGLES (BOTH PLAYFIELDS)"
+
+[node name="SpawnerFairiesCheck" type="CheckBox" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/SpawnerSection/SpawnerVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Spawn Fairies (Train Formations & Waves)"
+
+[node name="SpawnerPelletsCheck" type="CheckBox" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/SpawnerSection/SpawnerVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Spawn Pellets (Fairy Defeat Returns & Ring Detonations)"
+
+[node name="SpawnerSpiritsCheck" type="CheckBox" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/SpawnerSection/SpawnerVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Spawn Spirits (Ghost Entities)"
+
+[node name="SpawnerLilyCheck" type="CheckBox" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/SpawnerSection/SpawnerVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Spawn Lily White (Midboss Encounters)"
+
+[node name="BulletCapCheck" type="CheckBox" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/SpawnerSection/SpawnerVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Enforce 350-Bullet Cap Per Field (Touhou 09 Benchmark)"
+
+[node name="SpawnLilyBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/SpawnerSection/SpawnerVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "🌸 Spawn Lily White (Both Fields) [F8]"
+
+[node name="BoardCleanersSection" type="PanelContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="CleanersVBox" type="VBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/BoardCleanersSection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CleanersTitle" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/BoardCleanersSection/CleanersVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.8, 0.4, 1)
+theme_override_font_sizes/font_size = 15
+text = "BOARD CLEANERS (EMERGENCY WIPE)"
+
+[node name="CleanersHBox" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/BoardCleanersSection/CleanersVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ClearBulletsBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/BoardCleanersSection/CleanersVBox/CleanersHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Clear All Bullets & Pellets"
+
+[node name="ClearEnemiesBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/BoardCleanersSection/CleanersVBox/CleanersHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Clear All Enemies & Spirits"
+
+[node name="TimeScaleSection" type="PanelContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="TimeScaleVBox" type="VBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/TimeScaleSection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TimeScaleHeader" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/TimeScaleSection/TimeScaleVBox"]
+layout_mode = 2
+
+[node name="TimeScaleTitle" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/TimeScaleSection/TimeScaleVBox/TimeScaleHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.9, 0.8, 0.4, 1)
+theme_override_font_sizes/font_size = 15
+text = "GAME SPEED (TIME SCALE)"
+
+[node name="SpeedLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/TimeScaleSection/TimeScaleVBox/TimeScaleHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Speed: 1.00x"
+
+[node name="SpeedButtonsHBox" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/TimeScaleSection/TimeScaleVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Speed025Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/TimeScaleSection/TimeScaleVBox/SpeedButtonsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "0.25x (Slow-Mo)"
+
+[node name="Speed050Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/TimeScaleSection/TimeScaleVBox/SpeedButtonsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "0.50x"
+
+[node name="Speed100Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/TimeScaleSection/TimeScaleVBox/SpeedButtonsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "1.00x (Normal)"
+
+[node name="Speed200Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/TimeScaleSection/TimeScaleVBox/SpeedButtonsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "2.00x (Fast)"
+
+[node name="MatchRankSection" type="PanelContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="MatchRankVBox" type="VBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchRankSection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MatchRankTitle" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchRankSection/MatchRankVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.8, 0.4, 1)
+theme_override_font_sizes/font_size = 15
+text = "OVERALL RANK (1–22, independent of Spellcard/Boss Rank)"
+
+[node name="MatchRankRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchRankSection/MatchRankVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MatchRankMinus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchRankSection/MatchRankVBox/MatchRankRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(36, 0)
+text = "−"
+
+[node name="MatchRankLabel" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchRankSection/MatchRankVBox/MatchRankRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Match Rank: 1 / 22  (0s)"
+
+[node name="MatchRankPlus" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchRankSection/MatchRankVBox/MatchRankRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(36, 0)
+text = "+"
+
+[node name="MatchRankPresetRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchRankSection/MatchRankVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MatchRankPreset1" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchRankSection/MatchRankVBox/MatchRankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Rank 1"
+
+[node name="MatchRankPreset8" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchRankSection/MatchRankVBox/MatchRankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Rank 8"
+
+[node name="MatchRankPreset16" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchRankSection/MatchRankVBox/MatchRankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Rank 16"
+
+[node name="MatchRankPreset22" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchRankSection/MatchRankVBox/MatchRankPresetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Rank 22 (MAX)"
+
+[node name="MatchSection" type="PanelContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_section")
+
+[node name="MatchVBox" type="VBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchSection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MatchTitle" type="Label" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchSection/MatchVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.8, 0.4, 1)
+theme_override_font_sizes/font_size = 15
+text = "MATCH & ROUND MANAGEMENT"
+
+[node name="MatchHBox" type="HBoxContainer" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchSection/MatchVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RestartRoundBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchSection/MatchVBox/MatchHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Restart Current Round"
+
+[node name="WinP1Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchSection/MatchVBox/MatchHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Force P1 Round Win"
+
+[node name="WinP2Btn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/World & Spawners/MatchSection/MatchVBox/MatchHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Force P2 Round Win"

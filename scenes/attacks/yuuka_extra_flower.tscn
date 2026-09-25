@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/attacks/yuuka_extra_flower.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/yuuka_extra_flower.tres" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_flower"]
+radius = 54.0
+
+[node name="YuukaExtraFlower" type="Area2D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+scale = Vector2(2.0833, 2.0833)
+texture = ExtResource("2_texture")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_flower")

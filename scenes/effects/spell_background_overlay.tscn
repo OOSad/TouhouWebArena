@@ -1,0 +1,66 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scenes/effects/spell_background_overlay.gd" id="1_script"]
+[ext_resource type="Shader" path="res://shaders/spell_bg_scroll.gdshader" id="2_shader"]
+[ext_resource type="Shader" path="res://shaders/spell_bg_counter_scroll.gdshader" id="3_counter_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_scroll"]
+shader = ExtResource("2_shader")
+shader_parameter/scroll_speed = Vector2(0, 0.66667)
+shader_parameter/uv_scale = Vector2(1.125, 1.8)
+shader_parameter/tint_color = Color(1, 1, 1, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_counter_scroll"]
+shader = ExtResource("3_counter_shader")
+shader_parameter/scroll_speed = Vector2(0, 0.04)
+shader_parameter/uv_scale = Vector2(1.125, 1.8)
+shader_parameter/counter_layer_alpha = 0.5
+shader_parameter/tint_color = Color(1, 1, 1, 1)
+
+[node name="SpellBackgroundOverlay" type="Control"]
+process_mode = 3
+custom_minimum_size = Vector2(600, 960)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 600.0
+offset_bottom = 960.0
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="BaseRect" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(600, 960)
+layout_mode = 0
+offset_right = 600.0
+offset_bottom = 960.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="AnimScroll" type="TextureRect" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_scroll")
+custom_minimum_size = Vector2(600, 960)
+layout_mode = 0
+offset_right = 600.0
+offset_bottom = 960.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="AnimCounterScroll" type="TextureRect" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_counter_scroll")
+custom_minimum_size = Vector2(600, 960)
+layout_mode = 0
+offset_right = 600.0
+offset_bottom = 960.0
+mouse_filter = 2
+expand_mode = 1
+
+[node name="AnimRotateBase" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(300, 480)
+scale = Vector2(1.05, 1.05)
+
+[node name="AnimRotate" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(300, 480)
+scale = Vector2(4.33333, 4.33333)

@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/round_wins_display.gd" id="1_rwd"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/round_win_sakura.tres" id="2_sakura"]
+
+[node name="RoundWinsDisplay" type="HBoxContainer"]
+offset_right = 84.0
+offset_bottom = 36.0
+theme_override_constants/separation = 12
+alignment = 1
+script = ExtResource("1_rwd")
+
+[node name="Slot0" type="TextureRect" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+pivot_offset = Vector2(18, 18)
+texture = ExtResource("2_sakura")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot1" type="TextureRect" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+pivot_offset = Vector2(18, 18)
+texture = ExtResource("2_sakura")
+expand_mode = 1
+stretch_mode = 5
+

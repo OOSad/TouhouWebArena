@@ -1,0 +1,69 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" uid="uid://dadc1q0w0m7b1" path="res://scenes/attacks/earth_light_ray.gd" id="1_laser_script"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/laser_rune_strip.tres" id="2_rune_strip"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/laser_flare.tres" id="3_laser_flare"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_beam"]
+size = Vector2(14, 1060)
+
+[node name="EarthLightRayGreen" type="Node2D"]
+script = ExtResource("1_laser_script")
+glow_color = Color(0.18, 0.98, 0.32, 0.45)
+core_color = Color(0.92, 1.0, 0.92, 0.95)
+flare_color = Color(0.35, 1.0, 0.45, 1.0)
+warning_rune_color = Color(0.55, 1.0, 0.65, 1.0)
+
+[node name="BeamContainer" type="Node2D" parent="."]
+
+[node name="GlowBeam" type="ColorRect" parent="BeamContainer"]
+material = SubResource("CanvasItemMaterial_add")
+offset_left = -16.0
+offset_top = -60.0
+offset_right = 16.0
+offset_bottom = 1000.0
+color = Color(0.18, 0.98, 0.32, 0.45)
+
+[node name="CoreBeam" type="ColorRect" parent="BeamContainer"]
+material = SubResource("CanvasItemMaterial_add")
+offset_left = -6.0
+offset_top = -60.0
+offset_right = 6.0
+offset_bottom = 1000.0
+color = Color(0.92, 1.0, 0.92, 0.95)
+
+[node name="WarningStrip" type="Sprite2D" parent="BeamContainer"]
+texture_repeat = 2
+material = SubResource("CanvasItemMaterial_add")
+position = Vector2(0, 470)
+modulate = Color(0.55, 1.0, 0.65, 1.0)
+texture = ExtResource("2_rune_strip")
+region_enabled = true
+region_rect = Rect2(0, 0, 16, 1060)
+
+[node name="AscendingPulse" type="Sprite2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+position = Vector2(0, 960)
+scale = Vector2(0.6, 4.0)
+modulate = Color(0.35, 1.0, 0.45, 1.0)
+texture = ExtResource("3_laser_flare")
+
+[node name="BaseSpark" type="Sprite2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+position = Vector2(0, 950)
+modulate = Color(0.35, 1.0, 0.45, 1.0)
+texture = ExtResource("3_laser_flare")
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 1
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(0, 470)
+shape = SubResource("RectangleShape2D_beam")
+disabled = true

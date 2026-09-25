@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_lunar_wave_step.gd" id="2_lunar_wave_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_base"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_delay_step.gd" id="4_delay_script"]
+[ext_resource type="Resource" path="res://resources/bullets/red_oval.tres" id="5_icicle"]
+[ext_resource type="Resource" path="res://resources/bullets/red_pellet.tres" id="6_pellet"]
+
+[sub_resource type="Resource" id="Resource_wave_icicles"]
+script = ExtResource("2_lunar_wave_script")
+bullet_data = ExtResource("5_icicle")
+pre_cast_delay = 0.65
+spin_lean_deg = 40.0
+center_offset = Vector2(0, 0)
+zun_mode = true
+zun_turn_deg = 120.0
+
+[sub_resource type="Resource" id="Resource_offset"]
+script = ExtResource("4_delay_script")
+delay_seconds = 0.3333333
+
+[sub_resource type="Resource" id="Resource_wave_pellets"]
+script = ExtResource("2_lunar_wave_script")
+bullet_data = ExtResource("6_pellet")
+expand_time_rank1 = 2.30
+expand_time_rank16 = 1.80
+spin_lean_deg = -40.0
+base_angle_deg = 5.0
+center_offset = Vector2(0, 0)
+zun_mode = true
+zun_turn_deg = -120.0
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "reisen_lv2"
+spellcard_name = "Wave Sign \"Lunar Wave\""
+level = 2
+waves_min = 1
+waves_max = 1
+random_wave_angle = true
+mirror_player_origin = true
+steps = Array[ExtResource("3_step_base")]([SubResource("Resource_wave_icicles"), SubResource("Resource_offset"), SubResource("Resource_wave_pellets")])

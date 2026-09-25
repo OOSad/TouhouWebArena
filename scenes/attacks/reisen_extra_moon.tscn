@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/attacks/reisen_moon_mote.gd" id="1_mote_script"]
+[ext_resource type="Texture2D" path="res://resources/bullets/textures/tex_reisen_moon_mote.tres" id="2_mote_texture"]
+
+[node name="ReisenExtraMoon" type="Node2D"]
+script = ExtResource("1_mote_script")
+spawn_in_duration = 0.28
+spawn_sfx = "se_exattack"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+texture = ExtResource("2_mote_texture")

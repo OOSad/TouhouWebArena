@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://b82kld4ywn31v"]
+
+[ext_resource type="Script" path="res://scenes/effects/spell_banner.gd" id="1_script"]
+
+[node name="SpellBanner" type="Node2D"]
+process_mode = 3
+z_index = 50
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+

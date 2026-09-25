@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="SpellcardData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_repel_ring_step.gd" id="2_repel_step"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_base"]
+[ext_resource type="Resource" path="res://resources/bullets/clownpiece_flame_red.tres" id="4_flame"]
+
+[sub_resource type="Resource" id="Resource_repel_rings"]
+script = ExtResource("2_repel_step")
+bullet_data = ExtResource("4_flame")
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "clownpiece_boss_spell_1"
+spellcard_name = "Hellfire \"Infernal Essence of Grazing\""
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.7
+steps = Array[ExtResource("3_step_base")]([SubResource("Resource_repel_rings")])

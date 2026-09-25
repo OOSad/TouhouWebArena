@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_fixed_lasers_step.gd" id="2_fixed_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/earth_light_ray_green.tscn" id="4_green_laser"]
+
+[sub_resource type="Resource" id="Resource_marisa_fixed_lasers"]
+script = ExtResource("2_fixed_step_script")
+laser_scene = ExtResource("4_green_laser")
+laser_x_positions = [150.0, 450.0]
+ground_y = 950.0
+tilt_angle_deg = 0.0
+stagger_interval = 0.22
+pulse_interval = 0.65
+pulses_rank_1 = 1
+pulses_rank_16 = 3
+alternate_order = true
+zun_bracket = true
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "marisa_boss_spell_5"
+spellcard_name = "Two Fixed Green Lasers"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_marisa_fixed_lasers")])
+

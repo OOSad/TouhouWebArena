@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_blossom_step.gd" id="2_blossom_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_delay_step.gd" id="4_delay_script"]
+[ext_resource type="Resource" path="res://resources/bullets/orange_rice.tres" id="5_even"]
+[ext_resource type="Resource" path="res://resources/bullets/orange_pellet.tres" id="6_odd"]
+
+[sub_resource type="Resource" id="Resource_blossom"]
+script = ExtResource("2_blossom_script")
+bullet_data_even = ExtResource("5_even")
+bullet_data_odd = ExtResource("6_odd")
+spawn_y_override = -1.0
+
+[sub_resource type="Resource" id="Resource_hold"]
+script = ExtResource("4_delay_script")
+delay_seconds = 1.0
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "yuuka_boss_spell_3"
+spellcard_name = "Orange Blossom"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+jitter_wave_origin = false
+random_wave_angle = true
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_blossom"), SubResource("Resource_hold")])

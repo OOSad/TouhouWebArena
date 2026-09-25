@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_claw_step.gd" id="2_claw_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Resource" path="res://resources/bullets/red_pellet.tres" id="4_red_pellet"]
+[ext_resource type="Resource" path="res://resources/bullets/red_talisman.tres" id="5_red_talisman"]
+
+[sub_resource type="Resource" id="Resource_claw_step"]
+script = ExtResource("2_claw_step_script")
+pellet_bullet_data = ExtResource("4_red_pellet")
+talisman_bullet_data = ExtResource("5_red_talisman")
+fan_spread_angle_deg = 25.71
+bullets_min = 8
+bullets_max = 16
+speed_min_r1 = 112.5
+speed_max_r1 = 200.0
+speed_min_r16 = 112.5
+speed_max_r16 = 300.0
+side_accel_r1 = 25.0
+side_accel_r16 = 45.0
+center_pellet_accel_r1 = 70.0
+center_pellet_accel_r16 = 110.0
+center_talisman_accel_r1 = 25.0
+center_talisman_accel_r16 = 45.0
+delay_between_bullets = 0.0167
+zun_mode = true
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "reimu_boss_spell_3"
+spellcard_name = "Pellet and Talisman Claw"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_claw_step")])
+

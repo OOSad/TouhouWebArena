@@ -1,0 +1,39 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/stages/misty_lake/misty_lake_3d.gd" id="1_misty_script"]
+
+[sub_resource type="Environment" id="Environment_misty"]
+background_mode = 1
+background_color = Color(0.518, 0.475, 0.733, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.7, 0.75, 0.85, 1)
+fog_enabled = true
+fog_mode = 1
+fog_light_color = Color(0.518, 0.475, 0.733, 1)
+fog_density = 0.1
+fog_depth_curve = 1.0
+fog_depth_begin = 5.0
+fog_depth_end = 20.0
+fog_sky_affect = 1.0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_water"]
+size = Vector2(36, 64)
+
+[node name="MistyLake3D" type="Node3D"]
+script = ExtResource("1_misty_script")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.669131, 0.743145, 0, -0.743145, 0.669131, 0, 6.6, 0)
+environment = SubResource("Environment_misty")
+current = true
+fov = 58.0
+
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_misty")
+
+[node name="WaterPlane" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -18)
+mesh = SubResource("PlaneMesh_water")
+

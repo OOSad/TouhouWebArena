@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://dmv7n74k6w29q"]
+
+[ext_resource type="Script" path="res://scenes/stages/hakugyokurou_stairs/hakugyokurou_stairs_3d.gd" id="1_stairs_script"]
+
+[sub_resource type="Environment" id="Environment_stairs"]
+background_mode = 1
+background_color = Color(0.18, 0.12, 0.16, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.66, 0.53, 0.57, 1)
+
+[node name="HakugyokurouStairs3D" type="Node3D"]
+script = ExtResource("1_stairs_script")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.927184, 0.374607, 0, -0.374607, 0.927184, 0, 6.0, 3.36)
+environment = SubResource("Environment_stairs")
+current = true
+fov = 52.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_stairs")
+
+[node name="WorldContainer" type="Node3D" parent="."]
+unique_name_in_owner = true
+

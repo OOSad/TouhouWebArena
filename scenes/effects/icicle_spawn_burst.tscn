@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/effects/icicle_spawn_burst.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://resources/bullets/textures/tex_icicle_spawn_burst.tres" id="2_texture"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[node name="IcicleSpawnBurst" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+texture_filter = 1
+texture = ExtResource("2_texture")
+

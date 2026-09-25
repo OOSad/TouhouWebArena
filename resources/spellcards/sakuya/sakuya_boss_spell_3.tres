@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SpellcardData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_narrowing_sweep_step.gd" id="2_sweep_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+
+[sub_resource type="Resource" id="Resource_narrowing_sweep"]
+script = ExtResource("2_sweep_step_script")
+bullet_data = null
+daggers_per_side = 16
+start_angle_deg = 90.0
+end_angle_deg = 10.59
+aim_at_player = true
+delay_between_steps = 0.1333333
+speed_min = 262.5
+speed_max = 450.0
+sfx = "se_tan00"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "sakuya_boss_spell_3"
+spellcard_name = "Time Sign \"Mysterious Jack\" - Sweep of Yellow Daggers"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_narrowing_sweep")])

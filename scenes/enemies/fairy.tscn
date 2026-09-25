@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/enemies/fairy.gd" id="1_fairy_script"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/fairy_blue.tres" id="2_fairy_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_fairy"]
+radius = 20.0
+
+[node name="Fairy" type="Area2D"]
+collision_layer = 8
+collision_mask = 4
+script = ExtResource("1_fairy_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+texture_filter = 1
+scale = Vector2(2.25, 2.25)
+texture = ExtResource("2_fairy_texture")
+hframes = 4
+vframes = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("CircleShape2D_fairy")

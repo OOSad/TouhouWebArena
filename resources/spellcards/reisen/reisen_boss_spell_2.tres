@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SpellcardData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_staggered_rings_step.gd" id="2_rings_step"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_base"]
+[ext_resource type="Resource" path="res://resources/bullets/reisen_wave_bullet.tres" id="4_wave_bullet"]
+
+[sub_resource type="Resource" id="Resource_ring_volley"]
+script = ExtResource("2_rings_step")
+bullet_data = ExtResource("4_wave_bullet")
+center_offset = Vector2(0, 0)
+ring_count = 8
+bullets_per_ring = 32
+bullets_per_rank = 1
+base_angle_deg = 0.0
+ring_rotation_spread = 1.0
+ring_interval = 0.25
+speed_min = 137.5
+speed_max = 325.0
+sfx = "se_tan00"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "reisen_boss_spell_2"
+spellcard_name = "Scatter Sign \"Luna Megalopolis\" - Rings of Red Bullets"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.7
+steps = Array[ExtResource("3_step_base")]([SubResource("Resource_ring_volley")])

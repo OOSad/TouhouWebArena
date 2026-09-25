@@ -1,0 +1,61 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_ring_step.gd" id="2_ring_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Resource" path="res://resources/bullets/red_talisman.tres" id="4_talisman"]
+
+[sub_resource type="Resource" id="Resource_ring_1"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("4_talisman")
+motion_mode = 0
+aim_at_player = true
+count_min = 44
+count_max = 104
+speed_min = 312.5
+speed_max = 312.5
+stagger_half_step = false
+
+[sub_resource type="Resource" id="Resource_ring_2"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("4_talisman")
+motion_mode = 0
+aim_at_player = true
+count_min = 44
+count_max = 104
+speed_min = 250.0
+speed_max = 250.0
+stagger_half_step = false
+
+[sub_resource type="Resource" id="Resource_ring_3"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("4_talisman")
+motion_mode = 0
+aim_at_player = true
+count_min = 44
+count_max = 104
+speed_min = 187.5
+speed_max = 187.5
+stagger_half_step = false
+
+[sub_resource type="Resource" id="Resource_ring_4"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("4_talisman")
+motion_mode = 0
+aim_at_player = true
+count_min = 44
+count_max = 104
+speed_min = 125.0
+speed_max = 125.0
+stagger_half_step = false
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "reimu_boss_spell_5"
+spellcard_name = "Four Red Talisman Circles"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_ring_1"), SubResource("Resource_ring_2"), SubResource("Resource_ring_3"), SubResource("Resource_ring_4")])
+

@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_ring_step.gd" id="2_ring_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Resource" path="res://resources/bullets/white_talisman.tres" id="4_talisman"]
+
+[sub_resource type="Resource" id="Resource_ring_inner"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("4_talisman")
+motion_mode = 1
+aim_at_player = true
+count_min = 42
+count_max = 72
+speed_min = 312.5
+speed_max = 312.5
+homing_decel_time = 1.5
+homing_pause_time = 0.0
+homing_launch_speed = 250.0
+homing_stages = 1
+stagger_half_step = false
+
+[sub_resource type="Resource" id="Resource_ring_outer"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("4_talisman")
+motion_mode = 1
+aim_at_player = true
+count_min = 42
+count_max = 72
+speed_min = 237.5
+speed_max = 237.5
+homing_decel_time = 1.5
+homing_pause_time = 0.0
+homing_launch_speed = 250.0
+homing_stages = 1
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "reimu_boss_spell_1"
+spellcard_name = "Two Rings Homing Talisman"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_ring_inner"), SubResource("Resource_ring_outer")])
+

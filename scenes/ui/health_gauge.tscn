@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3 uid="uid://dfy42oxv77ghq"]
+
+[ext_resource type="Script" path="res://scenes/ui/health_gauge.gd" id="1_gauge_script"]
+
+[node name="HealthGauge" type="BoxContainer"]
+offset_right = 36.0
+offset_bottom = 204.0
+theme_override_constants/separation = 6
+script = ExtResource("1_gauge_script")
+
+[node name="NameLabel" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "REIMU"
+vertical_alignment = 1
+
+[node name="OrbsContainer" type="BoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1

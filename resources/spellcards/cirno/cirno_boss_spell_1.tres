@@ -1,0 +1,126 @@
+[gd_resource type="Resource" script_class="SpellcardData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_ring_step.gd" id="2_ring_step_script"]
+[ext_resource type="Resource" path="res://resources/bullets/blue_pellet_small.tres" id="3_blue_pellet"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_extra_attack_step.gd" id="4_extra_step_script"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/cirno_stalactite.tscn" id="5_stalactite"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="6_step_script"]
+
+[sub_resource type="Resource" id="Resource_ring_1"]
+script = ExtResource("2_ring_step_script")
+bullet_data = ExtResource("3_blue_pellet")
+alternate_bullet_data = null
+bullet_sequence = []
+motion_mode = 0
+alternate_has_separate_motion = false
+alternate_motion_mode = 1
+count_min = 16
+count_max = 16
+stagger_half_step = false
+angle_offset_deg = 0.0
+aim_at_player = true
+speed_min = 225.0
+speed_max = 225.0
+alternate_speed_min = 210.0
+alternate_speed_max = 250.0
+homing_decel_time = 0.45
+homing_pause_time = 0.18
+homing_launch_speed = 300.0
+homing_stages = 1
+stage1_flight_duration = 0.5
+alternate_homing_decel_time = 0.45
+alternate_homing_pause_time = 0.18
+alternate_homing_launch_speed = 300.0
+alternate_homing_stages = 1
+alternate_stage1_flight_duration = 0.5
+sfx = "se_tan00"
+homing_sfx = ""
+
+[sub_resource type="Resource" id="Resource_ring_2"]
+script = ExtResource("2_ring_step_script")
+bullet_data = ExtResource("3_blue_pellet")
+alternate_bullet_data = null
+bullet_sequence = []
+motion_mode = 0
+alternate_has_separate_motion = false
+alternate_motion_mode = 1
+count_min = 16
+count_max = 16
+stagger_half_step = false
+angle_offset_deg = 0.0
+aim_at_player = true
+speed_min = 183.333
+speed_max = 183.333
+alternate_speed_min = 210.0
+alternate_speed_max = 250.0
+homing_decel_time = 0.45
+homing_pause_time = 0.18
+homing_launch_speed = 300.0
+homing_stages = 1
+stage1_flight_duration = 0.5
+alternate_homing_decel_time = 0.45
+alternate_homing_pause_time = 0.18
+alternate_homing_launch_speed = 300.0
+alternate_homing_stages = 1
+alternate_stage1_flight_duration = 0.5
+sfx = ""
+homing_sfx = ""
+
+[sub_resource type="Resource" id="Resource_ring_3"]
+script = ExtResource("2_ring_step_script")
+bullet_data = ExtResource("3_blue_pellet")
+alternate_bullet_data = null
+bullet_sequence = []
+motion_mode = 0
+alternate_has_separate_motion = false
+alternate_motion_mode = 1
+count_min = 16
+count_max = 16
+stagger_half_step = false
+angle_offset_deg = 0.0
+aim_at_player = true
+speed_min = 141.667
+speed_max = 141.667
+alternate_speed_min = 210.0
+alternate_speed_max = 250.0
+homing_decel_time = 0.45
+homing_pause_time = 0.18
+homing_launch_speed = 300.0
+homing_stages = 1
+stage1_flight_duration = 0.5
+alternate_homing_decel_time = 0.45
+alternate_homing_pause_time = 0.18
+alternate_homing_launch_speed = 300.0
+alternate_homing_stages = 1
+alternate_stage1_flight_duration = 0.5
+sfx = ""
+homing_sfx = ""
+
+[sub_resource type="Resource" id="Resource_stalactite_barrage"]
+script = ExtResource("4_extra_step_script")
+character_id = "cirno"
+extra_attack_scene = ExtResource("5_stalactite")
+count_min = 6
+count_max = 10
+delay_between_spawns = 0.22
+spawn_location = 1
+horizontal_spread = 120.0
+initial_upward_speed = 390.0
+ground_spawn_min_x = 75.0
+ground_spawn_max_x = 525.0
+tilt_angle_min_deg = -3.25
+tilt_angle_max_deg = 3.25
+alternate_tilt = false
+zun_top_sweep = true
+sfx = "se_kira00"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "cirno_boss_spell_1"
+spellcard_name = "Circle of Blue Pellets and Extra Attack Barrage"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("6_step_script")]([SubResource("Resource_ring_1"), SubResource("Resource_ring_2"), SubResource("Resource_ring_3"), SubResource("Resource_stalactite_barrage")])

@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="BossData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/boss_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/spellcards/cirno/cirno_boss_spell_1.tres" id="3_spell"]
+[ext_resource type="Resource" path="res://resources/spellcards/cirno/cirno_boss_spell_2.tres" id="4_spell2"]
+[ext_resource type="Resource" path="res://resources/spellcards/cirno/cirno_boss_spell_3.tres" id="5_spell3"]
+
+[resource]
+script = ExtResource("1_script")
+character_id = "cirno"
+boss_name = "Cirno"
+primary_color = Color(0.2, 0.7, 1, 1)
+hframes = 4
+vframes = 3
+frame_duration = 0.08
+sprite_scale = Vector2(2.4, 2.4)
+collision_radius = 32.0
+max_health = 180.0
+departure_mode = 1
+attacks_min = 5
+attacks_max = 9
+randomize_attack_count = true
+duration_safety = 24.0
+duration = 17.5
+randomize_duration = true
+duration_min = 15.0
+duration_max = 20.0
+entrance_start_offset = Vector2(170, -260)
+entrance_target_pos = Vector2(300, 150)
+entrance_duration = 0.85
+hop_interval_min = 1.3
+hop_interval_max = 1.7
+hop_duration = 0.65
+hop_distance_min = 90.0
+hop_distance_max = 160.0
+roam_bounds = Rect2(140, 110, 320, 100)
+bob_amplitude = 4.0
+bob_frequency = 3.0
+selection_mode = 0
+attack_rate = 1.6
+initial_attack_delay = 0.4
+post_cast_delay = 0.3
+post_hop_delay = 0.25
+attack_patterns = [ExtResource("3_spell"), ExtResource("4_spell2"), ExtResource("5_spell3")]

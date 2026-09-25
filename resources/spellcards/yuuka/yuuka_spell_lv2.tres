@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_blossom_step.gd" id="2_blossom_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_base"]
+[ext_resource type="Resource" path="res://resources/bullets/yellow_rice.tres" id="4_even"]
+[ext_resource type="Resource" path="res://resources/bullets/yellow_pellet.tres" id="5_odd"]
+
+[sub_resource type="Resource" id="Resource_blossom"]
+script = ExtResource("2_blossom_script")
+pre_cast_delay = 0.6666667
+bullet_data_even = ExtResource("4_even")
+bullet_data_odd = ExtResource("5_odd")
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "yuuka_lv2"
+spellcard_name = "Flower Sign \"Blossoming of Gensokyo\""
+level = 2
+waves_min = 1
+waves_max = 1
+jitter_wave_origin = false
+random_wave_angle = true
+steps = Array[ExtResource("3_step_base")]([SubResource("Resource_blossom")])

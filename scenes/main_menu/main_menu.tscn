@@ -1,0 +1,941 @@
+[gd_scene format=3 uid="uid://c3k8n2p5q7m1y"]
+
+[ext_resource type="Script" uid="uid://mksw0hrbw2sb" path="res://scenes/main_menu/main_menu.gd" id="1_menu_script"]
+[ext_resource type="FontFile" uid="uid://sxfx0k4crqn8" path="res://Cirno.ttf" id="2_cirno_font"]
+[ext_resource type="Texture2D" path="res://assets/ui/title_bg_clean.png" id="3_bg_clean"]
+[ext_resource type="Texture2D" path="res://assets/ui/title_ring_shimenawa.png" id="4_ring"]
+[ext_resource type="Texture2D" path="res://assets/ui/menu_characters/reimu.png" id="5_reimu"]
+[ext_resource type="Texture2D" path="res://assets/ui/menu_characters/marisa.png" id="6_marisa"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg_btn"]
+content_margin_left = 13.0
+content_margin_top = 7.0
+content_margin_right = 13.0
+content_margin_bottom = 7.0
+bg_color = Color(0.05, 0.05, 0.08, 0.75)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.35, 0.45, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_btn"]
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_queue_panel"]
+content_margin_left = 20.0
+content_margin_top = 16.0
+content_margin_right = 20.0
+content_margin_bottom = 16.0
+bg_color = Color(0.04, 0.04, 0.07, 0.65)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.3, 0.35, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal"]
+content_margin_left = 28.0
+content_margin_top = 28.0
+content_margin_right = 28.0
+content_margin_bottom = 28.0
+bg_color = Color(0.08, 0.08, 0.1, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_input"]
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+bg_color = Color(0.07, 0.07, 0.1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32, 0.32, 0.42, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_input_focus"]
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+bg_color = Color(0.1, 0.1, 0.14, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5, 0.65, 0.9, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_input_read_only"]
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+bg_color = Color(0.05, 0.05, 0.07, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.22, 0.28, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="MainMenu" type="Control" unique_id=618828735]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu_script")
+
+[node name="Background" type="ColorRect" parent="." unique_id=395201112]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.08, 0.1, 1)
+
+[node name="BackgroundTex" type="TextureRect" parent="." unique_id=395201113]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_bg_clean")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CenterRing" type="TextureRect" parent="." unique_id=395201115]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -270.0
+offset_top = -270.0
+offset_right = 270.0
+offset_bottom = 270.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(270, 270)
+texture = ExtResource("4_ring")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="LeftCharSlot" type="Control" parent="." unique_id=395201116]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+offset_left = 30.0
+offset_top = 60.0
+offset_right = 690.0
+offset_bottom = 1020.0
+mouse_filter = 2
+
+[node name="LeftCharA" type="TextureRect" parent="LeftCharSlot" unique_id=395201117]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_reimu")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="LeftCharB" type="TextureRect" parent="LeftCharSlot" unique_id=395201118]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="RightCharSlot" type="Control" parent="." unique_id=395201119]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -690.0
+offset_top = 60.0
+offset_right = -30.0
+offset_bottom = 1020.0
+grow_horizontal = 0
+mouse_filter = 2
+
+[node name="RightCharA" type="TextureRect" parent="RightCharSlot" unique_id=395201120]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("6_marisa")
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="RightCharB" type="TextureRect" parent="RightCharSlot" unique_id=395201121]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+mouse_filter = 2
+
+[node name="DarkScrim" type="ColorRect" parent="." unique_id=395201114]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.02, 0.02, 0.04, 0.28)
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=290200656]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 70
+theme_override_constants/margin_top = 60
+theme_override_constants/margin_right = 70
+theme_override_constants/margin_bottom = 35
+
+[node name="VBoxMain" type="VBoxContainer" parent="MarginContainer" unique_id=1303916535]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="TitleHBox" type="HBoxContainer" parent="MarginContainer/VBoxMain"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxMain/TitleHBox" unique_id=1538469745]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 54
+text = "Touhou Web Arena"
+
+[node name="VersionContainer" type="MarginContainer" parent="MarginContainer/VBoxMain/TitleHBox"]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VersionLabel" type="Label" parent="MarginContainer/VBoxMain/TitleHBox/VersionContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.75, 0.8, 0.75)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 22
+text = "TEST v0.02"
+
+[node name="Columns" type="HBoxContainer" parent="MarginContainer/VBoxMain" unique_id=1125566436]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 50
+
+[node name="LeftMenu" type="VBoxContainer" parent="MarginContainer/VBoxMain/Columns" unique_id=1380449906]
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 2
+theme_override_constants/separation = 26
+alignment = 1
+
+[node name="NicknameContainer" type="HBoxContainer" parent="MarginContainer/VBoxMain/Columns/LeftMenu" unique_id=1240315942]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="NicknameLabel" type="Label" parent="MarginContainer/VBoxMain/Columns/LeftMenu/NicknameContainer" unique_id=1511231149]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 26
+text = "Nickname:"
+
+[node name="NicknameInput" type="LineEdit" parent="MarginContainer/VBoxMain/Columns/LeftMenu/NicknameContainer" unique_id=387786897]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_placeholder_color = Color(0.5, 0.5, 0.55, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_input")
+theme_override_styles/focus = SubResource("StyleBoxFlat_input_focus")
+theme_override_styles/read_only = SubResource("StyleBoxFlat_input_read_only")
+text = "Anonymous Fairy"
+placeholder_text = "Anonymous Fairy"
+max_length = 18
+
+[node name="ServerContainer" type="HBoxContainer" parent="MarginContainer/VBoxMain/Columns/LeftMenu" unique_id=982341901]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="ServerLabel" type="Label" parent="MarginContainer/VBoxMain/Columns/LeftMenu/ServerContainer" unique_id=982341902]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 26
+text = "Server URL:"
+
+[node name="ServerInput" type="LineEdit" parent="MarginContainer/VBoxMain/Columns/LeftMenu/ServerContainer" unique_id=982341903]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_placeholder_color = Color(0.5, 0.5, 0.55, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_input")
+theme_override_styles/focus = SubResource("StyleBoxFlat_input_focus")
+theme_override_styles/read_only = SubResource("StyleBoxFlat_input_read_only")
+placeholder_text = "wss://touhou-arena-relay.onrender.com"
+
+[node name="PasswordContainer" type="HBoxContainer" parent="MarginContainer/VBoxMain/Columns/LeftMenu" unique_id=982341910]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="PasswordLabel" type="Label" parent="MarginContainer/VBoxMain/Columns/LeftMenu/PasswordContainer" unique_id=982341911]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 26
+text = "Password:"
+
+[node name="PasswordInput" type="LineEdit" parent="MarginContainer/VBoxMain/Columns/LeftMenu/PasswordContainer" unique_id=982341912]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_placeholder_color = Color(0.5, 0.5, 0.55, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_input")
+theme_override_styles/focus = SubResource("StyleBoxFlat_input_focus")
+theme_override_styles/read_only = SubResource("StyleBoxFlat_input_read_only")
+placeholder_text = "Optional (Room Code)"
+max_length = 24
+
+[node name="OnlineMatchBtn" type="Button" parent="MarginContainer/VBoxMain/Columns/LeftMenu" unique_id=930665773]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.75, 0.75, 0.8, 1)
+theme_override_colors/font_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 34
+theme_override_styles/normal = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_btn")
+text = "Online Match"
+
+[node name="PracticeBtn" type="Button" parent="MarginContainer/VBoxMain/Columns/LeftMenu" unique_id=930665774]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.75, 0.75, 0.8, 1)
+theme_override_colors/font_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 34
+theme_override_styles/normal = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_btn")
+text = "VS CPU"
+
+[node name="ReplaysBtn" type="Button" parent="MarginContainer/VBoxMain/Columns/LeftMenu"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.75, 0.75, 0.8, 1)
+theme_override_colors/font_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 34
+theme_override_styles/normal = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_btn")
+text = "Replays"
+
+[node name="SettingsBtn" type="Button" parent="MarginContainer/VBoxMain/Columns/LeftMenu"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.75, 0.75, 0.8, 1)
+theme_override_colors/font_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 34
+theme_override_styles/normal = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_btn")
+text = "Settings"
+
+[node name="CenterSpacer" type="Control" parent="MarginContainer/VBoxMain/Columns" unique_id=1125566437]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="RightQueuePanel" type="PanelContainer" parent="MarginContainer/VBoxMain/Columns" unique_id=1593630728]
+custom_minimum_size = Vector2(540, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_styles/panel = SubResource("StyleBoxFlat_queue_panel")
+
+[node name="QueueVBox" type="VBoxContainer" parent="MarginContainer/VBoxMain/Columns/RightQueuePanel" unique_id=271577314]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="QueueHeaderLabel" type="Label" parent="MarginContainer/VBoxMain/Columns/RightQueuePanel/QueueVBox" unique_id=1514523710]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 30
+text = "PLAYERS IN QUEUE (0)"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxMain/Columns/RightQueuePanel/QueueVBox" unique_id=378072821]
+layout_mode = 2
+
+[node name="QueueScroll" type="ScrollContainer" parent="MarginContainer/VBoxMain/Columns/RightQueuePanel/QueueVBox" unique_id=2000302186]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="QueueListContainer" type="VBoxContainer" parent="MarginContainer/VBoxMain/Columns/RightQueuePanel/QueueVBox/QueueScroll" unique_id=1571784334]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="EmptyNoticeLabel" type="Label" parent="MarginContainer/VBoxMain/Columns/RightQueuePanel/QueueVBox/QueueScroll/QueueListContainer" unique_id=499061378]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.65, 0.72, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 24
+text = "No players currently searching."
+
+[node name="QueueStatusLabel" type="Label" parent="MarginContainer/VBoxMain/Columns/RightQueuePanel/QueueVBox" unique_id=1087603426]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.76, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 24
+text = "Status: Idle"
+
+[node name="MatchFoundLabel" type="Label" parent="MarginContainer/VBoxMain/Columns/RightQueuePanel/QueueVBox" unique_id=161556070]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 1, 0.4, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 26
+text = "Match Found! Connecting to Character Select..."
+
+[node name="FooterCredit" type="Label" parent="MarginContainer/VBoxMain" unique_id=525535844]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 18
+text = "Touhou Project is created by ZUN / Team Shanghai Alice.  Character select art by Dairi."
+
+[node name="SettingsModal" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -440.0
+offset_top = -340.0
+offset_right = 440.0
+offset_bottom = 340.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal")
+
+[node name="SettingsVBox" type="VBoxContainer" parent="SettingsModal"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="SettingsTitle" type="Label" parent="SettingsModal/SettingsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 30
+text = "SETTINGS"
+horizontal_alignment = 1
+
+[node name="TabHeader" type="HBoxContainer" parent="SettingsModal/SettingsVBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 20
+
+[node name="TabAudioBtn" type="Button" parent="SettingsModal/SettingsVBox/TabHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_bg_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_bg_btn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_bg_btn")
+theme_override_styles/focus = SubResource("StyleBoxFlat_bg_btn")
+text = "🔊 Audio"
+
+[node name="TabControlsBtn" type="Button" parent="SettingsModal/SettingsVBox/TabHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_bg_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_bg_btn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_bg_btn")
+theme_override_styles/focus = SubResource("StyleBoxFlat_bg_btn")
+text = "⌨ Controls"
+
+[node name="HSeparator" type="HSeparator" parent="SettingsModal/SettingsVBox"]
+layout_mode = 2
+
+[node name="AudioSection" type="VBoxContainer" parent="SettingsModal/SettingsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="AudioGrid" type="GridContainer" parent="SettingsModal/SettingsVBox/AudioSection"]
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 18
+columns = 3
+
+[node name="MasterLabel" type="Label" parent="SettingsModal/SettingsVBox/AudioSection/AudioGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 23
+text = "Master Volume"
+
+[node name="MasterSlider" type="HSlider" parent="SettingsModal/SettingsVBox/AudioSection/AudioGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(380, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 0.0
+max_value = 100.0
+step = 1.0
+value = 10.0
+
+[node name="MasterValLabel" type="Label" parent="SettingsModal/SettingsVBox/AudioSection/AudioGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 23
+text = "10%"
+horizontal_alignment = 2
+
+[node name="BgmLabel" type="Label" parent="SettingsModal/SettingsVBox/AudioSection/AudioGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 23
+text = "BGM Volume"
+
+[node name="BgmSlider" type="HSlider" parent="SettingsModal/SettingsVBox/AudioSection/AudioGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(380, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 0.0
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="BgmValLabel" type="Label" parent="SettingsModal/SettingsVBox/AudioSection/AudioGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 23
+text = "100%"
+horizontal_alignment = 2
+
+[node name="SfxLabel" type="Label" parent="SettingsModal/SettingsVBox/AudioSection/AudioGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 23
+text = "SFX Volume"
+
+[node name="SfxSlider" type="HSlider" parent="SettingsModal/SettingsVBox/AudioSection/AudioGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(380, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 0.0
+max_value = 100.0
+step = 1.0
+value = 85.0
+
+[node name="SfxValLabel" type="Label" parent="SettingsModal/SettingsVBox/AudioSection/AudioGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 23
+text = "85%"
+horizontal_alignment = 2
+
+[node name="ControlsSection" type="VBoxContainer" parent="SettingsModal/SettingsVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="StyleToggleHBox" type="HBoxContainer" parent="SettingsModal/SettingsVBox/ControlsSection"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="StyleLabel" type="Label" parent="SettingsModal/SettingsVBox/ControlsSection/StyleToggleHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 23
+text = "Match Control Style:"
+
+[node name="ControlStyleBtn" type="Button" parent="SettingsModal/SettingsVBox/ControlsSection/StyleToggleHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(350, 46)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_colors/font_hover_color = Color(0.7, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("StyleBoxFlat_bg_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_bg_btn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_bg_btn")
+theme_override_styles/focus = SubResource("StyleBoxFlat_bg_btn")
+text = "UDoALG-Style"
+
+[node name="StyleHSep" type="HSeparator" parent="SettingsModal/SettingsVBox/ControlsSection"]
+layout_mode = 2
+
+[node name="ControlsScroll" type="ScrollContainer" parent="SettingsModal/SettingsVBox/ControlsSection"]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="ControlsList" type="GridContainer" parent="SettingsModal/SettingsVBox/ControlsSection/ControlsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 30
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="Key1" type="Label" parent="SettingsModal/SettingsVBox/ControlsSection/ControlsScroll/ControlsList"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 21
+text = "Arrow Keys"
+
+[node name="Desc1" type="Label" parent="SettingsModal/SettingsVBox/ControlsSection/ControlsScroll/ControlsList"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 21
+text = "Move / Menu Navigation"
+
+[node name="KeyShoot" type="Label" parent="SettingsModal/SettingsVBox/ControlsSection/ControlsScroll/ControlsList"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 21
+text = "Z"
+
+[node name="DescShoot" type="Label" parent="SettingsModal/SettingsVBox/ControlsSection/ControlsScroll/ControlsList"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 21
+text = "Shoot / Select Item"
+
+[node name="KeyCharge" type="Label" parent="SettingsModal/SettingsVBox/ControlsSection/ControlsScroll/ControlsList"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 21
+text = "Hold X"
+
+[node name="DescCharge" type="Label" parent="SettingsModal/SettingsVBox/ControlsSection/ControlsScroll/ControlsList"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 21
+text = "Charge Spell Gauge (Lv 1-4)"
+
+[node name="KeyBomb" type="Label" parent="SettingsModal/SettingsVBox/ControlsSection/ControlsScroll/ControlsList"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 21
+text = "C"
+
+[node name="DescBomb" type="Label" parent="SettingsModal/SettingsVBox/ControlsSection/ControlsScroll/ControlsList"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 21
+text = "Panic Bomb (Highest Tier Spell)"
+
+[node name="Key5" type="Label" parent="SettingsModal/SettingsVBox/ControlsSection/ControlsScroll/ControlsList"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 21
+text = "Hold Shift"
+
+[node name="Desc5" type="Label" parent="SettingsModal/SettingsVBox/ControlsSection/ControlsScroll/ControlsList"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 21
+text = "Focus Mode & Scope Expansion"
+
+[node name="KeyCancel" type="Label" parent="SettingsModal/SettingsVBox/ControlsSection/ControlsScroll/ControlsList"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 21
+text = "Esc  /  X"
+
+[node name="Desc6" type="Label" parent="SettingsModal/SettingsVBox/ControlsSection/ControlsScroll/ControlsList"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 21
+text = "Pause Game / Cancel (Menu)"
+
+[node name="Spacer" type="Control" parent="SettingsModal/SettingsVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CloseSettingsBtn" type="Button" parent="SettingsModal/SettingsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_btn")
+text = "Close [Esc]"
+
+[node name="ReplaysModal" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -560.0
+offset_top = -370.0
+offset_right = 560.0
+offset_bottom = 370.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_modal")
+
+[node name="ReplaysVBox" type="VBoxContainer" parent="ReplaysModal"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ReplaysTitle" type="Label" parent="ReplaysModal/ReplaysVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 32
+text = "REPLAY THEATER"
+horizontal_alignment = 1
+
+[node name="ReplaysSub" type="Label" parent="ReplaysModal/ReplaysVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 0.85)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 21
+text = "Select a saved match to watch or manage slots (1-10):"
+horizontal_alignment = 1
+
+[node name="ReplaysScroll" type="ScrollContainer" parent="ReplaysModal/ReplaysVBox"]
+custom_minimum_size = Vector2(0, 500)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ReplaySlotsContainer" type="VBoxContainer" parent="ReplaysModal/ReplaysVBox/ReplaysScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="ReplaysBottomBar" type="HBoxContainer" parent="ReplaysModal/ReplaysVBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="CloseReplaysBtn" type="Button" parent="ReplaysModal/ReplaysVBox/ReplaysBottomBar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_btn")
+text = "Close [Esc]"
+

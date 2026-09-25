@@ -1,0 +1,20 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/effects/reisen_moon_charge.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/effects/travel_mote_hd.png" id="2_mote_tex"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/ex_mote.tres" id="3_ex_tex"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[node name="ReisenMoonCharge" type="Node2D"]
+material = SubResource("CanvasItemMaterial_add")
+script = ExtResource("1_script")
+
+[node name="Glow" type="Sprite2D" parent="."]
+use_parent_material = true
+texture = ExtResource("2_mote_tex")
+
+[node name="Star" type="Sprite2D" parent="."]
+use_parent_material = true
+texture = ExtResource("3_ex_tex")

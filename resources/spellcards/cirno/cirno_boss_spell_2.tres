@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="SpellcardData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_interweaving_icicles_step.gd" id="2_icicle_step_script"]
+[ext_resource type="Resource" path="res://resources/bullets/cyan_icicle.tres" id="3_cyan_icicle"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="4_step_script"]
+
+[sub_resource type="Resource" id="Resource_interweaving_icicles"]
+script = ExtResource("2_icicle_step_script")
+bullet_data = ExtResource("3_cyan_icicle")
+count_min = 33
+count_max = 48
+target_radius = 180.0
+expand_speed_min = 150.0
+expand_speed_max = 180.0
+hold_time = 0.25
+breakout_angle_deg = 90.0
+breakout_accel_min = 560.0
+breakout_accel_max = 680.0
+breakout_max_speed_min = 340.0
+breakout_max_speed_max = 390.0
+zun_mode = true
+sfx = "se_tan00"
+breakout_sfx = "se_kira00"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "cirno_boss_spell_2"
+spellcard_name = "Interweaving Icicles"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("4_step_script")]([SubResource("Resource_interweaving_icicles")])

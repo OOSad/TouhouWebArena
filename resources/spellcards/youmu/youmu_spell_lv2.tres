@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_descending_strips_step.gd" id="2_strip_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_base_step"]
+[ext_resource type="Resource" path="res://resources/bullets/green_pellet.tres" id="4_green_pellet"]
+[ext_resource type="Resource" path="res://resources/bullets/green_arrow.tres" id="5_green_arrow"]
+
+[sub_resource type="Resource" id="Resource_descending_strips"]
+script = ExtResource("2_strip_script")
+bullet_pellet = ExtResource("4_green_pellet")
+bullet_arrow = ExtResource("5_green_arrow")
+strips_min = 3
+strips_max = 7
+bullets_per_strip = 11
+pellet_speed = 250.0
+arrow_speed = 285.0
+delay_between_bullets = 0.011
+delay_between_strips = 0.2
+spawn_y = -30.0
+horizontal_margin = 45.0
+drift_angle_max_deg = 2.8125
+alternate_bullet_types = true
+direction_mode = 0
+zun_mode = true
+sfx = "se_tan00"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "youmu_lv2"
+spellcard_name = "Lost Sign \"Binding Sword\""
+level = 2
+waves_min = 1
+waves_max = 1
+steps = Array[ExtResource("3_base_step")]([SubResource("Resource_descending_strips")])

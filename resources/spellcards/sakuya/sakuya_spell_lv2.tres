@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_time_stop_fan_step.gd" id="2_fan_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_base"]
+[ext_resource type="Resource" path="res://resources/bullets/sakuya_knife.tres" id="4_knife"]
+[ext_resource type="Resource" path="res://resources/bullets/red_pellet.tres" id="5_pellet"]
+
+[sub_resource type="Resource" id="Resource_time_stop_fan"]
+script = ExtResource("2_fan_script")
+knife_data = ExtResource("4_knife")
+pellet_data = ExtResource("5_pellet")
+aim_arc_at_point = true
+zun_rank_delay = true
+accel_r1 = 137.5
+accel_duration = 0.6666667
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "sakuya_lv2"
+spellcard_name = "Time Sign \"Private Square\""
+level = 2
+waves_min = 1
+waves_max = 1
+steps = Array[ExtResource("3_step_base")]([SubResource("Resource_time_stop_fan")])

@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_knife_fan_step.gd" id="2_fan_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Resource" path="res://resources/bullets/yellow_knife.tres" id="4_knife"]
+
+[sub_resource type="Resource" id="Resource_knife_fan"]
+script = ExtResource("2_fan_script")
+bullet_data = ExtResource("4_knife")
+waves_min = 5
+waves_max = 9
+angle_step_deg = 11.25
+zun_rank_waves = true
+initial_charge_delay = 0.0
+wave_delay_r1 = 0.1666667
+wave_delay_r16 = 0.1666667
+speed_r1 = 262.5
+speed_r16 = 450.0
+aim_at_player = true
+sfx = "se_tan00"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "youmu_boss_spell_1"
+spellcard_name = "Lost Sign \"Self-Enlightenment\" (Fan of Knives)"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_knife_fan")])
+

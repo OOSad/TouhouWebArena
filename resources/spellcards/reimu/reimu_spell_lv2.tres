@@ -1,0 +1,53 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3 uid="uid://spfx3fhtj6fk"]
+
+[ext_resource type="Script" uid="uid://doicapgx47u0j" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" uid="uid://gwyhg8xjkaey" path="res://scripts/resources/danmaku_ring_step.gd" id="2_ring_script"]
+[ext_resource type="Script" uid="uid://b2eevludovou4" path="res://scripts/resources/danmaku_step.gd" id="2_vmrsm"]
+[ext_resource type="Script" uid="uid://e17ldbpib36h" path="res://scripts/resources/danmaku_delay_step.gd" id="3_delay_script"]
+[ext_resource type="Resource" uid="uid://cwj8lm6y8i767" path="res://resources/bullets/red_oval.tres" id="3_n87jf"]
+[ext_resource type="Resource" uid="uid://5l7q2s1ekn82" path="res://resources/bullets/red_pellet.tres" id="4_red_pellet"]
+[ext_resource type="Script" uid="uid://dhx7tbmuoqo10" path="res://scripts/resources/danmaku_bullet_data.gd" id="5_u1pdh"]
+[ext_resource type="Resource" path="res://resources/bullets/white_pellet.tres" id="8_n87jf"]
+[ext_resource type="Resource" uid="uid://bq325q20psbbq" path="res://resources/bullets/white_oval.tres" id="9_u1pdh"]
+
+[sub_resource type="Resource" id="Resource_ring_red"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("3_n87jf")
+alternate_bullet_data = ExtResource("4_red_pellet")
+use_wave_angle = true
+count_min = 68
+count_max = 128
+speed_min = 143.75
+speed_max = 425.0
+
+[sub_resource type="Resource" id="Resource_delay"]
+script = ExtResource("3_delay_script")
+delay_seconds = 0.0
+
+[sub_resource type="Resource" id="Resource_ring_white"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("8_n87jf")
+alternate_bullet_data = ExtResource("9_u1pdh")
+motion_mode = 1
+use_wave_angle = true
+count_min = 68
+count_max = 128
+speed_min = 143.75
+speed_max = 425.0
+homing_decel_time = 2.0
+homing_pause_time = 0.0
+homing_launch_speed = 186.875
+homing_launch_speed_max = 552.5
+homing_sfx = "se_kira00"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "reimu_lv2"
+spellcard_name = "Spirit Sign \"Yin-Yang Seal\""
+wave_interval = 0.6666667
+wave_rank_breaks = PackedInt32Array(8, 15)
+wave_counts = PackedInt32Array(1, 2, 3)
+jitter_wave_origin = false
+random_wave_angle = true
+mirror_player_origin = true
+steps = Array[ExtResource("2_vmrsm")]([SubResource("Resource_ring_red"), SubResource("Resource_delay"), SubResource("Resource_ring_white")])

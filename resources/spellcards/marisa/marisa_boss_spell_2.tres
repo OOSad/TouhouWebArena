@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_extra_attack_step.gd" id="2_extra_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/earth_light_ray.tscn" id="4_earth_light_ray"]
+
+[sub_resource type="Resource" id="Resource_marisa_extra_barrage"]
+script = ExtResource("2_extra_step_script")
+character_id = "marisa"
+extra_attack_scene = ExtResource("4_earth_light_ray")
+count_min = 4
+count_max = 8
+delay_between_spawns = 0.22
+spawn_location = 2
+horizontal_spread = 120.0
+initial_upward_speed = 390.0
+ground_spawn_min_x = 75.0
+ground_spawn_max_x = 525.0
+tilt_angle_min_deg = -3.25
+tilt_angle_max_deg = 3.25
+alternate_tilt = false
+zun_sweep = true
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "marisa_boss_spell_2"
+spellcard_name = "Earth Light Ray Barrage"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_marisa_extra_barrage")])

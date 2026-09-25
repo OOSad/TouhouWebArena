@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/character_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/menu_characters/aya.png" id="4_portrait"]
+
+[resource]
+script = ExtResource("1_script")
+character_id = "aya"
+display_name = "Aya Shameimaru"
+title = "Traditional Reporter of Fantasy"
+primary_color = Color(0.82, 0.16, 0.2, 1)
+secondary_color = Color(0.16, 0.13, 0.14, 1)
+portrait_texture = ExtResource("4_portrait")
+normal_speed = 742.5
+focus_speed = 472.5
+hurtbox_radius = 3.0
+graze_radius = 64.0
+passive_charge_per_graze = 0.015
+bullet_damage = 1.0
+bullet_speed = 1400.0
+bullet_scale = Vector2(2, 2)
+bullet_capsule_height = 60.0
+shot_cooldown = 0.075
+primary_shot_name = "Wind Gust"
+primary_shot_desc = "Twin streams of pale wind fired straight ahead."
+scope_shape = 0
+scope_radius = 150.0
+scope_expand_duration = 0.28
+scope_collapse_duration = 0.14
+spell_bar_segments = 4
+passive_charge_start = 1.0
+passive_charge_per_fairy = 0.01
+passive_charge_per_great_fairy = 0.025
+passive_charge_per_spirit = 0.04
+passive_charge_per_cancel = 0.001
+active_charge_speed = 2.4
+special_trait = "The fastest duelist in Gensokyo, and still quick when focused."
+spell_bar_color = Color(0.72, 0.14, 0.18, 1)
+has_spellcard_shockwaves = true
+shockwave_radius_lv2 = 420.0
+shockwave_radius_lv3 = 650.0
+shockwave_radius_lv4 = 1200.0
+shockwave_speed = 400.0
+shockwave_duration = 1.02
+shockwave_color = Color(0.95, 0.3, 0.32, 1)
+version_tag = "TH09"

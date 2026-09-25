@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/effects/knife_explosion_burst.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://resources/bullets/textures/tex_knife_explosion_burst.tres" id="2_texture"]
+
+[node name="KnifeExplosionBurst" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+z_index = 11
+z_as_relative = false
+texture_filter = 1
+texture = ExtResource("2_texture")

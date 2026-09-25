@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SpellcardData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_icicle_shower_step.gd" id="2_shower_step_script"]
+[ext_resource type="Resource" path="res://resources/bullets/blue_icicle.tres" id="3_blue_icicle"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="4_step_script"]
+
+[sub_resource type="Resource" id="Resource_icicle_shower"]
+script = ExtResource("2_shower_step_script")
+bullet_data = ExtResource("3_blue_icicle")
+count_min = 31
+count_max = 46
+spawn_offset_x = 108.0
+spawn_offset_y_min = -24.0
+spawn_offset_y_max = 192.0
+spawn_radius = 133.3
+fall_speed_min = 125.0
+fall_speed_max_rank1 = 437.5
+fall_speed_max_rank16 = 437.5
+delay_between_spawns = 0.0166667
+sfx = "se_tan00"
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "cirno_boss_spell_3"
+spellcard_name = "Shower of Icicles"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("4_step_script")]([SubResource("Resource_icicle_shower")])

@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/attacks/marisa_charge_attack.gd" id="1_marisa_charge_script"]
+
+[node name="MarisaChargeAttack" type="Node2D"]
+script = ExtResource("1_marisa_charge_script")
+

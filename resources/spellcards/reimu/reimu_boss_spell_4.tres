@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_double_ring_step.gd" id="2_double_ring_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Resource" path="res://resources/bullets/red_pellet.tres" id="4_red_pellet"]
+[ext_resource type="Resource" path="res://resources/bullets/white_pellet.tres" id="5_white_pellet"]
+
+[sub_resource type="Resource" id="Resource_double_ring_step"]
+script = ExtResource("2_double_ring_script")
+bullet_data_red = ExtResource("4_red_pellet")
+bullet_data_white = ExtResource("5_white_pellet")
+count_min = 31
+count_max = 46
+initial_radius = 0.0
+radial_speed_min = 187.5
+radial_speed_max = 187.5
+angular_speed_min = 0.7854
+angular_speed_max = 0.7854
+curve_mode = true
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "reimu_boss_spell_4"
+spellcard_name = "Double Circles of Pellets"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_double_ring_step")])
+

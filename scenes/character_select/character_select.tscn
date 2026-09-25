@@ -1,0 +1,267 @@
+[gd_scene load_steps=7 format=3 uid="uid://b6q2f8n4w1y3k"]
+
+[ext_resource type="Script" path="res://scenes/character_select/character_select.gd" id="1_select_script"]
+[ext_resource type="FontFile" uid="uid://sxfx0k4crqn8" path="res://Cirno.ttf" id="2_cirno_font"]
+[ext_resource type="Texture2D" uid="uid://wg4p1xryvjuv" path="res://assets/ui/title_bg_symmetric.png" id="3_bg_symmetric"]
+[ext_resource type="PackedScene" uid="uid://c3k7v0j8x4b8y" path="res://scenes/character_select/character_card.tscn" id="5_card_scene"]
+[ext_resource type="PackedScene" path="res://scenes/character_select/character_carousel_slot.tscn" id="6_slot_scene"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ribbon"]
+bg_color = Color(0.02, 0.03, 0.07, 0.92)
+border_width_top = 3
+border_width_bottom = 3
+border_color = Color(0.35, 0.48, 0.72, 0.75)
+shadow_color = Color(0, 0, 0, 0.75)
+shadow_size = 14
+
+[node name="CharacterSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_select_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.06, 1)
+
+[node name="BackgroundTex" type="TextureRect" parent="."]
+unique_name_in_owner = true
+modulate = Color(0.42, 0.52, 0.82, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_bg_symmetric")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="TwilightScrim" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.01, 0.02, 0.06, 0.35)
+
+[node name="P1Card" parent="." instance=ExtResource("5_card_scene")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 760.0
+offset_bottom = 0.0
+grow_vertical = 2
+mouse_filter = 2
+player_number = 1
+
+[node name="P2Card" parent="." instance=ExtResource("5_card_scene")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -760.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 2
+player_number = 2
+
+[node name="CarouselTrack" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+rotation = -0.512389
+mouse_filter = 1
+
+[node name="TrackGuideRails" type="Panel" parent="CarouselTrack"]
+custom_minimum_size = Vector2(2500, 236)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -1250.0
+offset_top = -118.0
+offset_right = 1250.0
+offset_bottom = 118.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ribbon")
+
+[node name="SlotsContainer" type="Control" parent="CarouselTrack"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="Slot0" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
+layout_mode = 0
+offset_left = -352.5
+offset_top = -110.0
+offset_right = -112.5
+offset_bottom = 110.0
+
+[node name="Slot1" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
+layout_mode = 0
+offset_left = -197.5
+offset_top = -110.0
+offset_right = 42.5
+offset_bottom = 110.0
+is_top_heavy = true
+
+[node name="Slot2" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
+layout_mode = 0
+offset_left = -42.5
+offset_top = -110.0
+offset_right = 197.5
+offset_bottom = 110.0
+
+[node name="Slot3" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
+layout_mode = 0
+offset_left = 112.5
+offset_top = -110.0
+offset_right = 352.5
+offset_bottom = 110.0
+is_top_heavy = true
+
+[node name="Slot4" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
+layout_mode = 0
+offset_left = 267.5
+offset_top = -110.0
+offset_right = 507.5
+offset_bottom = 110.0
+
+[node name="Slot5" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
+layout_mode = 0
+offset_left = 422.5
+offset_top = -110.0
+offset_right = 662.5
+offset_bottom = 110.0
+is_top_heavy = true
+
+[node name="Slot6" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
+layout_mode = 0
+offset_left = 577.5
+offset_top = -110.0
+offset_right = 817.5
+offset_bottom = 110.0
+
+[node name="Slot7" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
+layout_mode = 0
+offset_left = 732.5
+offset_top = -110.0
+offset_right = 972.5
+offset_bottom = 110.0
+is_top_heavy = true
+
+[node name="Slot8" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
+layout_mode = 0
+offset_left = 887.5
+offset_top = -110.0
+offset_right = 1127.5
+offset_bottom = 110.0
+
+[node name="Slot9" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
+layout_mode = 0
+offset_left = 1042.5
+offset_top = -110.0
+offset_right = 1282.5
+offset_bottom = 110.0
+is_top_heavy = true
+
+[node name="CenterUI" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxMain" type="VBoxContainer" parent="CenterUI"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 14
+
+[node name="TitleLabel" type="Label" parent="CenterUI/VBoxMain"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 42
+text = "Character Select"
+horizontal_alignment = 1
+
+[node name="StatusBanner" type="Label" parent="CenterUI/VBoxMain"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.5, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 22
+text = "Confirmed!"
+horizontal_alignment = 1
+
+[node name="SpacerMiddle" type="Control" parent="CenterUI/VBoxMain"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="FooterHints" type="Label" parent="CenterUI/VBoxMain"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("2_cirno_font")
+theme_override_font_sizes/font_size = 18
+text = "[Left / Right / Up / Down / Click] Choose Character      [Hold Shift] View Specs      [Z / Click] Confirm Selection      [X / Esc] Back to Menu"
+horizontal_alignment = 1
