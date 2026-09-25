@@ -292,7 +292,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
 theme_override_constants/outline_size = 3
 theme_override_fonts/font = ExtResource("2_cirno_font")
 theme_override_font_sizes/font_size = 22
-text = "TEST v0.02"
+text = "TEST v0.03"
 
 [node name="Columns" type="HBoxContainer" parent="MarginContainer/VBoxMain" unique_id=1125566436]
 layout_mode = 2
