@@ -428,6 +428,110 @@ const QUOTES: Array[Dictionary] = [
 		"winner_expression": 0,
 		"text": "Few people can make their own flower bloom. Why? Because there is no end to the arrogant idea of blooming all by oneself. Blooming is the soil's doing. So once you have bloomed, don't forget to give back to the soil."
 	},
+	# Beating Aya (entry 100 in each winner's pl*_match.msg)
+	{
+		"winner_id": "reimu",
+		"loser_id": "aya",
+		"winner_expression": 2,
+		"text": "Come on, write up the heroic tale of how I beat a tengu!"
+	},
+	{
+		"winner_id": "marisa",
+		"loser_id": "aya",
+		"winner_expression": 1,
+		"text": "Oh, right. Next time, bring me a newspaper with me in it."
+	},
+	{
+		"winner_id": "sakuya",
+		"loser_id": "aya",
+		"winner_expression": 1,
+		"text": "So there was such a thing as a newspaper. Though a place this peaceful can't have much to write about."
+	},
+	{
+		"winner_id": "youmu",
+		"loser_id": "aya",
+		"winner_expression": 0,
+		"text": "Everyone is too busy to read newspapers. Surely."
+	},
+	{
+		"winner_id": "reisen",
+		"loser_id": "aya",
+		"winner_expression": 0,
+		"text": "Your wavelength is steady. You seem to be the type who can match anyone."
+	},
+	{
+		"winner_id": "cirno",
+		"loser_id": "aya",
+		"winner_expression": 2,
+		"text": "Just watch! Next time I'll cause a huge incident and knock everyone's socks off!"
+	},
+	{
+		"winner_id": "yuuka",
+		"loser_id": "aya",
+		"winner_expression": 1,
+		"text": "How about a pine blossom? No, I was just thinking its frumpiness would suit you perfectly."
+	},
+	# Aya Matchups (pl10_match.msg)
+	{
+		"winner_id": "aya",
+		"loser_id": "reimu",
+		"winner_expression": 2,
+		"text": "When I'm short on stories, you can't beat a shrine maiden. I'm looking forward to more of your fun exploits, okay?"
+	},
+	{
+		"winner_id": "aya",
+		"loser_id": "marisa",
+		"winner_expression": 1,
+		"text": "By the way, however much you steal, I won't blame you for it. A newspaper doesn't meddle in incidents. It always has to see things through a third party's eyes."
+	},
+	{
+		"winner_id": "aya",
+		"loser_id": "sakuya",
+		"winner_expression": 2,
+		"text": "The Scarlet Devil Mansion has always been good to me. Nowhere else has quite so many strange incidents."
+	},
+	{
+		"winner_id": "aya",
+		"loser_id": "youmu",
+		"winner_expression": 1,
+		"text": "I hardly ever go to the netherworld... Could there be some interesting stories over there?"
+	},
+	{
+		"winner_id": "aya",
+		"loser_id": "reisen",
+		"winner_expression": 6,
+		"text": "Come to think of it, the mochi the moon rabbits pounded was perfectly ordinary mochi."
+	},
+	{
+		"winner_id": "aya",
+		"loser_id": "cirno",
+		"winner_expression": 5,
+		"text": "Even a fairy makes the paper if she causes a big enough incident. You've still got a chance, you know?"
+	},
+	{
+		"winner_id": "aya",
+		"loser_id": "yuuka",
+		"winner_expression": 1,
+		"text": "Don't fix your hat under a plum tree, or your shoes in a melon patch. You'd do better to keep quiet."
+	},
+	{
+		"winner_id": "aya",
+		"loser_id": "aya",
+		"winner_expression": 0,
+		"text": "Learn from others' conduct. Someone who writes a newspaper has to act honestly at all times."
+	},
+	{
+		"winner_id": "aya",
+		"loser_id": "*",
+		"winner_expression": 2,
+		"text": "Extra, extra! A special edition of the Bunbunmaru Newspaper, bringing you the most reliable truth in Gensokyo!"
+	},
+	{
+		"winner_id": "aya",
+		"loser_id": "*",
+		"winner_expression": 0,
+		"text": "Well? Wouldn't you like to subscribe to the Bunbunmaru Newspaper too?"
+	},
 	# Clownpiece: not in PoFV, so no match script; her one line is the user's.
 	{
 		"winner_id": "clownpiece",
@@ -448,6 +552,7 @@ static func get_random_quote(winner_id: String, loser_id: String) -> Dictionary:
 	elif "cirno" in w_norm: w_norm = "cirno"
 	elif "reisen" in w_norm or "udonge" in w_norm: w_norm = "reisen"
 	elif "yuuka" in w_norm: w_norm = "yuuka"
+	elif "aya" in w_norm or "shameimaru" in w_norm: w_norm = "aya"
 	elif "clownpiece" in w_norm: w_norm = "clownpiece"
 	if "reimu" in l_norm: l_norm = "reimu"
 	elif "marisa" in l_norm: l_norm = "marisa"
@@ -456,6 +561,7 @@ static func get_random_quote(winner_id: String, loser_id: String) -> Dictionary:
 	elif "cirno" in l_norm: l_norm = "cirno"
 	elif "reisen" in l_norm or "udonge" in l_norm: l_norm = "reisen"
 	elif "yuuka" in l_norm: l_norm = "yuuka"
+	elif "aya" in l_norm or "shameimaru" in l_norm: l_norm = "aya"
 	elif "clownpiece" in l_norm: l_norm = "clownpiece"
 	
 	var exact_matches: Array[Dictionary] = []
