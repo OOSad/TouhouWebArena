@@ -26,6 +26,12 @@ const STALK_TEX: Texture2D = preload("res://resources/dat_textures/stage_bamboo_
 const LEAVES_A_TEX: Texture2D = preload("res://resources/dat_textures/stage_bamboo_leaves_a.tres")
 const LEAVES_B_TEX: Texture2D = preload("res://resources/dat_textures/stage_bamboo_leaves_b.tres")
 const FOG_SHADER: Shader = preload("res://scenes/stages/bamboo_road/bamboo_stage_fog.gdshader")
+## PoFV's leaf art is ringed by a soft black halo: every partly transparent pixel is near
+## black. PoFV blends it in faintly, but a hard cutoff draws it as solid black specks, so
+## only the fully solid leaf pixels are kept, minus the near-black shading blotches inside the
+## clusters (per the user, who found the dark fringe ugly). The art itself is untouched.
+const LEAF_ALPHA_CUTOFF: float = 0.95
+const LEAF_DARK_CUTOFF: float = 0.08
 
 const STALK_LOCAL: Transform3D = Transform3D(Basis(), Vector3(0.0, 5.25, 0.0))
 
@@ -114,7 +120,8 @@ func _init_materials() -> void:
 	_leaves_a_mat.set_shader_parameter("fog_start", fog_start)
 	_leaves_a_mat.set_shader_parameter("fog_end", fog_end)
 	_leaves_a_mat.set_shader_parameter("use_alpha_scissor", true)
-	_leaves_a_mat.set_shader_parameter("alpha_scissor_threshold", 0.30)
+	_leaves_a_mat.set_shader_parameter("alpha_scissor_threshold", LEAF_ALPHA_CUTOFF)
+	_leaves_a_mat.set_shader_parameter("dark_cutoff", LEAF_DARK_CUTOFF)
 
 	_leaves_b_mat = ShaderMaterial.new()
 	_leaves_b_mat.shader = FOG_SHADER
@@ -123,7 +130,8 @@ func _init_materials() -> void:
 	_leaves_b_mat.set_shader_parameter("fog_start", fog_start)
 	_leaves_b_mat.set_shader_parameter("fog_end", fog_end)
 	_leaves_b_mat.set_shader_parameter("use_alpha_scissor", true)
-	_leaves_b_mat.set_shader_parameter("alpha_scissor_threshold", 0.30)
+	_leaves_b_mat.set_shader_parameter("alpha_scissor_threshold", LEAF_ALPHA_CUTOFF)
+	_leaves_b_mat.set_shader_parameter("dark_cutoff", LEAF_DARK_CUTOFF)
 
 func _init_meshes() -> void:
 	_floor_mesh = PlaneMesh.new()

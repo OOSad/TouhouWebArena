@@ -7,11 +7,13 @@ uniform float fog_start : hint_range(0.0, 50.0) = 4.0;
 uniform float fog_end : hint_range(0.0, 50.0) = 14.5;
 uniform float alpha_scissor_threshold : hint_range(0.0, 1.0) = 0.30;
 uniform bool use_alpha_scissor = false;
+// Leaves only: drop near-black pixels too (0 keeps everything).
+uniform float dark_cutoff : hint_range(0.0, 1.0) = 0.0;
 
 void fragment() {
 	vec4 tex_color = texture(texture_albedo, UV);
 	
-	if (use_alpha_scissor && tex_color.a < alpha_scissor_threshold) {
+	if (use_alpha_scissor && (tex_color.a < alpha_scissor_threshold || max(tex_color.r, max(tex_color.g, tex_color.b)) < dark_cutoff)) {
 		discard;
 	}
 	
