@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/attacks/aya_charge_attack.tscn" id="5_charge_attack"]
 [ext_resource type="Resource" path="res://resources/spellcards/aya/aya_spell_lv2.tres" id="6_spell_lv2"]
 [ext_resource type="Resource" path="res://resources/spellcards/aya/aya_spell_lv3.tres" id="7_spell_lv3"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/aya_extra_streak.tscn" id="8_extra_attack"]
 
 [resource]
 script = ExtResource("1_script")
@@ -26,8 +27,8 @@ bullet_capsule_height = 60.0
 shot_cooldown = 0.075
 primary_shot_name = "Wind Gust"
 primary_shot_desc = "Twin streams of pale wind fired straight ahead."
-scope_shape = 0
-scope_radius = 150.0
+scope_shape = 6
+scope_radius = 280.0
 scope_expand_duration = 0.28
 scope_collapse_duration = 0.14
 spell_bar_segments = 4
@@ -40,8 +41,14 @@ active_charge_speed = 2.4
 charge_attack_name = "Wind Gust Crescents"
 charge_attack_scene = ExtResource("5_charge_attack")
 charge_attack_desc = "A rapid stream of twenty wind crescents fired from wherever she flies, swaying slightly as they go."
+extra_attack_scene = ExtResource("8_extra_attack")
+extra_attack_y_range = Vector2(100, 180)
+extra_attack_x_range = Vector2(60, 540)
+extra_attack_name = "Wind Streak"
+extra_attack_desc = "A red streak forms at the top of the opponent's field, then dives at them, gathering speed."
+extra_attack_launch_sfx = "se_exattack"
 special_trait = "The fastest duelist in Gensokyo, and still quick when focused."
-signature_spell_name = "Whirlwind Sign \"Maple Leaf Fan\""
+signature_spell_name = "Wind Sign \"Wind God's Favor\""
 spellcard_lv2 = ExtResource("6_spell_lv2")
 spellcard_lv3 = ExtResource("7_spell_lv3")
 spell_bar_color = Color(0.72, 0.14, 0.18, 1)

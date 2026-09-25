@@ -10,7 +10,7 @@ extends RefCounted
 ## empty .tres there, and a row here.
 
 ## Bump when changing a recipe, so saved copies aren't reused.
-const VERSION: int = 4
+const VERSION: int = 5
 
 const TEXTURES: String = "res://resources/dat_textures/%s.tres"
 
@@ -58,6 +58,8 @@ const RECIPES: Dictionary = {
 	# Aya: charge attack crescent (sprite 28) and the three frames it fades through on a hit
 	# (29-31, pl10.anm script 8), stood upright.
 	"aya_charge_shot": ["th09", "pl10.anm", [28, 29, 30, 31], 3],
+	# Aya: extra attack streak (pl10_ex.png sprite 32), turned to point down.
+	"aya_extra_streak": ["th09", "pl10.anm", 32, 1],
 	# Shared effects from the bullet sheets: the EX mote (etama2's spiked burst), the flare
 	# and rune strip of the earth light ray, and the spellcard shockwave's ribbon (the top
 	# 128px of an etama3 strip the game scrolls).

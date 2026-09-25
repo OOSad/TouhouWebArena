@@ -17,7 +17,7 @@ interval_frames = 10
 [resource]
 script = ExtResource("1_spell_script")
 spellcard_id = "aya_lv2"
-spellcard_name = "Whirlwind Sign \"Maple Leaf Fan\""
+spellcard_name = "Wind Sign \"Wind God's Favor\""
 level = 2
 waves_min = 1
 waves_max = 1

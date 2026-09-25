@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/attacks/aya_extra_streak.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/aya_extra_streak.tres" id="2_texture"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_streak"]
+radius = 16.0
+height = 115.0
+
+[node name="AyaExtraStreak" type="Area2D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_script")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Body" type="Sprite2D" parent="Visual"]
+texture_filter = 1
+scale = Vector2(2.0833, 2.0833)
+texture = ExtResource("2_texture")
+
+[node name="Glow" type="Sprite2D" parent="Visual"]
+material = SubResource("CanvasItemMaterial_add")
+texture_filter = 1
+scale = Vector2(2.0833, 2.0833)
+texture = ExtResource("2_texture")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_streak")

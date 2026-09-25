@@ -13,7 +13,8 @@ enum ScopeShape {
 	FAN_DOWN,
 	LENS,
 	SATELLITE_CIRCLES,
-	STAR
+	STAR,
+	FAN_UP
 }
 
 @export var shape_type: ScopeShape = ScopeShape.CIRCLE
@@ -90,12 +91,17 @@ func apply_character_data(char_data: CharacterData) -> void:
 				shape_type = ScopeShape.LENS
 			CharacterData.ScopeShape.SATELLITE_CIRCLES:
 				shape_type = ScopeShape.SATELLITE_CIRCLES
+			CharacterData.ScopeShape.FAN_UP:
+				shape_type = ScopeShape.FAN_UP
 			CharacterData.ScopeShape.STAR:
 				shape_type = ScopeShape.STAR
 			_:
 				shape_type = ScopeShape.CIRCLE
 		max_radius = char_data.scope_radius
 		expand_duration = char_data.scope_expand_duration
+		if shape_type == ScopeShape.FAN_UP:
+			aim_angle = -PI * 0.5
+			_display_aim_angle = aim_angle
 		collapse_duration = char_data.scope_collapse_duration
 		_update_shape_config()
 		_update_collision_and_draw()
@@ -134,6 +140,9 @@ func set_aim_direction(dir: Vector2) -> void:
 	# Sakuya's fan aims opposite the movement input (e.g. pressing up rotates
 	# the fan to face straight down). A zero vector (no input) keeps the last aim.
 	# The fan turns toward this target smoothly in _process rather than snapping.
+	# Aya's cone always points straight up.
+	if shape_type == ScopeShape.FAN_UP:
+		return
 	if dir.length_squared() < 0.0001:
 		return
 	if shape_type == ScopeShape.LENS:
@@ -180,7 +189,7 @@ func _process(delta: float) -> void:
 		if polygon_col and not polygon_col.disabled:
 			polygon_col.polygon = _build_column_polygon()
 		queue_redraw()
-	elif visible and shape_type == ScopeShape.FAN_DOWN:
+	elif visible and (shape_type == ScopeShape.FAN_DOWN or shape_type == ScopeShape.FAN_UP):
 		# Keep rebuilding while stable so the fan tracks aim_angle as the player turns
 		if polygon_col and not polygon_col.disabled:
 			polygon_col.polygon = _build_fan_polygon()
@@ -238,7 +247,7 @@ func _update_collision_and_draw() -> void:
 			polygon_col.disabled = (current_progress <= 0.05)
 			if not polygon_col.disabled:
 				polygon_col.polygon = _build_column_polygon()
-	elif shape_type == ScopeShape.FAN_DOWN:
+	elif (shape_type == ScopeShape.FAN_DOWN or shape_type == ScopeShape.FAN_UP):
 		if polygon_col:
 			polygon_col.disabled = (current_progress <= 0.05)
 			if not polygon_col.disabled:
@@ -271,12 +280,18 @@ func _build_column_polygon() -> PackedVector2Array:
 		Vector2(base_w, bot_y)
 	])
 
+## Sakuya's fan opens to 45 degrees either side; Aya's cone to about 50 (measured from
+## the user's screenshot, ~100 degrees across).
+func _fan_half_angle() -> float:
+	var full: float = deg_to_rad(50.0) if shape_type == ScopeShape.FAN_UP else PI * 0.25
+	return full * current_progress
+
 func _build_fan_polygon() -> PackedVector2Array:
 	if current_progress <= 0.001:
 		return PackedVector2Array()
 	
 	var r := max_radius
-	var half_angle := (PI * 0.25) * current_progress # 45 degrees at full expansion
+	var half_angle := _fan_half_angle()
 	var num_segments := 24
 	var poly := PackedVector2Array()
 	poly.append(Vector2.ZERO)
@@ -371,7 +386,7 @@ func _draw() -> void:
 			draw_line(poly[2], poly[3], OUTLINE_COLOR, 2.0, true)
 			draw_line(poly[1], poly[2], OUTLINE_COLOR, 1.5, true)
 			draw_line(poly[3], poly[0], OUTLINE_COLOR, 1.5, true)
-	elif shape_type == ScopeShape.FAN_DOWN:
+	elif (shape_type == ScopeShape.FAN_DOWN or shape_type == ScopeShape.FAN_UP):
 		var poly := _build_fan_polygon()
 		if poly.size() >= 3:
 			draw_colored_polygon(poly, FILL_COLOR)
@@ -380,7 +395,7 @@ func _draw() -> void:
 			draw_line(Vector2.ZERO, poly[poly.size() - 1], OUTLINE_COLOR, 2.0, true)
 			# Outer curved arc connecting the fan endpoints
 			var r := max_radius
-			var half_angle := (PI * 0.25) * current_progress
+			var half_angle := _fan_half_angle()
 			draw_arc(Vector2.ZERO, r, _display_aim_angle - half_angle, _display_aim_angle + half_angle, 24, OUTLINE_COLOR, 2.0, true)
 	elif shape_type == ScopeShape.LENS:
 		var poly := _build_lens_polygon()
@@ -443,7 +458,7 @@ func _is_spirit_in_scope(spirit: Spirit) -> bool:
 		var beam_w := lerpf(column_base_half_width, column_top_half_width, t) * current_progress + SPIRIT_RADIUS
 		var x_dist := absf(s_pos.x - p_pos.x)
 		return x_dist <= beam_w
-	elif shape_type == ScopeShape.FAN_DOWN:
+	elif (shape_type == ScopeShape.FAN_DOWN or shape_type == ScopeShape.FAN_UP):
 		var rel := s_pos - p_pos
 		var dist := rel.length()
 		var r := max_radius + SPIRIT_RADIUS
@@ -452,7 +467,7 @@ func _is_spirit_in_scope(spirit: Spirit) -> bool:
 		if dist < 0.001:
 			return true
 		var angle_diff := absf(rel.angle_to(Vector2.from_angle(_display_aim_angle)))
-		var half_angle := (PI * 0.25) * current_progress
+		var half_angle := _fan_half_angle()
 		var angle_tolerance := asin(clampf(SPIRIT_RADIUS / maxf(dist, SPIRIT_RADIUS), 0.0, 1.0))
 		return angle_diff <= (half_angle + angle_tolerance)
 	elif shape_type == ScopeShape.LENS:
