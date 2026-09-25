@@ -48,6 +48,7 @@ var is_open: bool = false
 @onready var p1_fire_lv2_btn: Button = %P1FireLv2Btn
 @onready var p1_fire_lv3_btn: Button = %P1FireLv3Btn
 @onready var p1_fire_lv4_btn: Button = %P1FireLv4Btn if has_node("%P1FireLv4Btn") else null
+@onready var p1_send_ex_btn: Button = %P1SendExBtn if has_node("%P1SendExBtn") else null
 @onready var p1_ai_option: OptionButton = %P1AIOption
 
 # P2 Controls
@@ -83,6 +84,7 @@ var is_open: bool = false
 @onready var p2_fire_lv2_btn: Button = %P2FireLv2Btn
 @onready var p2_fire_lv3_btn: Button = %P2FireLv3Btn
 @onready var p2_fire_lv4_btn: Button = %P2FireLv4Btn if has_node("%P2FireLv4Btn") else null
+@onready var p2_send_ex_btn: Button = %P2SendExBtn if has_node("%P2SendExBtn") else null
 @onready var p2_ai_option: OptionButton = %P2AIOption
 
 # World & Spawner Controls
@@ -194,6 +196,7 @@ func _setup_signals() -> void:
 	if p1_fire_lv2_btn: p1_fire_lv2_btn.pressed.connect(func(): _fire_spell(1, 2))
 	if p1_fire_lv3_btn: p1_fire_lv3_btn.pressed.connect(func(): _fire_spell(1, 3))
 	if p1_fire_lv4_btn: p1_fire_lv4_btn.pressed.connect(func(): _fire_spell(1, 4))
+	if p1_send_ex_btn: p1_send_ex_btn.pressed.connect(func(): _send_extra_attack(1))
 	
 	# P1 AI Option
 	if p1_ai_option:
@@ -236,6 +239,7 @@ func _setup_signals() -> void:
 	if p2_fire_lv2_btn: p2_fire_lv2_btn.pressed.connect(func(): _fire_spell(2, 2))
 	if p2_fire_lv3_btn: p2_fire_lv3_btn.pressed.connect(func(): _fire_spell(2, 3))
 	if p2_fire_lv4_btn: p2_fire_lv4_btn.pressed.connect(func(): _fire_spell(2, 4))
+	if p2_send_ex_btn: p2_send_ex_btn.pressed.connect(func(): _send_extra_attack(2))
 	
 	# P2 AI Option
 	if p2_ai_option:
@@ -522,6 +526,17 @@ func _fire_spell(player_num: int, level: int) -> void:
 		var pf := _get_playfield(player_num)
 		var rank: int = (pf.current_rank_lv4 if level >= 4 else pf.current_rank_lv2_3) if pf else 1
 		arena._on_spellcard_activated(player_num, level, rank)
+
+## Drops this player's Extra Attack straight onto the opponent's field, skipping the chain
+## that normally earns one and the light mote that carries it.
+func _send_extra_attack(player_num: int) -> void:
+	var pf := _get_playfield(player_num)
+	var opponent := _get_opponent_playfield(player_num)
+	if pf == null or opponent == null or pf.player == null:
+		return
+	var sender: String = pf.player.character_id
+	for target in MoteDispatcher.roll_extra_attack_targets(sender, pf.current_rank_lv2_3):
+		opponent.spawn_extra_attack(sender, target, pf.current_rank_lv2_3)
 
 func _set_player_ai(player_num: int, mode_idx: int) -> void:
 	var pf := _get_playfield(player_num)

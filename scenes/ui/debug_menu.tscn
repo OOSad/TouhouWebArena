@@ -377,6 +377,12 @@ size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
 text = "Lv4 Boss"
 
+[node name="P1SendExBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox/P1SpellRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Send EX"
+
 [node name="HSeparator4" type="HSeparator" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P1Panel/P1VBox"]
 layout_mode = 2
 
@@ -640,6 +646,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
 text = "Lv4 Boss"
+
+[node name="P2SendExBtn" type="Button" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox/P2SpellRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Send EX"
 
 [node name="HSeparator4" type="HSeparator" parent="RootControl/WindowPanel/MainVBox/TabContainer/Combatants/P2Panel/P2VBox"]
 layout_mode = 2
