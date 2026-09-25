@@ -12,7 +12,8 @@ enum ScopeShape {
 	COLUMN,
 	FAN_DOWN,
 	LENS,
-	SATELLITE_CIRCLES
+	SATELLITE_CIRCLES,
+	STAR
 }
 
 @export var shape_type: ScopeShape = ScopeShape.CIRCLE
@@ -35,6 +36,9 @@ enum ScopeShape {
 @export var satellite_count: int = 6
 @export var satellite_radius_ratio: float = 0.44
 @export var satellite_orbit_ratio: float = 1.48
+## STAR (Clownpiece): the inner corners' distance as a fraction of the points'. 0.5 is a
+## little chunkier than a true pentagram (0.38), so the arms stay wide enough to catch spirits.
+@export var star_inner_ratio: float = 0.5
 
 var is_focusing: bool = false
 var current_progress: float = 0.0 # 0.0 (closed) to 1.0 (fully open)
@@ -86,6 +90,8 @@ func apply_character_data(char_data: CharacterData) -> void:
 				shape_type = ScopeShape.LENS
 			CharacterData.ScopeShape.SATELLITE_CIRCLES:
 				shape_type = ScopeShape.SATELLITE_CIRCLES
+			CharacterData.ScopeShape.STAR:
+				shape_type = ScopeShape.STAR
 			_:
 				shape_type = ScopeShape.CIRCLE
 		max_radius = char_data.scope_radius
@@ -242,6 +248,11 @@ func _update_collision_and_draw() -> void:
 			polygon_col.disabled = (current_progress <= 0.05)
 			if not polygon_col.disabled:
 				polygon_col.polygon = _build_lens_polygon()
+	elif shape_type == ScopeShape.STAR:
+		if polygon_col:
+			polygon_col.disabled = (current_progress <= 0.05)
+			if not polygon_col.disabled:
+				polygon_col.polygon = _build_star_polygon()
 
 	queue_redraw()
 
@@ -320,6 +331,17 @@ func _build_lens_polygon() -> PackedVector2Array:
 
 	return poly
 
+## Five points, one straight up, alternating with inner corners.
+func _build_star_polygon() -> PackedVector2Array:
+	var poly := PackedVector2Array()
+	var outer: float = max_radius * current_progress
+	if outer < 1.0:
+		return poly
+	for i in range(10):
+		var r: float = outer if i % 2 == 0 else outer * star_inner_ratio
+		poly.append(Vector2.from_angle(-PI * 0.5 + PI * 0.2 * float(i)) * r)
+	return poly
+
 func _draw() -> void:
 	if current_progress <= 0.005:
 		return
@@ -365,6 +387,13 @@ func _draw() -> void:
 		if poly.size() >= 3:
 			draw_colored_polygon(poly, FILL_COLOR)
 			# Closed outline around the whole eye, including back to the first corner
+			var outline := poly.duplicate()
+			outline.append(poly[0])
+			draw_polyline(outline, OUTLINE_COLOR, 2.0, true)
+	elif shape_type == ScopeShape.STAR:
+		var poly := _build_star_polygon()
+		if poly.size() >= 3:
+			draw_colored_polygon(poly, FILL_COLOR)
 			var outline := poly.duplicate()
 			outline.append(poly[0])
 			draw_polyline(outline, OUTLINE_COLOR, 2.0, true)
@@ -440,6 +469,19 @@ func _is_spirit_in_scope(spirit: Spirit) -> bool:
 		var bot_centre := Vector2(0.0, (a * a + b * b) / (2.0 * b) - b)
 		return local.distance_squared_to(top_centre) <= r * r \
 			and local.distance_squared_to(bot_centre) <= r * r
+	elif shape_type == ScopeShape.STAR:
+		# Inside the star, or close enough to an edge that the spirit's body overlaps it.
+		var poly := _build_star_polygon()
+		if poly.size() < 3:
+			return false
+		var local := s_pos - p_pos
+		if Geometry2D.is_point_in_polygon(local, poly):
+			return true
+		for i in poly.size():
+			var edge_point := Geometry2D.get_closest_point_to_segment(local, poly[i], poly[(i + 1) % poly.size()])
+			if local.distance_squared_to(edge_point) <= SPIRIT_RADIUS * SPIRIT_RADIUS:
+				return true
+		return false
 	elif shape_type == ScopeShape.SATELLITE_CIRCLES:
 		var r_center := max_radius * current_progress + SPIRIT_RADIUS
 		if p_pos.distance_squared_to(s_pos) <= (r_center * r_center):

@@ -10,7 +10,8 @@ enum ScopeShape {
 	COLUMN,
 	FAN_DOWN,
 	LENS,
-	SATELLITE_CIRCLES
+	SATELLITE_CIRCLES,
+	STAR
 }
 
 @export_group("Identity")
@@ -173,6 +174,8 @@ func get_scope_description() -> String:
 			return "Lunatic Eye (%dpx across, turns with movement)" % int(scope_radius * 2.0)
 		ScopeShape.SATELLITE_CIRCLES:
 			return "Flower Blossom (Centric Circle + 6 Orbiting Satellites, r = %dpx)" % int(scope_radius * 1.92)
+		ScopeShape.STAR:
+			return "Five-Pointed Star (points reach %dpx)" % int(scope_radius)
 		_:
 			return "Standard Field"
 
