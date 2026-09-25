@@ -41,8 +41,8 @@ extends DanmakuStep
 ## Wait after the last stripe before the cast ends, 90 frames.
 @export var hold_after: float = 1.5
 ## TH15 slides its beams in at 12 px/frame (1543 px/s), which played as a jumpscare, so every
-## rank uses this instead: a beam takes over a second to cross the field.
-@export var beam_speed: float = 480.0
+## rank uses this instead: a beam takes about a second to cross the field (480 read as too slow).
+@export var beam_speed: float = 640.0
 ## Earth Light Ray's own length. TH15's beam is 1600 px long at 12 px/frame, so it holds its
 ## row ~2.2s; at the slower speed this length holds it about as long.
 @export var beam_length: float = 1060.0
