@@ -14,6 +14,34 @@ Shanghai Alice.
 
 ---
 
+## Playing it
+
+Builds come out on playtest weekends. The Windows version is on the
+[Releases](https://github.com/OOSad/TouhouWebArena/releases) page, and the
+browser version is on itch.io.
+
+You'll need your own copies of **Touhou 9 ~ Phantasmagoria of Flower View**
+and **Touhou 15 ~ Legacy of Lunatic Kingdom**. The first time you launch, drag
+`th09.dat`, `th15.dat` and each game's `thbgm.dat` (or just the two game
+folders) onto the window.
+
+### Roster
+
+Nine characters, each with a full kit: shot, Scope Style, charge attack,
+Level 2 and 3 spellcards, Extra Attack and Level 4 boss.
+
+- Reimu Hakurei
+- Marisa Kirisame
+- Sakuya Izayoi
+- Youmu Konpaku
+- Reisen Udongein Inaba
+- Cirno
+- Yuuka Kazami
+- Aya Shameimaru
+- Clownpiece (guest from Legacy of Lunatic Kingdom)
+
+---
+
 ## Netplay
 
 Online play is peer-to-peer over WebRTC, with a lightweight signaling server
@@ -30,10 +58,8 @@ Compatibility renderer. The project targets WebGL 2.0 at 1920x1080.
 git clone https://github.com/OOSad/TouhouWebArena.git
 ```
 
-Open the folder in Godot, then:
-
-- **F5**: full flow from the main menu
-- **F6** on `scenes/arena/arena.tscn`: jump straight into a match
+Open the folder in Godot and press **F5**. The game asks for the `.dat` files
+above, then goes to the main menu.
 
 Clone to a reasonably short path. The repo contains a 140-character file path
 in `addons/`, and Windows checkouts can fail with *"Filename too long"* if
