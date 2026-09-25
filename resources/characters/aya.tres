@@ -2,6 +2,9 @@
 
 [ext_resource type="Script" path="res://scripts/resources/character_data.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/ui/menu_characters/aya.png" id="4_portrait"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/aya_charge_attack.tscn" id="5_charge_attack"]
+[ext_resource type="Resource" path="res://resources/spellcards/aya/aya_spell_lv2.tres" id="6_spell_lv2"]
+[ext_resource type="Resource" path="res://resources/spellcards/aya/aya_spell_lv3.tres" id="7_spell_lv3"]
 
 [resource]
 script = ExtResource("1_script")
@@ -34,7 +37,13 @@ passive_charge_per_great_fairy = 0.025
 passive_charge_per_spirit = 0.04
 passive_charge_per_cancel = 0.001
 active_charge_speed = 2.4
+charge_attack_name = "Wind Gust Crescents"
+charge_attack_scene = ExtResource("5_charge_attack")
+charge_attack_desc = "A rapid stream of twenty wind crescents fired from wherever she flies, swaying slightly as they go."
 special_trait = "The fastest duelist in Gensokyo, and still quick when focused."
+signature_spell_name = "Whirlwind Sign \"Maple Leaf Fan\""
+spellcard_lv2 = ExtResource("6_spell_lv2")
+spellcard_lv3 = ExtResource("7_spell_lv3")
 spell_bar_color = Color(0.72, 0.14, 0.18, 1)
 has_spellcard_shockwaves = true
 shockwave_radius_lv2 = 420.0
@@ -44,3 +53,4 @@ shockwave_speed = 400.0
 shockwave_duration = 1.02
 shockwave_color = Color(0.95, 0.3, 0.32, 1)
 version_tag = "TH09"
+spell_bg_anim_type = "rotate_reverse"

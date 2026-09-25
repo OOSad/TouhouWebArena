@@ -32,6 +32,7 @@ const TALISMAN: int = 231   # type 11, etama6 y240, 16 colours
 const STAR: int = 247       # type 12, etama6 y32, 16 colours
 const CAPSULE: int = 271    # type 16, etama6 y64, 16 colours
 const SWORD: int = 335      # Sword, etama6 y128, 8 colours
+const BUTTERFLY: int = 120  # Butterfly, etama y176, 8 colours
 
 # Colour numbers as the ECL names them.
 const RED: int = 2
@@ -67,6 +68,11 @@ const SPRITES: Dictionary = {
 	"green_arrow": ARROWHEAD + GREEN,
 	"yellow_arrow": ARROWHEAD + YELLOW,
 	"dark_yellow_arrow": ARROWHEAD + DARK_YELLOW,
+	"red_arrow": ARROWHEAD + RED,
+	# ECL DarkRed (1) on an 8-colour row
+	"red_butterfly": BUTTERFLY + RED_8,
+	# ECL Red (2) on an 8-colour row
+	"purple_butterfly": BUTTERFLY + PURPLE_8,
 	"blue_icicle": SHARD + BLUE,
 	"cyan_icicle": SHARD + CYAN,
 	"red_talisman": TALISMAN + RED,

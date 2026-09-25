@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="BossData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/boss_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/spellcards/aya/aya_boss_spell_1.tres" id="3_spell"]
+[ext_resource type="Resource" path="res://resources/spellcards/aya/aya_boss_spell_3.tres" id="5_spell3"]
+
+[resource]
+script = ExtResource("1_script")
+character_id = "aya"
+boss_name = "Aya Shameimaru"
+primary_color = Color(0.82, 0.16, 0.2, 1)
+hframes = 4
+vframes = 3
+frame_duration = 0.083
+sprite_scale = Vector2(2.4, 2.4)
+collision_radius = 32.0
+max_health = 180.0
+departure_mode = 1
+attacks_min = 5
+attacks_max = 9
+randomize_attack_count = true
+duration_safety = 30.0
+entrance_start_offset = Vector2(-300, -433)
+entrance_target_pos = Vector2(300, 267)
+entrance_duration = 1.0
+hop_duration = 1.0
+roam_bounds = Rect2(100, 67, 400, 200)
+bob_amplitude = 4.0
+bob_frequency = 3.0
+selection_mode = 0
+initial_attack_delay = 0.0
+post_cast_delay = 0.0
+post_hop_delay = 0.0
+attack_patterns = [ExtResource("3_spell"), ExtResource("5_spell3")]

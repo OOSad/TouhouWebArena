@@ -105,7 +105,10 @@ func activate(char_data: CharacterData) -> void:
 			base_rect.visible = false
 
 	# Configure animated top layer
-	if char_data.spell_bg_anim_type == "rotate":
+	# "rotate_reverse" (Aya, pl10.anm script 12): the same layers, turning the other way
+	if char_data.spell_bg_anim_type == "rotate" or char_data.spell_bg_anim_type == "rotate_reverse":
+		if char_data.spell_bg_anim_type == "rotate_reverse":
+			_top_rotation_speed = -ROTATION_SPEED_RAD
 		if anim_rotate:
 			anim_rotate.texture = char_data.spell_bg_anim_texture
 			anim_rotate.visible = char_data.spell_bg_anim_texture != null

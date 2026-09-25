@@ -44,7 +44,7 @@ const SHOTS: Dictionary = {
 ## Spell declaration banners, from plNN_ct00.png: PoFV stores each as a 256x85 body at
 ## (0, 0) and its 32x85 right-hand end at (0, 85), drawn butted together (scripts 15 and
 ## 16). The sheet's second pair is the mirrored copy; SpellBanner flips the banner itself.
-const BANNERS: Array[String] = ["reimu", "marisa", "sakuya", "youmu", "reisen", "cirno", "yuuka"]
+const BANNERS: Array[String] = ["reimu", "marisa", "sakuya", "youmu", "reisen", "cirno", "yuuka", "aya"]
 const BANNER_BODY := Rect2i(0, 0, 256, 85)
 const BANNER_END := Rect2i(0, 85, 32, 85)
 
@@ -57,6 +57,7 @@ const SPELL_BGS: Dictionary = {
 	"reisen": {"base": "cdbg04.png", "anim": "cdbg04b.png"},
 	"cirno": {"base": "cdbg00.png"},
 	"yuuka": {"base": "cdbg09b.png", "anim": "cdbg09.png"},
+	"aya": {"base": "cdbg10.png", "anim": "cdbg10b.png"},
 }
 
 const FRAMES: int = 24

@@ -59,6 +59,11 @@ const RECIPES: Dictionary = {
 		# Script 33 flickers between 68 and 69; played once, it settles on 69.
 		"rows": [[60, 61, 62, 63], [64, 65, 66, 67], [68, 69, 68, 69]],
 	},
+	"aya": {
+		"pl": "10", "sheet": "data/pl/pl10/pl10_bs.png", "cell": Vector2i(64, 64),
+		# No cast pose: her attack scripts keep the idle loop (script 26).
+		"rows": [[58, 59, 60, 61], [62, 63, 64, 65], [58, 59, 60, 61]],
+	},
 }
 
 

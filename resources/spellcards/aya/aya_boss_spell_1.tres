@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_ring_step.gd" id="2_ring_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_delay_step.gd" id="4_delay_script"]
+[ext_resource type="Resource" path="res://resources/bullets/red_butterfly.tres" id="5_red"]
+[ext_resource type="Resource" path="res://resources/bullets/purple_butterfly.tres" id="6_purple"]
+
+[sub_resource type="Resource" id="Resource_windup"]
+script = ExtResource("4_delay_script")
+delay_seconds = 0.6666667
+sfx = "se_power0"
+
+[sub_resource type="Resource" id="Resource_ring_red"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("5_red")
+use_wave_angle = true
+count_min = 17
+count_max = 32
+speed_min = 637.5
+speed_max = 825.0
+
+[sub_resource type="Resource" id="Resource_gap"]
+script = ExtResource("4_delay_script")
+delay_seconds = 0.0666667
+
+[sub_resource type="Resource" id="Resource_ring_purple"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("6_purple")
+use_wave_angle = true
+count_min = 17
+count_max = 32
+speed_min = 637.5
+speed_max = 825.0
+
+[sub_resource type="Resource" id="Resource_hold"]
+script = ExtResource("4_delay_script")
+delay_seconds = 1.0
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "aya_boss_spell_1"
+spellcard_name = "Triple Butterfly Rings"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+jitter_wave_origin = false
+random_wave_angle = true
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_windup"), SubResource("Resource_ring_red"), SubResource("Resource_gap"), SubResource("Resource_ring_purple"), SubResource("Resource_gap"), SubResource("Resource_ring_red"), SubResource("Resource_hold")])
