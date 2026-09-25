@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_extra_attack_step.gd" id="2_extra_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_delay_step.gd" id="4_delay_script"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/aya_extra_streak.tscn" id="5_streak"]
+
+[sub_resource type="Resource" id="Resource_windup"]
+script = ExtResource("4_delay_script")
+delay_seconds = 0.8333333
+sfx = "se_power0"
+
+[sub_resource type="Resource" id="Resource_streaks"]
+script = ExtResource("2_extra_script")
+character_id = "aya"
+extra_attack_scene = ExtResource("5_streak")
+count_min = 2
+count_max = 5
+delay_between_spawns = 0.1666667
+spawn_location = 0
+initial_upward_speed = 0.0
+at_boss_exact = true
+sfx = "se_exattack"
+
+[sub_resource type="Resource" id="Resource_hold"]
+script = ExtResource("4_delay_script")
+delay_seconds = 1.0
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "aya_boss_spell_2"
+spellcard_name = "Column of Wind Streaks"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+jitter_wave_origin = false
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_windup"), SubResource("Resource_streaks"), SubResource("Resource_hold")])

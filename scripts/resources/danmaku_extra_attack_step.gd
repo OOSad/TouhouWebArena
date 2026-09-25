@@ -22,6 +22,9 @@ enum SpawnLocation {
 @export var spawn_location: SpawnLocation = SpawnLocation.FROM_BOSS
 @export var horizontal_spread: float = 120.0
 @export var initial_upward_speed: float = 390.0
+## FROM_BOSS: spawn every one exactly where the boss is now, no spread or jitter (Aya's
+## boss fires her Extra Attack streaks from herself, so they stack into one column)
+@export var at_boss_exact: bool = false
 
 @export_group("Ray Tilt Settings")
 @export var ground_spawn_min_x: float = 75.0
@@ -91,11 +94,15 @@ func execute(playfield: Node2D, origin: Vector2, rank: int) -> void:
 		var spawn_pos: Vector2
 		match spawn_location:
 			SpawnLocation.FROM_BOSS:
-				var t_spread: float = (float(i) / maxf(1.0, float(count - 1))) - 0.5 if count > 1 else 0.0
-				var offset_x: float = t_spread * horizontal_spread + (rng.randf_range(-15.0, 15.0) if rng else randf_range(-15.0, 15.0))
-				var offset_y: float = rng.randf_range(-10.0, 10.0) if rng else randf_range(-10.0, 10.0)
-				spawn_pos = origin + Vector2(offset_x, offset_y)
-				spawn_pos.x = clampf(spawn_pos.x, 70.0, 530.0)
+				if at_boss_exact:
+					var boss: Node2D = playfield.get("active_boss")
+					spawn_pos = boss.position if boss and is_instance_valid(boss) else origin
+				else:
+					var t_spread: float = (float(i) / maxf(1.0, float(count - 1))) - 0.5 if count > 1 else 0.0
+					var offset_x: float = t_spread * horizontal_spread + (rng.randf_range(-15.0, 15.0) if rng else randf_range(-15.0, 15.0))
+					var offset_y: float = rng.randf_range(-10.0, 10.0) if rng else randf_range(-10.0, 10.0)
+					spawn_pos = origin + Vector2(offset_x, offset_y)
+					spawn_pos.x = clampf(spawn_pos.x, 70.0, 530.0)
 			SpawnLocation.ACROSS_TOP:
 				var t_spread: float = float(i) / maxf(1.0, float(count - 1)) if count > 1 else 0.5
 				var base_x: float = lerpf(100.0, 500.0, t_spread) + (rng.randf_range(-30.0, 30.0) if rng else randf_range(-30.0, 30.0))

@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/resources/boss_data.gd" id="1_script"]
 [ext_resource type="Resource" path="res://resources/spellcards/aya/aya_boss_spell_1.tres" id="3_spell"]
+[ext_resource type="Resource" path="res://resources/spellcards/aya/aya_boss_spell_2.tres" id="4_spell2"]
 [ext_resource type="Resource" path="res://resources/spellcards/aya/aya_boss_spell_3.tres" id="5_spell3"]
 
 [resource]
@@ -31,4 +32,4 @@ selection_mode = 0
 initial_attack_delay = 0.0
 post_cast_delay = 0.0
 post_hop_delay = 0.0
-attack_patterns = [ExtResource("3_spell"), ExtResource("5_spell3")]
+attack_patterns = [ExtResource("3_spell"), ExtResource("4_spell2"), ExtResource("5_spell3")]
