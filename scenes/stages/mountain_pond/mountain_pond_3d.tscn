@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/stages/mountain_pond/mountain_pond_3d.gd" id="1_pond_script"]
+
+[sub_resource type="Environment" id="Environment_pond"]
+background_mode = 1
+background_color = Color(0.627, 0.69, 0.627, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+fog_enabled = false
+
+[node name="MountainPond3D" type="Node3D"]
+script = ExtResource("1_pond_script")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+unique_name_in_owner = true
+environment = SubResource("Environment_pond")
+current = true
+fov = 30.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_pond")

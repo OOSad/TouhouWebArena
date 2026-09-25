@@ -10,7 +10,7 @@ extends RefCounted
 ## empty .tres there, and a row here.
 
 ## Bump when changing a recipe, so saved copies aren't reused.
-const VERSION: int = 5
+const VERSION: int = 6
 
 const TEXTURES: String = "res://resources/dat_textures/%s.tres"
 
@@ -126,6 +126,10 @@ const RECIPES: Dictionary = {
 	"stage_cloud_b": ["th09", "world03.anm", 10, 0],
 	# Misty Lake (world05): the water.
 	"stage_misty_lake_water": ["th09", "world05.anm", "world05.png", 0],
+	# Aya's mountain pond (world10): the lily pond, the water light under it, and the cloud.
+	"stage_pond": ["th09", "world10.anm", "world10.png", 0, {"mipmaps": true}],
+	"stage_pond_ripple": ["th09", "world10.anm", 1, 0, {"mipmaps": true}],
+	"stage_pond_cloud": ["th09", "world10.anm", 2, 0],
 }
 
 # Keeps the filled textures alive, so the resource cache hands out these copies rather

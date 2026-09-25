@@ -32,6 +32,7 @@ const SOURCES: Dictionary = {
 		"06_lunatic_eyes_invisible_full_moon": "th08_12.wav",  # No.6 Invisible Full Moon
 		"07_adventure_of_the_lovestruck_tomboy": "th09_05.wav",  # No.7
 		"10_ancient_temple": "th07_10_b.wav",              # No.5 Ancient Temple
+		"11_wind_god_girl": "th09_08_2.wav",               # No.11 Wind God Girl (musiccmt.txt)
 		"13_gensokyo_past_and_present": "th09_13.wav",     # No.13 Flower Land
 	}},
 	"thbgm15": {"game": "th15", "tracks": {

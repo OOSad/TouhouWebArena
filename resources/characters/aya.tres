@@ -61,3 +61,4 @@ shockwave_duration = 1.02
 shockwave_color = Color(0.95, 0.3, 0.32, 1)
 version_tag = "TH09"
 spell_bg_anim_type = "rotate_reverse"
+home_stage_id = "mountain_pond"

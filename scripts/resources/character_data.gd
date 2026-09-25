@@ -319,6 +319,9 @@ static func get_stage_scene_by_id(stage_id: String) -> PackedScene:
 	if stage_id == "garden_of_the_sun":
 		if ResourceLoader.exists("res://scenes/stages/garden_of_the_sun/garden_of_the_sun_3d.tscn"):
 			return load("res://scenes/stages/garden_of_the_sun/garden_of_the_sun_3d.tscn")
+	if stage_id == "mountain_pond":
+		if ResourceLoader.exists("res://scenes/stages/mountain_pond/mountain_pond_3d.tscn"):
+			return load("res://scenes/stages/mountain_pond/mountain_pond_3d.tscn")
 	if stage_id == "sea_of_tranquility":
 		if ResourceLoader.exists("res://scenes/stages/sea_of_tranquility/sea_of_tranquility_3d.tscn"):
 			return load("res://scenes/stages/sea_of_tranquility/sea_of_tranquility_3d.tscn")
@@ -334,6 +337,7 @@ const STAGE_MUSIC: Dictionary = {
 	"garden_of_the_sun": "13_gensokyo_past_and_present",
 	"flowering_night": "04_flowering_night",
 	"sea_of_tranquility": "15_pierrot_of_the_star_spangled_banner",
+	"mountain_pond": "11_wind_god_girl",
 }
 const DEFAULT_STAGE_MUSIC: String = "02_spring_lane"
 
