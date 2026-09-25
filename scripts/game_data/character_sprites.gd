@@ -29,7 +29,7 @@ const PLAYER_SHEETS: Dictionary = {
 ## turned a quarter anticlockwise to point up, which is how the game draws player bullets.
 ## Every shot script draws at alpha 0x80, Cirno's at 0xa0 (script 5 in each plNN.anm).
 ## Yuuka's is the one script without __rotate_auto, so hers stays as drawn. Clownpiece has no
-## PoFV shot and borrows Reimu's amulet.
+## PoFV shot: hers is a LoLK star (`BulletSprites.cut_th15_shot`), built beside these.
 const SHOTS: Dictionary = {
 	"reimu": ["00", 24, true, 128.0 / 255.0],
 	"marisa": ["01", 24, true, 128.0 / 255.0],
@@ -39,7 +39,6 @@ const SHOTS: Dictionary = {
 	"cirno": ["05", 28, true, 160.0 / 255.0],
 	"yuuka": ["09", 24, false, 128.0 / 255.0],
 	"aya": ["10", 24, true, 128.0 / 255.0],
-	"clownpiece": ["00", 24, true, 128.0 / 255.0],
 }
 
 ## Spell declaration banners, from plNN_ct00.png: PoFV stores each as a 256x85 body at
@@ -97,13 +96,19 @@ static func build_shot(anm: ThAnm, character: String) -> Image:
 	var shot := source.get_region(anm.sprite_rect(recipe[1]))
 	if recipe[2]:
 		shot.rotate_90(COUNTERCLOCKWISE)
-	if recipe[3] < 1.0:
-		for y in shot.get_height():
-			for x in shot.get_width():
-				var c := shot.get_pixel(x, y)
-				c.a *= recipe[3]
-				shot.set_pixel(x, y, c)
+	fade_shot(shot, recipe[3])
 	return shot
+
+
+## Multiplies a shot's alpha, as every PoFV shot script draws at 0x80.
+static func fade_shot(shot: Image, alpha: float) -> void:
+	if shot == null or alpha >= 1.0:
+		return
+	for y in shot.get_height():
+		for x in shot.get_width():
+			var c := shot.get_pixel(x, y)
+			c.a *= alpha
+			shot.set_pixel(x, y, c)
 
 
 static func apply_shot(character: String, shot: Image) -> CharacterData:

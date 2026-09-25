@@ -50,7 +50,8 @@ func _apply_visuals() -> void:
 		sprite.texture_filter = character_data.bullet_texture_filter
 	
 	if collision_shape:
-		if character_id == "yuuka":
+		# Round shots (Yuuka's blossom, Clownpiece's star) get a round hitbox.
+		if character_id == "yuuka" or character_id == "clownpiece":
 			var circle := CircleShape2D.new()
 			circle.radius = 9.0
 			collision_shape.shape = circle
@@ -64,10 +65,15 @@ func _physics_process(delta: float) -> void:
 	position += direction * speed * delta
 	if character_id == "yuuka" and sprite:
 		sprite.rotation += 24.0 * delta
+	elif character_id == "clownpiece" and sprite:
+		sprite.rotation += CLOWNPIECE_SPIN * delta
 	
 	# Despawn once exiting boundaries of the playfield (y = 0 is top border)
 	if position.y < -50.0 or position.y > 1050.0 or position.x < -50.0 or position.x > 700.0:
 		queue_free()
+
+## Clownpiece's star shot spins, slower than Yuuka's blossom (by eye).
+const CLOWNPIECE_SPIN: float = 12.0
 
 const SHOT_HIT_SHARD_SCENE: PackedScene = preload("res://scenes/effects/shot_hit_shard.tscn")
 const ShotHitShard = preload("res://scenes/effects/shot_hit_shard.gd")

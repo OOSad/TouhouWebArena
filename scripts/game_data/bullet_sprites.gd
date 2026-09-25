@@ -205,6 +205,20 @@ static func apply(etama: ThAnm, th15_images: Dictionary) -> Array[DanmakuBulletD
 	return changed
 
 
+## Clownpiece's normal shot: LoLK's small violet star (bullet1.png sprite at (48, 160), the
+## 16px star row), her colour, at the 0x80 alpha every PoFV shot is drawn at.
+const TH15_SHOT_STAR: Rect2i = Rect2i(48, 160, 16, 16)
+const TH15_SHOT_SHEET: String = "bullet/bullet1.png"
+
+static func cut_th15_shot(th15_bullets: ThAnm) -> Image:
+	var sheet := th15_bullets.sheet_image(TH15_SHOT_SHEET) if th15_bullets else null
+	if sheet == null:
+		return null
+	var shot := sheet.get_region(TH15_SHOT_STAR)
+	CharacterSprites.fade_shot(shot, 128.0 / 255.0)
+	return shot
+
+
 ## One of Clownpiece's cells cut from LoLK's bullet sheets, by its TH15_KEYS key.
 static func cut_th15(th15_bullets: ThAnm, key: String) -> Image:
 	if th15_bullets == null:

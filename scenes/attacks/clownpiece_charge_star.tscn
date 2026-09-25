@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/attacks/clownpiece_charge_star.gd" id="1_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_star"]
+radius = 12.0
+
+[node name="ClownpieceChargeStar" type="Area2D"]
+collision_layer = 4
+collision_mask = 8
+script = ExtResource("1_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+texture_filter = 1
+scale = Vector2(1.3, 1.3)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_star")

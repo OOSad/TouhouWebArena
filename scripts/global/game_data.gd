@@ -450,6 +450,11 @@ func _prepare_graphics() -> void:
 		var shot_data := CharacterSprites.apply_shot(character, shot)
 		if shot_data:
 			_filled_resources.append(shot_data)
+	var clownpiece_shot := cached_image("shot_clownpiece_th15_v%d" % BulletSprites.TH15_VERSION,
+		func() -> Image: return BulletSprites.cut_th15_shot(_anm("th15", "bullet.anm")))
+	var clownpiece_data := CharacterSprites.apply_shot("clownpiece", clownpiece_shot)
+	if clownpiece_data:
+		_filled_resources.append(clownpiece_data)
 	for character in CharacterSprites.BANNERS:
 		var banner_pl: String = CharacterSprites.PLAYER_SHEETS[character]
 		var banner := cached_image("banner_%s_v%d" % [character, CharacterSprites.VERSION],

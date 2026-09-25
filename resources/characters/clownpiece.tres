@@ -7,6 +7,7 @@
 [ext_resource type="Resource" path="res://resources/spellcards/clownpiece/clownpiece_spell_lv2.tres" id="6_spell_lv2"]
 [ext_resource type="Resource" path="res://resources/spellcards/clownpiece/clownpiece_spell_lv3.tres" id="7_spell_lv3"]
 [ext_resource type="PackedScene" path="res://scenes/attacks/clownpiece_extra_lasers.tscn" id="8_extra_attack"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/clownpiece_charge_attack.tscn" id="9_charge_attack"]
 
 [resource]
 script = ExtResource("1_script")
@@ -26,6 +27,7 @@ bullet_damage = 1.0
 bullet_speed = 1400.0
 bullet_capsule_height = 60.0
 shot_cooldown = 0.075
+bullet_scale = Vector2(2, 2)
 scope_shape = 5
 scope_radius = 160.0
 spell_bar_segments = 4
@@ -41,4 +43,6 @@ boss_data = ExtResource("5_boss")
 spellcard_lv2 = ExtResource("6_spell_lv2")
 spellcard_lv3 = ExtResource("7_spell_lv3")
 extra_attack_scene = ExtResource("8_extra_attack")
+charge_attack_name = "Star Spray"
+charge_attack_scene = ExtResource("9_charge_attack")
 shockwave_color = Color(0.62, 0.3, 0.72, 1)
