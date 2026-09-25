@@ -70,8 +70,9 @@ const FRAMING: Dictionary = {
 		"zoom": 1.25,
 		"accent": Color(0.25, 0.85, 0.45, 1.0)
 	},
+	# Her face sits left of centre in the Dairi art (hair and ribbon swing out to the right).
 	"aya": {
-		"offset": Vector2(0.500, 0.130),
+		"offset": Vector2(0.360, 0.130),
 		"zoom": 1.25,
 		"accent": Color(0.92, 0.25, 0.28, 1.0)
 	},
