@@ -27,6 +27,11 @@ const KNOWN_FILES: Dictionary = {
 const MUSIC_CACHE: String = "user://game_files/music"
 ## The "game id" the file screen and signals use for thbgm.dat.
 const MUSIC_ID: String = "thbgm"
+## Limits on searching a dropped folder: a Steam library's games sit at steamapps/common/<game>,
+## three levels down, so six leaves room for other layouts.
+const SCAN_MAX_DEPTH: int = 6
+const SCAN_MAX_FOLDERS: int = 20000
+const OTHER_MUSIC_MESSAGE: String = "That thbgm.dat is another game's music. PoFV's is the one in the same folder as th09.dat."
 
 # game id ("th09") -> ThDatArchive
 var archives: Dictionary = {}
@@ -76,6 +81,16 @@ func _music_fmt() -> Dictionary:
 	if not archives.has("th09"):
 		return {}
 	return DatMusic.parse_fmt(archives["th09"].extract(DatMusic.FMT_FILE))
+
+
+## PoFV's thbgm.dat size, where the last track in its track list ends; 0 until th09.dat is
+## in. Every Touhou game names its music thbgm.dat with the same header, but each game's
+## track list ends at its own file's exact size, so this tells PoFV's apart.
+func _music_file_size() -> int:
+	var end := 0
+	for entry in _music_fmt().values():
+		end = maxi(end, entry.offset + entry.length)
+	return end
 
 
 ## Cuts every track the game plays out of thbgm.dat, compresses it and saves it. `read` is
@@ -134,7 +149,7 @@ window.addEventListener('drop', function (event) {
 			event.preventDefault();
 			event.stopImmediatePropagation();
 			window.twaBigFile = files[i];
-			window.twaOnBigFile(files[i].name, files.length);
+			window.twaOnBigFile(files[i].name, files.length, files[i].size);
 			return;
 		}
 	}
@@ -175,6 +190,9 @@ func _on_web_big_file(args: Array) -> void:
 		return
 	if not archives.has("th09"):
 		archive_failed.emit("Drop th09.dat first, then thbgm.dat (it needs th09.dat's track list).")
+		return
+	if int(args[2]) != _music_file_size():
+		archive_failed.emit(OTHER_MUSIC_MESSAGE)
 		return
 	await _extract_music(_web_read, file_name)
 
@@ -387,8 +405,54 @@ func _forget_sprites() -> void:
 
 
 func _on_files_dropped(paths: PackedStringArray) -> void:
+	var music: Array[String] = []
 	for path in paths:
-		load_archive_file(path)
+		if not DirAccess.dir_exists_absolute(path):
+			load_archive_file(path)
+			continue
+		var found := find_game_files(path)
+		if found.is_empty():
+			archive_failed.emit("No game files found in %s." % path.get_file())
+		for file_path in found:
+			if file_path.get_file().to_lower() == "thbgm.dat":
+				music.append(file_path)
+			else:
+				load_archive_file(file_path)
+	# Music found in a folder is checked last, once th09.dat's track list is in, and only
+	# PoFV's is taken: the others are other games' and are skipped without a word.
+	var size := _music_file_size()
+	for file_path in music:
+		var file := FileAccess.open(file_path, FileAccess.READ)
+		if file and file.get_length() == size:
+			file.close()
+			load_archive_file(file_path)
+			break
+
+
+## A dropped folder (a Steam library, say) is searched, subfolders too, for the files by
+## name. Every thbgm.dat is returned; `_on_files_dropped` picks PoFV's by its size.
+func find_game_files(folder: String) -> Array[String]:
+	var wanted: Array[String] = ["thbgm.dat"]
+	for game_id in KNOWN_FILES:
+		wanted.append(KNOWN_FILES[game_id][0])
+	var found: Array[String] = []
+	var queue: Array = [[folder, 0]]
+	var folders_seen: int = 0
+	# Bounded, so dropping a whole drive can't hang the game.
+	while not queue.is_empty() and folders_seen < SCAN_MAX_FOLDERS:
+		var entry: Array = queue.pop_front()
+		var dir := DirAccess.open(entry[0])
+		if dir == null:
+			continue
+		folders_seen += 1
+		for file_name in dir.get_files():
+			if file_name.to_lower() in wanted:
+				found.append(entry[0].path_join(file_name))
+		if entry[1] < SCAN_MAX_DEPTH:
+			for sub in dir.get_directories():
+				if not sub.begins_with("."):
+					queue.append([entry[0].path_join(sub), entry[1] + 1])
+	return found
 
 
 func _load_cached_files() -> void:
@@ -410,10 +474,14 @@ func _load_cached_files() -> void:
 func load_archive_file(path: String) -> bool:
 	var peek := FileAccess.open(path, FileAccess.READ)
 	if peek and DatMusic.is_thbgm(peek.get_buffer(4)):
+		var music_size := peek.get_length()
 		peek.close()
 		# Its track list is in th09.dat, so that has to come first.
 		if not archives.has("th09"):
 			archive_failed.emit("Drop th09.dat first, then thbgm.dat (it needs th09.dat's track list).")
+			return false
+		if music_size != _music_file_size():
+			archive_failed.emit(OTHER_MUSIC_MESSAGE)
 			return false
 		_extract_music_from_path(path)
 		return true
