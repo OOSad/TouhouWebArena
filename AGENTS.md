@@ -22,7 +22,7 @@
    - **Language**: GDScript 2.0 with static typing (`var speed: float = 300.0`, `@export`, `@onready`, Callables).
    - **Autoloads**: `GameManager` (match/round state, character selection), `NetworkManager` (WebRTC P2P), `AudioManager`, `ReplayManager`, `GameData` (reads the player's .dat files).
    - **2D Collision Layers**: 1 = `player`, 2 = `enemy_bullets`, 3 = `player_bullets`, 4 = `enemies`.
-   - **Testing Entry**: F5 opens the game-files screen (`scenes/game_files/`), then `scenes/main_menu/main_menu.tscn`, through character select. The arena's F6 defaults are stale, so don't point testing at them.
+   - **Testing Entry**: F5 opens the game-files screen (`scenes/game_files/`), then `scenes/main_menu/main_menu.tscn`, through character select. The arena's F6 defaults are stale, so don't point testing at them. To look at a screen without playing to it, `tools/capture.gd` opens a scene, runs steps (wait, call, key press) and saves screenshots to `scratch/captures/`; usage is at the top of the file.
    - **Debug Menu**: Backspace in-game (debug builds), matching THPrac.
    - **Character Design**: Data-driven via `CharacterData` Custom Resources (`scripts/resources/character_data.gd`). The roster is `CharacterData.ROSTER`; a new character is an id there plus `resources/characters/<id>.tres`. Anything that differs per character is a `CharacterData` field, never an `if character_id == "x"` in shared code.
    - **Performance**: High-performance Danmaku design (bullet pooling / batch drawing via `_draw` or `MultiMeshInstance2D`). New bullet sprites are rows in the shared `BulletSprites` atlas so the web build can batch them.
