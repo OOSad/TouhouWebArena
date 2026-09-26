@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scenes/enemies/boss_character.gd" id="1_boss_script"]
+[ext_resource type="Script" path="res://scenes/effects/boss_magic_circle.gd" id="2_magic_circle"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_boss"]
 radius = 32.0
@@ -9,6 +10,9 @@ radius = 32.0
 collision_layer = 8
 collision_mask = 4
 script = ExtResource("1_boss_script")
+
+[node name="MagicCircle" type="Sprite2D" parent="."]
+script = ExtResource("2_magic_circle")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 unique_name_in_owner = true

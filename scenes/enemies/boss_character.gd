@@ -77,6 +77,7 @@ var _frames_per_row: int = 4
 
 @onready var sprite: Sprite2D = get_node_or_null("Sprite2D")
 @onready var collision_shape: CollisionShape2D = get_node_or_null("CollisionShape2D")
+@onready var magic_circle: BossMagicCircle = get_node_or_null("MagicCircle")
 
 func _ready() -> void:
 	# Start non-monitorable while offscreen
@@ -494,6 +495,7 @@ func die(source: String = "bullet") -> void:
 	if _move_tween and _move_tween.is_valid():
 		_move_tween.kill()
 	
+	_vanish_magic_circle()
 	defeated.emit(position, source)
 	
 	# Defeat fade and burst
@@ -504,6 +506,10 @@ func die(source: String = "bullet") -> void:
 		tw.tween_property(self, "modulate:a", 0.0, 0.25)
 	tw.parallel().tween_property(self, "scale", Vector2(1.3, 1.3), 0.25)
 	tw.tween_callback(queue_free)
+
+func _vanish_magic_circle() -> void:
+	if magic_circle:
+		magic_circle.vanish()
 
 func _spawn_red_shockwave() -> void:
 	if playfield and playfield.has_method("spawn_defeat_shockwave"):
@@ -532,6 +538,7 @@ func leave_screen() -> void:
 	# Explode into a red shockwave upon timeout (no flying offscreen)
 	_spawn_red_shockwave()
 	AudioService.play_boss_defeat()
+	_vanish_magic_circle()
 	left_screen.emit()
 	
 	var tw := create_tween()
@@ -557,6 +564,7 @@ func dispel() -> void:
 		_move_tween.kill()
 	
 	AudioService.play_boss_defeat()
+	_vanish_magic_circle()
 	dispelled.emit()
 	
 	var tw := create_tween()
