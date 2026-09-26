@@ -624,6 +624,8 @@ func _fire_volley() -> void:
 	var right_pos := Vector2(position.x + SHOT_OFFSET_X, position.y + SHOT_OFFSET_Y)
 	_spawn_bullet(left_pos)
 	_spawn_bullet(right_pos)
+	if character_data and character_data.rear_shot:
+		_spawn_bullet(position, Vector2.DOWN)
 	AudioService.play_player_shot()
 
 func _fire_fan_volley() -> void:

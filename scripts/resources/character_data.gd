@@ -49,6 +49,8 @@ enum ScopeShape {
 @export var bullet_spin: float = 0.0
 ## TWIN: two parallel streams. THREE_WAY_FAN: Yuuka's fan of three (pl09.sht).
 @export var shot_pattern: ShotPattern = ShotPattern.TWIN
+## Each volley also fires one shot from her centre straight down, behind her (Lyrica, pl06.sht).
+@export var rear_shot: bool = false
 ## What a shot leaves behind when it hits: SHARD flies on through the enemy (Reimu, Marisa),
 ## CRUMBLE breaks apart where it struck (Cirno). One of shot_hit_textures is picked per hit.
 @export var shot_hit_effect: ShotHitEffect = ShotHitEffect.NONE
@@ -246,6 +248,7 @@ func get_stage_bgm_path() -> String:
 ## res://resources/characters/<id>.tres; every roster list in the game is read from this one.
 const ROSTER: Array[String] = [
 	"reimu", "marisa", "sakuya", "youmu", "cirno", "reisen", "yuuka", "aya", "clownpiece",
+	"lyrica",
 ]
 ## The select screen's Random slot. It has a .tres for its card, but is not in the roster.
 const RANDOM_ID: String = "random"

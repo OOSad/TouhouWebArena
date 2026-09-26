@@ -54,6 +54,7 @@ const HEAD_CALIBRATION: Dictionary = {
 	"yuuka": Vector2(120.0, 480.0),
 	"aya": Vector2(125.0, 446.0),
 	"clownpiece": Vector2(150.0, 430.0),
+	"lyrica": Vector2(108.0, 422.0),
 }
 
 # The Random pick is a lone "?" mark, not a duelist, so it skips the head-alignment math and

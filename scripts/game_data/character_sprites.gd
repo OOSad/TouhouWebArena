@@ -22,12 +22,13 @@ const PLAYER_SHEETS: Dictionary = {
 	"cirno": "05",
 	"yuuka": "09",
 	"aya": "10",
+	"lyrica": "06",
 }
 
 ## Each character's normal shot: [PoFV player number, sprite on plNN.png, turn upright, alpha].
 ## The anm rotates shots to their heading and most are drawn pointing right, so they are
 ## turned a quarter anticlockwise to point up, which is how the game draws player bullets.
-## Every shot script draws at alpha 0x80, Cirno's at 0xa0 (script 5 in each plNN.anm).
+## Every shot script draws at alpha 0x80, Cirno's and Lyrica's at 0xa0 (script 5 in each plNN.anm).
 ## Yuuka's is the one script without __rotate_auto, so hers stays as drawn. Clownpiece has no
 ## PoFV shot: hers is a LoLK star (`BulletSprites.cut_th15_shot`), built beside these.
 const SHOTS: Dictionary = {
@@ -39,6 +40,7 @@ const SHOTS: Dictionary = {
 	"cirno": ["05", 28, true, 160.0 / 255.0],
 	"yuuka": ["09", 24, false, 128.0 / 255.0],
 	"aya": ["10", 24, true, 128.0 / 255.0],
+	"lyrica": ["06", 24, true, 160.0 / 255.0],
 }
 
 ## Spell declaration banners, from plNN_ct00.png: PoFV stores each as a 256x85 body at

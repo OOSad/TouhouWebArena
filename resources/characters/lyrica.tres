@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="CharacterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/character_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/menu_characters/lyrica.png" id="4_portrait"]
+
+[resource]
+script = ExtResource("1_script")
+character_id = "lyrica"
+display_name = "Lyrica Prismriver"
+title = "Poltergeist Keyboardist"
+primary_color = Color(0.86, 0.2, 0.22, 1)
+secondary_color = Color(0.98, 0.86, 0.62, 1)
+portrait_texture = ExtResource("4_portrait")
+normal_speed = 567.0
+focus_speed = 297.0
+hurtbox_radius = 3.0
+graze_radius = 64.0
+passive_charge_per_graze = 0.015
+bullet_damage = 1.0
+bullet_speed = 1400.0
+bullet_scale = Vector2(2, 2)
+bullet_capsule_height = 60.0
+shot_cooldown = 0.075
+rear_shot = true
+primary_shot_name = "Keyboard Notes"
+primary_shot_desc = "Twin streams of notes ahead, and one straight down behind her."
+spell_bar_segments = 4
+passive_charge_start = 1.0
+passive_charge_per_fairy = 0.01
+passive_charge_per_great_fairy = 0.025
+passive_charge_per_spirit = 0.04
+passive_charge_per_cancel = 0.001
+active_charge_speed = 1.68
+special_trait = "The youngest Prismriver: her shot also covers her back."
+spell_bar_color = Color(0.78, 0.16, 0.2, 1)
+shockwave_color = Color(0.95, 0.35, 0.35, 1)
+version_tag = "TH09"

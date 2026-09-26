@@ -81,6 +81,12 @@ const FRAMING: Dictionary = {
 		"zoom": 1.25,
 		"accent": Color(0.62, 0.3, 0.72, 1.0)
 	},
+	# No Dairi art yet: this is her ink silhouette, face just under the cap.
+	"lyrica": {
+		"offset": Vector2(0.470, 0.220),
+		"zoom": 1.25,
+		"accent": Color(0.9, 0.28, 0.3, 1.0)
+	},
 	"random": {
 		"offset": Vector2(0.50, 0.22),
 		"zoom": 1.25,
