@@ -9,7 +9,7 @@ Roster: Reimu, Marisa, Sakuya, Youmu, Cirno, Reisen, Yuuka, Aya, Clownpiece, Lyr
 ## Open
 
 ### Character #10: Lyrica Prismriver (pl06), then Merlin (pl14) and Lunasa (pl15)
-- [x] Phase 1: roster, stats and shot. `pl06.sht` header: hitbox 2.3 (hurtbox 3.0, as Sakuya / Reisen / Youmu), normal 4.2, focus 2.2 (567 / 297 px/s), charge C 2.8 (1.68). Normal list: Reimu's twin stream (x +-8, speed 12, damage 10, every 5 frames) plus one shot from her centre straight down (`rear_shot`). Shot is pl06.anm sprite24 at alpha 0xa0. Select screen shows her ink silhouette: she needs Dairi art like the others (ask the user).
+- [x] Phase 1: roster, stats and shot. `pl06.sht` header: hitbox 2.3 (hurtbox 3.0, as Sakuya / Reisen / Youmu), normal 4.2, focus 2.2 (567 / 297 px/s), charge C 2.8 (1.68). Normal list: Reimu's twin stream (x +-8, speed 12, damage 10, every 5 frames) plus one shot from her centre straight down (`rear_shot`). Shot is pl06.anm sprite24 at alpha 0xa0. Dairi portrait supplied by the user.
 - [ ] Next, in Aya's order: Lv1 charge, Lv2/Lv3, Extra Attack, scope, Lv4 boss (pl06_bs.png), victory lines, banner and Lv4 background, home stage and theme. Leads: `pl06.sht` second list (byte 1076) is one entry, speed 0.5, 16x48, damage 1, with extra fields 2 and 4; the third list (byte 1084, only the Prismrivers have one) is 25 single shots straight up every 3 frames, speed 12. pl06.anm scripts 7 / 8 animate the keyboard (sprites 28-35). Attacks in `ecl/pl06.ecl.txt`.
 
 ### Codebase health
