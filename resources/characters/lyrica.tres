@@ -53,3 +53,4 @@ spellcard_lv3 = ExtResource("7_spell_lv3")
 spell_bar_color = Color(0.78, 0.16, 0.2, 1)
 shockwave_color = Color(0.95, 0.35, 0.35, 1)
 version_tag = "TH09"
+spell_bg_anim_type = "still_over_rotate"

@@ -33,6 +33,12 @@ const TWIN_FAST_SCALE: float = 1.5 * 2.143
 const TWIN_SLOW_SPEED: float = 0.0017453292 * 60.0
 const TWIN_FAST_SPEED: float = 0.0052359877 * 60.0
 const ADDITIVE: CanvasItemMaterial = preload("res://scenes/effects/spell_background_additive.tres")
+## "still_over_rotate" (Lyrica, pl06.anm scripts 29 / 30): eff04 turning at the aligned size
+## like Reimu's top layer, under eff04b (the sheet music) held still at 1.5 PoFV scale, which
+## stays clear for 60 frames and then fades in over 60.
+const STILL_LAYER_SIZE: float = 256.0 * 1.5 * 600.0 / 288.0
+const STILL_FADE_DELAY: float = 1.0
+const STILL_FADE_DURATION: float = 1.0
 const FADE_IN_DURATION: float = 1.0 # 60 frames in PoFV
 const DEFAULT_FADE_OUT_DURATION: float = 0.8
 
@@ -98,7 +104,7 @@ func activate(char_data: CharacterData) -> void:
 
 	# Configure static base layer
 	if base_rect:
-		if char_data.spell_bg_base_texture and char_data.spell_bg_anim_type != "counter_scroll" and char_data.spell_bg_anim_type != "dual_rotate" and char_data.spell_bg_anim_type != "aligned_rotate" and char_data.spell_bg_anim_type != "scroll_rotate":
+		if char_data.spell_bg_base_texture and char_data.spell_bg_anim_type != "counter_scroll" and char_data.spell_bg_anim_type != "dual_rotate" and char_data.spell_bg_anim_type != "aligned_rotate" and char_data.spell_bg_anim_type != "scroll_rotate" and char_data.spell_bg_anim_type != "still_over_rotate":
 			base_rect.texture = char_data.spell_bg_base_texture
 			base_rect.visible = true
 		else:
@@ -200,6 +206,34 @@ func activate(char_data: CharacterData) -> void:
 		_is_rotating = anim_rotate != null and anim_rotate.visible
 		_base_rotation_speed = TWIN_SLOW_SPEED
 		_top_rotation_speed = TWIN_FAST_SPEED
+		if anim_scroll:
+			anim_scroll.visible = false
+		if anim_counter_scroll:
+			anim_counter_scroll.visible = false
+	elif char_data.spell_bg_anim_type == "still_over_rotate":
+		if anim_rotate_base:
+			var turning: Texture2D = char_data.spell_bg_base_texture
+			anim_rotate_base.texture = turning
+			anim_rotate_base.visible = turning != null
+			anim_rotate_base.rotation = 0.0
+			anim_rotate_base.modulate.a = 1.0
+			if turning:
+				anim_rotate_base.scale = Vector2.ONE * (ALIGNED_LAYER_SIZE / float(turning.get_width()))
+		_is_rotating_base = anim_rotate_base != null and anim_rotate_base.visible
+		_base_rotation_speed = ROTATION_SPEED_RAD
+		if anim_rotate:
+			var still: Texture2D = char_data.spell_bg_anim_texture
+			anim_rotate.texture = still
+			anim_rotate.visible = still != null
+			anim_rotate.rotation = 0.0
+			anim_rotate.modulate.a = 0.0
+			if still:
+				anim_rotate.scale = Vector2.ONE * (STILL_LAYER_SIZE / float(still.get_width()))
+				var music_fade := create_tween()
+				music_fade.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+				music_fade.tween_interval(STILL_FADE_DELAY)
+				music_fade.tween_property(anim_rotate, "modulate:a", 1.0, STILL_FADE_DURATION)
+		_is_rotating = false
 		if anim_scroll:
 			anim_scroll.visible = false
 		if anim_counter_scroll:

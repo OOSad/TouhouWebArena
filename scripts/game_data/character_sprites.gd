@@ -60,6 +60,8 @@ const SPELL_BGS: Dictionary = {
 	"cirno": {"base": "cdbg00.png"},
 	"yuuka": {"base": "cdbg09b.png", "anim": "cdbg09.png"},
 	"aya": {"base": "cdbg10.png", "anim": "cdbg10b.png"},
+	# Lyrica's have their own names: eff04 turns, eff04b (sheet music) holds still over it.
+	"lyrica": {"base": "eff04.png", "anim": "eff04b.png"},
 }
 
 const FRAMES: int = 24

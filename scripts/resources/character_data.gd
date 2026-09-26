@@ -122,7 +122,8 @@ enum ScopeShape {
 ## Animation mode for top layer: "rotate" (e.g. Reimu Yin-Yang), "scroll_up" (e.g. Marisa hex cells),
 ## "counter_scroll" (e.g. Cirno dual ice scroll), or "dual_rotate" (two independently counter-rotating
 ## full-screen layers - base texture below spinning one way, anim texture above spinning the other, e.g. Sakuya clock/distortion),
-## "aligned_rotate" (Reisen) or "scroll_rotate" (base tiled and scrolling up under an additive anim layer turning on the centre, Yuuka)
+## "aligned_rotate" (Reisen), "scroll_rotate" (base tiled and scrolling up under an additive anim layer turning on the centre, Yuuka)
+## or "still_over_rotate" (base turning, anim held still on top and fading in late, Lyrica)
 @export var spell_bg_anim_type: String = "rotate"
 
 @export_group("Spellcard Shockwaves")
