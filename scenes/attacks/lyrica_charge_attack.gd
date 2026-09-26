@@ -53,6 +53,9 @@ func setup(player: Node2D, playfield: Node2D) -> void:
 	_keyboard.texture = KEYBOARD_TEXTURE
 	_keyboard.hframes = KEYBOARD_FRAMES
 	_keyboard.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	# In front of her, as PoFV draws it: the player sits at z 30, her hitbox dot at 35.
+	_keyboard.z_as_relative = false
+	_keyboard.z_index = 31
 	add_child(_keyboard)
 	_update_keyboard()
 
