@@ -516,7 +516,7 @@ func _prepare_graphics() -> void:
 	if clownpiece_data:
 		_filled_resources.append(clownpiece_data)
 	var pofv_banners: Array[Image] = []
-	for character in CharacterSprites.BANNERS:
+	for character in CharacterSprites.PLAYER_SHEETS:
 		var banner_pl: String = CharacterSprites.PLAYER_SHEETS[character]
 		var banner := cached_image("banner_%s_v%d" % [character, CharacterSprites.VERSION],
 			func() -> Image: return CharacterSprites.build_banner(_anm("th09", "pl%s.anm" % banner_pl), character))

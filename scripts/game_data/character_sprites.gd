@@ -44,7 +44,7 @@ const SHOTS: Dictionary = {
 ## Spell declaration banners, from plNN_ct00.png: PoFV stores each as a 256x85 body at
 ## (0, 0) and its 32x85 right-hand end at (0, 85), drawn butted together (scripts 15 and
 ## 16). The sheet's second pair is the mirrored copy; SpellBanner flips the banner itself.
-const BANNERS: Array[String] = ["reimu", "marisa", "sakuya", "youmu", "reisen", "cirno", "yuuka", "aya"]
+## Every PLAYER_SHEETS character has one.
 const BANNER_BODY := Rect2i(0, 0, 256, 85)
 const BANNER_END := Rect2i(0, 85, 32, 85)
 
@@ -62,7 +62,6 @@ const SPELL_BGS: Dictionary = {
 
 const FRAMES: int = 24
 const SHEET_SIZE := Vector2i(256, 144)
-const CHARACTERS: String = "res://resources/characters/%s.tres"
 
 ## Result screen faces, in PoFV's face id order (pl*_fc_no .. _lo = 0..8, as the match
 ## scripts number them). Each is a 256x256 texture with a 256x64 strip under it
@@ -115,7 +114,7 @@ static func fade_shot(shot: Image, alpha: float) -> void:
 static func apply_shot(character: String, shot: Image) -> CharacterData:
 	if shot == null:
 		return null
-	var data := load(CHARACTERS % character) as CharacterData
+	var data := load(CharacterData.path_for(character)) as CharacterData
 	data.bullet_texture = ImageTexture.create_from_image(shot)
 	return data
 
@@ -244,7 +243,7 @@ static func _spell_attack_lettering(banners: Array[Image], size: Vector2i) -> Im
 static func apply_banner(character: String, banner: Image) -> CharacterData:
 	if banner == null:
 		return null
-	var data := load(CHARACTERS % character) as CharacterData
+	var data := load(CharacterData.path_for(character)) as CharacterData
 	data.spell_banner_texture = ImageTexture.create_from_image(banner)
 	return data
 
@@ -252,7 +251,7 @@ static func apply_banner(character: String, banner: Image) -> CharacterData:
 static func apply_spell_bg(character: String, kind: String, image: Image) -> CharacterData:
 	if image == null:
 		return null
-	var data := load(CHARACTERS % character) as CharacterData
+	var data := load(CharacterData.path_for(character)) as CharacterData
 	var texture := ImageTexture.create_from_image(image)
 	if kind == "base":
 		data.spell_bg_base_texture = texture
@@ -266,7 +265,7 @@ static func apply_spell_bg(character: String, kind: String, image: Image) -> Cha
 static func apply_player_sheet(character: String, sheet: Image) -> CharacterData:
 	if sheet == null:
 		return null
-	var data := load(CHARACTERS % character) as CharacterData
+	var data := load(CharacterData.path_for(character)) as CharacterData
 	data.sprite_sheet = ImageTexture.create_from_image(sheet)
 	return data
 
@@ -325,6 +324,6 @@ static func build_lolk_faces(st05enm: ThAnm) -> Image:
 static func apply_faces(character: String, faces: Image) -> CharacterData:
 	if faces == null:
 		return null
-	var data := load(CHARACTERS % character) as CharacterData
+	var data := load(CharacterData.path_for(character)) as CharacterData
 	data.face_sheet = ImageTexture.create_from_image(faces)
 	return data

@@ -8,7 +8,6 @@ extends Control
 const WINNER_BADGE_PATH: String = "res://assets/ui/winner_badge.png"
 const DEAD_PARROT_PATH: String = "res://assets/ui/dead_parrot.png"
 const VictoryDialogueDB = preload("res://scripts/resources/victory_dialogue_db.gd")
-const CHARACTERS: String = "res://resources/characters/%s.tres"
 
 ## PoFV's "lo" face, shown for the loser (face ids index CharacterSprites.FACES)
 const LOSE_FACE: int = 8
@@ -152,18 +151,14 @@ func setup_match(winner_p: int, loser_p: int, p1_char: String, p2_char: String) 
 	_setup_portraits_and_dialogue()
 	_update_menu_display()
 
-## Characters with faces: the PoFV cast, and Clownpiece, whose come from LoLK.
 func _normalize_char_name(raw_name: String) -> String:
-	var lower := raw_name.to_lower().strip_edges()
-	for key in CharacterSprites.PLAYER_SHEETS.keys() + ["clownpiece"]:
-		if key in lower:
-			return key
-	return "reimu"
+	var id := CharacterData.normalize_id(raw_name)
+	return id if id in CharacterData.ROSTER else "reimu"
 
 ## One of a character's PoFV faces (ids 0..8, CharacterSprites.FACES), cut from the face
 ## strip built from th09.dat, or null if it isn't there.
 static func get_portrait_texture(char_id: String, pofv_face: int) -> Texture2D:
-	var path := CHARACTERS % char_id.to_lower()
+	var path := CharacterData.path_for(char_id.to_lower())
 	if not ResourceLoader.exists(path):
 		return null
 	var faces := (load(path) as CharacterData).face_sheet

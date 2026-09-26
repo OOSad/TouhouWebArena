@@ -541,28 +541,15 @@ const QUOTES: Array[Dictionary] = [
 	}
 ]
 
+## A character id, or the name as given when it is no one's (the fallback line still reads it).
+static func _normalize(char_name: String) -> String:
+	var id := CharacterData.normalize_id(char_name)
+	return id if not id.is_empty() else char_name.to_lower().strip_edges()
+
 ## Retrieves a random victory dialogue preset matching the winner and loser IDs.
 static func get_random_quote(winner_id: String, loser_id: String) -> Dictionary:
-	var w_norm := winner_id.to_lower().strip_edges()
-	var l_norm := loser_id.to_lower().strip_edges()
-	if "reimu" in w_norm: w_norm = "reimu"
-	elif "marisa" in w_norm: w_norm = "marisa"
-	elif "sakuya" in w_norm: w_norm = "sakuya"
-	elif "youmu" in w_norm: w_norm = "youmu"
-	elif "cirno" in w_norm: w_norm = "cirno"
-	elif "reisen" in w_norm or "udonge" in w_norm: w_norm = "reisen"
-	elif "yuuka" in w_norm: w_norm = "yuuka"
-	elif "aya" in w_norm or "shameimaru" in w_norm: w_norm = "aya"
-	elif "clownpiece" in w_norm: w_norm = "clownpiece"
-	if "reimu" in l_norm: l_norm = "reimu"
-	elif "marisa" in l_norm: l_norm = "marisa"
-	elif "sakuya" in l_norm: l_norm = "sakuya"
-	elif "youmu" in l_norm: l_norm = "youmu"
-	elif "cirno" in l_norm: l_norm = "cirno"
-	elif "reisen" in l_norm or "udonge" in l_norm: l_norm = "reisen"
-	elif "yuuka" in l_norm: l_norm = "yuuka"
-	elif "aya" in l_norm or "shameimaru" in l_norm: l_norm = "aya"
-	elif "clownpiece" in l_norm: l_norm = "clownpiece"
+	var w_norm := _normalize(winner_id)
+	var l_norm := _normalize(loser_id)
 	
 	var exact_matches: Array[Dictionary] = []
 	var generic_matches: Array[Dictionary] = []

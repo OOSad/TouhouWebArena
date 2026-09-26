@@ -22,22 +22,15 @@ func set_player_names(p1: String, p2: String) -> void:
 	p1_name = p1.strip_edges() if not p1.strip_edges().is_empty() else "Player 1"
 	p2_name = p2.strip_edges() if not p2.strip_edges().is_empty() else "Player 2"
 
-const PLAYABLE_CHARACTERS: Array[String] = [
-	"Reimu Hakurei",
-	"Marisa Kirisame",
-	"Youmu Konpaku",
-	"Cirno"
-]
-
 func set_p1_character(char_name: String) -> void:
 	if char_name.to_lower().strip_edges() == "random":
-		p1_character = PLAYABLE_CHARACTERS.pick_random()
+		p1_character = CharacterData.get_roster_names().pick_random()
 	else:
 		p1_character = char_name
 
 func set_p2_character(char_name: String) -> void:
 	if char_name.to_lower().strip_edges() == "random":
-		p2_character = PLAYABLE_CHARACTERS.pick_random()
+		p2_character = CharacterData.get_roster_names().pick_random()
 	else:
 		p2_character = char_name
 

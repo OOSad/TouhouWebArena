@@ -240,68 +240,72 @@ func get_stage_bgm_path() -> String:
 
 
 # Static Registry & Resource Cache
+
+## The playable roster, in character-select order. A new character is their id here plus
+## res://resources/characters/<id>.tres; every roster list in the game is read from this one.
+const ROSTER: Array[String] = [
+	"reimu", "marisa", "sakuya", "youmu", "cirno", "reisen", "yuuka", "aya", "clownpiece",
+]
+## The select screen's Random slot. It has a .tres for its card, but is not in the roster.
+const RANDOM_ID: String = "random"
+## Other spellings a character's name can arrive in besides their id and display name.
+const ID_ALIASES: Dictionary = {"udonge": "reisen", "yuka": "yuuka", "shameimaru": "aya"}
+
 static var _registry: Dictionary = {}
-const REGISTRY_PATHS: Dictionary = {
-	"reimu": "res://resources/characters/reimu.tres",
-	"marisa": "res://resources/characters/marisa.tres",
-	"sakuya": "res://resources/characters/sakuya.tres",
-	"youmu": "res://resources/characters/youmu.tres",
-	"cirno": "res://resources/characters/cirno.tres",
-	"reisen": "res://resources/characters/reisen.tres",
-	"yuuka": "res://resources/characters/yuuka.tres",
-	"aya": "res://resources/characters/aya.tres",
-	"clownpiece": "res://resources/characters/clownpiece.tres",
-	"random": "res://resources/characters/random.tres"
-}
+
+static func path_for(id: String) -> String:
+	return "res://resources/characters/%s.tres" % id
+
+## A character id from any form of their name ("Reimu Hakurei", "reimu", "Udonge"), or ""
+## when the name is no one's.
+static func normalize_id(char_name: String) -> String:
+	var key := char_name.to_lower().strip_edges()
+	if key == RANDOM_ID or key in ROSTER:
+		return key
+	for id in ROSTER + [RANDOM_ID]:
+		if id in key:
+			return id
+	for alias in ID_ALIASES:
+		if alias in key:
+			return ID_ALIASES[alias]
+	return ""
 
 static func get_character(id: String) -> CharacterData:
-	var key := id.to_lower().strip_edges()
-	if "reimu" in key:
-		key = "reimu"
-	elif "marisa" in key:
-		key = "marisa"
-	elif "sakuya" in key:
-		key = "sakuya"
-	elif "youmu" in key:
-		key = "youmu"
-	elif "cirno" in key:
-		key = "cirno"
-	elif "reisen" in key or "udonge" in key:
-		key = "reisen"
-	elif "yuuka" in key or "yuka" in key:
-		key = "yuuka"
-	elif "aya" in key or "shameimaru" in key:
-		key = "aya"
-	elif "clownpiece" in key:
-		key = "clownpiece"
-	elif "random" in key:
-		key = "random"
-	
 	if _registry.is_empty():
 		_init_registry()
-	
+	var key := normalize_id(id)
 	if key in _registry:
 		return _registry[key]
-	
-	# Fallback to reimu if ID not found
+	push_warning("CharacterData: no character named '%s', using Reimu" % id)
 	return _registry.get("reimu", null)
 
 static func get_all_characters() -> Array[CharacterData]:
 	if _registry.is_empty():
 		_init_registry()
 	var list: Array[CharacterData] = []
-	for key in ["reimu", "marisa", "sakuya", "youmu", "cirno", "reisen", "yuuka", "aya", "clownpiece"]:
+	for key in ROSTER:
 		if key in _registry:
 			list.append(_registry[key])
 	return list
 
+## The roster's display names, in select-screen order (the names selections travel as).
+static func get_roster_names() -> Array[String]:
+	var names: Array[String] = []
+	for data in get_all_characters():
+		names.append(data.display_name)
+	return names
+
 static func _init_registry() -> void:
-	for key in REGISTRY_PATHS:
-		var path: String = REGISTRY_PATHS[key]
+	for key in ROSTER + [RANDOM_ID]:
+		var path := path_for(key)
 		if ResourceLoader.exists(path):
 			var res = load(path)
 			if res is CharacterData:
 				_registry[key] = res
+			else:
+				push_error("CharacterData: %s is not a CharacterData" % path)
+		else:
+			push_error("CharacterData: %s is in the roster but has no %s" % [key, path])
 
 static func get_stage_scene_by_id(stage_id: String) -> PackedScene:
 	if stage_id == "hakugyokurou_stairs":

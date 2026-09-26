@@ -2,47 +2,29 @@ extends Control
 
 const CharacterCarouselSlot = preload("res://scenes/character_select/character_carousel_slot.gd")
 
-const DAIRI_PORTRAITS: Dictionary = {
-	"reimu": preload("res://assets/ui/dairi/reimu.png"),
-	"marisa": preload("res://assets/ui/dairi/marisa.png"),
-	"sakuya": preload("res://assets/ui/dairi/sakuya.png"),
-	"youmu": preload("res://assets/ui/dairi/youmu.png"),
-	"cirno": preload("res://assets/ui/dairi/cirno.png"),
-	"reisen": preload("res://assets/ui/dairi/reisen.png"),
-	"yuuka": preload("res://assets/ui/dairi/yuuka.png"),
-	"aya": preload("res://assets/ui/dairi/aya.png"),
-	"clownpiece": preload("res://assets/ui/dairi/clownpiece.png"),
-	"random": preload("res://assets/ui/dairi/random.png"),
-}
+## Each character's select-screen art, by id; a character without one shows their portrait_texture.
+const DAIRI_PORTRAIT: String = "res://assets/ui/dairi/%s.png"
 
-const CHARACTERS: Array[String] = [
-	"Reimu Hakurei",
-	"Marisa Kirisame",
-	"Sakuya Izayoi",
-	"Youmu Konpaku",
-	"Cirno",
-	"Reisen Udongein Inaba",
-	"Yuuka Kazami",
-	"Aya Shameimaru",
-	"Clownpiece",
-	"Random"
-]
+## The carousel: the roster, then the Random slot.
+var playable_characters: Array[String] = CharacterData.get_roster_names()
+var characters: Array[String] = _carousel_names()
 
-const PLAYABLE_CHARACTERS: Array[String] = [
-	"Reimu Hakurei",
-	"Marisa Kirisame",
-	"Sakuya Izayoi",
-	"Youmu Konpaku",
-	"Cirno",
-	"Reisen Udongein Inaba",
-	"Yuuka Kazami",
-	"Aya Shameimaru",
-	"Clownpiece"
-]
+func _carousel_names() -> Array[String]:
+	var names: Array[String] = playable_characters.duplicate()
+	names.append("Random")
+	return names
+
+func _dairi_portrait(c_data: CharacterData) -> Texture2D:
+	if c_data == null:
+		return null
+	var path := DAIRI_PORTRAIT % c_data.character_id
+	if ResourceLoader.exists(path):
+		return load(path)
+	return c_data.portrait_texture
 
 func _resolve_character(char_name: String) -> String:
 	if char_name.to_lower().strip_edges() == "random":
-		return PLAYABLE_CHARACTERS.pick_random()
+		return playable_characters.pick_random()
 	return char_name
 
 var p1_index: int = 0
@@ -132,13 +114,13 @@ func _ready() -> void:
 	var total_span := (carousel_slots.size() - 1) * slot_pitch + 240.0
 	var start_x := -total_span * 0.5
 	
-	for i in range(mini(carousel_slots.size(), CHARACTERS.size())):
+	for i in range(mini(carousel_slots.size(), characters.size())):
 		var slot := carousel_slots[i]
 		slot.position = Vector2(start_x + i * slot_pitch, -110.0)
-		var c_name := CHARACTERS[i]
+		var c_name := characters[i]
 		var c_data := CharacterData.get_character(c_name)
 		var char_id := c_data.character_id if c_data else ""
-		var portrait_tex: Texture2D = DAIRI_PORTRAITS.get(char_id, c_data.portrait_texture if c_data else null)
+		var portrait_tex: Texture2D = _dairi_portrait(c_data)
 		slot.setup(i, c_data, portrait_tex)
 		if not slot.slot_clicked.is_connected(_select_character_by_index):
 			slot.slot_clicked.connect(_select_character_by_index)
@@ -166,10 +148,10 @@ func _select_character_by_index(index: int) -> void:
 		else:
 			if is_p1:
 				p1_index = index
-				_send_selection(CHARACTERS[p1_index])
+				_send_selection(characters[p1_index])
 			else:
 				p2_index = index
-				_send_selection(CHARACTERS[p2_index])
+				_send_selection(characters[p2_index])
 			AudioService.play_select()
 			_update_display()
 	else:
@@ -304,16 +286,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		if is_networked:
 			var is_p1: bool = (nm.player_number == 1)
 			if is_p1:
-				p1_index = (p1_index - 1 + CHARACTERS.size()) % CHARACTERS.size()
-				_send_selection(CHARACTERS[p1_index])
+				p1_index = (p1_index - 1 + characters.size()) % characters.size()
+				_send_selection(characters[p1_index])
 			else:
-				p2_index = (p2_index - 1 + CHARACTERS.size()) % CHARACTERS.size()
-				_send_selection(CHARACTERS[p2_index])
+				p2_index = (p2_index - 1 + characters.size()) % characters.size()
+				_send_selection(characters[p2_index])
 		else:
 			if select_state == SelectState.SELECT_PLAYER:
-				p1_index = (p1_index - 1 + CHARACTERS.size()) % CHARACTERS.size()
+				p1_index = (p1_index - 1 + characters.size()) % characters.size()
 			elif select_state == SelectState.SELECT_AI:
-				p2_index = (p2_index - 1 + CHARACTERS.size()) % CHARACTERS.size()
+				p2_index = (p2_index - 1 + characters.size()) % characters.size()
 		AudioService.play_select()
 		_update_display()
 		var vp := get_viewport()
@@ -323,16 +305,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		if is_networked:
 			var is_p1: bool = (nm.player_number == 1)
 			if is_p1:
-				p1_index = (p1_index + 1) % CHARACTERS.size()
-				_send_selection(CHARACTERS[p1_index])
+				p1_index = (p1_index + 1) % characters.size()
+				_send_selection(characters[p1_index])
 			else:
-				p2_index = (p2_index + 1) % CHARACTERS.size()
-				_send_selection(CHARACTERS[p2_index])
+				p2_index = (p2_index + 1) % characters.size()
+				_send_selection(characters[p2_index])
 		else:
 			if select_state == SelectState.SELECT_PLAYER:
-				p1_index = (p1_index + 1) % CHARACTERS.size()
+				p1_index = (p1_index + 1) % characters.size()
 			elif select_state == SelectState.SELECT_AI:
-				p2_index = (p2_index + 1) % CHARACTERS.size()
+				p2_index = (p2_index + 1) % characters.size()
 		AudioService.play_select()
 		_update_display()
 		var vp := get_viewport()
@@ -356,7 +338,7 @@ func _send_selection(char_name: String) -> void:
 		nm.send_character_selection(char_name)
 
 func _on_opponent_character_changed(char_name: String) -> void:
-	var idx: int = CHARACTERS.find(char_name)
+	var idx: int = characters.find(char_name)
 	if idx != -1:
 		var nm := _get_network_manager()
 		var is_p1: bool = (nm == null or nm.player_number == 1)
@@ -445,8 +427,8 @@ func _update_display() -> void:
 		slot.set_selection(is_p1, is_p2, is_p2_cpu)
 
 	# Update Flanking Character Cards
-	var p1_char_name: String = CHARACTERS[p1_index] if (p1_index >= 0 and p1_index < CHARACTERS.size()) else "reimu"
-	var p2_char_name: String = CHARACTERS[p2_index] if (p2_index >= 0 and p2_index < CHARACTERS.size()) else "marisa"
+	var p1_char_name: String = characters[p1_index] if (p1_index >= 0 and p1_index < characters.size()) else "reimu"
+	var p2_char_name: String = characters[p2_index] if (p2_index >= 0 and p2_index < characters.size()) else "marisa"
 	var p1_data: CharacterData = CharacterData.get_character(p1_char_name)
 	var p2_data: CharacterData = CharacterData.get_character(p2_char_name)
 	if p1_card and p1_data:
@@ -465,15 +447,15 @@ func _confirm_local_selection() -> void:
 		AudioService.play_confirm()
 		is_local_confirmed = true
 		var is_p1: bool = (nm.player_number == 1)
-		var local_char: String = CHARACTERS[p1_index if is_p1 else p2_index]
+		var local_char: String = characters[p1_index if is_p1 else p2_index]
 		if local_char == "Random":
 			var resolved := _resolve_character(local_char)
 			# Lock the cursor onto the roll, or every later _resolve_character() re-rolls
 			# and this client plays a different character than the one the opponent was sent.
 			if is_p1:
-				p1_index = CHARACTERS.find(resolved)
+				p1_index = characters.find(resolved)
 			else:
-				p2_index = CHARACTERS.find(resolved)
+				p2_index = characters.find(resolved)
 			_update_display()
 			_send_selection(resolved)
 		
@@ -481,8 +463,8 @@ func _confirm_local_selection() -> void:
 		
 		var game_mgr := _get_game_manager()
 		if game_mgr:
-			var c1 := _resolve_character(CHARACTERS[p1_index])
-			var c2 := _resolve_character(CHARACTERS[p2_index])
+			var c1 := _resolve_character(characters[p1_index])
+			var c2 := _resolve_character(characters[p2_index])
 			game_mgr.set_p1_character(c1)
 			game_mgr.set_p2_character(c2)
 			game_mgr.set_p1_handicap(p1_handicap)
@@ -510,8 +492,8 @@ func _confirm_ai_selection() -> void:
 	is_local_confirmed = true
 	is_remote_confirmed = true
 	
-	var final_p1 := _resolve_character(CHARACTERS[p1_index])
-	var final_p2 := _resolve_character(CHARACTERS[p2_index])
+	var final_p1 := _resolve_character(characters[p1_index])
+	var final_p2 := _resolve_character(characters[p2_index])
 	
 	var game_mgr := _get_game_manager()
 	if game_mgr:
@@ -538,8 +520,8 @@ func _on_opponent_confirmed() -> void:
 	is_remote_confirmed = true
 	var game_mgr := _get_game_manager()
 	if game_mgr:
-		var c1 := _resolve_character(CHARACTERS[p1_index])
-		var c2 := _resolve_character(CHARACTERS[p2_index])
+		var c1 := _resolve_character(characters[p1_index])
+		var c2 := _resolve_character(characters[p2_index])
 		game_mgr.set_p1_character(c1)
 		game_mgr.set_p2_character(c2)
 		game_mgr.set_p1_handicap(p1_handicap)
@@ -553,8 +535,8 @@ func _check_both_confirmed() -> void:
 		if select_state != SelectState.CONFIRMED:
 			_confirm_ai_selection()
 	elif is_local_confirmed and is_remote_confirmed:
-		var final_p1 := _resolve_character(CHARACTERS[p1_index])
-		var final_p2 := _resolve_character(CHARACTERS[p2_index])
+		var final_p1 := _resolve_character(characters[p1_index])
+		var final_p2 := _resolve_character(characters[p2_index])
 		var game_mgr := _get_game_manager()
 		if game_mgr:
 			game_mgr.set_p1_character(final_p1)
