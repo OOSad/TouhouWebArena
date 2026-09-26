@@ -9,7 +9,7 @@ extends Node2D
 ## frames. It is harmless.
 ## Measured from lyrica_extra.mp4: the ring appears ~28 frames after the note, about 40 px
 ## out and at rest, then accelerates at ~200 px/s^2 (radius 45, 75, 120, 196 px at 0.3s
-## steps), each note a little differently, so the ring breaks up as it crosses the field. The
+## steps), all together, so the ring stays a perfect circle as it crosses the field. The
 ## notes spin, each from its own angle, so no two face the same way.
 
 const NOTE_DATA: DanmakuBulletData = preload("res://resources/bullets/lyrica_note_red.tres")
@@ -23,9 +23,8 @@ const SPIN_SPEED: float = 0.10471976 * 60.0
 @export var ring_delay: float = 28.0 / 60.0
 @export var ring_count: int = 20
 @export var ring_radius: float = 40.0
-## Each note of the ring accelerates at a rate rolled in this range, px/s^2.
-@export var accel_min: float = 140.0
-@export var accel_max: float = 280.0
+## Every note of the ring accelerates outward at this rate, px/s^2.
+@export var accel: float = 200.0
 
 var _playfield: Node2D = null
 var _rng: RandomNumberGenerator = null
@@ -78,7 +77,6 @@ func _fire_ring() -> void:
 	var n: int = maxi(ring_count, 1)
 	for i in n:
 		var dir := Vector2.from_angle(turn + TAU * float(i) / float(n))
-		var accel: float = _rng.randf_range(accel_min, accel_max)
 		var note: DanmakuBullet = _playfield.spawn_danmaku_bullet(NOTE_DATA, position + dir * ring_radius, DanmakuBullet.MotionMode.LINEAR, dir, 0.0, accel)
 		if note and note.sprite:
 			note.sprite.rotation = _rng.randf() * TAU
