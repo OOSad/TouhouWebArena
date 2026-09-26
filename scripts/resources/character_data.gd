@@ -15,7 +15,8 @@ enum ScopeShape {
 	LENS,
 	SATELLITE_CIRCLES,
 	STAR,
-	FAN_UP
+	FAN_UP,
+	STRIP
 }
 
 @export_group("Identity")
@@ -191,6 +192,8 @@ func get_scope_description() -> String:
 			return "Flower Blossom (Centric Circle + 6 Orbiting Satellites, r = %dpx)" % int(scope_radius * 1.92)
 		ScopeShape.FAN_UP:
 			return "Upward Cone (r = %dpx, 100°)" % int(scope_radius)
+		ScopeShape.STRIP:
+			return "Full-Height Strip (w = %dpx)" % int(scope_radius * 2.0)
 		ScopeShape.STAR:
 			return "Five-Pointed Star (points reach %dpx)" % int(scope_radius)
 		_:

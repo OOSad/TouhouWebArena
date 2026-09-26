@@ -14,7 +14,8 @@ enum ScopeShape {
 	LENS,
 	SATELLITE_CIRCLES,
 	STAR,
-	FAN_UP
+	FAN_UP,
+	STRIP
 }
 
 @export var shape_type: ScopeShape = ScopeShape.CIRCLE
@@ -93,6 +94,8 @@ func apply_character_data(char_data: CharacterData) -> void:
 				shape_type = ScopeShape.SATELLITE_CIRCLES
 			CharacterData.ScopeShape.FAN_UP:
 				shape_type = ScopeShape.FAN_UP
+			CharacterData.ScopeShape.STRIP:
+				shape_type = ScopeShape.STRIP
 			CharacterData.ScopeShape.STAR:
 				shape_type = ScopeShape.STAR
 			_:
@@ -185,7 +188,7 @@ func _process(delta: float) -> void:
 	if current_progress != target:
 		current_progress = move_toward(current_progress, target, speed * delta)
 		_update_collision_and_draw()
-	elif visible and shape_type == ScopeShape.COLUMN:
+	elif visible and _is_column():
 		if polygon_col and not polygon_col.disabled:
 			polygon_col.polygon = _build_column_polygon()
 		queue_redraw()
@@ -242,7 +245,7 @@ func _update_collision_and_draw() -> void:
 					s_shape.radius = r_sat
 				var sat_a := _satellite_angle + float(i) * angle_step
 				col.position = Vector2.from_angle(sat_a) * d_orbit
-	elif shape_type == ScopeShape.COLUMN:
+	elif _is_column():
 		if polygon_col:
 			polygon_col.disabled = (current_progress <= 0.05)
 			if not polygon_col.disabled:
@@ -265,6 +268,11 @@ func _update_collision_and_draw() -> void:
 
 	queue_redraw()
 
+## Marisa's tapering column up from her, or Lyrica's strip of even width (max_radius either
+## side, from pl06: 32 PoFV px across) through the whole field, top to bottom.
+func _is_column() -> bool:
+	return shape_type == ScopeShape.COLUMN or shape_type == ScopeShape.STRIP
+
 func _build_column_polygon() -> PackedVector2Array:
 	var base_w := column_base_half_width * current_progress
 	var top_w := column_top_half_width * current_progress
@@ -272,6 +280,10 @@ func _build_column_polygon() -> PackedVector2Array:
 	var player_y: float = parent_node.position.y if parent_node is Node2D else global_position.y
 	var top_y := -player_y - 40.0 # Extend past top of playfield
 	var bot_y := 12.0
+	if shape_type == ScopeShape.STRIP:
+		base_w = max_radius * current_progress
+		top_w = base_w
+		bot_y = Playfield.PLAYFIELD_HEIGHT - player_y + 40.0 # Past the bottom too
 	
 	return PackedVector2Array([
 		Vector2(-base_w, bot_y),
@@ -378,7 +390,7 @@ func _draw() -> void:
 			var sat_center := Vector2.from_angle(sat_a) * d_orbit
 			draw_circle(sat_center, r_sat, FILL_COLOR)
 			draw_arc(sat_center, r_sat, 0.0, TAU, 32, OUTLINE_COLOR, 2.0, true)
-	elif shape_type == ScopeShape.COLUMN:
+	elif _is_column():
 		var poly := _build_column_polygon()
 		if poly.size() >= 4:
 			draw_colored_polygon(poly, FILL_COLOR)
@@ -447,6 +459,8 @@ func _is_spirit_in_scope(spirit: Spirit) -> bool:
 	if shape_type == ScopeShape.CIRCLE:
 		var r := max_radius * current_progress + SPIRIT_RADIUS
 		return p_pos.distance_squared_to(s_pos) <= (r * r)
+	elif shape_type == ScopeShape.STRIP:
+		return absf(s_pos.x - p_pos.x) <= max_radius * current_progress + SPIRIT_RADIUS
 	elif shape_type == ScopeShape.COLUMN:
 		# Column mode (Marisa)
 		# Spirit must be above the player's baseline (with a small margin below)
