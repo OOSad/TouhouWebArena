@@ -69,6 +69,7 @@ const SPRITES: Dictionary = {
 	"yellow_arrow": ARROWHEAD + YELLOW,
 	"dark_yellow_arrow": ARROWHEAD + DARK_YELLOW,
 	"red_arrow": ARROWHEAD + RED,
+	"blue_arrow": ARROWHEAD + BLUE,
 	# ECL DarkRed (1) on an 8-colour row
 	"red_butterfly": BUTTERFLY + RED_8,
 	# ECL Red (2) on an 8-colour row

@@ -73,6 +73,7 @@ All Danmaku bullets and enemy pellets utilize sub-regions of the unified $512 \t
 | `yellow_big_ball.tres` | `tex_pellet_yellow.tres` | (as the pellet) | The pellet art at $0.547\times$, taking its visible 106px disc (not the 128px cell) to ~58px, ZUN's 28x28 `BigBall`. The ECL says Blue; the footage shows white with a yellow rim. Forms for 16 frames first as `tex_spawn_glow_yellow` (see `spawn_fade_in_*`) | 20.5 px (off while forming) | **No (`false`)**: large bullets are immune | `false` | 1.0 | Yuuka Lv 4 Boss Attack 2 |
 | `orange_rice.tres` / `orange_pellet.tres` | `tex_rice_orange.tres` / `tex_pellet_orange.tres` | `Rect2(384, 208, 32, 48)` / `Rect2(128, 256, 128, 128)` | `yellow_rice` / `yellow_pellet` re-hued to orange, same scales | 5.9 / 6.0 px | as the yellow pair | as the yellow pair | 1.0 | Yuuka Lv 4 Boss Attack 3 (forms in: `spawn_fade_in` 2x to 1x over 16 frames, visual only) |
 | `red_arrow.tres` | (runtime, `BulletSprites`) | etama Arrowhead, Red | PoFV red arrowhead at 2.0833x | 7.2 px | **No (`false`)** | `true` | 1.0 | Aya Lv 2 |
+| `blue_arrow.tres` | (runtime, `BulletSprites`) | etama Arrowhead, Blue | PoFV blue arrowhead at 2.0833x | 7.2 px | **No (`false`)** | `true` | 1.0 | Lyrica Lv 3 |
 | `red_butterfly.tres` / `purple_butterfly.tres` | (runtime, `BulletSprites`) | etama y176 Butterfly row (sprites 120-127, 8 colours): ECL DarkRed = red, ECL Red = purple | PoFV butterfly at 2.0833x | 8.3 px | **No (`false`)** | `true` | 1.0 | Aya Lv 3, Lv 4 Boss Attack 1 |
 *Bullets drawn from their own PNGs (the Sakuya knives, the two Reisen rice bullets) are copied into the bottom band of the atlas by [`tools/bake_bullets_into_atlas.gd`](tools/bake_bullets_into_atlas.gd), so every pooled bullet samples one texture and the web build batches them all; re-run it after editing a source PNG. The four yellow cells and the two orange ones are baked by [`tools/generate_yuuka_bullets.gd`](tools/generate_yuuka_bullets.gd), which recolours our own atlas cells (idempotent). After re-running it, run Godot once with `--import` (or open the editor) or the game keeps drawing the old, empty cells.*
 
@@ -513,6 +514,11 @@ Reisen's Level 4 Boss Attack 3, informally "Purple Bullet Spiral Machinegun". On
 - `mirrored` (Lv 2): a stop on each wall every 10 frames, marching inward until they would meet; red pellets and red arrowheads swap sides each pair; 8 layers. Otherwise (Lv 3): one stop every 8 frames from one wall to the other (side from the sync RNG), red butterflies, 5 layers.
 - **Audio**: `se_tan00` per stop.
 
+### `DanmakuSnakingFanStep` (`scripts/resources/danmaku_snaking_fan_step.gd`)
+- **ECL parity (`pl06.ecl` `sub0` / `sub1`, Lyrica Lv 2 / Lv 3, Noise Sign "Soul Noise Flow")**: an emitter above the centre (Lv 2 y 64, Lv 3 y 0, ZUN px) fires 16 downward 7-way fans (11.25 degrees apart) every 8 frames, alternating two bullet types. Speed 187.5 + 12.5 rank px/s (Lv 2) or 187.5 + 6.25 rank (Lv 3). Opens with the flower pre-cast (0.667s).
+- **Snaking**: ZUN chains four `bullet_effects` slots of 30 frames: turn +1.57, -1.57, +0.785, -1.57 rad/s, then straight. Bullets use `CURVE_THEN_LINE` with the first turn and `DanmakuBullet.curve_chain` holding the rest (each chained turn lasts `curve_duration`). The starting direction is ZUN RAND_INT % 2 from the sync RNG. Lv 2 (red pellets / red arrowheads): every fan snakes the same way. Lv 3 (`mirror_alternate`, blue / red arrowheads): the red fans snake the mirrored way, so the colours weave.
+- **Audio**: `se_tan00` per fan.
+
 ### `DanmakuRandomSprayStep` (`scripts/resources/danmaku_random_spray_step.gd`)
 - **ECL parity (`pl10.ecl` `sub5`, Aya Lv 4 Boss Attack 3)**: `16 + rank` emissions, one every 2 frames from the boss, each 3 red pellets and 2 red ring balls in random directions at random speeds from 125 px/s to 625 + 12.5 rank (ZUN `bullet_random`). Unsynced per-bullet jitter. `se_tan00` per emission on the single-voice channel.
 
@@ -774,6 +780,11 @@ Reisen's Level 4 Boss Attack 3, informally "Purple Bullet Spiral Machinegun". On
 - **Level 4 Boss Attack 2**: [`clownpiece_boss_spell_2.tres`](resources/spellcards/clownpiece/clownpiece_boss_spell_2.tres), Hell Sign "Star and Stripe" (TH15 `st05bs.ecl` `BossCard2`)
   - *Composition*: A single `DanmakuStarAndStripeStep`, one wave (~3.3s).
   - *Behavior*: Red stripes stack up from the left wall and all sink together while stars rain through the gaps; ride a gap down and dodge the stars.
+
+### Lyrica Prismriver
+- **Level 2 / Level 3**: [`lyrica_spell_lv2.tres`](resources/spellcards/lyrica/lyrica_spell_lv2.tres) / [`lyrica_spell_lv3.tres`](resources/spellcards/lyrica/lyrica_spell_lv3.tres), Noise Sign "Soul Noise Flow" (`pl06.ecl` `sub0` / `sub1`)
+  - *Composition*: A single `DanmakuSnakingFanStep`, one wave (~2.8s with the pre-cast).
+  - *Behavior*: Fans of snaking bullets pour down from the centre and settle into slanted lines; Lv 3 weaves two colours snaking opposite ways.
 
 ---
 

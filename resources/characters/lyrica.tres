@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://scripts/resources/character_data.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/ui/menu_characters/lyrica.png" id="4_portrait"]
 [ext_resource type="PackedScene" path="res://scenes/attacks/lyrica_charge_attack.tscn" id="5_charge_attack"]
+[ext_resource type="Resource" path="res://resources/spellcards/lyrica/lyrica_spell_lv2.tres" id="6_spell_lv2"]
+[ext_resource type="Resource" path="res://resources/spellcards/lyrica/lyrica_spell_lv3.tres" id="7_spell_lv3"]
 
 [resource]
 script = ExtResource("1_script")
@@ -36,6 +38,9 @@ charge_attack_name = "Keyboard Solo"
 charge_attack_scene = ExtResource("5_charge_attack")
 charge_attack_desc = "She plays a keyboard while a single column of notes streams straight up from wherever she flies."
 special_trait = "The youngest Prismriver: her shot also covers her back."
+signature_spell_name = "Noise Sign \"Soul Noise Flow\""
+spellcard_lv2 = ExtResource("6_spell_lv2")
+spellcard_lv3 = ExtResource("7_spell_lv3")
 spell_bar_color = Color(0.78, 0.16, 0.2, 1)
 shockwave_color = Color(0.95, 0.35, 0.35, 1)
 version_tag = "TH09"

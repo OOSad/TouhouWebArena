@@ -185,6 +185,10 @@ var lw_spin_lean: float = 0.70
 # Curving parameters
 var curve_angular_speed: float = 0.0
 var curve_duration: float = 0.0
+## Further turn rates (rad/s) run one after another, each for curve_duration, once the
+## first ends: ZUN's chained bullet_effects slots (Lyrica's snaking fans, pl06.ecl).
+var curve_chain: PackedFloat32Array = PackedFloat32Array()
+var _curve_chain_index: int = 0
 
 # Ellipse motion parameters
 var ellipse_center: Vector2 = Vector2.ZERO
@@ -239,6 +243,8 @@ func on_pool_acquire() -> void:
 	orbit_breakout_initial_speed = 0.0
 	curve_angular_speed = 0.0
 	curve_duration = 0.0
+	curve_chain = PackedFloat32Array()
+	_curve_chain_index = 0
 	ellipse_center = Vector2.ZERO
 	ellipse_radius = Vector2.ZERO
 	ellipse_target_angle = 0.0
@@ -312,6 +318,8 @@ func on_pool_release() -> void:
 	orbit_breakout_initial_speed = 0.0
 	curve_angular_speed = 0.0
 	curve_duration = 0.0
+	curve_chain = PackedFloat32Array()
+	_curve_chain_index = 0
 	ellipse_center = Vector2.ZERO
 	ellipse_radius = Vector2.ZERO
 	ellipse_target_angle = 0.0
@@ -559,6 +567,8 @@ func setup_curve_line(
 	setup(p_data, spawn_pos, MotionMode.CURVE_THEN_LINE, p_dir, p_speed, null, p_accel, p_max_speed)
 	curve_angular_speed = p_curve_angular_speed
 	curve_duration = maxf(p_curve_duration, 0.0)
+	curve_chain = PackedFloat32Array()
+	_curve_chain_index = 0
 	if p_spin_speed != 0.0:
 		spin_speed = p_spin_speed
 
@@ -855,6 +865,10 @@ func _physics_process(delta: float) -> void:
 		MotionMode.LUNAR_WAVE:
 			_process_lunar_wave(delta)
 		MotionMode.CURVE_THEN_LINE:
+			if _phase_timer >= curve_duration and _curve_chain_index < curve_chain.size():
+				_phase_timer -= curve_duration
+				curve_angular_speed = curve_chain[_curve_chain_index]
+				_curve_chain_index += 1
 			if _phase_timer < curve_duration:
 				_phase_timer += delta
 				direction = direction.rotated(curve_angular_speed * delta)
@@ -933,7 +947,7 @@ func _physics_process(delta: float) -> void:
 				despawn()
 				return
 	elif motion_mode == MotionMode.CURVE_THEN_LINE:
-		if _phase_timer >= curve_duration:
+		if _phase_timer >= curve_duration and _curve_chain_index >= curve_chain.size():
 			if (position.y > 1020.0 and direction.y > 0.0) or \
 			   (position.x < -80.0 and direction.x < 0.0) or \
 			   (position.x > 680.0 and direction.x > 0.0) or \
