@@ -58,6 +58,9 @@ const RECIPES: Dictionary = {
 	# Aya: charge attack crescent (sprite 28) and the three frames it fades through on a hit
 	# (29-31, pl10.anm script 8), stood upright.
 	"aya_charge_shot": ["th09", "pl10.anm", [28, 29, 30, 31], 3],
+	# Lyrica: the eight frames of the keyboard she plays during her charge attack (pl06.anm
+	# script 7, sprites 28-35).
+	"lyrica_keyboard": ["th09", "pl06.anm", [28, 29, 30, 31, 32, 33, 34, 35], 0],
 	# Aya: extra attack streak (pl10_ex.png sprite 32), turned to point down.
 	"aya_extra_streak": ["th09", "pl10.anm", 32, 1],
 	# Shared effects from the bullet sheets: the EX mote (etama2's spiked burst), the flare
