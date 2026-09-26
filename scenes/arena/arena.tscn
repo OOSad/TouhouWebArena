@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/match_timer.tscn" id="8_match_timer_scene"]
 [ext_resource type="PackedScene" uid="uid://bbnllqnfmp7hw" path="res://scenes/ui/profiler_overlay.tscn" id="9_profiler_scene"]
 [ext_resource type="Texture2D" uid="uid://b3um6qolkgyf0" path="res://assets/ui/stage_bg_bamboo.png" id="10_stage_bg"]
+[ext_resource type="Script" path="res://scenes/ui/boss_marker.gd" id="30_boss_marker"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stats_btn"]
 content_margin_left = 8.0
@@ -198,6 +199,16 @@ offset_left = 990.0
 offset_top = 1042.0
 offset_right = 1590.0
 offset_bottom = 1058.0
+
+[node name="P1BossMarker" type="Sprite2D" parent="."]
+position = Vector2(330, 1031)
+script = ExtResource("30_boss_marker")
+playfield_path = NodePath("../PlayfieldsHBox/P1ViewportContainer/P1Viewport/P1Playfield")
+
+[node name="P2BossMarker" type="Sprite2D" parent="."]
+position = Vector2(990, 1031)
+script = ExtResource("30_boss_marker")
+playfield_path = NodePath("../PlayfieldsHBox/P2ViewportContainer/P2Viewport/P2Playfield")
 player_number = 2
 
 [node name="EffectsOverlay" type="Node2D" parent="." unique_id=246861802]

@@ -95,6 +95,8 @@ const RECIPES: Dictionary = {
 	# and the thin line on each side of it (sprite 143).
 	"boss_life_ring": ["th15", "front.anm", 142, 0],
 	"boss_life_ring_edge": ["th15", "front.anm", 143, 0],
+	# The red smudge under a playfield marking where the boss is (LoLK front.anm sprite 81).
+	"boss_marker": ["th15", "front.anm", 81, 0],
 	# HUD: the spinning sakura that marks a round won (front.anm scripts 47-51).
 	"round_win_sakura": ["th09", "front.anm", 39, 0],
 	# Stage textures, from the worldNN.anm stage sheets. A file name in place of a sprite id
