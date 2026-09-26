@@ -1,0 +1,815 @@
+{
+ "last_node_id": 15,
+ "last_link_id": 20,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "Note",
+   "pos": [
+    -900,
+    -420
+   ],
+   "size": [
+    560,
+    660
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "Note"
+   },
+   "widgets_values": [
+    "POSE PLAYGROUND (Clownpiece, OpenPose skeleton)\n\nClick Run. Results land in ComfyUI/output as pose_play_*.png (4 per run).\nThe small 'Pose preview' box shows the skeleton that was used.\n\nEDIT THE POSE: right-click the green 'Skeleton' box -> Open in Openpose Editor.\nDrag the joints, then close the editor (ESC) and Run.\nIt starts bent into the PoFV bank-left S (head in, hips out, feet trailing).\nSeen from behind: her RIGHT side (torch hand) is on YOUR right.\nKeep the face dots (nose, eyes) off: without them OpenPose knows it is a back view.\n\nSTART IMAGE (yellow): the colours it starts from.\n  clownpiece_bank_left_start / _bank_right_start / _idle_start\n\nTHE DIALS (orange boxes):\n  Redraw amount (KSampler 'denoise'): 0.75 default.\n    Lower keeps her colours but ignores the skeleton more; 1.0 = drawn from scratch.\n  Pose strength (ControlNet 'strength'): 0.8 default; 1.0 strict, 0.5 loose.\n  Pixel look (LoRA strength, both numbers): 0.8 default.\n  Seed: 'randomize' gives new attempts; 'fixed' to compare dial changes fairly.\n\nImages come out 1024x1024. Send the ones you like to Claude to shrink onto the 48px grid.\nClose the black ComfyUI window (or Stop ComfyUI.bat) when done."
+   ],
+   "title": "READ ME"
+  },
+  {
+   "id": 2,
+   "type": "CheckpointLoaderSimple",
+   "pos": [
+    -300,
+    -420
+   ],
+   "size": [
+    320,
+    100
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      1
+     ]
+    },
+    {
+     "name": "CLIP",
+     "type": "CLIP",
+     "links": [
+      2
+     ]
+    },
+    {
+     "name": "VAE",
+     "type": "VAE",
+     "links": [
+      10,
+      12,
+      19
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CheckpointLoaderSimple"
+   },
+   "widgets_values": [
+    "NoobAI-XL-v1.1.safetensors"
+   ]
+  },
+  {
+   "id": 3,
+   "type": "LoraLoader",
+   "pos": [
+    -300,
+    -260
+   ],
+   "size": [
+    320,
+    130
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 1
+    },
+    {
+     "name": "clip",
+     "type": "CLIP",
+     "link": 2
+    }
+   ],
+   "outputs": [
+    {
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      14
+     ]
+    },
+    {
+     "name": "CLIP",
+     "type": "CLIP",
+     "links": [
+      3,
+      4
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoraLoader"
+   },
+   "widgets_values": [
+    "pixel-art-xl.safetensors",
+    0.8,
+    0.8
+   ],
+   "title": "Pixel look (LoRA strength)",
+   "color": "#653",
+   "bgcolor": "#864"
+  },
+  {
+   "id": 4,
+   "type": "CLIPTextEncode",
+   "pos": [
+    60,
+    -420
+   ],
+   "size": [
+    420,
+    200
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "clip",
+     "type": "CLIP",
+     "link": 3
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      5
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CLIPTextEncode"
+   },
+   "widgets_values": [
+    "masterpiece, best quality, newest, absurdres, highres, pixel art, clownpiece, touhou, 1girl, solo, chibi, fairy wings, jester cap, polka dot hat, american flag dress, american flag legwear, holding torch, blonde hair, very long hair, from behind, full body, flying, simple background, grey background"
+   ],
+   "title": "What to draw"
+  },
+  {
+   "id": 5,
+   "type": "CLIPTextEncode",
+   "pos": [
+    60,
+    -190
+   ],
+   "size": [
+    420,
+    150
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "clip",
+     "type": "CLIP",
+     "link": 4
+    }
+   ],
+   "outputs": [
+    {
+     "name": "CONDITIONING",
+     "type": "CONDITIONING",
+     "links": [
+      6
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "CLIPTextEncode"
+   },
+   "widgets_values": [
+    "worst quality, low quality, lowres, bad anatomy, bad hands, extra digits, missing fingers, jpeg artifacts, signature, watermark, text, blurry, multiple views, cropped, out of frame"
+   ],
+   "title": "What to avoid"
+  },
+  {
+   "id": 6,
+   "type": "OpenposeEditorNode",
+   "pos": [
+    -300,
+    -100
+   ],
+   "size": [
+    320,
+    420
+   ],
+   "flags": {},
+   "order": 6,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "POSE_KEYPOINT",
+     "type": "POSE_KEYPOINT",
+     "link": null
+    }
+   ],
+   "outputs": [
+    {
+     "name": "POSE_IMAGE",
+     "type": "IMAGE",
+     "links": [
+      8,
+      9
+     ]
+    },
+    {
+     "name": "POSE_KEYPOINT",
+     "type": "POSE_KEYPOINT",
+     "links": []
+    },
+    {
+     "name": "POSE_JSON",
+     "type": "STRING",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "OpenposeEditorNode"
+   },
+   "widgets_values": [
+    true,
+    false,
+    false,
+    -1,
+    4,
+    3,
+    2,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    "poses",
+    "loop extend",
+    99,
+    "{\"people\": [{\"pose_keypoints_2d\": [0, 0, 0, 499.78181818181815, 480, 1, 579.2, 496, 1, 640.4363636363637, 544, 1, 680.8, 576, 1, 419.2, 496, 1, 403.41818181818184, 560, 1, 410.07272727272726, 624, 1, 588.6181818181818, 688, 1, 595.3454545454546, 800, 1, 629.0181818181818, 912, 1, 492.6181818181818, 688, 1, 499.3454545454546, 800, 1, 549.0181818181818, 912, 1, 0, 0, 0, 0, 0, 0, 563.2, 400, 1, 435.2, 400, 1]}], \"canvas_width\": 1024, \"canvas_height\": 1024}"
+   ],
+   "title": "Skeleton (right-click -> Open in Openpose Editor)",
+   "color": "#353",
+   "bgcolor": "#464"
+  },
+  {
+   "id": 7,
+   "type": "LoadImage",
+   "pos": [
+    -300,
+    350
+   ],
+   "size": [
+    320,
+    340
+   ],
+   "flags": {},
+   "order": 7,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      11
+     ]
+    },
+    {
+     "name": "MASK",
+     "type": "MASK",
+     "links": []
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "LoadImage"
+   },
+   "widgets_values": [
+    "clownpiece_bank_left_start.png",
+    "image"
+   ],
+   "title": "Start image (colours)",
+   "color": "#553",
+   "bgcolor": "#664"
+  },
+  {
+   "id": 8,
+   "type": "PreviewImage",
+   "pos": [
+    1180,
+    -420
+   ],
+   "size": [
+    260,
+    300
+   ],
+   "flags": {},
+   "order": 8,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 9
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "PreviewImage"
+   },
+   "widgets_values": [],
+   "title": "Pose preview"
+  },
+  {
+   "id": 9,
+   "type": "ControlNetLoader",
+   "pos": [
+    60,
+    -10
+   ],
+   "size": [
+    420,
+    60
+   ],
+   "flags": {},
+   "order": 9,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "name": "CONTROL_NET",
+     "type": "CONTROL_NET",
+     "links": [
+      7
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ControlNetLoader"
+   },
+   "widgets_values": [
+    "noob_openpose.safetensors"
+   ]
+  },
+  {
+   "id": 10,
+   "type": "ControlNetApplyAdvanced",
+   "pos": [
+    60,
+    80
+   ],
+   "size": [
+    420,
+    190
+   ],
+   "flags": {},
+   "order": 10,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "positive",
+     "type": "CONDITIONING",
+     "link": 5
+    },
+    {
+     "name": "negative",
+     "type": "CONDITIONING",
+     "link": 6
+    },
+    {
+     "name": "control_net",
+     "type": "CONTROL_NET",
+     "link": 7
+    },
+    {
+     "name": "image",
+     "type": "IMAGE",
+     "link": 8
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 10
+    }
+   ],
+   "outputs": [
+    {
+     "name": "positive",
+     "type": "CONDITIONING",
+     "links": [
+      15
+     ]
+    },
+    {
+     "name": "negative",
+     "type": "CONDITIONING",
+     "links": [
+      16
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "ControlNetApplyAdvanced"
+   },
+   "widgets_values": [
+    0.8,
+    0.0,
+    1.0
+   ],
+   "title": "Pose strength",
+   "color": "#653",
+   "bgcolor": "#864"
+  },
+  {
+   "id": 11,
+   "type": "VAEEncode",
+   "pos": [
+    60,
+    320
+   ],
+   "size": [
+    200,
+    50
+   ],
+   "flags": {},
+   "order": 11,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "pixels",
+     "type": "IMAGE",
+     "link": 11
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 12
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      13
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEEncode"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 12,
+   "type": "RepeatLatentBatch",
+   "pos": [
+    280,
+    320
+   ],
+   "size": [
+    200,
+    60
+   ],
+   "flags": {},
+   "order": 12,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "samples",
+     "type": "LATENT",
+     "link": 13
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      17
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "RepeatLatentBatch"
+   },
+   "widgets_values": [
+    4
+   ],
+   "title": "Attempts per run"
+  },
+  {
+   "id": 13,
+   "type": "KSampler",
+   "pos": [
+    540,
+    -420
+   ],
+   "size": [
+    320,
+    270
+   ],
+   "flags": {},
+   "order": 13,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "model",
+     "type": "MODEL",
+     "link": 14
+    },
+    {
+     "name": "positive",
+     "type": "CONDITIONING",
+     "link": 15
+    },
+    {
+     "name": "negative",
+     "type": "CONDITIONING",
+     "link": 16
+    },
+    {
+     "name": "latent_image",
+     "type": "LATENT",
+     "link": 17
+    }
+   ],
+   "outputs": [
+    {
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      18
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "KSampler"
+   },
+   "widgets_values": [
+    1301,
+    "randomize",
+    28,
+    5.0,
+    "euler_ancestral",
+    "normal",
+    0.75
+   ],
+   "title": "Seed / Redraw amount (denoise)",
+   "color": "#653",
+   "bgcolor": "#864"
+  },
+  {
+   "id": 14,
+   "type": "VAEDecode",
+   "pos": [
+    540,
+    -110
+   ],
+   "size": [
+    200,
+    50
+   ],
+   "flags": {},
+   "order": 14,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "samples",
+     "type": "LATENT",
+     "link": 18
+    },
+    {
+     "name": "vae",
+     "type": "VAE",
+     "link": 19
+    }
+   ],
+   "outputs": [
+    {
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      20
+     ]
+    }
+   ],
+   "properties": {
+    "Node name for S&R": "VAEDecode"
+   },
+   "widgets_values": []
+  },
+  {
+   "id": 15,
+   "type": "SaveImage",
+   "pos": [
+    540,
+    -20
+   ],
+   "size": [
+    600,
+    640
+   ],
+   "flags": {},
+   "order": 15,
+   "mode": 0,
+   "inputs": [
+    {
+     "name": "images",
+     "type": "IMAGE",
+     "link": 20
+    }
+   ],
+   "outputs": [],
+   "properties": {
+    "Node name for S&R": "SaveImage"
+   },
+   "widgets_values": [
+    "pose_play"
+   ]
+  }
+ ],
+ "links": [
+  [
+   1,
+   2,
+   0,
+   3,
+   0,
+   "MODEL"
+  ],
+  [
+   2,
+   2,
+   1,
+   3,
+   1,
+   "CLIP"
+  ],
+  [
+   3,
+   3,
+   1,
+   4,
+   0,
+   "CLIP"
+  ],
+  [
+   4,
+   3,
+   1,
+   5,
+   0,
+   "CLIP"
+  ],
+  [
+   5,
+   4,
+   0,
+   10,
+   0,
+   "CONDITIONING"
+  ],
+  [
+   6,
+   5,
+   0,
+   10,
+   1,
+   "CONDITIONING"
+  ],
+  [
+   7,
+   9,
+   0,
+   10,
+   2,
+   "CONTROL_NET"
+  ],
+  [
+   8,
+   6,
+   0,
+   10,
+   3,
+   "IMAGE"
+  ],
+  [
+   9,
+   6,
+   0,
+   8,
+   0,
+   "IMAGE"
+  ],
+  [
+   10,
+   2,
+   2,
+   10,
+   4,
+   "VAE"
+  ],
+  [
+   11,
+   7,
+   0,
+   11,
+   0,
+   "IMAGE"
+  ],
+  [
+   12,
+   2,
+   2,
+   11,
+   1,
+   "VAE"
+  ],
+  [
+   13,
+   11,
+   0,
+   12,
+   0,
+   "LATENT"
+  ],
+  [
+   14,
+   3,
+   0,
+   13,
+   0,
+   "MODEL"
+  ],
+  [
+   15,
+   10,
+   0,
+   13,
+   1,
+   "CONDITIONING"
+  ],
+  [
+   16,
+   10,
+   1,
+   13,
+   2,
+   "CONDITIONING"
+  ],
+  [
+   17,
+   12,
+   0,
+   13,
+   3,
+   "LATENT"
+  ],
+  [
+   18,
+   13,
+   0,
+   14,
+   0,
+   "LATENT"
+  ],
+  [
+   19,
+   2,
+   2,
+   14,
+   1,
+   "VAE"
+  ],
+  [
+   20,
+   14,
+   0,
+   15,
+   0,
+   "IMAGE"
+  ]
+ ],
+ "groups": [],
+ "config": {},
+ "extra": {},
+ "version": 0.4
+}
