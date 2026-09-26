@@ -14,6 +14,7 @@ Roster: Reimu, Marisa, Sakuya, Youmu, Cirno, Reisen, Yuuka, Aya, Clownpiece (`Ch
 - [ ] Log noise, not player-visible: a fairy or spirit killed by a bullet adds its shockwave Area2D during a physics callback, so Godot logs "Can't change this state while flushing queries". Spawning the shockwave with `call_deferred` would silence it.
 
 ### Art
+- [ ] Clownpiece player sheet: idle frame 5 had her hand high on the torch, so it is now a copy of frame 4 and the loop holds a beat there. Regenerating the sheet (ComfyUI, see the local art setup) could give a real in-between frame and close the gap.
 - [ ] **Mixed art styles on the character screens (not intended; it grew one character at a time).** The select carousel uses the Dairi fan portraits (`assets/ui/dairi/`), while the post-match screen uses ZUN's faces from the player's .dat. One style has to win; ask the user which before building anything.
 
 ### Sparring AI (stopped on purpose: diminishing returns)
