@@ -75,6 +75,7 @@ All Danmaku bullets and enemy pellets utilize sub-regions of the unified $512 \t
 | `red_arrow.tres` | (runtime, `BulletSprites`) | etama Arrowhead, Red | PoFV red arrowhead at 2.0833x | 7.2 px | **No (`false`)** | `true` | 1.0 | Aya Lv 2 |
 | `blue_arrow.tres` | (runtime, `BulletSprites`) | etama Arrowhead, Blue | PoFV blue arrowhead at 2.0833x | 7.2 px | **No (`false`)** | `true` | 1.0 | Lyrica Lv 3 |
 | `lyrica_note_red.tres` | (runtime, `BulletSprites.PLAYER_ANM_BULLETS`) | pl06_ex.png sprite 69, red double note on a white fill between its strokes | 2.0833x, spinning 6.28 rad/s | 13 px | **No (`false`)** | `false` | 1.0 | Lyrica Extra Attack |
+| `lyrica_note_red_ring.tres` | (runtime, `BulletSprites.PLAYER_ANM_BULLETS`) | the same note | 2.0833x, facing its heading | 13 px | **No (`false`)** | `true` | 1.0 | Lyrica Lv 4 boss ring (ECL type 19) |
 | `red_butterfly.tres` / `purple_butterfly.tres` | (runtime, `BulletSprites`) | etama y176 Butterfly row (sprites 120-127, 8 colours): ECL DarkRed = red, ECL Red = purple | PoFV butterfly at 2.0833x | 8.3 px | **No (`false`)** | `true` | 1.0 | Aya Lv 3, Lv 4 Boss Attack 1 |
 *Bullets drawn from their own PNGs (the Sakuya knives, the two Reisen rice bullets) are copied into the bottom band of the atlas by [`tools/bake_bullets_into_atlas.gd`](tools/bake_bullets_into_atlas.gd), so every pooled bullet samples one texture and the web build batches them all; re-run it after editing a source PNG. The four yellow cells and the two orange ones are baked by [`tools/generate_yuuka_bullets.gd`](tools/generate_yuuka_bullets.gd), which recolours our own atlas cells (idempotent). After re-running it, run Godot once with `--import` (or open the editor) or the game keeps drawing the old, empty cells.*
 
@@ -518,6 +519,7 @@ Reisen's Level 4 Boss Attack 3, informally "Purple Bullet Spiral Machinegun". On
 ### `DanmakuSnakingFanStep` (`scripts/resources/danmaku_snaking_fan_step.gd`)
 - **ECL parity (`pl06.ecl` `sub0` / `sub1`, Lyrica Lv 2 / Lv 3, Noise Sign "Soul Noise Flow")**: an emitter above the centre (Lv 2 y 64, Lv 3 y 0, ZUN px) fires 16 downward 7-way fans (11.25 degrees apart) every 8 frames, alternating two bullet types. Speed 187.5 + 12.5 rank px/s (Lv 2) or 187.5 + 6.25 rank (Lv 3). Opens with the flower pre-cast (0.667s).
 - **Snaking**: ZUN chains four `bullet_effects` slots of 30 frames: turn +1.57, -1.57, +0.785, -1.57 rad/s, then straight. Bullets use `CURVE_THEN_LINE` with the first turn and `DanmakuBullet.curve_chain` holding the rest (each chained turn lasts `curve_duration`). The starting direction is ZUN RAND_INT % 2 from the sync RNG. Lv 2 (red pellets / red arrowheads): every fan snakes the same way. Lv 3 (`mirror_alternate`, blue / red arrowheads): the red fans snake the mirrored way, so the colours weave.
+- **Boss (`pl06.ecl` sub4 / sub5, sub6)**: `from_origin` fires from the boss; `aim_at_player` centres the fans on the victim, aim fixed at the first fan. sub4 / sub5 are one attack in mirror (3-way pellet / arrowhead fans, 175 + 12.5 rank px/s); sub6 `ring`s of 16 red arrowheads at 187.5 + 12.5 rank, chain 3.14, 6.28, 0.785, -3.14 rad/s with 250 px/s^2 on the last (`turns` are (turn, accel) pairs; `curve_chain` carries both).
 - **Audio**: `se_tan00` per fan.
 
 ### `DanmakuRandomSprayStep` (`scripts/resources/danmaku_random_spray_step.gd`)
@@ -790,6 +792,10 @@ Reisen's Level 4 Boss Attack 3, informally "Purple Bullet Spiral Machinegun". On
 - **Level 2 / Level 3**: [`lyrica_spell_lv2.tres`](resources/spellcards/lyrica/lyrica_spell_lv2.tres) / [`lyrica_spell_lv3.tres`](resources/spellcards/lyrica/lyrica_spell_lv3.tres), Noise Sign "Soul Noise Flow" (`pl06.ecl` `sub0` / `sub1`)
   - *Composition*: A single `DanmakuSnakingFanStep`, one wave (~2.8s with the pre-cast).
   - *Behavior*: Fans of snaking bullets pour down from the centre and settle into slanted lines; Lv 3 weaves two colours snaking opposite ways.
+- **Level 4 Boss**: [`lyrica_boss.tres`](resources/bosses/lyrica_boss.tres), Noise Sign "Lyrica Solo Live" (`pl06.ecl` sub2: 5 to 9 attacks, each RAND_INT % 4 of sub3-sub6; sub7, a blue and green spray, is unreachable). Boss sheet `BossSheets` "lyrica" (pl06_bs.png: idle 59, bank 59-61, no cast pose).
+  - *Attack 1*: [`lyrica_boss_spell_1.tres`](resources/spellcards/lyrica/lyrica_boss_spell_1.tres) (sub3): a `DanmakuRingStep` of 56 `lyrica_note_red_ring` at a random turn, 262.5 to 450 px/s, then a 1s hold.
+  - *Attack 2*: [`lyrica_boss_spell_2.tres`](resources/spellcards/lyrica/lyrica_boss_spell_2.tres) (sub4 / sub5): snaking 3-way fans aimed at the victim; listed twice in `attack_patterns`, as ZUN rolls it for two of the four subs.
+  - *Attack 3*: [`lyrica_boss_spell_3.tres`](resources/spellcards/lyrica/lyrica_boss_spell_3.tres) (sub6): 16 rings of 16 snaking arrowheads blooming into a spiral flower.
 
 ---
 

@@ -64,6 +64,13 @@ const RECIPES: Dictionary = {
 		# No cast pose: her attack scripts keep the idle loop (script 26).
 		"rows": [[58, 59, 60, 61], [62, 63, 64, 65], [58, 59, 60, 61]],
 	},
+	"lyrica": {
+		"pl": "06", "sheet": "data/pl/pl06/pl06_bs.png", "cell": Vector2i(64, 80),
+		# Idle is one frame bobbing (script 22); the bank eases 59, 60, 61 and holds (23 / 24);
+		# no cast pose.
+		"rows": [[59, 59, 59, 59], [59, 60, 61, 61], [59, 59, 59, 59]],
+		"place": Vector2i(8, 0),
+	},
 }
 
 

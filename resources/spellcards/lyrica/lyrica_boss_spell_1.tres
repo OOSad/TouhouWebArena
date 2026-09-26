@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_ring_step.gd" id="2_ring_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_delay_step.gd" id="4_delay_script"]
+[ext_resource type="Resource" path="res://resources/bullets/lyrica_note_red_ring.tres" id="5_note"]
+
+[sub_resource type="Resource" id="Resource_ring"]
+script = ExtResource("2_ring_script")
+bullet_data = ExtResource("5_note")
+use_wave_angle = true
+count_min = 56
+count_max = 56
+speed_min = 262.5
+speed_max = 450.0
+
+[sub_resource type="Resource" id="Resource_hold"]
+script = ExtResource("4_delay_script")
+delay_seconds = 1.0
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "lyrica_boss_spell_1"
+spellcard_name = "Note Ring"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+jitter_wave_origin = false
+random_wave_angle = true
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_ring"), SubResource("Resource_hold")])

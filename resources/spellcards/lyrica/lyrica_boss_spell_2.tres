@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="SpellcardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/spellcard_data.gd" id="1_spell_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_snaking_fan_step.gd" id="2_fan_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_step.gd" id="3_step_script"]
+[ext_resource type="Script" path="res://scripts/resources/danmaku_delay_step.gd" id="4_delay_script"]
+[ext_resource type="Resource" path="res://resources/bullets/red_pellet.tres" id="5_pellet"]
+[ext_resource type="Resource" path="res://resources/bullets/red_arrow.tres" id="6_arrow"]
+
+[sub_resource type="Resource" id="Resource_fans"]
+script = ExtResource("2_fan_script")
+bullet_data = ExtResource("5_pellet")
+alternate_bullet_data = ExtResource("6_arrow")
+ways = 3
+from_origin = true
+aim_at_player = true
+speed_base = 175.0
+speed_per_rank = 12.5
+
+[sub_resource type="Resource" id="Resource_hold"]
+script = ExtResource("4_delay_script")
+delay_seconds = 1.0
+
+[resource]
+script = ExtResource("1_spell_script")
+spellcard_id = "lyrica_boss_spell_2"
+spellcard_name = "Aimed Soul Noise"
+level = 4
+waves_min = 1
+waves_max = 1
+wave_interval = 0.0
+jitter_wave_origin = false
+steps = Array[ExtResource("3_step_script")]([SubResource("Resource_fans"), SubResource("Resource_hold")])

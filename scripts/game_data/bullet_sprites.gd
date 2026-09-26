@@ -146,6 +146,8 @@ const TH15_VERSION: int = 1
 # forming note and the ring, filled white between its strokes (_on_white_backing).
 const PLAYER_ANM_BULLETS: Dictionary = {
 	"lyrica_note_red": ["pl06.anm", "data/pl/pl06/pl06_ex.png", 69, true],
+	# The same note facing along its path: her Level 4 boss ring (ECL bullet type 19).
+	"lyrica_note_red_ring": ["pl06.anm", "data/pl/pl06/pl06_ex.png", 69, true],
 }
 const PLAYER_ANM_VERSION: int = 4
 

@@ -185,9 +185,9 @@ var lw_spin_lean: float = 0.70
 # Curving parameters
 var curve_angular_speed: float = 0.0
 var curve_duration: float = 0.0
-## Further turn rates (rad/s) run one after another, each for curve_duration, once the
-## first ends: ZUN's chained bullet_effects slots (Lyrica's snaking fans, pl06.ecl).
-var curve_chain: PackedFloat32Array = PackedFloat32Array()
+## Further (turn rate rad/s, acceleration px/s^2) pairs run one after another, each for
+## curve_duration, once the first ends: ZUN's chained bullet_effects slots (Lyrica, pl06.ecl).
+var curve_chain: PackedVector2Array = PackedVector2Array()
 var _curve_chain_index: int = 0
 
 # Ellipse motion parameters
@@ -243,7 +243,7 @@ func on_pool_acquire() -> void:
 	orbit_breakout_initial_speed = 0.0
 	curve_angular_speed = 0.0
 	curve_duration = 0.0
-	curve_chain = PackedFloat32Array()
+	curve_chain = PackedVector2Array()
 	_curve_chain_index = 0
 	ellipse_center = Vector2.ZERO
 	ellipse_radius = Vector2.ZERO
@@ -318,7 +318,7 @@ func on_pool_release() -> void:
 	orbit_breakout_initial_speed = 0.0
 	curve_angular_speed = 0.0
 	curve_duration = 0.0
-	curve_chain = PackedFloat32Array()
+	curve_chain = PackedVector2Array()
 	_curve_chain_index = 0
 	ellipse_center = Vector2.ZERO
 	ellipse_radius = Vector2.ZERO
@@ -567,7 +567,7 @@ func setup_curve_line(
 	setup(p_data, spawn_pos, MotionMode.CURVE_THEN_LINE, p_dir, p_speed, null, p_accel, p_max_speed)
 	curve_angular_speed = p_curve_angular_speed
 	curve_duration = maxf(p_curve_duration, 0.0)
-	curve_chain = PackedFloat32Array()
+	curve_chain = PackedVector2Array()
 	_curve_chain_index = 0
 	if p_spin_speed != 0.0:
 		spin_speed = p_spin_speed
@@ -867,7 +867,8 @@ func _physics_process(delta: float) -> void:
 		MotionMode.CURVE_THEN_LINE:
 			if _phase_timer >= curve_duration and _curve_chain_index < curve_chain.size():
 				_phase_timer -= curve_duration
-				curve_angular_speed = curve_chain[_curve_chain_index]
+				curve_angular_speed = curve_chain[_curve_chain_index].x
+				acceleration = curve_chain[_curve_chain_index].y
 				_curve_chain_index += 1
 			if _phase_timer < curve_duration:
 				_phase_timer += delta
