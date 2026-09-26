@@ -148,6 +148,99 @@ static func build_spell_bg(anm: ThAnm, character: String, kind: String) -> Image
 const LOLK_SPELL_BG: Dictionary = {"base": "cdbg05a00.png", "anim": "cdbg05b00.png"}
 
 
+## Clownpiece's spell banner. LoLK has no PoFV-style banner strip, so one is composed in
+## PoFV's formula from th15.dat: her Level 4 tree pattern tinted in her hat's purple, her
+## head from LoLK's spell cut-in (face05ct) over a flat silhouette of itself, and a frame
+## line. The "SPELL ATTACK" lettering is recovered from the PoFV banners: it sits at the same
+## spot on all of them, so the pixels they all agree on are the letters, and each letter's
+## soft edge is as bright as it is on the darkest banner there. No idiom (the user's call).
+const LOLK_BANNER_PATTERN_CROP := Rect2i(0, 120, 384, 114)
+const LOLK_BANNER_DARK := Color(0.2, 0.08, 0.3)
+const LOLK_BANNER_LIGHT := Color(0.5, 0.32, 0.62)
+const LOLK_BANNER_SILHOUETTE := Color(0.5, 0.1, 0.35)
+const LOLK_BANNER_SILHOUETTE_OFFSET := Vector2i(-18, 0)
+## Her face's centre on face05ct, where it lands on the banner, and the cut-in's scale there
+## (her head the size of Aya's and Reisen's, checked side by side).
+const LOLK_BANNER_FACE_ON_CUTIN := Vector2(140, 205)
+const LOLK_BANNER_FACE_AT := Vector2(96, 54)
+const LOLK_BANNER_CUTIN_SCALE: float = 1.1
+
+static func build_lolk_banner(st05enm: ThAnm, pofv_banners: Array[Image]) -> Image:
+	var pattern := st05enm.sheet_image_by_file(LOLK_SPELL_BG["base"]) if st05enm else null
+	var cutin := st05enm.sheet_image_by_file("face05ct.png") if st05enm else null
+	if pattern == null or cutin == null or pofv_banners.size() < 2:
+		push_warning("CharacterSprites: can't build Clownpiece's banner (th15.dat or PoFV banners missing)")
+		return null
+	var size := Vector2i(BANNER_BODY.size.x + BANNER_END.size.x, BANNER_BODY.size.y)
+	var banner := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+
+	var backdrop := pattern.get_region(LOLK_BANNER_PATTERN_CROP)
+	backdrop.convert(Image.FORMAT_RGBA8)
+	backdrop.resize(size.x, size.y, Image.INTERPOLATE_LANCZOS)
+	for y in size.y:
+		for x in size.x:
+			var c := backdrop.get_pixel(x, y)
+			var luma := c.r * 0.3 + c.g * 0.59 + c.b * 0.11
+			banner.set_pixel(x, y, LOLK_BANNER_DARK.lerp(LOLK_BANNER_LIGHT, clampf((luma - 0.15) / 0.5, 0.0, 1.0)))
+
+	var head: Image = cutin.duplicate() as Image
+	head.convert(Image.FORMAT_RGBA8)
+	head.resize(roundi(head.get_width() * LOLK_BANNER_CUTIN_SCALE), roundi(head.get_height() * LOLK_BANNER_CUTIN_SCALE), Image.INTERPOLATE_LANCZOS)
+	var at := Vector2i(LOLK_BANNER_FACE_AT - LOLK_BANNER_FACE_ON_CUTIN * LOLK_BANNER_CUTIN_SCALE)
+	var silhouette := Image.create(head.get_width(), head.get_height(), false, Image.FORMAT_RGBA8)
+	for y in head.get_height():
+		for x in head.get_width():
+			if head.get_pixel(x, y).a > 0.9:
+				silhouette.set_pixel(x, y, LOLK_BANNER_SILHOUETTE)
+	banner.blend_rect(silhouette, Rect2i(Vector2i.ZERO, silhouette.get_size()), at + LOLK_BANNER_SILHOUETTE_OFFSET)
+	banner.blend_rect(head, Rect2i(Vector2i.ZERO, head.get_size()), at)
+
+	banner.blend_rect(_spell_attack_lettering(pofv_banners, size), Rect2i(Vector2i.ZERO, size), Vector2i.ZERO)
+
+	var edge := LOLK_BANNER_DARK.darkened(0.3)
+	for x in size.x:
+		banner.set_pixel(x, 0, edge)
+		banner.set_pixel(x, size.y - 1, edge)
+	for y in size.y:
+		banner.set_pixel(0, y, edge)
+		banner.set_pixel(size.x - 1, y, edge)
+	return banner
+
+
+## The white "SPELL ATTACK" letters every PoFV banner shares, on a transparent image.
+static func _spell_attack_lettering(banners: Array[Image], size: Vector2i) -> Image:
+	const AGREE: float = 0.06
+	var core := {}
+	for y in size.y:
+		for x in size.x:
+			var first := banners[0].get_pixel(x, y)
+			if first.v <= 0.8:
+				continue
+			var shared := true
+			for i in range(1, banners.size()):
+				var c := banners[i].get_pixel(x, y)
+				if absf(c.r - first.r) > AGREE or absf(c.g - first.g) > AGREE or absf(c.b - first.b) > AGREE:
+					shared = false
+					break
+			if shared:
+				core[Vector2i(x, y)] = true
+	var letters := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+	for y in size.y:
+		for x in size.x:
+			var p := Vector2i(x, y)
+			if core.has(p):
+				letters.set_pixel(x, y, Color.WHITE)
+				continue
+			if not (core.has(p + Vector2i.LEFT) or core.has(p + Vector2i.RIGHT) or core.has(p + Vector2i.UP) or core.has(p + Vector2i.DOWN)):
+				continue
+			var coverage := 1.0
+			for banner in banners:
+				var c := banner.get_pixel(x, y)
+				coverage = minf(coverage, minf(c.r, minf(c.g, c.b)))
+			letters.set_pixel(x, y, Color(1, 1, 1, coverage))
+	return letters
+
+
 static func apply_banner(character: String, banner: Image) -> CharacterData:
 	if banner == null:
 		return null

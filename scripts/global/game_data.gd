@@ -515,6 +515,7 @@ func _prepare_graphics() -> void:
 	var clownpiece_data := CharacterSprites.apply_shot("clownpiece", clownpiece_shot)
 	if clownpiece_data:
 		_filled_resources.append(clownpiece_data)
+	var pofv_banners: Array[Image] = []
 	for character in CharacterSprites.BANNERS:
 		var banner_pl: String = CharacterSprites.PLAYER_SHEETS[character]
 		var banner := cached_image("banner_%s_v%d" % [character, CharacterSprites.VERSION],
@@ -522,6 +523,13 @@ func _prepare_graphics() -> void:
 		var banner_data := CharacterSprites.apply_banner(character, banner)
 		if banner_data:
 			_filled_resources.append(banner_data)
+			banner.convert(Image.FORMAT_RGBA8)
+			pofv_banners.append(banner)
+	var clownpiece_banner := cached_image("banner_clownpiece_lolk_v%d" % CharacterSprites.VERSION,
+		func() -> Image: return CharacterSprites.build_lolk_banner(_anm("th15", "st05enm.anm"), pofv_banners))
+	var clownpiece_banner_data := CharacterSprites.apply_banner("clownpiece", clownpiece_banner)
+	if clownpiece_banner_data:
+		_filled_resources.append(clownpiece_banner_data)
 	for character in CharacterSprites.SPELL_BGS:
 		var bg_pl: String = CharacterSprites.PLAYER_SHEETS[character]
 		for kind in CharacterSprites.SPELL_BGS[character]:
