@@ -15,7 +15,8 @@ Roster: Reimu, Marisa, Sakuya, Youmu, Cirno, Reisen, Yuuka, Aya, Clownpiece, Lyr
 - [x] Phase 4: Extra Attack "Note Burst" (`LyricaExtraNote`), from the user's `lyrica_extra.mp4` (0:06 on): a red double note forms, then bursts into a ring of 20 accelerating notes (see `DANMAKU_CATALOG.md`). Lands at y 220-380. Launch sound `se_exattack` as Aya's; the burst itself is silent (not checked against the clip's audio). Ring count 20 is a count off the footage.
 - [x] Phase 5: scope, a full-height strip centred on her (new `ScopeShape.STRIP`), 32 PoFV px across (67 px, `scope_radius` 33.3 each side), measured from the user's screenshot.
 - [x] Phase 6: Lv4 boss, Noise Sign "Lyrica Solo Live" (sub2), from the user's rank 1 / rank 16 clips: note ring, aimed snaking fans (sub4 and sub5 are the same attack mirrored, so three attacks show in play), and the arrowhead bloom. Boss sheet from pl06_bs.png. Level 4 background not built yet: eff04.png turning like Reimu's top layer (script 29) under eff04b.png, sheet music, 1.5x, static, fading in after 60 frames (script 30); needs its own overlay mode.
-- [ ] Next, in Aya's order: victory lines, banner and Lv4 background, home stage and theme. Attacks in `ecl/pl06.ecl.txt`.
+- [x] Phase 7: victory lines, pl06_match.msg against the roster, the mirror, Merlin / Lunasa (both "See? I'm the greatest") and both generics (210 / 211), plus each character's line for beating her (entry 60 in every match script; Merlin's and Lunasa's are in too, ready for when they join), translated here.
+- [ ] Next, in Aya's order: banner and Lv4 background, home stage and theme. Attacks in `ecl/pl06.ecl.txt`.
 
 ### Codebase health
 - [ ] Watch `scenes/bullets/danmaku_bullet.gd`: per-spellcard fields (freeze, pellet trail, wall bounce, repel, lunar wave) keep landing on the one bullet every attack shares. The next card that needs new bullet behaviour should bring its own motion mode or node rather than more fields.

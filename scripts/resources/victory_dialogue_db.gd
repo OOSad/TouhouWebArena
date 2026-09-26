@@ -532,6 +532,146 @@ const QUOTES: Array[Dictionary] = [
 		"winner_expression": 0,
 		"text": "Well? Wouldn't you like to subscribe to the Bunbunmaru Newspaper too?"
 	},
+	# Beating Lyrica (entry 60 in each winner's pl*_match.msg)
+	{
+		"winner_id": "reimu",
+		"loser_id": "lyrica",
+		"winner_expression": 4,
+		"text": "You're so noisy. Spirits are supposed to appear a lot more faintly than that."
+	},
+	{
+		"winner_id": "marisa",
+		"loser_id": "lyrica",
+		"winner_expression": 4,
+		"text": "Somehow you sound even noisier on your own than when there's three of you."
+	},
+	{
+		"winner_id": "sakuya",
+		"loser_id": "lyrica",
+		"winner_expression": 1,
+		"text": "Oh, all by yourself today? Did you get lost?"
+	},
+	{
+		"winner_id": "youmu",
+		"loser_id": "lyrica",
+		"winner_expression": 1,
+		"text": "Oh, and please play for us at the next banquet too, all right? My mistress gets cross when you three don't come."
+	},
+	{
+		"winner_id": "reisen",
+		"loser_id": "lyrica",
+		"winner_expression": 0,
+		"text": "Does your wavelength shift to match your sound? Or does the sound come out to match your wavelength?"
+	},
+	{
+		"winner_id": "cirno",
+		"loser_id": "lyrica",
+		"winner_expression": 0,
+		"text": "Enough of that racket first thing in the morning!"
+	},
+	{
+		"winner_id": "yuuka",
+		"loser_id": "lyrica",
+		"winner_expression": 1,
+		"text": "How about a Flower Rock? No, I was just picturing a flower that would suit you."
+	},
+	{
+		"winner_id": "aya",
+		"loser_id": "lyrica",
+		"winner_expression": 1,
+		"text": "Just because nothing's happening doesn't mean I can fill the paper with nothing but reviews of Prismriver concerts."
+	},
+	{
+		"winner_id": "merlin",
+		"loser_id": "lyrica",
+		"winner_expression": 5,
+		"text": "Well? Lyrica's sound of illusion was never going to beat my manic sound, was it?"
+	},
+	{
+		"winner_id": "lunasa",
+		"loser_id": "lyrica",
+		"winner_expression": 7,
+		"text": "Your sound is dead. Go looking for sounds that don't exist in reality."
+	},
+	# Lyrica Matchups (pl06_match.msg)
+	{
+		"winner_id": "lyrica",
+		"loser_id": "reimu",
+		"winner_expression": 0,
+		"text": "There aren't many dead sounds at a shrine, you know."
+	},
+	{
+		"winner_id": "lyrica",
+		"loser_id": "marisa",
+		"winner_expression": 0,
+		"text": "Did you know? If you listen closely in the Forest of Magic, you can hear the mushrooms growing."
+	},
+	{
+		"winner_id": "lyrica",
+		"loser_id": "sakuya",
+		"winner_expression": 1,
+		"text": "Crimson is this world's deep bass. Past crimson lies the sound of illusion. That's my cue."
+	},
+	{
+		"winner_id": "lyrica",
+		"loser_id": "youmu",
+		"winner_expression": 1,
+		"text": "I wonder what sound a ghost actually makes?"
+	},
+	{
+		"winner_id": "lyrica",
+		"loser_id": "reisen",
+		"winner_expression": 1,
+		"text": "If you can play with waves, you're basically a synthesizer."
+	},
+	{
+		"winner_id": "lyrica",
+		"loser_id": "cirno",
+		"winner_expression": 2,
+		"text": "When things freeze, their sounds freeze too. The sound ice makes when it breaks is the sound of that sound melting."
+	},
+	{
+		"winner_id": "lyrica",
+		"loser_id": "lyrica",
+		"winner_expression": 6,
+		"text": "Oh, your keyboard's nicer than mine..."
+	},
+	{
+		"winner_id": "lyrica",
+		"loser_id": "yuuka",
+		"winner_expression": 1,
+		"text": "I had a dream about flowers that danced to sound."
+	},
+	{
+		"winner_id": "lyrica",
+		"loser_id": "aya",
+		"winner_expression": 6,
+		"text": "Newspapers don't make any sound... If they did, wouldn't everyone subscribe?"
+	},
+	{
+		"winner_id": "lyrica",
+		"loser_id": "merlin",
+		"winner_expression": 1,
+		"text": "See? I'm the greatest, aren't I?"
+	},
+	{
+		"winner_id": "lyrica",
+		"loser_id": "lunasa",
+		"winner_expression": 1,
+		"text": "See? I'm the greatest, aren't I?"
+	},
+	{
+		"winner_id": "lyrica",
+		"loser_id": "*",
+		"winner_expression": 2,
+		"text": "The spirit of this keyboard is packed full of sounds that have already died."
+	},
+	{
+		"winner_id": "lyrica",
+		"loser_id": "*",
+		"winner_expression": 6,
+		"text": "Isn't there a human anywhere who'll make a proper sound of defeat for me..."
+	},
 	# Clownpiece: not in PoFV, so no match script; her one line is the user's.
 	{
 		"winner_id": "clownpiece",
