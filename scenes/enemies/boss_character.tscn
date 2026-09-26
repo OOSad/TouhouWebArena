@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scenes/enemies/boss_character.gd" id="1_boss_script"]
 [ext_resource type="Script" path="res://scenes/effects/boss_magic_circle.gd" id="2_magic_circle"]
+[ext_resource type="Script" path="res://scenes/effects/boss_life_ring.gd" id="3_life_ring"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_boss"]
 radius = 32.0
@@ -20,6 +21,9 @@ texture_filter = 1
 scale = Vector2(2.33, 2.33)
 hframes = 4
 vframes = 3
+
+[node name="LifeRing" type="Node2D" parent="."]
+script = ExtResource("3_life_ring")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 unique_name_in_owner = true

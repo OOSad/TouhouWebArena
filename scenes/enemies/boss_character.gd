@@ -78,6 +78,7 @@ var _frames_per_row: int = 4
 @onready var sprite: Sprite2D = get_node_or_null("Sprite2D")
 @onready var collision_shape: CollisionShape2D = get_node_or_null("CollisionShape2D")
 @onready var magic_circle: BossMagicCircle = get_node_or_null("MagicCircle")
+@onready var life_ring: BossLifeRing = get_node_or_null("LifeRing")
 
 func _ready() -> void:
 	# Start non-monitorable while offscreen
@@ -161,6 +162,8 @@ func _on_entrance_completed() -> void:
 	is_vulnerable = true
 	monitorable = true
 	_set_anim_state(0, false)
+	if life_ring:
+		life_ring.appear()
 	var target_pos: Vector2 = boss_data.entrance_target_pos if boss_data else Vector2(300.0, 150.0)
 	position = target_pos
 	_base_position = target_pos
@@ -466,6 +469,8 @@ func take_damage(amount: float, source: String = "bullet") -> bool:
 	AudioService.play_damage_hit(is_low)
 	hit.emit(amount, current_health)
 	health_changed.emit(current_health, max_health)
+	if life_ring and max_health > 0.0:
+		life_ring.health_fraction = current_health / max_health
 	
 	if current_health <= 0.0:
 		die(source)
@@ -495,7 +500,7 @@ func die(source: String = "bullet") -> void:
 	if _move_tween and _move_tween.is_valid():
 		_move_tween.kill()
 	
-	_vanish_magic_circle()
+	_vanish_boss_effects()
 	defeated.emit(position, source)
 	
 	# Defeat fade and burst
@@ -507,9 +512,11 @@ func die(source: String = "bullet") -> void:
 	tw.parallel().tween_property(self, "scale", Vector2(1.3, 1.3), 0.25)
 	tw.tween_callback(queue_free)
 
-func _vanish_magic_circle() -> void:
+func _vanish_boss_effects() -> void:
 	if magic_circle:
 		magic_circle.vanish()
+	if life_ring:
+		life_ring.vanish()
 
 func _spawn_red_shockwave() -> void:
 	if playfield and playfield.has_method("spawn_defeat_shockwave"):
@@ -538,7 +545,7 @@ func leave_screen() -> void:
 	# Explode into a red shockwave upon timeout (no flying offscreen)
 	_spawn_red_shockwave()
 	AudioService.play_boss_defeat()
-	_vanish_magic_circle()
+	_vanish_boss_effects()
 	left_screen.emit()
 	
 	var tw := create_tween()
@@ -564,7 +571,7 @@ func dispel() -> void:
 		_move_tween.kill()
 	
 	AudioService.play_boss_defeat()
-	_vanish_magic_circle()
+	_vanish_boss_effects()
 	dispelled.emit()
 	
 	var tw := create_tween()

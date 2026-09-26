@@ -91,6 +91,10 @@ const RECIPES: Dictionary = {
 	"stage_sea_sky_glow": ["th15", "st05wl.anm", 2, 0],
 	# The magic circle under a Level 4 boss (LoLK effect.anm sprite 32, eff_magicsquare.png).
 	"boss_magic_circle": ["th15", "effect.anm", 32, 0],
+	# The life ring round a Level 4 boss (LoLK front.anm, lifebar.png): the band (sprite 142)
+	# and the thin line on each side of it (sprite 143).
+	"boss_life_ring": ["th15", "front.anm", 142, 0],
+	"boss_life_ring_edge": ["th15", "front.anm", 143, 0],
 	# HUD: the spinning sakura that marks a round won (front.anm scripts 47-51).
 	"round_win_sakura": ["th09", "front.anm", 39, 0],
 	# Stage textures, from the worldNN.anm stage sheets. A file name in place of a sprite id
