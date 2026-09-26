@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/attacks/lyrica_charge_attack.tscn" id="5_charge_attack"]
 [ext_resource type="Resource" path="res://resources/spellcards/lyrica/lyrica_spell_lv2.tres" id="6_spell_lv2"]
 [ext_resource type="Resource" path="res://resources/spellcards/lyrica/lyrica_spell_lv3.tres" id="7_spell_lv3"]
+[ext_resource type="PackedScene" path="res://scenes/attacks/lyrica_extra_note.tscn" id="8_extra_attack"]
 
 [resource]
 script = ExtResource("1_script")
@@ -37,6 +38,12 @@ active_charge_speed = 1.68
 charge_attack_name = "Keyboard Solo"
 charge_attack_scene = ExtResource("5_charge_attack")
 charge_attack_desc = "She plays a keyboard while a single column of notes streams straight up from wherever she flies."
+extra_attack_scene = ExtResource("8_extra_attack")
+extra_attack_y_range = Vector2(220, 380)
+extra_attack_x_range = Vector2(120, 480)
+extra_attack_name = "Note Burst"
+extra_attack_desc = "A red note forms on the opponent's field and bursts into a ring of notes that race outward."
+extra_attack_launch_sfx = "se_exattack"
 special_trait = "The youngest Prismriver: her shot also covers her back."
 signature_spell_name = "Noise Sign \"Soul Noise Flow\""
 spellcard_lv2 = ExtResource("6_spell_lv2")

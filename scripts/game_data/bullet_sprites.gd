@@ -139,6 +139,16 @@ const TH15_GLOW_SHEET: String = "bullet/bullet1.png"
 const TH15_KEYS: Array[String] = ["th15_flame_0", "th15_flame_1", "th15_flame_2", "th15_flame_3", "th15_star", "th15_star_red", "th15_glow_purple"]
 const TH15_VERSION: int = 1
 
+# Bullets drawn with a character's own art, cut from their plNN.anm in th09.dat and packed
+# with the rest: resource -> [anm file, sheet, sprite id]. Lyrica's Extra Attack is her red
+# double note (pl06_ex.png sprite 69). pl06.anm script 28 names the single note, sprite 65,
+# but the footage shows the double one, beam and two heads, for both the forming note and
+# the ring.
+const PLAYER_ANM_BULLETS: Dictionary = {
+	"lyrica_note_red": ["pl06.anm", "data/pl/pl06/pl06_ex.png", 69],
+}
+const PLAYER_ANM_VERSION: int = 2
+
 # Effect textures filled from etama.anm. PoFV's sparkle burst (etama y209, 30x30, the same
 # eight colours as the big balls). Blue marks where Cirno's icicles appear; red is the
 # spawn flash (Reisen's rings and machinegun) and Sakuya's knife explosion.
@@ -167,12 +177,12 @@ static var _leftovers: Array[AtlasTexture] = []
 ## Points every bullet type at its sprite. Returns the bullet resources it
 ## filled in; the caller keeps them referenced so Godot's resource cache holds on to them
 ## instead of reloading texture-less copies from disk.
-static func apply(etama: ThAnm, th15_images: Dictionary) -> Array[DanmakuBulletData]:
+static func apply(etama: ThAnm, extra_images: Dictionary) -> Array[DanmakuBulletData]:
 	var ids: Array[int] = []
 	for id in SPRITES.values() + FROZEN_SPRITES.values() + ENEMY_PELLET_SPRITES.values():
 		if id not in ids:
 			ids.append(id)
-	var textures := _pack(etama, ids, th15_images)
+	var textures := _pack(etama, ids, extra_images)
 
 	var changed: Array[DanmakuBulletData] = []
 	for bullet in SPRITES:
@@ -198,6 +208,11 @@ static func apply(etama: ThAnm, th15_images: Dictionary) -> Array[DanmakuBulletD
 	var glow := load(BULLETS % "clownpiece_glow_ball_purple") as DanmakuBulletData
 	glow.texture = textures.get("th15_glow_purple")
 	changed.append_array([flame, star, red_star, glow])
+	for bullet in PLAYER_ANM_BULLETS:
+		var own := load(BULLETS % bullet) as DanmakuBulletData
+		if own and textures.has(bullet):
+			own.texture = textures[bullet]
+			changed.append(own)
 
 	var pellet: Dictionary = {}
 	for property in ENEMY_PELLET_SPRITES:
@@ -224,6 +239,13 @@ static func cut_th15_shot(th15_bullets: ThAnm) -> Image:
 	var shot := sheet.get_region(TH15_SHOT_STAR)
 	CharacterSprites.fade_shot(shot, 128.0 / 255.0)
 	return shot
+
+
+## One of PLAYER_ANM_BULLETS, cut from its character's anm.
+static func cut_player_anm(anm: ThAnm, bullet: String) -> Image:
+	var recipe: Array = PLAYER_ANM_BULLETS[bullet]
+	var sheet := anm.sheet_image(recipe[1]) if anm else null
+	return sheet.get_region(anm.sprite_rect(recipe[2])) if sheet else null
 
 
 ## One of Clownpiece's cells cut from LoLK's bullet sheets, by its TH15_KEYS key.

@@ -465,12 +465,16 @@ func _prepare_graphics() -> void:
 		return
 	for i in etama.entry_count():
 		etama.entry_image(i)
-	var th15_images: Dictionary = {}
+	var extra_images: Dictionary = {}
 	for key in BulletSprites.TH15_KEYS:
-		th15_images[key] = cached_image("%s_v%d" % [key, BulletSprites.TH15_VERSION],
+		extra_images[key] = cached_image("%s_v%d" % [key, BulletSprites.TH15_VERSION],
 			func() -> Image: return BulletSprites.cut_th15(_anm("th15", "bullet.anm"), key))
+	for bullet in BulletSprites.PLAYER_ANM_BULLETS:
+		var anm_file: String = BulletSprites.PLAYER_ANM_BULLETS[bullet][0]
+		extra_images[bullet] = cached_image("%s_v%d" % [bullet, BulletSprites.PLAYER_ANM_VERSION],
+			func() -> Image: return BulletSprites.cut_player_anm(_anm("th09", anm_file), bullet))
 	_filled_resources.clear()
-	_filled_resources.append_array(BulletSprites.apply(etama, th15_images))
+	_filled_resources.append_array(BulletSprites.apply(etama, extra_images))
 
 	var boss_sheet := cached_image("clownpiece_boss_v%d" % ClownpieceBossSheet.VERSION,
 		func() -> Image: return ClownpieceBossSheet.build(_anm("th15", "st05enm.anm")))
