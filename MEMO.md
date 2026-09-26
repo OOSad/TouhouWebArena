@@ -9,7 +9,6 @@ Roster: Reimu, Marisa, Sakuya, Youmu, Cirno, Reisen, Yuuka, Aya, Clownpiece (`Ch
 ## Open
 
 ### Codebase health
-- [ ] Split `scenes/main_menu/main_menu.gd` (1,070 lines) by panel: intro, settings, online queue, replays, spectating.
 - [ ] Watch `scenes/bullets/danmaku_bullet.gd`: per-spellcard fields (freeze, pellet trail, wall bounce, repel, lunar wave) keep landing on the one bullet every attack shares. The next card that needs new bullet behaviour should bring its own motion mode or node rather than more fields.
 - [ ] Optional: 15 of the 23 test suites use bare `assert()`, so their output can't tell "12 passed" from "stopped at the first". The runner already catches failures; converting them to the `assert_true` + counter style is about an hour.
 - [ ] Log noise, not player-visible: a fairy or spirit killed by a bullet adds its shockwave Area2D during a physics callback, so Godot logs "Can't change this state while flushing queries". Spawning the shockwave with `call_deferred` would silence it.
