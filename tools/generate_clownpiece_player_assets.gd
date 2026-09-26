@@ -1,5 +1,8 @@
 extends SceneTree
 
+## Superseded: the committed `clownpiece_player.png` is a ComfyUI-made sheet (see MEMO.md, Clownpiece).
+## Running this replaces it with the older S-bend sheet described below, kept as a fallback.
+##
 ## Builds Clownpiece's player sheet from the AutoSprite render at `clownpiece_raw_sheet.png`.
 ##
 ## The raw sheet is a 4x4 grid of 128x128 cells on a flat dithered grey. Only its upright cell is

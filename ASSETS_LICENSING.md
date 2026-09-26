@@ -13,7 +13,8 @@ The character select portraits are Dairi's, whose terms allow use in fan project
 
 ### Third-Party Art:
 - `assets/ui/dairi/*.png` (all ten, including `random.png`): character select portraits by **Dairi** (dairi / dairi104). Free to use in fan projects, **non-commercial only**. Credit isn't required but is given on the main menu footer.
-- `assets/characters/clownpiece/clownpiece_raw_sheet.png`: fan-made Clownpiece sprite sheet generated with AutoSprite and supplied by the project owner; not ripped from any Team Shanghai Alice game. `clownpiece_player.png` (8x3 grid of 48x48 player cells) is keyed and cut from it by `tools/generate_clownpiece_player_assets.gd`. Check AutoSprite's usage terms before release.
+- `assets/characters/clownpiece/clownpiece_raw_sheet.png`: fan-made Clownpiece sprite sheet generated with AutoSprite and supplied by the project owner; not ripped from any Team Shanghai Alice game. Check AutoSprite's usage terms before release.
+- `assets/characters/clownpiece/clownpiece_player.png` (8x3 grid of 48x48 player cells): generated locally in ComfyUI from the AutoSprite sheet above, posed by the project owner. Models: NoobAI-XL v1.1 (Fair AI Public License 1.0-SD), the pixel-art-xl LoRA (CreativeML OpenRAIL-M) and Laxhar's `noob_openpose` ControlNet, whose Hugging Face page states no license (the rest of the NoobAI release is FAIPL); confirm its terms before release. Disclosed as generative AI on the itch.io page.
 
 ### Our Own Art:
 - `assets/ui/` (apart from `dairi/`): playfield frame, bezel, pillars, divider, title and stage backgrounds, shimenawa ring and life orbs, generated for this project.
