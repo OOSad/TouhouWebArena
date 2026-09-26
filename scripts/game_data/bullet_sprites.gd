@@ -140,14 +140,14 @@ const TH15_KEYS: Array[String] = ["th15_flame_0", "th15_flame_1", "th15_flame_2"
 const TH15_VERSION: int = 1
 
 # Bullets drawn with a character's own art, cut from their plNN.anm in th09.dat and packed
-# with the rest: resource -> [anm file, sheet, sprite id]. Lyrica's Extra Attack is her red
-# double note (pl06_ex.png sprite 69). pl06.anm script 28 names the single note, sprite 65,
-# but the footage shows the double one, beam and two heads, for both the forming note and
-# the ring.
+# with the rest: resource -> [anm file, sheet, sprite id, white backing]. Lyrica's Extra
+# Attack is her red double note (pl06_ex.png sprite 69). pl06.anm script 28 names the single
+# note, sprite 65, but the footage shows the double one, beam and two heads, for both the
+# forming note and the ring, filled white between its strokes (_on_white_backing).
 const PLAYER_ANM_BULLETS: Dictionary = {
-	"lyrica_note_red": ["pl06.anm", "data/pl/pl06/pl06_ex.png", 69],
+	"lyrica_note_red": ["pl06.anm", "data/pl/pl06/pl06_ex.png", 69, true],
 }
-const PLAYER_ANM_VERSION: int = 2
+const PLAYER_ANM_VERSION: int = 4
 
 # Effect textures filled from etama.anm. PoFV's sparkle burst (etama y209, 30x30, the same
 # eight colours as the big balls). Blue marks where Cirno's icicles appear; red is the
@@ -245,7 +245,67 @@ static func cut_th15_shot(th15_bullets: ThAnm) -> Image:
 static func cut_player_anm(anm: ThAnm, bullet: String) -> Image:
 	var recipe: Array = PLAYER_ANM_BULLETS[bullet]
 	var sheet := anm.sheet_image(recipe[1]) if anm else null
-	return sheet.get_region(anm.sprite_rect(recipe[2])) if sheet else null
+	if sheet == null:
+		return null
+	var sprite := sheet.get_region(anm.sprite_rect(recipe[2]))
+	if recipe.size() > 3 and recipe[3]:
+		sprite = _on_white_backing(sprite)
+	return sprite
+
+
+## Pixels: gaps narrower than twice this between a sprite's strokes are filled white.
+const WHITE_BACKING_RADIUS: int = 6
+
+## The sprite over a white fill of the gaps between its strokes: its solid pixels closed
+## (grown by WHITE_BACKING_RADIUS, then shrunk back), so the fill stays inside its outline.
+static func _on_white_backing(sprite: Image) -> Image:
+	sprite.convert(Image.FORMAT_RGBA8)
+	var w := sprite.get_width()
+	var h := sprite.get_height()
+	var solid: Array[bool] = []
+	for y in h:
+		for x in w:
+			solid.append(sprite.get_pixel(x, y).a > 0.5)
+	var closed := _erode(_dilate(solid, w, h), w, h)
+	var out := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	for y in h:
+		for x in w:
+			if closed[y * w + x]:
+				out.set_pixel(x, y, Color.WHITE)
+	out.blend_rect(sprite, Rect2i(0, 0, w, h), Vector2i.ZERO)
+	return out
+
+
+static func _dilate(mask: Array[bool], w: int, h: int) -> Array[bool]:
+	return _morph(mask, w, h, true)
+
+
+static func _erode(mask: Array[bool], w: int, h: int) -> Array[bool]:
+	return _morph(mask, w, h, false)
+
+
+## Grows (dilate) or shrinks (erode) a mask by a disc of WHITE_BACKING_RADIUS. Outside the
+## image counts as empty, so eroding eats in from the edges as dilating spread out.
+static func _morph(mask: Array[bool], w: int, h: int, dilate: bool) -> Array[bool]:
+	var r := WHITE_BACKING_RADIUS
+	var out: Array[bool] = []
+	out.resize(w * h)
+	for y in h:
+		for x in w:
+			var hit := not dilate
+			for dy in range(-r, r + 1):
+				for dx in range(-r, r + 1):
+					if dx * dx + dy * dy > r * r:
+						continue
+					var nx := x + dx
+					var ny := y + dy
+					var v := nx >= 0 and ny >= 0 and nx < w and ny < h and mask[ny * w + nx]
+					if dilate and v:
+						hit = true
+					elif not dilate and not v:
+						hit = false
+			out[y * w + x] = hit
+	return out
 
 
 ## One of Clownpiece's cells cut from LoLK's bullet sheets, by its TH15_KEYS key.
