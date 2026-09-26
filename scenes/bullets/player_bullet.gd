@@ -1,7 +1,7 @@
 class_name PlayerBullet
 extends Area2D
 
-# Projectile fired by players (Reimu amulet / Marisa laser needle)
+# Projectile fired by players; its look, hitbox, spin and hit effect come from CharacterData
 @export var speed: float = 1400.0
 @export var damage: float = 1.0
 @export var direction: Vector2 = Vector2.UP
@@ -50,10 +50,9 @@ func _apply_visuals() -> void:
 		sprite.texture_filter = character_data.bullet_texture_filter
 	
 	if collision_shape:
-		# Round shots (Yuuka's blossom, Clownpiece's star) get a round hitbox.
-		if character_id == "yuuka" or character_id == "clownpiece":
+		if character_data and character_data.bullet_round_radius > 0.0:
 			var circle := CircleShape2D.new()
-			circle.radius = 9.0
+			circle.radius = character_data.bullet_round_radius
 			collision_shape.shape = circle
 		else:
 			var capsule := CapsuleShape2D.new()
@@ -63,34 +62,17 @@ func _apply_visuals() -> void:
 
 func _physics_process(delta: float) -> void:
 	position += direction * speed * delta
-	if character_id == "yuuka" and sprite:
-		sprite.rotation += 24.0 * delta
-	elif character_id == "clownpiece" and sprite:
-		sprite.rotation += CLOWNPIECE_SPIN * delta
+	if sprite and character_data and character_data.bullet_spin != 0.0:
+		sprite.rotation += character_data.bullet_spin * delta
 	
 	# Despawn once exiting boundaries of the playfield (y = 0 is top border)
 	if position.y < -50.0 or position.y > 1050.0 or position.x < -50.0 or position.x > 700.0:
 		queue_free()
 
-## Clownpiece's star shot spins, slower than Yuuka's blossom (by eye).
-const CLOWNPIECE_SPIN: float = 12.0
-
 const SHOT_HIT_SHARD_SCENE: PackedScene = preload("res://scenes/effects/shot_hit_shard.tscn")
 const ShotHitShard = preload("res://scenes/effects/shot_hit_shard.gd")
 const SHOT_CRUMBLE_EFFECT_SCENE: PackedScene = preload("res://scenes/effects/shot_crumble_effect.tscn")
 const ShotCrumbleEffect = preload("res://scenes/effects/shot_crumble_effect.gd")
-
-const REIMU_SHARD_TEX: Texture2D = preload("res://resources/dat_textures/reimu_shot_penetrate.tres")
-const MARISA_SHARD_TEXS: Array[Texture2D] = [
-	preload("res://resources/dat_textures/marisa_shot_shard_1.tres"),
-	preload("res://resources/dat_textures/marisa_shot_shard_2.tres"),
-	preload("res://resources/dat_textures/marisa_shot_shard_3.tres"),
-]
-const CIRNO_CRUMBLE_TEXS: Array[Texture2D] = [
-	preload("res://resources/dat_textures/cirno_shot_crumble_1.tres"),
-	preload("res://resources/dat_textures/cirno_shot_crumble_2.tres"),
-	preload("res://resources/dat_textures/cirno_shot_crumble_3.tres"),
-]
 
 func _on_area_entered(area: Area2D) -> void:
 	if _has_hit:
@@ -99,10 +81,12 @@ func _on_area_entered(area: Area2D) -> void:
 		var accepted: bool = area.take_damage(damage, "bullet")
 		if accepted:
 			_has_hit = true
-			if character_id == "cirno":
-				_spawn_crumble_effect()
-			elif character_id == "reimu" or character_id == "marisa":
-				_spawn_hit_shard(area)
+			if character_data and not character_data.shot_hit_textures.is_empty():
+				match character_data.shot_hit_effect:
+					CharacterData.ShotHitEffect.CRUMBLE:
+						_spawn_crumble_effect()
+					CharacterData.ShotHitEffect.SHARD:
+						_spawn_hit_shard(area)
 			set_deferred("monitoring", false)
 			set_deferred("monitorable", false)
 			queue_free()
@@ -128,7 +112,7 @@ func _spawn_crumble_effect() -> void:
 
 	if target_parent:
 		target_parent.add_child(crumble)
-		crumble.setup(spawn_pos, CIRNO_CRUMBLE_TEXS, bullet_scale_val, target_rot)
+		crumble.setup(spawn_pos, character_data.shot_hit_textures, bullet_scale_val, target_rot)
 
 func _spawn_hit_shard(target_area: Area2D) -> void:
 	if SHOT_HIT_SHARD_SCENE == null:
@@ -157,11 +141,7 @@ func _spawn_hit_shard(target_area: Area2D) -> void:
 	
 	var shard: ShotHitShard = SHOT_HIT_SHARD_SCENE.instantiate()
 	
-	var shard_tex: Texture2D = null
-	if character_id == "marisa":
-		shard_tex = MARISA_SHARD_TEXS.pick_random()
-	elif character_id == "reimu":
-		shard_tex = REIMU_SHARD_TEX
+	var shard_tex: Texture2D = character_data.shot_hit_textures.pick_random()
 	
 	# Prefer adding to %Effects layer of the playfield for proper render sorting
 	var target_parent: Node = null

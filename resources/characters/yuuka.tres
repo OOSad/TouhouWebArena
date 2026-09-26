@@ -6,7 +6,6 @@
 [ext_resource type="PackedScene" path="res://scenes/attacks/yuuka_extra_flower.tscn" id="6_extra_attack"]
 [ext_resource type="Resource" path="res://resources/spellcards/yuuka/yuuka_spell_lv2.tres" id="7_spell_lv2"]
 [ext_resource type="Resource" path="res://resources/spellcards/yuuka/yuuka_spell_lv3.tres" id="8_spell_lv3"]
-[ext_resource type="PackedScene" path="res://scenes/stages/garden_of_the_sun/garden_of_the_sun_3d.tscn" id="9_garden_stage"]
 
 [resource]
 script = ExtResource("1_script")
@@ -62,8 +61,10 @@ shockwave_color = Color(0.35, 0.88, 0.45, 1)
 version_tag = "TH09"
 archetype = "Heavy Juggernaut / Botanical Dominance"
 
-home_stage_scene = ExtResource("9_garden_stage")
 home_stage_id = "garden_of_the_sun"
 stage_bgm_path = "res://assets/music/13_gensokyo_past_and_present.ogg"
 extra_attack_launch_sfx = "se_exattack"
 spell_bg_anim_type = "scroll_rotate"
+bullet_round_radius = 9.0
+bullet_spin = 24.0
+shot_pattern = 1

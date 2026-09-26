@@ -5,6 +5,9 @@ extends Resource
 ## Encapsulates all identity, movement, danmaku shot parameters, scope styles,
 ## and extra attacks into an extensible data resource (equivalent to Unity ScriptableObject).
 
+enum ShotPattern { TWIN, THREE_WAY_FAN }
+enum ShotHitEffect { NONE, SHARD, CRUMBLE }
+
 enum ScopeShape {
 	CIRCLE,
 	COLUMN,
@@ -40,6 +43,16 @@ enum ScopeShape {
 @export var bullet_texture_filter: CanvasItem.TextureFilter = CanvasItem.TEXTURE_FILTER_NEAREST
 @export var bullet_capsule_height: float = 60.0
 @export var shot_cooldown: float = 0.075
+## Above 0, the shot hitbox is a circle of this radius (round shots) instead of a capsule.
+@export var bullet_round_radius: float = 0.0
+## How fast the shot sprite spins in flight, radians per second (Yuuka's blossom, Clownpiece's star).
+@export var bullet_spin: float = 0.0
+## TWIN: two parallel streams. THREE_WAY_FAN: Yuuka's fan of three (pl09.sht).
+@export var shot_pattern: ShotPattern = ShotPattern.TWIN
+## What a shot leaves behind when it hits: SHARD flies on through the enemy (Reimu, Marisa),
+## CRUMBLE breaks apart where it struck (Cirno). One of shot_hit_textures is picked per hit.
+@export var shot_hit_effect: ShotHitEffect = ShotHitEffect.NONE
+@export var shot_hit_textures: Array[Texture2D] = []
 
 @export_group("Scope & Abilities")
 @export var scope_shape: ScopeShape = ScopeShape.CIRCLE
@@ -56,6 +69,11 @@ enum ScopeShape {
 ## Played as each Extra Attack light mote sets off towards the opponent, for characters
 ## whose attack announces itself on launch rather than when it lands (Yuuka).
 @export var extra_attack_launch_sfx: String = ""
+## Fewest seconds between two of this character's Extra Attacks.
+@export var extra_attack_min_interval: float = 1.2
+## Every chained fairy train sends an Extra Attack, instead of 3, then 2, then 1 as the match
+## goes on (Cirno).
+@export var extra_attack_every_train: bool = false
 
 @export_group("Spell Bar & Charge")
 ## Number of segments on the spell bar. Default is 4 (PoFV standard: Lv1 Charge, Lv2, Lv3, Lv4 Spellcards).
@@ -149,18 +167,12 @@ enum ScopeShape {
 @export var face_sheet: Texture2D = null
 
 @export_group("Home Stage & Music")
-## 3D Stage scene associated with this character (e.g. BambooRoad3D, HakugyokurouStairs3D)
-@export var home_stage_scene: PackedScene = null
-## Unique identifier key for this character's home territory (e.g. "bamboo_road", "hakugyokurou_stairs")
+## This character's home stage: the folder name under res://scenes/stages/ (e.g. "bamboo_road").
+## Empty plays the Bamboo Road.
 @export var home_stage_id: String = ""
 ## Music to play on this character's stage, e.g. "res://assets/music/10_ancient_temple.ogg". The file
 ## name is a DatMusic track id: the music itself comes from the player's thbgm.dat.
 @export var stage_bgm_path: String = ""
-
-@export_group("Future Extensions & Gimmicks")
-## Allows characters to bypass or customize standard gauge mechanics (e.g. unique resource pools)
-@export var has_custom_gauge: bool = false
-@export var custom_hud_scene: PackedScene = null
 
 ## Returns a formatted human-readable scope shape and dimension description
 func get_scope_description() -> String:
@@ -211,32 +223,21 @@ func get_shockwave_color() -> Color:
 		return shockwave_color
 	return primary_color
 
-## Returns the 3D stage scene for this character: their own scene if set, otherwise the one
-## their home stage id names, so the id and the scene can never disagree.
+## This character's 3D home stage.
 func get_home_stage_scene() -> PackedScene:
-	if home_stage_scene != null:
-		return home_stage_scene
 	return get_stage_scene_by_id(get_home_stage_id())
 
 ## Returns the unique home stage identifier string
 func get_home_stage_id() -> String:
 	if not home_stage_id.is_empty():
 		return home_stage_id
-	if character_id == "youmu":
-		return "hakugyokurou_stairs"
-	if character_id == "cirno":
-		return "misty_lake"
-	if character_id == "sakuya":
-		return "flowering_night"
-	return "bamboo_road"
+	return DEFAULT_STAGE_ID
 
 ## The character's stage music: their own track if they have one, else their home stage's.
 func get_stage_bgm_path() -> String:
 	if not stage_bgm_path.is_empty():
 		return stage_bgm_path
 	return get_stage_bgm_by_id(get_home_stage_id())
-
-
 
 
 # Static Registry & Resource Cache
@@ -307,31 +308,16 @@ static func _init_registry() -> void:
 		else:
 			push_error("CharacterData: %s is in the roster but has no %s" % [key, path])
 
+## The stage whose folder is res://scenes/stages/<id>/, or the Bamboo Road when there is none.
 static func get_stage_scene_by_id(stage_id: String) -> PackedScene:
-	if stage_id == "hakugyokurou_stairs":
-		if ResourceLoader.exists("res://scenes/stages/hakugyokurou_stairs/hakugyokurou_stairs_3d.tscn"):
-			return load("res://scenes/stages/hakugyokurou_stairs/hakugyokurou_stairs_3d.tscn")
-	if stage_id == "misty_lake":
-		if ResourceLoader.exists("res://scenes/stages/misty_lake/misty_lake_3d.tscn"):
-			return load("res://scenes/stages/misty_lake/misty_lake_3d.tscn")
-	if stage_id == "flowering_night":
-		if ResourceLoader.exists("res://scenes/stages/flowering_night/flowering_night_3d.tscn"):
-			return load("res://scenes/stages/flowering_night/flowering_night_3d.tscn")
-	if stage_id == "eientei_corridor":
-		if ResourceLoader.exists("res://scenes/stages/eientei_corridor/eientei_corridor_3d.tscn"):
-			return load("res://scenes/stages/eientei_corridor/eientei_corridor_3d.tscn")
-	if stage_id == "garden_of_the_sun":
-		if ResourceLoader.exists("res://scenes/stages/garden_of_the_sun/garden_of_the_sun_3d.tscn"):
-			return load("res://scenes/stages/garden_of_the_sun/garden_of_the_sun_3d.tscn")
-	if stage_id == "mountain_pond":
-		if ResourceLoader.exists("res://scenes/stages/mountain_pond/mountain_pond_3d.tscn"):
-			return load("res://scenes/stages/mountain_pond/mountain_pond_3d.tscn")
-	if stage_id == "sea_of_tranquility":
-		if ResourceLoader.exists("res://scenes/stages/sea_of_tranquility/sea_of_tranquility_3d.tscn"):
-			return load("res://scenes/stages/sea_of_tranquility/sea_of_tranquility_3d.tscn")
-	if ResourceLoader.exists("res://scenes/stages/bamboo_road/bamboo_road_3d.tscn"):
-		return load("res://scenes/stages/bamboo_road/bamboo_road_3d.tscn")
+	for id in [stage_id, DEFAULT_STAGE_ID]:
+		var path := STAGE_SCENE % [id, id]
+		if not id.is_empty() and ResourceLoader.exists(path):
+			return load(path)
 	return null
+
+const DEFAULT_STAGE_ID: String = "bamboo_road"
+const STAGE_SCENE: String = "res://scenes/stages/%s/%s_3d.tscn"
 
 ## Stage id -> its music (a DatMusic track id). Stages not listed play Spring Lane.
 const STAGE_MUSIC: Dictionary = {

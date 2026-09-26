@@ -48,3 +48,5 @@ charge_attack_scene = ExtResource("9_charge_attack")
 shockwave_color = Color(0.62, 0.3, 0.72, 1)
 spell_bg_anim_type = "twin_rotate"
 home_stage_id = "sea_of_tranquility"
+bullet_round_radius = 9.0
+bullet_spin = 12.0

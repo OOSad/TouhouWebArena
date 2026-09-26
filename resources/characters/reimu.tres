@@ -7,6 +7,7 @@
 [ext_resource type="Resource" path="res://resources/spellcards/reimu/reimu_spell_lv3.tres" id="7_spell_lv3"]
 [ext_resource type="Resource" path="res://resources/bosses/reimu_boss.tres" id="8_boss"]
 [ext_resource type="Texture2D" path="res://assets/ui/menu_characters/reimu.png" id="12_portrait"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/reimu_shot_penetrate.tres" id="hit_1"]
 
 [resource]
 script = ExtResource("1_script")
@@ -49,7 +50,6 @@ shockwave_radius_lv4 = 1200.0
 shockwave_speed = 400.0
 shockwave_duration = 1.02
 shockwave_color = Color(1, 0.35, 0.45, 1)
-has_custom_gauge = false
 version_tag = "TH09"
 archetype = "All-Around / Boundary Control"
 primary_shot_name = "Hakurei Amulet"
@@ -60,4 +60,5 @@ extra_attack_desc = "Bounces off screen walls to constrict incoming movement"
 charge_attack_desc = "Homing talisman burst tracking enemies"
 signature_spell_name = "Spirit Sign \"Fantasy Seal\""
 portrait_texture = ExtResource("12_portrait")
-
+shot_hit_effect = 1
+shot_hit_textures = Array[Texture2D]([ExtResource("hit_1")])

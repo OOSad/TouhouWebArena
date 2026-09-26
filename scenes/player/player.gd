@@ -616,8 +616,8 @@ func _handle_shooting(delta: float) -> void:
 			_burst_remaining -= 1
 
 func _fire_volley() -> void:
-	if character_id == "yuuka":
-		_fire_yuuka_volley()
+	if character_data and character_data.shot_pattern == CharacterData.ShotPattern.THREE_WAY_FAN:
+		_fire_fan_volley()
 		AudioService.play_player_shot()
 		return
 	var left_pos := Vector2(position.x - SHOT_OFFSET_X, position.y + SHOT_OFFSET_Y)
@@ -626,7 +626,7 @@ func _fire_volley() -> void:
 	_spawn_bullet(right_pos)
 	AudioService.play_player_shot()
 
-func _fire_yuuka_volley() -> void:
+func _fire_fan_volley() -> void:
 	# Authentic PoFV Yuuka 3-bullet fan spread (-100 deg, -90 deg, -80 deg from pl09.sht):
 	# Center straight up, side petals fanned by 10 degrees (tightens to 5 degrees when focusing)
 	# pl09.sht gives the side petals damage 8 against the centre's 10

@@ -7,7 +7,9 @@
 [ext_resource type="Resource" path="res://resources/spellcards/cirno/cirno_spell_lv2.tres" id="8_spell_lv2"]
 [ext_resource type="Resource" path="res://resources/spellcards/cirno/cirno_spell_lv3.tres" id="9_spell_lv3"]
 [ext_resource type="Resource" path="res://resources/bosses/cirno_boss.tres" id="10_boss_data"]
-[ext_resource type="PackedScene" path="res://scenes/stages/misty_lake/misty_lake_3d.tscn" id="12_misty_stage"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/cirno_shot_crumble_1.tres" id="hit_1"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/cirno_shot_crumble_2.tres" id="hit_2"]
+[ext_resource type="Texture2D" path="res://resources/dat_textures/cirno_shot_crumble_3.tres" id="hit_3"]
 
 
 [resource]
@@ -65,9 +67,9 @@ spellcard_lv3 = ExtResource("9_spell_lv3")
 portrait_texture = ExtResource("6_portrait")
 boss_data = ExtResource("10_boss_data")
 spell_bg_anim_type = "counter_scroll"
-home_stage_scene = ExtResource("12_misty_stage")
 home_stage_id = "misty_lake"
 stage_bgm_path = "res://assets/music/07_adventure_of_the_lovestruck_tomboy.ogg"
-
-
-
+shot_hit_effect = 2
+shot_hit_textures = Array[Texture2D]([ExtResource("hit_1"), ExtResource("hit_2"), ExtResource("hit_3")])
+extra_attack_min_interval = 0.5
+extra_attack_every_train = true

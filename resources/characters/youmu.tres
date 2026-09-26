@@ -55,7 +55,6 @@ shockwave_radius_lv4 = 1200.0
 shockwave_speed = 400.0
 shockwave_duration = 1.02
 shockwave_color = Color(0.25, 0.85, 0.6, 1)
-has_custom_gauge = false
 version_tag = "TH09"
 archetype = "Melee Blade / Dual-Body Familiar Duelist"
 primary_shot_name = "Spirit Crescent"
@@ -66,4 +65,4 @@ extra_attack_desc = "High-speed slicing phantom waves cutting across the playfie
 charge_attack_desc = "Instant forward dash executing a wide blade slash that vaporizes bullets"
 signature_spell_name = "Sword Skill \"Cherry Blossom Flashing\""
 portrait_texture = ExtResource("5_portrait")
-
+home_stage_id = "hakugyokurou_stairs"

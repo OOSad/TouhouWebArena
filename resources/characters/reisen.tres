@@ -6,7 +6,6 @@
 [ext_resource type="Resource" path="res://resources/spellcards/reisen/reisen_spell_lv2.tres" id="6_spell_lv2"]
 [ext_resource type="Resource" path="res://resources/spellcards/reisen/reisen_spell_lv3.tres" id="7_spell_lv3"]
 [ext_resource type="PackedScene" path="res://scenes/attacks/reisen_extra_moon.tscn" id="8_extra_attack"]
-[ext_resource type="PackedScene" path="res://scenes/stages/eientei_corridor/eientei_corridor_3d.tscn" id="10_eientei_stage"]
 
 [resource]
 script = ExtResource("1_script")
@@ -62,6 +61,5 @@ shockwave_duration = 1.02
 shockwave_color = Color(0.82, 0.45, 0.95, 1)
 version_tag = "TH09"
 archetype = "Balanced Mid-Range / Illusory Disruption"
-home_stage_scene = ExtResource("10_eientei_stage")
 home_stage_id = "eientei_corridor"
 stage_bgm_path = "res://assets/music/06_lunatic_eyes_invisible_full_moon.ogg"

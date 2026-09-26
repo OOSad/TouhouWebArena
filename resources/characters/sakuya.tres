@@ -7,7 +7,6 @@
 [ext_resource type="Resource" path="res://resources/spellcards/sakuya/sakuya_spell_lv3.tres" id="8_spell_lv3"]
 [ext_resource type="Texture2D" path="res://assets/effects/sakuya_distortion.png" id="9_bg_base"]
 [ext_resource type="Texture2D" path="res://resources/dat_textures/sakuya_clock.tres" id="10_bg_anim"]
-[ext_resource type="PackedScene" path="res://scenes/stages/flowering_night/flowering_night_3d.tscn" id="11_flowering_stage"]
 
 [resource]
 script = ExtResource("1_script")
@@ -57,6 +56,5 @@ shockwave_radius_lv4 = 1200.0
 shockwave_speed = 400.0
 shockwave_duration = 1.02
 shockwave_color = Color(0.65, 0.75, 1, 1)
-home_stage_scene = ExtResource("11_flowering_stage")
 home_stage_id = "flowering_night"
 stage_bgm_path = "res://assets/music/04_flowering_night.ogg"

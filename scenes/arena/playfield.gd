@@ -187,7 +187,7 @@ var _chained_trains_count: int = 0
 var _last_extra_attack_time: float = -10.0
 
 func get_trains_required_for_extra() -> int:
-	if character_id == "cirno":
+	if CharacterData.get_character(character_id).extra_attack_every_train:
 		return 1
 	if match_elapsed_time < 30.0:
 		return 3
@@ -637,7 +637,7 @@ func _on_fairy_defeated(fairy_type: Fairy.FairyType, death_pos: Vector2, source:
 		if fairy_type == Fairy.FairyType.GREAT and current_combo >= 3:
 			_chained_trains_count += 1
 			var req_trains: int = get_trains_required_for_extra()
-			var ex_interval: float = 0.5 if character_id == "cirno" else 1.2
+			var ex_interval: float = CharacterData.get_character(character_id).extra_attack_min_interval
 			if _chained_trains_count >= req_trains and (match_elapsed_time - _last_extra_attack_time) >= ex_interval:
 				has_extra_attack = true
 				_chained_trains_count = 0
