@@ -94,10 +94,9 @@ Design and reference documents:
 
 - [`DANMAKU_CATALOG.md`](DANMAKU_CATALOG.md): every bullet type, pattern step
   and spellcard.
-- [`CHARACTER_BALANCE_REFERENCE.md`](CHARACTER_BALANCE_REFERENCE.md): tuning
-  numbers across the roster.
 - [`AGENTS.md`](AGENTS.md): project conventions and coding standards.
-- [`MEMO.md`](MEMO.md): roadmap and backlog.
+- [`MEMO.md`](MEMO.md): backlog, with finished work in
+  [`MEMO_ARCHIVE.md`](MEMO_ARCHIVE.md).
 
 ---
 

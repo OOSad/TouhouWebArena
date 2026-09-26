@@ -4,7 +4,6 @@
 [ext_resource type="FontFile" uid="uid://sxfx0k4crqn8" path="res://Cirno.ttf" id="2_cirno_font"]
 [ext_resource type="Texture2D" uid="uid://wg4p1xryvjuv" path="res://assets/ui/title_bg_symmetric.png" id="3_bg_symmetric"]
 [ext_resource type="PackedScene" uid="uid://c3k7v0j8x4b8y" path="res://scenes/character_select/character_card.tscn" id="5_card_scene"]
-[ext_resource type="PackedScene" path="res://scenes/character_select/character_carousel_slot.tscn" id="6_slot_scene"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ribbon"]
 bg_color = Color(0.02, 0.03, 0.07, 0.92)
@@ -124,81 +123,6 @@ anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
-
-[node name="Slot0" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
-layout_mode = 0
-offset_left = -352.5
-offset_top = -110.0
-offset_right = -112.5
-offset_bottom = 110.0
-
-[node name="Slot1" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
-layout_mode = 0
-offset_left = -197.5
-offset_top = -110.0
-offset_right = 42.5
-offset_bottom = 110.0
-is_top_heavy = true
-
-[node name="Slot2" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
-layout_mode = 0
-offset_left = -42.5
-offset_top = -110.0
-offset_right = 197.5
-offset_bottom = 110.0
-
-[node name="Slot3" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
-layout_mode = 0
-offset_left = 112.5
-offset_top = -110.0
-offset_right = 352.5
-offset_bottom = 110.0
-is_top_heavy = true
-
-[node name="Slot4" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
-layout_mode = 0
-offset_left = 267.5
-offset_top = -110.0
-offset_right = 507.5
-offset_bottom = 110.0
-
-[node name="Slot5" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
-layout_mode = 0
-offset_left = 422.5
-offset_top = -110.0
-offset_right = 662.5
-offset_bottom = 110.0
-is_top_heavy = true
-
-[node name="Slot6" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
-layout_mode = 0
-offset_left = 577.5
-offset_top = -110.0
-offset_right = 817.5
-offset_bottom = 110.0
-
-[node name="Slot7" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
-layout_mode = 0
-offset_left = 732.5
-offset_top = -110.0
-offset_right = 972.5
-offset_bottom = 110.0
-is_top_heavy = true
-
-[node name="Slot8" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
-layout_mode = 0
-offset_left = 887.5
-offset_top = -110.0
-offset_right = 1127.5
-offset_bottom = 110.0
-
-[node name="Slot9" parent="CarouselTrack/SlotsContainer" instance=ExtResource("6_slot_scene")]
-layout_mode = 0
-offset_left = 1042.5
-offset_top = -110.0
-offset_right = 1282.5
-offset_bottom = 110.0
-is_top_heavy = true
 
 [node name="CenterUI" type="MarginContainer" parent="."]
 layout_mode = 1

@@ -1,6 +1,7 @@
 extends Control
 
 const CharacterCarouselSlot = preload("res://scenes/character_select/character_carousel_slot.gd")
+const CAROUSEL_SLOT_SCENE: PackedScene = preload("res://scenes/character_select/character_carousel_slot.tscn")
 
 ## Each character's select-screen art, by id; a character without one shows their portrait_texture.
 const DAIRI_PORTRAIT: String = "res://assets/ui/dairi/%s.png"
@@ -104,11 +105,14 @@ func _ready() -> void:
 	if slots_container == null:
 		slots_container = get_node_or_null("CarouselTrack/SlotsContainer") as Control
 
+	# One slot per carousel entry, made here so the wheel always matches the roster.
 	carousel_slots.clear()
 	if slots_container:
-		for child in slots_container.get_children():
-			if child is CharacterCarouselSlot:
-				carousel_slots.append(child)
+		for i in characters.size():
+			var slot: CharacterCarouselSlot = CAROUSEL_SLOT_SCENE.instantiate()
+			slot.name = "Slot%d" % i
+			slots_container.add_child(slot)
+			carousel_slots.append(slot)
 	
 	var slot_pitch := 155.0
 	var total_span := (carousel_slots.size() - 1) * slot_pitch + 240.0
